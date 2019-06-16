@@ -1,0 +1,70 @@
+/*!
+
+\page @TOOL_NAME_ID@
+
+\brief Calculate AccurateRip ids locally
+
+\version @PROJECT_VERSION@
+
+
+
+\section SYNOPSIS
+
+@TOOL_NAME_ID@ [OPTIONS] TOCFILE [AUDIOFILE1 AUDIOFILE2 ...]
+
+
+\section DESCRIPTION
+
+Compute the AccurateRip id of a CD by its metadata or by the audio data.
+
+
+\section OPTIONS
+
+\par --cddb_id
+Print the cddb id.
+
+\par --db_id, --filename
+Print the database id. This id is identical to the filename of the AccurateRip
+re‐ sponse  file  and  has   the   canonical   form   of   38   characters   as
+follows: dBAR-<track_count:3>-<id1:8>-<id2:8>-<cddb_id:8>.bin
+
+\par --url
+Print the AccurateRip request URL.
+
+\par --profile
+Print all information.
+
+\copydoc inc_logfileopt
+
+\copydoc inc_outfileopt
+
+\copydoc inc_logoptions
+
+\copydoc inc_versionopt
+
+
+\section EXAMPLES
+
+Compute ARId for audiofile.cue while having the real audio file in the same
+directory:
+
+$ @TOOL_NAME_ID@ audiofile.cue
+
+Do the same as in the first example, but track precisely what is going on:
+
+$ @TOOL_NAME_ID@ --vvv audiofile.cue
+
+
+\section BUGS
+
+
+\section COPYRIGHT
+
+\copydoc inc_license
+
+
+\section SEEALSO SEE ALSO
+
+@TOOL_NAME_CALC@(1), @TOOL_NAME_PARSE@(1), @TOOL_NAME_VERIFY@(1)
+
+*/

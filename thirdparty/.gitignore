@@ -1,0 +1,17 @@
+## Exclude everything except .gitignore + CMakeLists.txt, also in subfolders
+
+## Ignore everything in this folder
+/*
+
+## Except subfolders
+!*/
+
+## Except the following files within any subfolder
+## (You must include .gitignore that will also be untracked by the first clause)
+!**/.gitignore
+!**/CMakeLists.txt
+
+## Even if they are in subdirectories
+#!*/.gitignore
+#!*/CMakeLists.txt
+

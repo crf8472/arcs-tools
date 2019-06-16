@@ -1,0 +1,62 @@
+/*!
+
+\page @TOOL_NAME_PARSE@
+
+\brief Parse responses from AccurateRip
+
+\version @PROJECT_VERSION@
+
+
+
+\section SYNOPSIS
+
+@TOOL_NAME_PARSE@ [OPTIONS] FILENAME
+
+
+\section DESCRIPTION
+
+Parse valid responses from the AccurateRip database and output checksums,
+confidence values and the checksums for frame 450 for each profile contained in
+the response.
+
+
+\section OPTIONS
+
+\copydoc inc_logfileopt
+
+\copydoc inc_outfileopt
+
+\copydoc inc_logoptions
+
+\copydoc inc_versionopt
+
+
+\section EXAMPLES
+
+Parse the binary data returned by AccurateRip and print it in a human-readable
+form:
+
+$ @TOOL_NAME_PARSE@ dBAR-123.bin
+
+Do the same as in the first example, but track precisely what is going on:
+
+$ @TOOL_NAME_PARSE@ --vvv dBAR-123.bin
+
+Do the same as in the first example, but write to myfile.txt instead of stdout:
+
+$ @TOOL_NAME_PARSE@ -o myfile.txt dBAR-123.bin
+
+
+\section BUGS
+
+
+\section COPYRIGHT
+
+\copydoc inc_license
+
+
+\section SEEALSO SEE ALSO
+
+@TOOL_NAME_ID@(1), @TOOL_NAME_CALC@(1), @TOOL_NAME_VERIFY@(1)
+
+*/

@@ -1,0 +1,52 @@
+# ---> C++
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# log files
+*.log
+
+# build
+build/*
+compile_commands.json
+
+# vim intermediate files
+*.swp
+*.swo
+# kdevelop metafiles
+arcstk.kdev4
+kdev4/*
+
+# valgrind report files
+cachegrind.*
+callgrind.*
+

@@ -1,0 +1,111 @@
+// Each \page in this file is a snippet that can be included via \copydoc
+
+/*!
+
+
+\page inc_license
+
+License is MIT. See full license text:
+https://codeberg.org/tristero/arcstk/src/branch/master/LICENSE
+
+
+\page inc_calcdesc
+
+If you pass no audiofiles, you must pass a metadata file with the TOC and the
+information about the audio files. The audio input is supposed to form an album.
+
+If you pass audiofiles and a metadata file, the names of the audiofiles will
+override potentially specified filenames in the metadata file. The audio input
+is supposed to form an album. If you pass a single audiofile together with a
+metadata file, the audiofile is supposed to contain all tracks of the album. If
+you pass multiple audiofiles together with a metadata file, the number of the
+audiofiles passed has to match exactly the number of tracks specified in the
+metadata file, otherwise the input will not be processed. To put it simpler, if
+you override audiofilenames in the metadata file, you either have to override
+them by a single audiofile holding all tracks or you have to specify exactly one
+distinct audiofile for each known track.
+
+If you pass audiofiles and no metadata file, the audiofiles are processed in the
+order their names are passed. The audio input is not supposed to form an album,
+but can be declared to do so by using \b --album or the switches \b --first and
+\b --last to declare the first audio file in the list passed to be the first
+track of the album and the last audio file to be the last track.
+
+
+\page inc_logfileopt
+
+\par -l, --logfile=LOGFILE
+Log messages will go to this file instead of stdlog. Errors will be logged but
+will additionally printed on stderr. If LOGFILE exists, it will be overwritten
+without warning. If no logfile is specified, all log messages will go to stderr.
+
+
+\page inc_outfileopt
+
+\par -o, --outfile=OUTFILE
+Result output (checksums) will go to this file instead of stdout. The outfile
+will not contain log messages and no error messages. If OUTFILE exists, it will
+be overwritten. If no output file is specified, output will go to stdout.
+
+
+\page inc_logoptions
+
+\par -q, --quiet
+Suppress any informational message on stdout, just print the result. A failure
+during program run may result in no information. Takes precedence over any
+potentially present \b -v.
+
+\par -v [n]
+Activate loglevel n. Default loglevel (without any \b -v option) is \b n == 2
+and prints warnings and above. Option \b -v0 is equivalent to \b -q and prints
+no log messages at all. 1 == errors, 2(default) == warnings, 3 == info, 4 ==
+debug, 5 == trace. For any \b n > 5, loglevel 5 will be set. Log messages will
+be printed to stdlog by default. Alternatively, a logfile can be specified with
+\b --l. If \b -q is present, any loglevel options will be ignored.
+
+
+\page inc_versionopt
+
+\par --version
+Print version information and exit. If \b --version is passed, neither of the
+other command line options will be evaluated.
+
+
+\page inc_calcoutoptions
+
+\par --v1
+Calculate (only) ARCSs v1. Default is \b --v1 \b --v2 which calculates ARCSs v1
+as well as v2. By specifiying \b --v1 the calculation of ARCSv2 can be
+suppressed.
+
+\par --v2
+Calculate (only) ARCSs v2. Default is \b --v1 \b --v2 which calculates ARCSs v1
+as well as v2. By specifiying \b --v2 the calculation of ARCSv1 can be
+suppressed.
+
+
+\page inc_calcinoptions
+
+\par --first
+Process the first of the audiofiles as first track of an album. This option is
+implied in \b -m.
+
+\par --last
+Process the last of the audiofiles as last track of an album. This option is
+implied in \b -m.
+
+\par --album
+Abbreviates \b --first \b --last: Process the first of the audiofiles as first
+track and the last one as the last track of the album. This option is
+implied in \b -m.
+
+\par -m, --metadata=TOCFILE
+Specify the file with the TOC data of the original medium. Accepted input
+formats are the ones listed by \b --list-toc-formats. The specified file is
+expected to provide the track offsets. It may as well optionally provide the
+total number of samples and the name(s) of the audio file(s). If names of \b
+AUDIOFILE(s) are passed, they will override any names of audio files potentially
+occurring in \b TOCFILE. If TOCFILE is not readable, run stops with an error
+code.
+
+*/

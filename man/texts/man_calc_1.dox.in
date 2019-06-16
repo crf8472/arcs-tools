@@ -1,0 +1,127 @@
+/*!
+
+\page @TOOL_NAME_CALC@
+
+\brief Calculate AccurateRip checksums locally
+
+\version @PROJECT_VERSION@
+
+
+
+\section SYNOPSIS
+
+@TOOL_NAME_CALC@ [OPTIONS] AUDIOFILE1 AUDIOFILE2 ...
+
+
+\section DESCRIPTION
+
+Calculates AccurateRip checksums from losslessly encoded audiofiles and
+TOC information.
+
+\copydoc inc_calcdesc
+
+
+\section OPTIONS
+
+\subsection INPUT Options for processing input
+
+\copydoc inc_calcinoptions
+
+
+\subsection OUTPUT Options for output
+
+\copydoc inc_calcoutoptions
+
+\copydoc inc_logfileopt
+
+\copydoc inc_outfileopt
+
+\copydoc inc_logoptions
+
+\copydoc inc_versionopt
+
+
+\section EXAMPLES
+
+\subsection ALBUMTOCM 1. Album + TOC, using the audio files specified in the TOC
+
+You have: An album ripped to a single audio file, say fLaC, or a set of files
+and the TOC (as CUESheet). The CUESheet specifies the actual audiofiles, may it
+be a single file or one file per track.
+
+You want: The ARCSs of each track.
+
+$ @TOOL_NAME_CALC@ -m foo/foo.cue
+
+
+\subsection ALBUMTOCF 2. Album + TOC, overriding the files in the TOC, if any
+
+
+\par a) Single audio file
+
+You have: An album ripped to a single audio file, say fLaC, and the TOC as
+CUESheet. The CUESheet specifies audio files, but you want to override them with
+\c foo/foo.flac instead.
+
+You want: The ARCSs of each track.
+
+$ @TOOL_NAME_CALC@ -m foo/foo.cue foo/foo.flac
+
+
+\par b) One audio file per track
+
+You have: An album ripped one-file-per-track to a set of fLaC files, and the TOC
+as a CUESheet. The CUESheet is stored elsewhere or references WAV files, so you
+want to override its file references.
+
+You want: The ARCSs of each track/file.
+
+$ @TOOL_NAME_CALC@ -m foo/foo.cue foo/\*.flac
+
+
+\subsection ALBUMFILES 3. Audiofiles forming an album, but no TOC
+
+You have: A set of audio files that you know to form an album, but there is no
+TOC information. The filenames are such that the first filename is also the
+first track and the last filename is the last track of the album.
+
+You want: The ARCSs of each track/file.
+
+$ @TOOL_NAME_CALC@ --album foo/\*.flac
+
+Of course you can specifiy the order of the filenames explicitly:
+
+$ @TOOL_NAME_CALC@ --album foo/f1.flac foo/f2.flac ...
+
+
+\subsection FILES 4. Some audiofiles but no TOC
+
+You have: A set of audiofiles that do not form an album. (Either the album is
+missing the first or last track or the tracks are completely unrelated.)
+
+You want: The ARCSs of each file.
+
+$ @TOOL_NAME_CALC@ foo/\*.flac
+
+Of course you can specifiy the order of the filenames explicitly:
+
+$ @TOOL_NAME_CALC@ foo/f1.flac foo/f2.flac ...
+
+If you know that \c f1.flac is the first track, declare it accordingly:
+
+$ @TOOL_NAME_CALC@ --first foo/f1.flac foo/f2.flac ...
+
+
+\section BUGS
+
+
+\section COPYRIGHT
+
+\copydoc inc_license
+
+
+\section SEEALSO SEE ALSO
+
+@TOOL_NAME_ID@(1), @TOOL_NAME_PARSE@(1), @TOOL_NAME_VERIFY@(1)
+
+*/
