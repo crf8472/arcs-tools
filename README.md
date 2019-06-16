@@ -1,4 +1,4 @@
-# Toolkit for AccurateRip checksums
+# Example Toolkit for AccurateRip checksums
 
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![C++17](https://img.shields.io/badge/C++-17-darkblue.svg)](./API.md)
@@ -19,11 +19,12 @@ work with AccurateRip checksums of your CD rip, namely
 - [arcstk-parse](./doc/texts/README.arcstk-parse.md) - Parse AccurateRip
   response to plaintext
 
-arcstk-calc makes use of [libarcsdec][2] and will accept nearly any losslessly
-encoded audio input depending on the decoder libraries your system provides.
-(WMALossless is currently not supported, but this is solely due to the current
-lack of a Windows port. But wav, flac, wavpack, ALAC, ape, AIFF input is
-possible and currently at least smoke-tested.)
+Tool [arcstk-calc](./doc/texts/README.arcstk-calc.md) makes use of
+[libarcsdec][2] and will accept nearly any losslessly encoded audio input
+depending on the decoder libraries your system provides. (WMALossless is
+currently not supported, but this is solely due to the current lack of a Windows
+port. But wav, flac, wavpack, ALAC, ape, AIFF input is possible and currently at
+least smoke-tested.)
 
 
 ## Examples
