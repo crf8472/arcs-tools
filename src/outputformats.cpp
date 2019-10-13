@@ -876,7 +876,7 @@ std::unique_ptr<Lines> ARTripletFormat::do_format(const unsigned int &track,
 	auto lines { std::make_unique<DefaultLines>() };
 	lines->append(linestr.str());
 
-	return std::move(lines);
+	return lines;
 }
 
 
@@ -961,7 +961,7 @@ std::unique_ptr<Lines> ARBlockTableFormat::do_format(const ARBlock &block)
 		}
 	}
 
-	return std::move(lines);
+	return lines;
 }
 
 
