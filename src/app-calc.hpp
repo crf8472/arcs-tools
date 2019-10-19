@@ -86,9 +86,6 @@ public:
 	 * \brief List compiled audio formats (codec/container)
 	 */
 	static constexpr uint16_t LIST_AUDIO_FORMATS = 1024;
-
-
-	bool has_operation_flags() const;
 };
 
 

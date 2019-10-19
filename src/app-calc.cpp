@@ -61,11 +61,6 @@ constexpr uint16_t ARCalcOptions::METAFILEPATH;
 constexpr uint16_t ARCalcOptions::LIST_TOC_FORMATS;
 constexpr uint16_t ARCalcOptions::LIST_AUDIO_FORMATS;
 
-bool ARCalcOptions::has_operation_flags() const
-{
-	return rightmost_flag() < ARCalcOptions::LIST_TOC_FORMATS;
-}
-
 
 // ARCalcConfigurator
 
