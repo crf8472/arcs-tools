@@ -58,6 +58,13 @@ constexpr uint8_t  ARCalcOptions::ALBUM;
 constexpr uint8_t  ARCalcOptions::FIRST;
 constexpr uint8_t  ARCalcOptions::LAST;
 constexpr uint16_t ARCalcOptions::METAFILEPATH;
+constexpr uint16_t ARCalcOptions::LIST_TOC_FORMATS;
+constexpr uint16_t ARCalcOptions::LIST_AUDIO_FORMATS;
+
+bool ARCalcOptions::has_operation_flags() const
+{
+	return rightmost_flag() < ARCalcOptions::LIST_TOC_FORMATS;
+}
 
 
 // ARCalcConfigurator
@@ -81,6 +88,47 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 		throw CallSyntaxException("No options or arguments");
 	}
 
+	// TODO A hack: we know that all flags left of LIST_TOC_FORMATS are
+	// info-do-nothing flags. Hence, if the leftmost (set) flag is bigger (== to
+	// the left) of this flag, there are info flags. If, furthermore, the
+	// rightmost (set) flag is bigger than that, there are _only_ info flags.
+
+	// If there are info flags
+	if (options->leftmost_flag() >= ARCalcOptions::LIST_TOC_FORMATS)
+	{
+		// If there are no calculation flags
+		if (options->rightmost_flag() >= ARCalcOptions::LIST_TOC_FORMATS)
+		{
+			if (options->is_set(ARCalcOptions::LIST_TOC_FORMATS))
+			{
+				// TODO Implement
+				std::cout << "Option --list-toc-formats is not yet implemented\n";
+			}
+
+			if (options->is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
+			{
+				// TODO Implement
+				std::cout << "Option --list-audio-formats is not yet implemented\n";
+			}
+
+			return options;
+		} else
+		{
+			// There are info flags as well as calculation flags
+
+			if (options->is_set(ARCalcOptions::LIST_TOC_FORMATS))
+			{
+				std::cout << "Option --list-toc-formats is ignored\n";
+			}
+
+			if (options->is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
+			{
+				std::cout << "Option --list-audio-formats is ignored\n";
+			}
+
+			// Proceed ...
+		}
+	}
 	// If neither --v1 nor --v2 was passed activate both as default
 
 	if (not options->is_set(ARCalcOptions::V1)
@@ -187,6 +235,16 @@ std::unique_ptr<Options> ARCalcConfigurator::parse_options(CLIParser& cli)
 		{
 			options->set(ARCalcOptions::LAST);
 		}
+	}
+
+	if (cli.consume_option("--list-toc-formats"))
+	{
+		options->set(ARCalcOptions::LIST_TOC_FORMATS);
+	}
+
+	if (cli.consume_option("--list-audio-formats"))
+	{
+		options->set(ARCalcOptions::LIST_AUDIO_FORMATS);
 	}
 
 	// Audio Filenames (whatever is left, must be a filename)

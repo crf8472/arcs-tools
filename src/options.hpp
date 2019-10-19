@@ -117,6 +117,20 @@ public:
 	 */
 	bool empty() const;
 
+	/**
+	 * Position of the leftmost set flag.
+	 *
+	 * \return Position of the leftmost flag that is set.
+	 */
+	uint16_t leftmost_flag() const;
+
+	/**
+	 * Position of the rightmost set flag.
+	 *
+	 * \return Position of the rightmost flag that is set.
+	 */
+	uint16_t rightmost_flag() const;
+
 
 private:
 

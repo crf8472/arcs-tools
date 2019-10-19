@@ -2,6 +2,7 @@
 #include "options.hpp"
 #endif
 
+#include <cmath>  // for pow
 #include <map>    // from .h
 #include <string> // from .h
 #include <vector> // from .h
@@ -92,5 +93,24 @@ std::vector<std::string> const Options::get_arguments() const
 bool Options::empty() const
 {
 	return config_ == 0 && arguments_.empty() && option_map_.empty();
+}
+
+
+uint16_t Options::leftmost_flag() const
+{
+	auto flags = config_;
+
+	if (flags == 0) { return 0; }
+
+	uint16_t count = 0;
+	while (flags > 1) { count++; flags >>= 1; }
+
+	return std::pow(2, count);
+}
+
+
+uint16_t Options::rightmost_flag() const
+{
+	return config_ & (~config_ + 1);
 }
 

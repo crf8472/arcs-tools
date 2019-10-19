@@ -76,6 +76,19 @@ public:
 	 * \brief Metadata file path
 	 */
 	static constexpr uint16_t METAFILEPATH = 256;
+
+	/**
+	 * \brief List compiled TOC formats
+	 */
+	static constexpr uint16_t LIST_TOC_FORMATS = 512;
+
+	/**
+	 * \brief List compiled audio formats (codec/container)
+	 */
+	static constexpr uint16_t LIST_AUDIO_FORMATS = 1024;
+
+
+	bool has_operation_flags() const;
 };
 
 
