@@ -3,6 +3,7 @@
 #endif
 
 #include <iostream>
+#include <functional>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -44,6 +45,7 @@ using arcstk::TOC;
 using arcstk::make_empty_arid;
 
 using arcsdec::ARCSCalculator;
+using arcsdec::TOCParser;
 
 
 // ARCalcOptions
@@ -94,31 +96,22 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 		// If there are no calculation flags
 		if (options->rightmost_flag() >= ARCalcOptions::LIST_TOC_FORMATS)
 		{
-			if (options->is_set(ARCalcOptions::LIST_TOC_FORMATS))
-			{
-				// TODO Implement
-				std::cout << "Option --list-toc-formats is not yet implemented\n";
-			}
-
-			if (options->is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
-			{
-				// TODO Implement
-				std::cout << "Option --list-audio-formats is not yet implemented\n";
-			}
-
 			return options;
-		} else
+		}
+		else
 		{
 			// There are info flags as well as calculation flags
 
 			if (options->is_set(ARCalcOptions::LIST_TOC_FORMATS))
 			{
-				std::cout << "Option --list-toc-formats is ignored\n";
+				ARCS_LOG_WARNING << "Option --list-toc-formats is ignored";
+				options->unset(ARCalcOptions::LIST_TOC_FORMATS);
 			}
 
 			if (options->is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
 			{
-				std::cout << "Option --list-audio-formats is ignored\n";
+				ARCS_LOG_WARNING << "Option --list-audio-formats is ignored";
+				options->unset(ARCalcOptions::LIST_AUDIO_FORMATS);
 			}
 
 			// Proceed ...
@@ -348,7 +341,49 @@ std::string ARCalcApplication::do_name() const
 }
 
 
-int ARCalcApplication::do_run(const Options &options)
+int ARCalcApplication::run_info(const Options &options)
+{
+	if (options.is_set(ARCalcOptions::LIST_TOC_FORMATS))
+	{
+		TOCParser p;
+		FormatCollector collector;
+
+		p.selection().traverse_descriptors(std::bind(
+				&FormatCollector::add, &collector, std::placeholders::_1));
+
+		FormatList list(collector.info().size());
+
+		for (const auto& entry : collector.info())
+		{
+			list.format(entry[0], entry[1], entry[2], entry[3]);
+		}
+
+		this->print(*list.lines(), options.get(ARCalcOptions::OUT));
+	}
+
+	if (options.is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
+	{
+		ARCSCalculator c;
+		FormatCollector collector;
+
+		c.selection().traverse_descriptors(std::bind(
+				&FormatCollector::add, &collector, std::placeholders::_1));
+
+		FormatList list(collector.info().size());
+
+		for (const auto& entry : collector.info())
+		{
+			list.format(entry[0], entry[1], entry[2], entry[3]);
+		}
+
+		this->print(*list.lines(), options.get(ARCalcOptions::OUT));
+	}
+
+	return EXIT_SUCCESS;
+}
+
+
+int ARCalcApplication::run_calculation(const Options &options)
 {
 	auto [ checksums, arid, toc ] = this->calculate(options);
 
@@ -370,6 +405,22 @@ int ARCalcApplication::do_run(const Options &options)
 	this->print(*format->lines(), options.get(ARCalcOptions::OUT));
 
 	return EXIT_SUCCESS;
+}
+
+
+int ARCalcApplication::do_run(const Options &options)
+{
+	// If only info options are present, handle info request
+
+	if (options.rightmost_flag() >= ARCalcOptions::LIST_TOC_FORMATS
+			and not options.empty())
+	{
+		return this->run_info(options);
+	}
+
+	// Else: Handle calculation request
+
+	return this->run_calculation(options);
 }
 
 

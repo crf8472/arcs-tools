@@ -48,6 +48,12 @@ void Options::set(const uint16_t &option)
 }
 
 
+void Options::unset(const uint16_t &option)
+{
+	config_ &= !option;
+}
+
+
 std::string Options::get(const uint16_t &option) const
 {
 	auto it = option_map_.find(option);

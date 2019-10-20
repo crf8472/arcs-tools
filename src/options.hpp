@@ -63,9 +63,20 @@ public:
 	/**
 	 * \brief Set the option to TRUE.
 	 *
+	 * If the option is currently set, the call has no effect.
+	 *
 	 * \param[in] option The option to be set to TRUE
 	 */
 	void set(const uint16_t &option);
+
+	/**
+	 * \brief Set the option to FALSE.
+	 *
+	 * If the option is currently unset, the call has no effect.
+	 *
+	 * \param[in] option The option to be set to FALSE
+	 */
+	void unset(const uint16_t &option);
 
 	/**
 	 * \brief Get option value by key.

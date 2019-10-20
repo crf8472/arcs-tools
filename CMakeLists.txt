@@ -252,6 +252,7 @@ if (libarcsdec_INCLUDE_DIRS )
 		app-calc
 		app-id
 		app-verify
+		outputformats
 		tools_calc )
 
 	foreach (_object IN LISTS OBJECTS_DEPENDING_ON_LIBARCSDEC )
@@ -295,7 +296,8 @@ add_executable (${TOOL_NAME_PARSE}
 	$<TARGET_OBJECTS:parsehandlers>
 	$<TARGET_OBJECTS:app-parse> )
 
-list (APPEND PROJECT_EXECUTABLES ${TOOL_NAME_PARSE} ) ## no libarcsdec required
+target_link_libraries (${TOOL_NAME_PARSE} PRIVATE libarcsdec::libarcsdec )
+list (APPEND PROJECT_EXECUTABLES ${TOOL_NAME_PARSE} )
 
 
 ## verify-tool with specific dependencies

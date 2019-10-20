@@ -154,6 +154,23 @@ private:
 	std::unique_ptr<AlbumChecksumsTableFormat> create_format(
 			const Options &options, const Checksums &checksums) const;
 
+	/**
+	 * \brief Worker method for run(): handles info requests.
+	 *
+	 * \param[in] options The options to run the application
+	 *
+	 * \return Application return code
+	 */
+	int run_info(const Options &options);
+
+	/**
+	 * \brief Worker method for run(): handles calculation requests.
+	 *
+	 * \param[in] options The options to run the application
+	 *
+	 * \return Application return code
+	 */
+	int run_calculation(const Options &options);
 
 	std::unique_ptr<Configurator> create_configurator(int argc, char** argv)
 		const override;

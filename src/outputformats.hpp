@@ -11,7 +11,9 @@
  * from these formats. There is also a format for offsets.
  */
 
+#include <array>
 #include <utility>
+#include <vector>
 
 #ifndef __LIBARCSTK_PARSE_HPP__
 #include <arcstk/parse.hpp>
@@ -21,6 +23,10 @@
 #endif
 #ifndef __LIBARCSTK_MATCH_HPP__
 #include <arcstk/match.hpp>
+#endif
+
+#ifndef __LIBARCSDEC_DESCRIPTORS_HPP__
+#include <arcsdec/descriptors.hpp>
 #endif
 
 #ifndef __ARCSTOOLS_FORMAT_HPP__
@@ -35,6 +41,8 @@ using arcstk::ARResponse;
 using arcstk::Checksums;
 using arcstk::Match;
 using arcstk::TOC;
+
+using arcsdec::FileReaderDescriptor;
 
 
 /**
@@ -828,5 +836,70 @@ private:
 	std::unique_ptr<Lines> lines_;
 };
 
-#endif
 
+/**
+ * \brief Collecto descriptor infos
+ */
+class FormatCollector
+{
+
+public:
+
+	void add(const FileReaderDescriptor &descriptor);
+
+	std::vector<std::array<std::string, 4>> info() const;
+
+
+private:
+
+	std::vector<std::array<std::string, 4>> info_;
+};
+
+
+/**
+ * \brief Print supported formats.
+ */
+class FormatList :  virtual public OutputFormat,
+					virtual public StringTableBase
+{
+
+public:
+
+	/**
+	 * \brief Constructor
+	 */
+	FormatList(std::size_t entry_count);
+
+	/**
+	 * \brief Inspect the specified descriptor for printable information.
+	 */
+	void inspect(const FileReaderDescriptor &descriptor);
+
+	/**
+	 * \brief Format the metadata/audio format info.
+	 *
+	 * \param[in] fmt_name
+	 * \param[in] lib_name
+	 * \param[in] version
+	 */
+	void format(const std::string &fmt_name, const std::string &lib_name,
+			const std::string &desc, const std::string &version);
+
+
+protected:
+
+	/**
+	 * \brief Add a format description
+	 */
+	void add_data(const std::string &fmt_name, const std::string &lib_name,
+			const std::string &desc, const std::string &version);
+
+
+private:
+
+	int curr_row_;
+
+	std::unique_ptr<Lines> do_lines() override;
+};
+
+#endif

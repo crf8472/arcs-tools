@@ -1,3 +1,4 @@
+#include <type_traits>
 #ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
 #include "outputformats.hpp"
 #endif
@@ -24,6 +25,8 @@
 using arcstk::ARId;
 using arcstk::Checksum;
 using arcstk::TOC;
+
+using arcsdec::FileFormat;
 
 
 // WithInternalFlags
@@ -1015,3 +1018,70 @@ void OffsetsFormat::do_format(const std::vector<uint32_t> &offsets)
 	}
 }
 
+
+// FormatCollector
+
+
+void FormatCollector::add(const FileReaderDescriptor &descriptor)
+{
+	auto name = descriptor.name();
+
+	auto formats = descriptor.formats();
+
+	std::stringstream desc;
+	for (const auto& f : formats)
+	{
+		desc << arcsdec::name(f) << ",";
+	}
+
+	info_.push_back( { name, desc.str(), "-", "-" } );
+}
+
+
+std::vector<std::array<std::string, 4>> FormatCollector::info() const
+{
+	return info_;
+}
+
+
+// FormatList
+
+
+FormatList::FormatList(const std::size_t entry_count)
+	: StringTableBase(entry_count, 4)
+	, curr_row_(0)
+{
+	int col = -1;
+
+	this->set_column_name(++col, "Name");
+	this->set_column_name(++col, "Short Desc.");
+	this->set_column_name(++col, "Lib");
+	this->set_column_name(++col, "Version");
+}
+
+
+void FormatList::format(const std::string &fmt_name, const std::string &desc,
+		const std::string &lib_name, const std::string &version)
+{
+	this->add_data(fmt_name, desc, lib_name, version);
+}
+
+
+void FormatList::add_data(const std::string &fmt_name, const std::string &desc,
+		const std::string &lib_name, const std::string &version)
+{
+	int col = -1;
+
+	this->update_cell(curr_row_, ++col, fmt_name);
+	this->update_cell(curr_row_, ++col, desc);
+	this->update_cell(curr_row_, ++col, lib_name);
+	this->update_cell(curr_row_, ++col, version);
+
+	++curr_row_;
+}
+
+
+std::unique_ptr<Lines> FormatList::do_lines()
+{
+	return this->print();
+}
