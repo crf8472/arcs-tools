@@ -91,13 +91,6 @@ ARTripletFormat* ARParserContentPrintHandler::triplet_fmt()
 }
 
 
-std::unique_ptr<ContentHandler>
-	ARParserContentPrintHandler::do_clone() const
-{
-	return nullptr; // TODO Uncloneable
-}
-
-
 void ARParserContentPrintHandler::do_start_input()
 {
 	// empty

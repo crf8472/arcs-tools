@@ -134,8 +134,6 @@ private:
 
 	void do_end_input() override;
 
-	std::unique_ptr<ContentHandler> do_clone() const override;
-
 	/**
 	 * \brief Internal block counter.
 	 */
