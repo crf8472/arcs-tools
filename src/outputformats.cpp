@@ -470,7 +470,7 @@ void AlbumTableBase::add_data(const TOC &toc)
 	std::vector<uint32_t> parsed_lengths{};
 	parsed_lengths.reserve(toc.track_count());
 
-	for (unsigned int row_idx = 0; row_idx < toc.track_count(); ++row_idx)
+	for (int row_idx = 0; row_idx < toc.track_count(); ++row_idx)
 	{
 		parsed_lengths.push_back(toc.parsed_length(row_idx+1));
 	}
