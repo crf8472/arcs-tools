@@ -434,8 +434,8 @@ protected:
 	 * \param[in] lengths   Lengths
 	 */
 	virtual void add_data(const std::vector<std::string> &filenames,
-		const std::vector<uint32_t> &offsets,
-		const std::vector<uint32_t> &lengths)
+		const std::vector<int32_t> &offsets,
+		const std::vector<int32_t> &lengths)
 	= 0;
 };
 
@@ -478,8 +478,8 @@ protected:
 	void add_data(const TOC &toc) override;
 
 	void add_data(const std::vector<std::string> &filenames,
-		const std::vector<uint32_t> &offsets,
-		const std::vector<uint32_t> &lengths) override;
+		const std::vector<int32_t> &offsets,
+		const std::vector<int32_t> &lengths) override;
 };
 
 
@@ -838,12 +838,14 @@ private:
 
 
 /**
- * \brief Collecto descriptor infos
+ * \brief Collect descriptor infos
  */
 class FormatCollector
 {
 
 public:
+
+	FormatCollector();
 
 	void add(const FileReaderDescriptor &descriptor);
 

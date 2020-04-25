@@ -467,7 +467,7 @@ AlbumTableBase::AlbumTableBase(const int rows, const int columns,
 
 void AlbumTableBase::add_data(const TOC &toc)
 {
-	std::vector<uint32_t> parsed_lengths{};
+	std::vector<int32_t /* lba_count */> parsed_lengths{};
 	parsed_lengths.reserve(toc.track_count());
 
 	for (int row_idx = 0; row_idx < toc.track_count(); ++row_idx)
@@ -481,8 +481,8 @@ void AlbumTableBase::add_data(const TOC &toc)
 
 
 void AlbumTableBase::add_data(const std::vector<std::string> &filenames,
-		const std::vector<uint32_t> &offsets,
-		const std::vector<uint32_t> &lengths)
+		const std::vector<int32_t> &offsets,
+		const std::vector<int32_t> &lengths)
 {
 	int col_idx = 0;
 
@@ -623,14 +623,14 @@ void AlbumChecksumsTableFormat::format(const Checksums &checksums,
 
 
 	// Add filenames and lengths
-	std::vector<uint32_t> actual_lengths{};
+	std::vector<int32_t> actual_lengths{};
 	actual_lengths.reserve(checksums.size());
 
 	for (const auto& checksum : checksums)
 	{
 		actual_lengths.push_back(checksum.length());
 	}
-	this->add_data(filenames, std::vector<uint32_t>(), actual_lengths);
+	this->add_data(filenames, std::vector<int32_t>(), actual_lengths);
 
 
 	// Checksums
@@ -738,7 +738,7 @@ void AlbumMatchTableFormat::format(
 			md_columns + 2  /*columns*/);
 
 	// Add filenames and lengths
-	std::vector<uint32_t> actual_lengths{};
+	std::vector<int32_t> actual_lengths{};
 	actual_lengths.reserve(checksums.size());
 
 	for (const auto& checksum : checksums)
@@ -748,7 +748,7 @@ void AlbumMatchTableFormat::format(
 
 	// Add table content
 	this->add_data(filenames,
-			std::vector<uint32_t>(checksums.size()) /* empty */,
+			std::vector<int32_t>(checksums.size()) /* empty */,
 			actual_lengths);
 
 	this->add_checksums_match(md_columns, checksums, response, match, block,
@@ -1020,6 +1020,13 @@ void OffsetsFormat::do_format(const std::vector<uint32_t> &offsets)
 
 
 // FormatCollector
+
+
+FormatCollector::FormatCollector()
+	: info_ {}
+{
+	// empty
+}
 
 
 void FormatCollector::add(const FileReaderDescriptor &descriptor)
