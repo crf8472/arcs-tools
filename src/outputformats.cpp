@@ -595,7 +595,7 @@ void AlbumChecksumsTableFormat::format(const Checksums &checksums,
 		+ this->length();
 
 	this->validate_table_dimensions(checksums.size() /*rows*/,
-			md_columns + checksums[0].keys().size()  /*columns*/);
+			md_columns + checksums[0].types().size()  /*columns*/);
 
 	// TOC
 	this->add_data(toc);
@@ -619,7 +619,7 @@ void AlbumChecksumsTableFormat::format(const Checksums &checksums,
 	int md_columns = this->filename() + this->length();
 
 	this->validate_table_dimensions(checksums.size() /*rows*/,
-			md_columns + checksums[0].keys().size()  /*columns*/);
+			md_columns + checksums[0].types().size()  /*columns*/);
 
 
 	// Add filenames and lengths
@@ -645,7 +645,7 @@ void AlbumChecksumsTableFormat::add_checksums(const int start_col,
 		const Checksums &checksums)
 {
 	int col_idx = start_col;
-	for (const auto& type : checksums[0].keys()) // iterate checksum types
+	for (const auto& type : checksums[0].types()) // iterate checksum types
 	{
 		this->set_column_name(col_idx, arcstk::checksum::type_name(type));
 		this->set_column_width(col_idx, 8);
