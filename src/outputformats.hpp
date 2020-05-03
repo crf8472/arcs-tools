@@ -419,12 +419,13 @@ public:
 protected:
 
 	/**
-	 * \brief Format the toc data.
+	 * \brief Returns the track lengths of \c checksums in track order
 	 *
-	 * \param[in] toc       TOC of the medium
+	 * \param[in] checksums Checksums to get the track lengths from
+	 *
+	 * \return The track lengths of \c checksums
 	 */
-	virtual void add_data(const TOC &toc)
-	= 0;
+	std::vector<int32_t> get_lengths(const Checksums &checksums) const;
 
 	/**
 	 * \brief Format the toc data.
@@ -474,8 +475,6 @@ public:
 
 
 protected:
-
-	void add_data(const TOC &toc) override;
 
 	void add_data(const std::vector<std::string> &filenames,
 		const std::vector<int32_t> &offsets,

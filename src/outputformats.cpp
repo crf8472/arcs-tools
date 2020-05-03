@@ -444,6 +444,19 @@ void WithMetadataFlagMethods::set_filename(const bool &filename)
 }
 
 
+std::vector<int32_t> WithMetadataFlagMethods::get_lengths(
+		const Checksums &checksums) const
+{
+	std::vector<int32_t> checksum_lengths{};
+	checksum_lengths.reserve(checksums.size());
+	for (const auto& checksum : checksums)
+	{
+		checksum_lengths.push_back(checksum.length());
+	}
+	return checksum_lengths;
+}
+
+
 // AlbumTableBase
 
 
@@ -462,21 +475,6 @@ AlbumTableBase::AlbumTableBase(const int rows, const int columns,
 	, StringTableBase(rows, columns)
 {
 	// empty
-}
-
-
-void AlbumTableBase::add_data(const TOC &toc)
-{
-	std::vector<int32_t /* lba_count */> parsed_lengths{};
-	parsed_lengths.reserve(toc.track_count());
-
-	for (int row_idx = 0; row_idx < toc.track_count(); ++row_idx)
-	{
-		parsed_lengths.push_back(toc.parsed_length(row_idx+1));
-	}
-
-	this->add_data(arcstk::toc::get_filenames(toc),
-		arcstk::toc::get_offsets(toc), parsed_lengths);
 }
 
 
@@ -543,15 +541,6 @@ void AlbumTableBase::add_data(const std::vector<std::string> &filenames,
 			this->update_cell(row_idx, col_idx, lengths[row_idx]);
 		}
 
-		// Commented out: print missing last length non-numerical
-		//auto last_length = toc.parsed_length(toc.track_count());
-		//if (last_length)
-		//{
-		//	this->update_cell(toc.track_count()-1, col_idx, last_length);
-		//}// else
-		//{
-		//	this->update_cell(toc.track_count()-1, col_idx, "---");
-		//}
 		++col_idx;
 	}
 }
@@ -595,10 +584,12 @@ void AlbumChecksumsTableFormat::format(const Checksums &checksums,
 		+ this->length();
 
 	this->validate_table_dimensions(checksums.size() /*rows*/,
-			md_columns + checksums[0].types().size()  /*columns*/);
+			md_columns + checksums[0].types().size() /*columns*/);
 
-	// TOC
-	this->add_data(toc);
+	// Names, Offsets, Lengths
+	this->add_data(arcstk::toc::get_filenames(toc),
+			arcstk::toc::get_offsets(toc),
+			get_lengths(checksums));
 
 	// Checksums
 	this->add_checksums(md_columns, checksums);
@@ -619,19 +610,10 @@ void AlbumChecksumsTableFormat::format(const Checksums &checksums,
 	int md_columns = this->filename() + this->length();
 
 	this->validate_table_dimensions(checksums.size() /*rows*/,
-			md_columns + checksums[0].types().size()  /*columns*/);
-
+			md_columns + checksums[0].types().size() /*columns*/);
 
 	// Add filenames and lengths
-	std::vector<int32_t> actual_lengths{};
-	actual_lengths.reserve(checksums.size());
-
-	for (const auto& checksum : checksums)
-	{
-		actual_lengths.push_back(checksum.length());
-	}
-	this->add_data(filenames, std::vector<int32_t>(), actual_lengths);
-
+	this->add_data(filenames, std::vector<int32_t>(), get_lengths(checksums));
 
 	// Checksums
 	this->add_checksums(md_columns, checksums);
@@ -711,8 +693,12 @@ void AlbumMatchTableFormat::format(
 	this->validate_table_dimensions(checksums.size() /*rows*/,
 			md_columns + 2  /*columns*/);
 
-	// Add table content
-	this->add_data(*toc);
+	// Add Names, Offsets, Lengths
+	this->add_data(arcstk::toc::get_filenames(toc),
+			arcstk::toc::get_offsets(toc),
+			get_lengths(checksums));
+
+	// Add Mine Checksums, Their Checksums, Match
 	this->add_checksums_match(md_columns, checksums, response, match, block,
 			version);
 
@@ -738,19 +724,11 @@ void AlbumMatchTableFormat::format(
 			md_columns + 2  /*columns*/);
 
 	// Add filenames and lengths
-	std::vector<int32_t> actual_lengths{};
-	actual_lengths.reserve(checksums.size());
-
-	for (const auto& checksum : checksums)
-	{
-		actual_lengths.push_back(checksum.length());
-	}
-
-	// Add table content
 	this->add_data(filenames,
 			std::vector<int32_t>(checksums.size()) /* empty */,
-			actual_lengths);
+			get_lengths(checksums));
 
+	// Add match info
 	this->add_checksums_match(md_columns, checksums, response, match, block,
 			version);
 
