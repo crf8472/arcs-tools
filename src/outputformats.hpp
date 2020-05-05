@@ -428,13 +428,24 @@ protected:
 	std::vector<int32_t> get_lengths(const Checksums &checksums) const;
 
 	/**
+	 * \brief Return length of longest string
+	 *
+	 * \param[in] list List of strings
+	 *
+	 * \return Length of longest string in \c list.
+	 */
+	int optimal_width(const std::vector<std::string> &list) const;
+
+	/**
 	 * \brief Format the toc data.
 	 *
 	 * \param[in] filenames Filenames
 	 * \param[in] offsets   Offsets
 	 * \param[in] lengths   Lengths
+	 *
+	 * \return Number of currently used metadata columns
 	 */
-	virtual void add_data(const std::vector<std::string> &filenames,
+	virtual int add_metadata(const std::vector<std::string> &filenames,
 		const std::vector<int32_t> &offsets,
 		const std::vector<int32_t> &lengths)
 	= 0;
@@ -476,7 +487,7 @@ public:
 
 protected:
 
-	void add_data(const std::vector<std::string> &filenames,
+	int add_metadata(const std::vector<std::string> &filenames,
 		const std::vector<int32_t> &offsets,
 		const std::vector<int32_t> &lengths) override;
 };
@@ -548,14 +559,9 @@ private:
 	void add_checksums(const int start_col, const Checksums &checksums);
 
 	/**
-	 * \brief Internal line buffer
-	 */
-	std::unique_ptr<DefaultLines> lines_;
-
-	/**
 	 * \brief Hexadecimal layout used for Checksums columns
 	 */
-	HexLayout hexl_;
+	HexLayout hexlayout_;
 };
 
 
@@ -627,6 +633,10 @@ private:
 	 *
 	 * \param[in] start_col Column to start
 	 * \param[in] checksums The Checksums to add
+	 * \param[in] response  The Response to add
+	 * \param[in] match     The Match to a block from
+	 * \param[in] block     The matched block to add
+	 * \param[in] version   The ARCS version to add
 	 */
 	void add_checksums_match(const int start_col,
 		const Checksums &checksums, const ARResponse &response,

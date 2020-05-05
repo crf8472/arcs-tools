@@ -15,6 +15,7 @@
 
 #include <cstdint>
 #include <deque>
+#include <istream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -244,7 +245,7 @@ private:
 /**
  * \brief Interface for formatting strings
  */
-class StringLayout
+class NumberLayout
 {
 
 public:
@@ -252,15 +253,7 @@ public:
 	/**
 	 * \brief Virtual default destructor
 	 */
-	virtual ~StringLayout() noexcept;
-
-	/**
-	 * \brief Layout a string
-	 *
-	 * \param[in] text  Text to format
-	 * \param[in] width Width for format
-	 */
-	std::string format(const std::string &text, const int width) const;
+	virtual ~NumberLayout() noexcept;
 
 	/**
 	 * \brief Layout an unsigned 32 bit integer
@@ -274,17 +267,7 @@ public:
 private:
 
 	/**
-	 * \brief Implements StringLayout::format(const std::string &text, const int width) const
-	 *
-	 * \param[in] text  Text to format
-	 * \param[in] width Width for format
-	 */
-	virtual std::string do_format(const std::string &text, const int width)
-		const
-	= 0;
-
-	/**
-	 * \brief Implements StringLayout::(const uint32_t &number, const int width) const
+	 * \brief Implements NumberLayout::(const uint32_t &, const int) const
 	 *
 	 * \param[in] number  Number to format
 	 * \param[in] width   Width to format
@@ -297,13 +280,9 @@ private:
 /**
  * \brief Default layout: unaltered right numbers, unaltered left text
  */
-class DefaultLayout : public StringLayout
+class DefaultLayout : public NumberLayout
 {
-
 private:
-
-	std::string do_format(const std::string &text, const int width) const
-		override;
 
 	std::string do_format(const uint32_t &number, const int width) const
 		override;
@@ -313,7 +292,7 @@ private:
 /**
  * \brief Hexadecimal numbers, unaltered text
  */
-class HexLayout : public StringLayout
+class HexLayout : public NumberLayout
 {
 
 public:
@@ -354,9 +333,6 @@ public:
 
 private:
 
-	std::string do_format(const std::string &text, const int width) const
-		override;
-
 	std::string do_format(const uint32_t &number, const int width) const
 		override;
 
@@ -366,6 +342,10 @@ private:
 	uint8_t flags_;
 };
 
+
+class StringTable;
+
+std::ostream& operator << (std::ostream &o, const StringTable &table);
 
 /**
  * \brief A table with formatted columns
@@ -381,31 +361,26 @@ public:
 	virtual ~StringTable() noexcept;
 
 	/**
-	 * \brief Set the column name
+	 * \brief Returns the number of rows (without header)
 	 *
-	 * \param[in] col  The column id
-	 * \param[in] name The column name
+	 * \return The number of rows
 	 */
-	void set_column_name(const int col, const std::string &name);
+	std::size_t rows() const;
+
+	/**
+	 * \brief Returns the number of columns
+	 *
+	 * \return The number of columns
+	 */
+	std::size_t columns() const;
 
 	/**
 	 * \brief Set the column width
 	 *
-	 * \param[in] col  The column id
-	 * \param[in] width Widht of the column
+	 * \param[in] col   Column index
+	 * \param[in] width Width of the column
 	 */
-	void set_column_width(const int col, const int &width);
-
-	/**
-	 * \brief Get name of a column
-	 *
-	 * \param[in] col The column to get the name of
-	 *
-	 * \return Name of the column
-	 *
-	 * \throws std::exception If col > columns or col < 0.
-	 */
-	std::string column_name(const int col) const;
+	void set_width(const int col, const int &width);
 
 	/**
 	 * \brief Get width of a column
@@ -414,16 +389,45 @@ public:
 	 *
 	 * \return Width of the column
 	 *
-	 * \throws std::exception If col > columns or col < 0.
+	 * \throws std::out_of_range If col > columns() or col < 0.
 	 */
-	int column_width(const int col) const;
+	int width(const int col) const;
 
 	/**
-	 * \brief Returns the number of columns
+	 * \brief Set alignment for the specified column
 	 *
-	 * \return The number of columns
+	 * \param[in] col   Column index
+	 * \param[in] align Alignment
 	 */
-	std::size_t columns() const;
+	void set_alignment(const int col, const bool align);
+
+	/**
+	 * \brief Alignment of the specified column
+	 *
+	 * \param[in] col   Column index
+	 *
+	 * \return Alignment of this column
+	 */
+	bool alignment(const int col) const;
+
+	/**
+	 * \brief Set the column name
+	 *
+	 * \param[in] col   Column index
+	 * \param[in] title The column title
+	 */
+	void set_title(const int col, const std::string &title);
+
+	/**
+	 * \brief Get name of a column
+	 *
+	 * \param[in] col The column to get the name of
+	 *
+	 * \return Name of the column
+	 *
+	 * \throws std::out_of_range If col > columns() or col < 0.
+	 */
+	std::string title(const int col) const;
 
 	/**
 	 * \brief Set the column delimiter symbol
@@ -440,77 +444,27 @@ public:
 	std::string column_delimiter() const;
 
 	/**
-	 * \brief Register a cell format for the specified column.
-	 *
-	 * This does not affect the header (row 0) but only rows with actual values.
-	 *
-	 * \param[in] col    The column ID
-	 * \param[in] layout The layout
-	 */
-	void register_layout(const int col, const StringLayout *layout);
-
-	/**
-	 * \brief Return the layout of the specified column
-	 *
-	 * \returns The layout of the specified column
-	 */
-	const StringLayout* layout(const int col) const;
-
-	/**
-	 * \brief Set alignment for the specified column
-	 *
-	 * \param[in] col   The column ID
-	 * \param[in] align Alignment
-	 */
-	void set_alignment(const int col, const bool align);
-
-	/**
-	 * \brief Alignment of the specified column
-	 *
-	 * \param[in] col   The column ID
-	 *
-	 * \return Alignment of this column
-	 */
-	bool alignment(const int col) const;
-
-	/**
-	 * \brief Returns the number of rows (without header)
-	 *
-	 * \return The number of rows
-	 */
-	std::size_t rows() const;
-
-	/**
 	 * \brief Updates an existing cell.
 	 *
-	 * \param[in] col  Column number
-	 * \param[in] row  Row number
+	 * \param[in] col  Column index
+	 * \param[in] row  Row index
 	 * \param[in] text New cell text
 	 *
-	 * \throws std::exception If col > columns or col < 0.
+	 * \throws std::out_of_range If col > columns() or col < 0.
 	 */
 	void update_cell(const int row, const int col, const std::string &text);
 
 	/**
-	 * \brief Updates an existing cell.
-	 *
-	 * \param[in] col    Column number
-	 * \param[in] row    Row number
-	 * \param[in] number New number in cell
-	 *
-	 * \throws std::exception If col > columns or col < 0.
-	 */
-	void update_cell(const int row, const int col, const int &number);
-
-	/**
 	 * \brief Returns the content of the specified cell.
 	 *
-	 * \param[in] col  Column number
-	 * \param[in] row  Row number
+	 * \param[in] col  Column index
+	 * \param[in] row  Row index
 	 *
-	 * \throws std::exception If col > columns or col < 0.
+	 * \throws std::out_of_range If col > columns() or col < 0.
 	 */
 	std::string cell(const int row, const int col) const;
+
+	void resize(const int rows, const int cols);
 
 	/**
 	 * \brief Print the table
@@ -519,53 +473,46 @@ public:
 	 */
 	std::unique_ptr<Lines> print() const;
 
+	/**
+	 * \brief Access operator
+	 *
+	 * \param[in] row Row index
+	 * \param[in] col Column index
+	 *
+	 * \return Formatted cell content
+	 */
+	std::string operator() (const int row, const int col) const;
+
+	friend std::ostream& operator<< (std::ostream &o, const StringTable &table);
+
+
+protected:
+
+	/**
+	 * \brief Perform a bounds check and throw std::out_of_range on illegal
+	 * values.
+	 *
+	 * \param[in] row  Row index
+	 * \param[in] col  Column index
+	 *
+	 * \throws std::out_of_range If col > columns() or col < 0.
+	 * \throws std::out_of_range If row > rows() or row < 0.
+	 */
+	void bounds_check(const int row, const int col) const;
+
 
 private:
 
 	/**
-	 * \brief Implements StringTable::
+	 * \brief Implements StringTable::rows()
 	 *
-	 * \param[in] col  The column id
-	 * \param[in] name The column name
+	 * \return The number of rows
 	 */
-	virtual void do_set_column_name(const int col, const std::string &name)
+	virtual std::size_t do_rows() const
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::
-	 *
-	 * \param[in] col  The column id
-	 * \param[in] width Widht of the column
-	 */
-	virtual void do_set_column_width(const int col, const int &width)
-	= 0;
-
-	/**
-	 * \brief Implements StringTable::
-	 *
-	 * \param[in] col The column to get the name of
-	 *
-	 * \return Name of the column
-	 *
-	 * \throws std::exception If col > columns or col < 0.
-	 */
-	virtual std::string do_column_name(const int col) const
-	= 0;
-
-	/**
-	 * \brief Implements StringTable::
-	 *
-	 * \param[in] col The column to get the width of
-	 *
-	 * \return Width of the column
-	 *
-	 * \throws std::exception If col > columns or col < 0.
-	 */
-	virtual int do_column_width(const int col) const
-	= 0;
-
-	/**
-	 * \brief Implements StringTable::
+	 * \brief Implements StringTable::columns()
 	 *
 	 * \return The number of columns
 	 */
@@ -573,7 +520,68 @@ private:
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::
+	 * \brief Implements StringTable::set_width(const int, const int)
+	 *
+	 * \param[in] col  The column id
+	 * \param[in] width Widht of the column
+	 */
+	virtual void do_set_width(const int col, const int width)
+	= 0;
+
+	/**
+	 * \brief Implements StringTable::width(const int)
+	 *
+	 * \param[in] col The column to get the width of
+	 *
+	 * \return Width of the column
+	 *
+	 * \throws std::out_of_range If col > columns() or col < 0.
+	 */
+	virtual int do_width(const int col) const
+	= 0;
+
+	/**
+	 * \brief Implements StringTable::set_alignment(const int, const bool)
+	 *
+	 * \param[in] col   Column index
+	 * \param[in] align Alignment
+	 */
+	virtual void do_set_alignment(const int col, const bool align)
+	= 0;
+
+	/**
+	 * \brief Implements StringTable::alignment(const int)
+	 *
+	 * \param[in] col   Column index
+	 *
+	 * \return Alignment of this column
+	 */
+	virtual bool do_alignment(const int col) const
+	= 0;
+
+	/**
+	 * \brief Implements StringTable::set_title(const int, const std::string&)
+	 *
+	 * \param[in] col  Column index
+	 * \param[in] name Column title
+	 */
+	virtual void do_set_title(const int col, const std::string &name)
+	= 0;
+
+	/**
+	 * \brief Implements StringTable::title(const int)
+	 *
+	 * \param[in] col The column to get the title of
+	 *
+	 * \return Title of the column
+	 *
+	 * \throws std::out_of_range If col > columns or col < 0.
+	 */
+	virtual std::string do_title(const int col) const
+	= 0;
+
+	/**
+	 * \brief Implements StringTable::set_column_delimiter(const std::string&)
 	 *
 	 * \param[in] delim The column delimiter symbol
 	 */
@@ -581,7 +589,7 @@ private:
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::
+	 * \brief Implements StringTable::column_delimiter()
 	 *
 	 * \return The column delimiter
 	 */
@@ -591,84 +599,42 @@ private:
 	/**
 	 * \brief Implements StringTable::
 	 *
-	 * \param[in] col    The column ID
-	 * \param[in] format The format
-	 */
-	virtual void do_register_layout(const int col, const StringLayout *format)
-	= 0;
-
-	/**
-	 * \brief Implements StringTable::
-	 *
-	 * \returns The format of the specified column
-	 */
-	virtual const StringLayout* do_layout(const int col) const
-	= 0;
-
-	/**
-	 * \brief Implements StringTable::
-	 *
-	 * \param[in] col   The column ID
-	 * \param[in] align Alignment
-	 */
-	virtual void do_set_alignment(const int col, const bool align)
-	= 0;
-
-	/**
-	 * \brief Implements StringTable::
-	 *
-	 * \param[in] col   The column ID
-	 *
-	 * \return Alignment of this column
-	 */
-	virtual bool do_alignment(const int col) const
-	= 0;
-
-	/**
-	 * \brief Implements StringTable::
-	 *
-	 * \return The number of rows
-	 */
-	virtual std::size_t do_rows() const
-	= 0;
-
-	/**
-	 * \brief Implements StringTable::
-	 *
-	 * \param[in] row  Row number
-	 * \param[in] col  Column number
+	 * \param[in] row  Row index
+	 * \param[in] col  Column index
 	 * \param[in] text New cell text
 	 *
-	 * \throws std::exception If col > columns or col < 0.
+	 * \throws std::out_of_range If col > columns() or col < 0.
 	 */
 	virtual void do_update_cell(const int row, const int col,
 			const std::string &text)
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::
+	 * \brief Implements StringTable::cell(const int, const int)
 	 *
-	 * \param[in] row    Row number
-	 * \param[in] col    Column number
-	 * \param[in] number New number in cell
+	 * \param[in] row  Row index
+	 * \param[in] col  Column index
 	 *
-	 * \throws std::exception If col > columns or col < 0.
+	 * \throws std::out_of_range If col > columns() or col < 0.
+	 *
+	 * \return Content of cell(row, col)
 	 */
-	virtual void do_update_cell(const int row, const int col,
-			const int &number)
+	virtual std::string do_cell(const int row, const int col) const
+	= 0;
+
+	virtual void do_resize(const int rows, const int cols)
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::
+	 * \brief Perform a bounds check
 	 *
-	 * \param[in] row  Row number
-	 * \param[in] col  Column number
+	 * \param[in] row  Row index
+	 * \param[in] col  Column index
 	 *
-	 * \throws std::exception If col > columns or col < 0.
-	 *
-	 * \return Content of cell (row, col)
+	 * \throws std::out_of_range If col > columns() or col < 0.
+	 * \throws std::out_of_range If row > rows() or row < 0.
 	 */
-	virtual std::string do_cell(const int row, const int col) const
+	virtual void do_bounds_check(const int row, const int col) const
 	= 0;
 
 	/**
@@ -719,40 +685,29 @@ protected:
 
 private:
 
-	void do_set_column_name(const int col, const std::string &name) override;
-
-	void do_set_column_width(const int col, const int &width) override;
-
-	std::string do_column_name(const int col) const override;
-
-	int do_column_width(const int col) const override;
-
+	std::size_t do_rows() const override;
 	std::size_t do_columns() const override;
 
-	void do_set_column_delimiter(const std::string &delim) override;
-
-	std::string do_column_delimiter() const override;
-
-	void do_register_layout(const int col, const StringLayout *layout) override;
-
-	const StringLayout* do_layout(const int col) const override;
+	void do_set_width(const int col, const int width) override;
+	int do_width(const int col) const override;
 
 	void do_set_alignment(const int col, const bool align) override;
-
 	bool do_alignment(const int col) const override;
 
-	std::size_t do_rows() const override;
+	void do_set_title(const int col, const std::string &name) override;
+	std::string do_title(const int col) const override;
+
+	void do_set_column_delimiter(const std::string &delim) override;
+	std::string do_column_delimiter() const override;
 
 	void do_update_cell(const int row, const int col,
 			const std::string &text) override;
-
-	void do_update_cell(const int row, const int col, const int &number)
-		override;
-
 	std::string do_cell(const int row, const int col) const override;
 
-	std::unique_ptr<Lines> do_print() const override;
+	void do_resize(const int rows, const int cols) override;
+	void do_bounds_check(const int row, const int col) const override;
 
+	std::unique_ptr<Lines> do_print() const override;
 
 	// forward declaration
 	class Impl;

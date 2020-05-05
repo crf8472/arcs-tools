@@ -301,30 +301,27 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 }
 
 
-std::unique_ptr<AlbumChecksumsTableFormat> ARCalcApplication::create_format(
-		const Options &options, const Checksums &checksums) const
+std::unique_ptr<AlbumChecksumsTableFormat> ARCalcApplication::result_table(
+		const Options &options) const
 {
-	if (std::string metafilename = options.get(ARCalcOptions::METAFILE);
-			metafilename.empty())
+	bool show_tracks    = false;
+	bool show_offsets   = false;
+	bool show_lengths   = true;
+	bool show_filenames = false;
+
+	if (options.get(ARCalcOptions::METAFILE).empty())
 	{
 		// Without Offsets, ARId and TOC
-
-		return std::make_unique<AlbumChecksumsTableFormat>(
-				options.get_arguments().size(),
-				2 + checksums[0].size(), // Checksum types + 2 metadata columns
-				false, false, true, true); // length + filename
-
+		show_filenames = true;
 	} else
 	{
 		// With Offsets, ARId and TOC
-
-		return std::make_unique<AlbumChecksumsTableFormat>(
-				checksums.size(),
-				3 + checksums[0].size(), // Checksum types + 3 metadata columns
-				true, true, true, false); // no filenames
+		show_tracks  = true;
+		show_offsets = true;
 	}
 
-	return nullptr;
+	return std::make_unique<AlbumChecksumsTableFormat>(0, 0,
+				show_tracks, show_offsets, show_lengths, show_filenames);
 }
 
 
@@ -392,17 +389,21 @@ int ARCalcApplication::run_calculation(const Options &options)
 		this->fatal_error("Calculation returned no checksums");
 	}
 
-	auto format = this->create_format(options, checksums);
+	auto results = result_table(options);
 
 	if (toc)
 	{
-		format->format(checksums, arid, *toc);
+		// 3 metadata columns (track, offset, length)
+		results->resize(checksums.size(), 3 + checksums[0].size());
+		results->format(checksums, arid, *toc);
 	} else
 	{
-		format->format(checksums, options.get_arguments());
+		// 2 metadata columns (length, filename)
+		results->resize(options.get_arguments().size(), 2 + checksums[0].size());
+		results->format(checksums, options.get_arguments());
 	}
 
-	this->print(*format->lines(), options.get(ARCalcOptions::OUT));
+	output(*results, options.get(ARCalcOptions::OUT));
 
 	return EXIT_SUCCESS;
 }

@@ -88,6 +88,29 @@ void ARApplication::fatal_error(const std::string &message) const
 }
 
 
+void ARApplication::output(const StringTable &table) const
+{
+	// if (table.empty()) return;
+
+	std::cout << table;
+}
+
+
+void ARApplication::output(const StringTable &table, const std::string &filename)
+	const
+{
+	if (filename.empty())
+	{
+		output(table);
+		return;
+	}
+
+	std::ofstream out_file_stream;
+	out_file_stream.open(filename);
+	out_file_stream << table;
+}
+
+
 void ARApplication::print(const Lines &lines, const std::string &filename) const
 {
 	if (lines.empty())

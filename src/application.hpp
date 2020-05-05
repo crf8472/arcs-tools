@@ -92,6 +92,10 @@ protected:
 	 */
 	void fatal_error(const std::string &message) const;
 
+	void output(const StringTable &table, const std::string &filename) const;
+
+	void output(const StringTable &table) const;
+
 	/**
 	 * \brief Print lines to file or to stdout.
 	 *
@@ -102,7 +106,6 @@ protected:
 	 * \param[in] filename Optional name of outfile
 	 */
 	virtual void print(const Lines &lines, const std::string &filename) const;
-
 
 private:
 

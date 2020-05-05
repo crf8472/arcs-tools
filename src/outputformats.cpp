@@ -74,11 +74,11 @@ ARIdFormat::ARIdFormat(const bool &url, const bool &filename,
 	: WithInternalFlags(
 			0
 			| url
-			| (filename << 1)
+			| (filename    << 1)
 			| (track_count << 2)
-			| (disc_id_1 << 3)
-			| (disc_id_2 << 4)
-			| (cddb_id << 5)
+			| (disc_id_1   << 3)
+			| (disc_id_2   << 4)
+			| (cddb_id     << 5)
 		)
 	, lines_()
 {
@@ -457,6 +457,23 @@ std::vector<int32_t> WithMetadataFlagMethods::get_lengths(
 }
 
 
+int WithMetadataFlagMethods::optimal_width(const std::vector<std::string> &list)
+	const
+{
+	std::size_t col_width = 0;
+
+	for (const auto& entry : list)
+	{
+		if (entry.length() > col_width)
+		{
+			col_width = entry.length();
+		}
+	}
+
+	return col_width;
+}
+
+
 // AlbumTableBase
 
 
@@ -478,7 +495,7 @@ AlbumTableBase::AlbumTableBase(const int rows, const int columns,
 }
 
 
-void AlbumTableBase::add_data(const std::vector<std::string> &filenames,
+int AlbumTableBase::add_metadata(const std::vector<std::string> &filenames,
 		const std::vector<int32_t> &offsets,
 		const std::vector<int32_t> &lengths)
 {
@@ -486,31 +503,20 @@ void AlbumTableBase::add_data(const std::vector<std::string> &filenames,
 
 	if (this->track())
 	{
-		this->set_column_name(col_idx, "Track");
-		this->set_column_width(col_idx, this->column_name(col_idx).length());
+		this->set_title(col_idx, "Track");
+		this->set_width(col_idx, this->title(col_idx).length());
 
 		for (unsigned int row_idx = 0; row_idx < filenames.size(); ++row_idx)
 		{
-			this->update_cell(row_idx, col_idx, row_idx + 1);
+			this->update_cell(row_idx, col_idx, std::to_string(row_idx + 1));
 		}
 		++col_idx;
 	}
 
 	if (this->filename())
 	{
-		this->set_column_name(col_idx, "File");
-		unsigned int col_width = 0;
-
-		// Adjust column width to longest filename
-		for (const auto& file : filenames)
-		{
-			if (file.length() > col_width)
-			{
-				col_width = file.length();
-			}
-		}
-
-		this->set_column_width(col_idx, col_width);
+		this->set_title(col_idx, "File");
+		this->set_width(col_idx, optimal_width(filenames));
 
 		for (unsigned int row_idx = 0; row_idx < filenames.size(); ++row_idx)
 		{
@@ -521,28 +527,32 @@ void AlbumTableBase::add_data(const std::vector<std::string> &filenames,
 
 	if (this->offset())
 	{
-		this->set_column_name(col_idx, "Offset");
-		this->set_column_width(col_idx, 7);
+		this->set_title(col_idx, "Offset");
+		this->set_width(col_idx, 7);
 
 		for (unsigned int row_idx = 0; row_idx < filenames.size(); ++row_idx)
 		{
-			this->update_cell(row_idx, col_idx, offsets[row_idx]);
+			this->update_cell(row_idx, col_idx,
+					std::to_string(offsets[row_idx]));
 		}
 		++col_idx;
 	}
 
 	if (this->length())
 	{
-		this->set_column_name(col_idx, "Length");
-		this->set_column_width(col_idx, 7);
+		this->set_title(col_idx, "Length");
+		this->set_width(col_idx, 7);
 
 		for (unsigned int row_idx = 0; row_idx < filenames.size(); ++row_idx)
 		{
-			this->update_cell(row_idx, col_idx, lengths[row_idx]);
+			this->update_cell(row_idx, col_idx,
+					std::to_string(lengths[row_idx]));
 		}
 
 		++col_idx;
 	}
+
+	return col_idx;
 }
 
 
@@ -555,10 +565,10 @@ AlbumChecksumsTableFormat::AlbumChecksumsTableFormat(const int rows,
 	: WithMetadataFlagMethods(track, offset, length, filename)
 	, StringTableBase(rows, columns)
 	, AlbumTableBase(rows, columns, track, offset, length, filename)
-	, lines_()
-	, hexl_()
+	, hexlayout_()
 {
-	hexl_.set_uppercase(true);
+	hexlayout_.set_show_base(false);
+	hexlayout_.set_uppercase(true);
 }
 
 
@@ -568,58 +578,28 @@ AlbumChecksumsTableFormat::~AlbumChecksumsTableFormat() = default;
 void AlbumChecksumsTableFormat::format(const Checksums &checksums,
 		const ARId &arid, const TOC &toc) // TODO prefix!
 {
-	lines_ = std::make_unique<DefaultLines>();
-
 	// ARId
 	if (this->arid_format())
 	{
 		this->arid_format()->format(arid, "");
-		lines_->append(*this->arid_format()->lines());
+		//lines_->append(*this->arid_format()->lines());
+		// FIXME ARId is missing in output
 	}
 
-	// Determine number of columns
-
-	// Number of metadata columns
-	int md_columns = this->track() + this->filename() + this->offset()
-		+ this->length();
-
-	this->validate_table_dimensions(checksums.size() /*rows*/,
-			md_columns + checksums[0].types().size() /*columns*/);
-
-	// Names, Offsets, Lengths
-	this->add_data(arcstk::toc::get_filenames(toc),
+	// Add filenames, offsets, lengths
+	auto md_columns = this->add_metadata(arcstk::toc::get_filenames(toc),
 			arcstk::toc::get_offsets(toc),
 			get_lengths(checksums));
-
-	// Checksums
 	this->add_checksums(md_columns, checksums);
-
-	auto table_lines = this->print();
-	lines_->append(*table_lines);
 }
 
 
 void AlbumChecksumsTableFormat::format(const Checksums &checksums,
 		const std::vector<std::string> &filenames)
 {
-	lines_ = std::make_unique<DefaultLines>();
-
-	// Determine number of columns
-
-	// Number of metadata columns
-	int md_columns = this->filename() + this->length();
-
-	this->validate_table_dimensions(checksums.size() /*rows*/,
-			md_columns + checksums[0].types().size() /*columns*/);
-
 	// Add filenames and lengths
-	this->add_data(filenames, std::vector<int32_t>(), get_lengths(checksums));
-
-	// Checksums
+	auto md_columns = this->add_metadata(filenames, {}, get_lengths(checksums));
 	this->add_checksums(md_columns, checksums);
-
-	auto table_lines = this->print();
-	lines_->append(*table_lines);
 }
 
 
@@ -627,17 +607,17 @@ void AlbumChecksumsTableFormat::add_checksums(const int start_col,
 		const Checksums &checksums)
 {
 	int col_idx = start_col;
+
 	for (const auto& type : checksums[0].types()) // iterate checksum types
 	{
-		this->set_column_name(col_idx, arcstk::checksum::type_name(type));
-		this->set_column_width(col_idx, 8);
-		this->register_layout(col_idx, &hexl_);
+		this->set_title(col_idx, arcstk::checksum::type_name(type));
+		this->set_width(col_idx, 8); // TODO Magic number: 32 bit
 
-		// produce rows (checksums)
-		for (unsigned int row_idx = 0; row_idx < checksums.size(); ++row_idx)
+		for (std::size_t row_idx = 0; row_idx < checksums.size(); ++row_idx)
 		{
-			this->update_cell(row_idx, col_idx,
-					checksums[row_idx].get(type).value());
+			this->update_cell(row_idx, col_idx, hexlayout_.format(
+						checksums[row_idx].get(type).value(),
+						this->width(col_idx)));
 		}
 		++col_idx;
 	}
@@ -646,7 +626,7 @@ void AlbumChecksumsTableFormat::add_checksums(const int start_col,
 
 std::unique_ptr<Lines> AlbumChecksumsTableFormat::do_lines()
 {
-	return std::move(lines_);
+	return nullptr;
 }
 
 
@@ -687,14 +667,10 @@ void AlbumMatchTableFormat::format(
 	// Determine number of columns
 
 	// Number of metadata columns
-	int md_columns = this->track() + this->filename() + this->offset()
-		+ this->length();
-
-	this->validate_table_dimensions(checksums.size() /*rows*/,
-			md_columns + 2  /*columns*/);
+	int md_columns = track() + filename() + offset() + length();
 
 	// Add Names, Offsets, Lengths
-	this->add_data(arcstk::toc::get_filenames(toc),
+	this->add_metadata(arcstk::toc::get_filenames(toc),
 			arcstk::toc::get_offsets(toc),
 			get_lengths(checksums));
 
@@ -717,14 +693,10 @@ void AlbumMatchTableFormat::format(
 	// Determine number of columns
 
 	// Number of metadata columns
-	int md_columns = this->track() + this->filename() + this->offset()
-		+ this->length();
-
-	this->validate_table_dimensions(checksums.size() /*rows*/,
-			md_columns + 2  /*columns*/);
+	int md_columns = track() + filename() + offset() + length();
 
 	// Add filenames and lengths
-	this->add_data(filenames,
+	this->add_metadata(filenames,
 			std::vector<int32_t>(checksums.size()) /* empty */,
 			get_lengths(checksums));
 
@@ -743,13 +715,13 @@ void AlbumMatchTableFormat::add_checksums_match(const int start_col,
 {
 	int col_idx = start_col;
 
-	//this->set_column_name(col_idx, arcstk::checksum::type_name(cstype));
-	this->set_column_name(col_idx, "Local");
-	this->set_column_width(col_idx, 8);
-	this->register_layout(col_idx, &hexl_);
+	//this->set_title(col_idx, arcstk::checksum::type_name(cstype));
+	this->set_title(col_idx, "Local");
+	this->set_width(col_idx, 8);
+	//this->register_layout(col_idx, &hexl_);
 
-	this->set_column_name(col_idx + 1, "Accurate");
-	this->set_column_width(col_idx + 1, 8);
+	this->set_title(col_idx + 1, "Accurate");
+	this->set_width(col_idx + 1, 8);
 
 	ARCS_LOG_DEBUG << "Table initialized";
 	using type = arcstk::checksum::type;
@@ -761,7 +733,7 @@ void AlbumMatchTableFormat::add_checksums_match(const int start_col,
 		if (row_idx < checksums.size())
 		{
 			this->update_cell(row_idx, col_idx,
-				checksums[row_idx].get(cstype).value());
+				std::to_string(checksums[row_idx].get(cstype).value()));
 		} else
 		{
 			this->update_cell(row_idx, col_idx, "");
@@ -775,7 +747,7 @@ void AlbumMatchTableFormat::add_checksums_match(const int start_col,
 		{
 			// no match, show AccurateRip value
 			this->update_cell(row_idx, col_idx + 1,
-					Checksum(track.arcs()).value());
+					std::to_string(Checksum(track.arcs()).value()));
 		}
 
 		++row_idx;
@@ -1038,10 +1010,10 @@ FormatList::FormatList(const std::size_t entry_count)
 {
 	int col = -1;
 
-	this->set_column_name(++col, "Name");
-	this->set_column_name(++col, "Short Desc.");
-	this->set_column_name(++col, "Lib");
-	this->set_column_name(++col, "Version");
+	this->set_title(++col, "Name");
+	this->set_title(++col, "Short Desc.");
+	this->set_title(++col, "Lib");
+	this->set_title(++col, "Version");
 }
 
 
@@ -1070,3 +1042,4 @@ std::unique_ptr<Lines> FormatList::do_lines()
 {
 	return this->print();
 }
+
