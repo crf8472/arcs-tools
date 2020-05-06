@@ -466,37 +466,14 @@ std::vector<int32_t> WithMetadataFlagMethods::get_lengths(
 }
 
 
-int WithMetadataFlagMethods::optimal_width(const std::vector<std::string> &list)
-	const
-{
-	std::size_t width = 0;
-
-	for (const auto& entry : list)
-	{
-		if (entry.length() > width)
-		{
-			width = entry.length();
-		}
-	}
-
-	return width;
-}
-
-
 // ChecksumsResultPrinter
 
 
 void ChecksumsResultPrinter::out(std::ostream &out, const Checksums &checksums,
+		const std::vector<std::string> &filenames,
 		const TOC &toc, const ARId &arid)
 {
-	this->do_out(out, checksums, toc, arid);
-}
-
-
-void ChecksumsResultPrinter::out(std::ostream &out, const Checksums &checksums,
-			const std::vector<std::string> &strings)
-{
-	this->do_out(out, checksums, strings);
+	this->do_out(out, checksums, filenames, toc, arid);
 }
 
 
@@ -584,7 +561,7 @@ int AlbumTableBase::add_metadata(const std::vector<std::string> &filenames,
 	if (this->filename())
 	{
 		this->set_title(col_idx, "File");
-		this->set_width(col_idx, optimal_width(filenames));
+		//this->set_width(col_idx, optimal_width(filenames));
 
 		for (std::size_t row_idx = 0; row_idx < filenames.size(); ++row_idx)
 		{
@@ -725,7 +702,9 @@ void AlbumChecksumsTableFormat::setup_metadata_cols()
 
 
 void AlbumChecksumsTableFormat::do_out(std::ostream &out,
-		const Checksums &checksums, const TOC &toc, const ARId &/*arid*/)
+		const Checksums &checksums,
+		const std::vector<std::string> &filenames,
+		const TOC &toc, const ARId &/*arid*/)
 {
 	const auto& defined_types = arcstk::checksum::types;
 
@@ -756,7 +735,7 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 	if (filename())
 	{
 		assign_type(col, COL_TYPE::FILENAME);
-		set_width(col, optimal_width(arcstk::toc::get_filenames(toc)));
+		set_width(col, optimal_width(filenames));
 		++col;
 	}
 	if (offset())   { assign_type(col, COL_TYPE::OFFSET);   ++col; }
@@ -800,116 +779,12 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 			} else
 			if (filename() and type_of(col) == COL_TYPE::FILENAME)
 			{
-				cell = toc.filename(trackno);
+				cell = filenames.at(row);
 			} else
 			if (offset()   and type_of(col) == COL_TYPE::OFFSET)
 			{
 				cell = std::to_string(toc.offset(trackno));
 			} else
-			if (length()   and type_of(col) == COL_TYPE::LENGTH)
-			{
-				cell = std::to_string(checksums[row].length());
-			} else
-			{
-				auto type = types_to_print[col - md_offset];
-
-				cell = hexlayout_.format(checksums[row].get(type).value(),
-						width(col));
-			}
-
-			out << std::setw(width(col))
-				<< (alignment(col) > 0 ? std::left : std::right)
-				<< cell
-				<< column_delimiter();
-		}
-		out << std::endl;
-	}
-}
-
-
-void AlbumChecksumsTableFormat::do_out(std::ostream &out,
-		const Checksums &checksums,
-		const std::vector<std::string> &filenames)
-{
-	const auto& defined_types = arcstk::checksum::types;
-
-	// Assume identical type sets in each track
-	const auto& used_types    = checksums[0].types();
-
-	// Construct types_to_print as list of all used types in the order they
-	// appear in arcstk::checksum::types
-	using cstype = arcstk::checksum::type;
-	std::vector<cstype> types_to_print{};
-	types_to_print.reserve(defined_types.size());
-	const auto absent { used_types.end() };
-	std::copy_if(used_types.begin(), used_types.end(),
-			std::back_inserter(types_to_print),
-			[used_types, absent](const cstype& t)
-			{
-				return used_types.find(t) != absent;
-			});
-
-	resize(1/*titles*/ + checksums.size(),
-			total_metadata_columns() + used_types.size());
-
-	// Assign column types to columns
-
-	std::size_t col = 0;
-
-	//if (track())    { assign_type(col, COL_TYPE::TRACK);    ++col; }
-	if (filename())
-	{
-		assign_type(col, COL_TYPE::FILENAME);
-		set_width(col, optimal_width(filenames));
-		++col;
-	}
-	//if (offset())   { assign_type(col, COL_TYPE::OFFSET);   ++col; }
-	if (length())   { assign_type(col, COL_TYPE::LENGTH);   ++col; }
-
-	const auto md_offset = col;
-
-	auto type_to_print { types_to_print.cbegin() };
-	while (col < columns() and type_to_print != types_to_print.cend())
-	{
-		assign_type(col, COL_TYPE::CHECKSUM);
-		set_title(col, arcstk::checksum::type_name(*type_to_print));
-
-		++col;
-		++type_to_print;
-	}
-	setup_metadata_cols();
-
-	// Print Column titles
-
-	for (col = 0; col < columns(); ++col)
-	{
-		out << std::setw(width(col)) << std::left << title(col)
-			<< column_delimiter();
-	}
-	out << std::endl;
-
-	// Row contents
-
-	using COL_TYPE = AlbumTableBase::COL_TYPE;
-	std::string cell{};
-	int trackno = 1;;
-
-	for (std::size_t row = 0; row < rows() - 1; ++row, ++trackno) // print row
-	{
-		for (col = 0; col < columns(); ++col) // print cell
-		{
-			//if (track()    and type_of(col) == COL_TYPE::TRACK)
-			//{
-			//	cell = std::to_string(trackno);
-			//} else
-			if (filename() and type_of(col) == COL_TYPE::FILENAME)
-			{
-				cell = filenames.at(row);
-			} else
-			//if (offset()   and type_of(col) == COL_TYPE::OFFSET)
-			//{
-			//	cell = std::to_string(toc.offset(trackno));
-			//} else
 			if (length()   and type_of(col) == COL_TYPE::LENGTH)
 			{
 				cell = std::to_string(checksums[row].length());

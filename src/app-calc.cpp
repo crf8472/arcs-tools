@@ -410,13 +410,11 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 	auto format = configure_format(options);
 
-	if (toc)
-	{
-		format->out(out_stream, checksums, *toc, arid);
-	} else
-	{
-		format->out(out_stream, checksums, options.get_arguments()/*filenames*/);
-	}
+	auto filenames = toc
+		? arcstk::toc::get_filenames(toc)
+		: options.get_arguments();
+
+	format->out(out_stream, checksums, filenames, *toc, arid);
 
 	return EXIT_SUCCESS;
 }

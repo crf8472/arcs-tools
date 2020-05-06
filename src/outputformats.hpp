@@ -429,15 +429,6 @@ protected:
 	std::vector<int32_t> get_lengths(const Checksums &checksums) const;
 
 	/**
-	 * \brief Return length of longest string
-	 *
-	 * \param[in] list List of strings
-	 *
-	 * \return Length of longest string in \c list.
-	 */
-	int optimal_width(const std::vector<std::string> &list) const;
-
-	/**
 	 * \brief Format the toc data.
 	 *
 	 * \param[in] filenames Filenames
@@ -459,20 +450,15 @@ public:
 
 	virtual ~ChecksumsResultPrinter() = default;
 
-	void out(std::ostream &out, const Checksums &checksums, const TOC &toc,
-			const ARId &arid);
-
-	void out(std::ostream &o, const Checksums &checksums,
-			const std::vector<std::string> &strings);
+	void out(std::ostream &out, const Checksums &checksums,
+			const std::vector<std::string> &filenames,
+			const TOC &toc, const ARId &arid);
 
 private:
 
 	virtual void do_out(std::ostream &out, const Checksums &checksums,
+			const std::vector<std::string> &filenames,
 			const TOC &toc, const ARId &arid)
-	= 0;
-
-	virtual void do_out(std::ostream &o, const Checksums &checksums,
-			const std::vector<std::string> &strings)
 	= 0;
 };
 
@@ -552,7 +538,14 @@ public:
 
 protected:
 
+	/**
+	 * \brief Convert from COL_TYPE to int
+	 */
 	int convert_from(const COL_TYPE type) const;
+
+	/**
+	 * \brief Convert to COL_TYPE from int
+	 */
 	COL_TYPE convert_to(const int type) const;
 
 	/**
@@ -619,10 +612,8 @@ private:
 	std::unique_ptr<Lines> do_lines() override;
 
 	void do_out(std::ostream &out, const Checksums &checksums,
+			const std::vector<std::string> &filenames,
 			const TOC &toc, const ARId &arid) override;
-
-	void do_out(std::ostream &o, const Checksums &checksums,
-			const std::vector<std::string> &strings) override;
 
 	/**
 	 * \brief Apply type specific formattings to columns

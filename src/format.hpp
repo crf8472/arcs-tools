@@ -20,6 +20,10 @@
 #include <string>
 #include <vector>
 
+#ifndef __LIBARCSTK_IDENTIFIER_HPP__
+#include <arcstk/identifier.hpp>
+#endif
+
 /**
  * \brief A sequence of lines formatted for output.
  */
@@ -341,6 +345,26 @@ private:
 	 */
 	uint8_t flags_;
 };
+
+
+/**
+ * \brief Minimal fitting width (= longest entry) of a string column
+ */
+template<class Container, typename = arcstk::IsFilenameContainer<Container>>
+inline int optimal_width(Container&& list)
+{
+	std::size_t width = 0;
+
+	for (const auto& entry : list)
+	{
+		if (entry.length() > width)
+		{
+			width = entry.length();
+		}
+	}
+
+	return width;
+}
 
 
 class StringTable;
