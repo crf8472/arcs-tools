@@ -380,7 +380,7 @@ public:
 	 * \param[in] col   Column index
 	 * \param[in] width Width of the column
 	 */
-	void set_width(const int col, const int &width);
+	void set_width(const int col, const int width);
 
 	/**
 	 * \brief Get width of a column

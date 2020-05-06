@@ -253,7 +253,7 @@ std::size_t StringTable::columns() const
 }
 
 
-void StringTable::set_width(const int col, const int &width)
+void StringTable::set_width(const int col, const int width)
 {
 	this->do_set_width(col, width);
 }
@@ -544,10 +544,7 @@ std::string StringTableBase::Impl::get(const int row, const int col) const
 
 void StringTableBase::Impl::set_width(const int col, const int width)
 {
-	if (legal_col(col) and legal_width(width))
-	{
-		widths_.insert(widths_.begin() + col, width);
-	}
+	widths_[col] = width;
 }
 
 
