@@ -620,55 +620,6 @@ AlbumChecksumsTableFormat::AlbumChecksumsTableFormat(const int rows,
 AlbumChecksumsTableFormat::~AlbumChecksumsTableFormat() = default;
 
 
-void AlbumChecksumsTableFormat::format(const Checksums &checksums,
-		const ARId &arid, const TOC &toc) // TODO prefix!
-{
-	// ARId
-	if (this->arid_format())
-	{
-		this->arid_format()->format(arid, "");
-		//lines_->append(*this->arid_format()->lines());
-		// FIXME ARId is missing in output
-	}
-
-	// Add filenames, offsets, lengths
-	auto md_columns = this->add_metadata(arcstk::toc::get_filenames(toc),
-			arcstk::toc::get_offsets(toc),
-			get_lengths(checksums));
-	this->add_checksums(md_columns, checksums);
-}
-
-
-void AlbumChecksumsTableFormat::format(const Checksums &checksums,
-		const std::vector<std::string> &filenames)
-{
-	// Add filenames and lengths
-	auto md_columns = this->add_metadata(filenames, {}, get_lengths(checksums));
-	this->add_checksums(md_columns, checksums);
-}
-
-
-void AlbumChecksumsTableFormat::add_checksums(const int start_col,
-		const Checksums &checksums)
-{
-	int col_idx = start_col;
-
-	for (const auto& type : checksums[0].types()) // iterate checksum types
-	{
-		this->set_title(col_idx, arcstk::checksum::type_name(type));
-		this->set_width(col_idx, 8); // TODO Magic number: 32 bit
-
-		for (std::size_t row_idx = 0; row_idx < checksums.size(); ++row_idx)
-		{
-			this->update_cell(row_idx, col_idx, hexlayout_.format(
-						checksums[row_idx].get(type).value(),
-						this->width(col_idx)));
-		}
-		++col_idx;
-	}
-}
-
-
 void AlbumChecksumsTableFormat::setup_metadata_cols()
 {
 	for (std::size_t col = 0; col < columns(); ++col)
@@ -803,12 +754,6 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 		}
 		out << std::endl;
 	}
-}
-
-
-std::unique_ptr<Lines> AlbumChecksumsTableFormat::do_lines()
-{
-	return nullptr;
 }
 
 

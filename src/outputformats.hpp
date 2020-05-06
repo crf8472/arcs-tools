@@ -444,12 +444,23 @@ protected:
 };
 
 
+/**
+ * \brief Print the results of a Checksums calculation
+ */
 class ChecksumsResultPrinter
 {
 public:
 
 	virtual ~ChecksumsResultPrinter() = default;
 
+	/**
+	 * \brief Print the results to the specified stream
+	 *
+	 * \param[in] checksums checksums
+	 * \param[in] filenames filenames
+	 * \param[in] toc       TOC (whose filenames are ignored)
+	 * \param[in] arid      ARId
+	 */
 	void out(std::ostream &out, const Checksums &checksums,
 			const std::vector<std::string> &filenames,
 			const TOC &toc, const ARId &arid);
@@ -560,8 +571,7 @@ protected:
 /**
  * \brief Simple table format for album-based Checksums.
  */
-class AlbumChecksumsTableFormat final   : public OutputFormat
-										, public AlbumTableBase
+class AlbumChecksumsTableFormat final   : public AlbumTableBase
 										, public ChecksumsResultPrinter
 {
 
@@ -586,30 +596,8 @@ public:
 	 */
 	~AlbumChecksumsTableFormat() noexcept override;
 
-	/**
-	 * \brief Format the specified album data
-	 *
-	 * \param[in] checksums The Checksums to format
-	 * \param[in] arid      ARId of the medium
-	 * \param[in] toc       TOC of the medium
-	 */
-	void format(const Checksums &checksums, const ARId &arid, const TOC &toc);
-
-	/**
-	 * \brief Format the specified tracks data
-	 *
-	 * \param[in] checksums The Checksums to print
-	 * \param[in] filenames The filenames to print
-	 *
-	 * \return Formatted lines
-	 */
-	void format(const Checksums &checksums,
-			const std::vector<std::string> &filenames);
-
 
 private:
-
-	std::unique_ptr<Lines> do_lines() override;
 
 	void do_out(std::ostream &out, const Checksums &checksums,
 			const std::vector<std::string> &filenames,
@@ -619,18 +607,6 @@ private:
 	 * \brief Apply type specific formattings to columns
 	 */
 	void setup_metadata_cols();
-
-	/**
-	 * \brief Add the checkums to the table starting in the specified column
-	 *
-	 * If one activates other columns except 'filename' and 'length'
-	 * they remain empty. If the number of checksum types is bigger than the
-	 * <tt>columns() - start_col</tt> a crash is likely to happen.
-	 *
-	 * \param[in] start_col Column to start
-	 * \param[in] checksums The Checksums to add
-	 */
-	void add_checksums(const int start_col, const Checksums &checksums);
 
 	/**
 	 * \brief Hexadecimal layout used for Checksums columns
