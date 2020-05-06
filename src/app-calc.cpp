@@ -301,7 +301,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 }
 
 
-std::unique_ptr<AlbumChecksumsTableFormat> ARCalcApplication::result_table(
+std::unique_ptr<ChecksumsResultPrinter> ARCalcApplication::configure_format(
 		const Options &options) const
 {
 	bool show_tracks    = false;
@@ -319,6 +319,9 @@ std::unique_ptr<AlbumChecksumsTableFormat> ARCalcApplication::result_table(
 		show_tracks  = true;
 		show_offsets = true;
 	}
+
+	// Configure which implementation + which columns to show.
+	// All other details are hidden.
 
 	return std::make_unique<AlbumChecksumsTableFormat>(0, 0,
 				show_tracks, show_offsets, show_lengths, show_filenames);
@@ -405,7 +408,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 	// Print formatted results to output stream
 
-	auto format = result_table(options);
+	auto format = configure_format(options);
 
 	if (toc)
 	{

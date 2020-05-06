@@ -151,7 +151,7 @@ private:
 	 * \param[in] options   The options parsed from command line
 	 * \param[in] checksums The checksums to format
 	 */
-	std::unique_ptr<AlbumChecksumsTableFormat> result_table(
+	std::unique_ptr<ChecksumsResultPrinter> configure_format(
 			const Options &options) const;
 
 	/**
