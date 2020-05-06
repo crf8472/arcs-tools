@@ -430,6 +430,25 @@ public:
 	std::string title(const int col) const;
 
 	/**
+	 * \brief Set the column type
+	 *
+	 * \param[in] col   Column index
+	 * \param[in] type  The column type
+	 */
+	void set_type(const int col, const int type);
+
+	/**
+	 * \brief Get type of a column
+	 *
+	 * \param[in] col The column to get the type of
+	 *
+	 * \return Type of the column
+	 *
+	 * \throws std::out_of_range If col > columns() or col < 0.
+	 */
+	int type(const int col) const;
+
+	/**
 	 * \brief Set the column delimiter symbol
 	 *
 	 * \param[in] delim The column delimiter symbol
@@ -581,6 +600,27 @@ private:
 	= 0;
 
 	/**
+	 * \brief Implements StringTable::set_type(const int, const int)
+	 *
+	 * \param[in] col  Column index
+	 * \param[in] name Column type
+	 */
+	virtual void do_set_type(const int col, const int type)
+	= 0;
+
+	/**
+	 * \brief Implements StringTable::type(const int)
+	 *
+	 * \param[in] col The column to get the type of
+	 *
+	 * \return Type of the column
+	 *
+	 * \throws std::out_of_range If col > columns or col < 0.
+	 */
+	virtual int do_type(const int col) const
+	= 0;
+
+	/**
 	 * \brief Implements StringTable::set_column_delimiter(const std::string&)
 	 *
 	 * \param[in] delim The column delimiter symbol
@@ -696,6 +736,9 @@ private:
 
 	void do_set_title(const int col, const std::string &name) override;
 	std::string do_title(const int col) const override;
+
+	void do_set_type(const int col, const int type) override;
+	int do_type(const int col) const override;
 
 	void do_set_column_delimiter(const std::string &delim) override;
 	std::string do_column_delimiter() const override;

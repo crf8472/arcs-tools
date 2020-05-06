@@ -389,21 +389,31 @@ int ARCalcApplication::run_calculation(const Options &options)
 		this->fatal_error("Calculation returned no checksums");
 	}
 
-	auto results = result_table(options);
+	// Configure output stream
+
+	std::streambuf *buf;
+	std::ofstream out_file_stream;
+	if (auto filename = options.get(ARCalcOptions::OUT); filename.empty())
+	{
+		buf = std::cout.rdbuf();
+	} else
+	{
+		out_file_stream.open(filename);
+		buf = out_file_stream.rdbuf();
+	}
+	std::ostream out_stream(buf);
+
+	// Print formatted results to output stream
+
+	auto format = result_table(options);
 
 	if (toc)
 	{
-		// 3 metadata columns (track, offset, length)
-		results->resize(checksums.size(), 3 + checksums[0].size());
-		results->format(checksums, arid, *toc);
+		format->out(out_stream, checksums, *toc, arid);
 	} else
 	{
-		// 2 metadata columns (length, filename)
-		results->resize(options.get_arguments().size(), 2 + checksums[0].size());
-		results->format(checksums, options.get_arguments());
+		format->out(out_stream, checksums, options.get_arguments()/*filenames*/);
 	}
-
-	output(*results, options.get(ARCalcOptions::OUT));
 
 	return EXIT_SUCCESS;
 }

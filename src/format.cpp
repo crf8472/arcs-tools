@@ -289,6 +289,18 @@ std::string StringTable::title(const int col) const
 }
 
 
+void StringTable::set_type(const int col, const int type)
+{
+	this->do_set_type(col, type);
+}
+
+
+int StringTable::type(const int col) const
+{
+	return this->do_type(col);
+}
+
+
 void StringTable::set_column_delimiter(const std::string &delim)
 {
 	this->do_set_column_delimiter(delim);
@@ -394,6 +406,9 @@ public:
 	void set_title(const int col, const std::string &title);
 	std::string title(const int col) const;
 
+	void set_type(const int col, const int type);
+	int type(const int col) const;
+
 	void set_col_delim(const std::string &delim);
 	std::string col_delim() const;
 
@@ -450,7 +465,12 @@ private:
 	/**
 	 * \brief The column titles.
 	 */
-	std::vector<std::string> column_titles_;
+	std::vector<std::string> titles_;
+
+	/**
+	 * \brief The column types.
+	 */
+	std::vector<int> types_;
 
 	/**
 	 * \brief Number of rows.
@@ -473,7 +493,8 @@ StringTableBase::Impl::Impl(const int rows, const int cols)
 	: cells_        ()
 	, widths_       ()
 	, alignments_   ()
-	, column_titles_()
+	, titles_       ()
+	, types_        ()
 	, rows_         { rows }
 	, cols_         { cols }
 	, column_delim_ { " " }
@@ -551,13 +572,25 @@ bool StringTableBase::Impl::alignment(const int col)
 void StringTableBase::Impl::set_title(const int col,
 		const std::string &title)
 {
-	column_titles_[col] = title;
+	titles_[col] = title;
 }
 
 
 std::string StringTableBase::Impl::title(const int col) const
 {
-	return column_titles_[col];
+	return titles_[col];
+}
+
+
+void StringTableBase::Impl::set_type(const int col, const int type)
+{
+	types_[col] = type;
+}
+
+
+int StringTableBase::Impl::type(const int col) const
+{
+	return types_[col];
 }
 
 
@@ -578,11 +611,12 @@ void StringTableBase::Impl::resize(const int rows, const int cols)
 	rows_ = rows;
 	cols_ = cols;
 
-	cells_.resize(rows_ * cols_);
+	cells_.resize(rows_ * columns());
 
-	widths_.resize(cols_);
-	alignments_.resize(cols_);
-	column_titles_.resize(cols_);
+	widths_.resize(columns());
+	alignments_.resize(columns());
+	titles_.resize(columns());
+	types_.resize(columns());
 }
 
 
@@ -690,6 +724,18 @@ void StringTableBase::do_set_title(const int col, const std::string &title)
 std::string StringTableBase::do_title(const int col) const
 {
 	return impl_->title(col);
+}
+
+
+void StringTableBase::do_set_type(const int col, const int type)
+{
+	impl_->set_type(col, type);
+}
+
+
+int StringTableBase::do_type(const int col) const
+{
+	return impl_->type(col);
 }
 
 

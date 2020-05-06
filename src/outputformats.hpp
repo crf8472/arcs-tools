@@ -11,6 +11,7 @@
  * from these formats. There is also a format for offsets.
  */
 
+#include <arcstk/identifier.hpp>
 #include <array>
 #include <utility>
 #include <vector>
@@ -452,6 +453,30 @@ protected:
 };
 
 
+class ChecksumsResultPrinter
+{
+public:
+
+	virtual ~ChecksumsResultPrinter() = default;
+
+	void out(std::ostream &out, const Checksums &checksums, const TOC &toc,
+			const ARId &arid);
+
+	void out(std::ostream &o, const Checksums &checksums,
+			const std::vector<std::string> &strings);
+
+private:
+
+	virtual void do_out(std::ostream &out, const Checksums &checksums,
+			const TOC &toc, const ARId &arid)
+	= 0;
+
+	virtual void do_out(std::ostream &o, const Checksums &checksums,
+			const std::vector<std::string> &strings)
+	= 0;
+};
+
+
 /**
  * \brief A table based format for album data
  */
@@ -461,6 +486,15 @@ class AlbumTableBase	: virtual public WithMetadataFlagMethods
 {
 
 public:
+
+	enum class COL_TYPE : int
+	{
+		TRACK    = 1,
+		FILENAME = 2,
+		OFFSET   = 3,
+		LENGTH   = 4,
+		CHECKSUM = 5
+	};
 
 	/**
 	 * \brief Constructor.
@@ -484,9 +518,46 @@ public:
 			const bool track, const bool offset, const bool length,
 			const bool filename);
 
+	/**
+	 * \brief Return number of declared metadata columns.
+	 *
+	 * \return Number of declared metadata columns.
+	 */
+	int total_metadata_columns() const;
+
+	/**
+	 * \brief Return TRUE iff the table contains at least 1 column of the
+	 * specified type.
+	 *
+	 * \param[in] type
+	 *
+	 * \return TRUE iff at least 1 column in the table has the specified type
+	 */
+	//bool has(const COL_TYPE type) const;
+
+	/**
+	 * \brief Set column type for specified column
+	 */
+	void assign_type(const int col, const COL_TYPE type);
+
+	/**
+	 * \brief Return type of specified column
+	 *
+	 * \param[in] col
+	 *
+	 * \return Type of specified column
+	 */
+	COL_TYPE type_of(const int col) const;
+
 
 protected:
 
+	int convert_from(const COL_TYPE type) const;
+	COL_TYPE convert_to(const int type) const;
+
+	/**
+	 * \brief Return number of declared metadata columns.
+	 */
 	int add_metadata(const std::vector<std::string> &filenames,
 		const std::vector<int32_t> &offsets,
 		const std::vector<int32_t> &lengths) override;
@@ -498,6 +569,7 @@ protected:
  */
 class AlbumChecksumsTableFormat final   : public OutputFormat
 										, public AlbumTableBase
+										, public ChecksumsResultPrinter
 {
 
 public:
@@ -545,6 +617,17 @@ public:
 private:
 
 	std::unique_ptr<Lines> do_lines() override;
+
+	void do_out(std::ostream &out, const Checksums &checksums,
+			const TOC &toc, const ARId &arid) override;
+
+	void do_out(std::ostream &o, const Checksums &checksums,
+			const std::vector<std::string> &strings) override;
+
+	/**
+	 * \brief Apply type specific formattings to columns
+	 */
+	void setup_metadata_cols();
 
 	/**
 	 * \brief Add the checkums to the table starting in the specified column
