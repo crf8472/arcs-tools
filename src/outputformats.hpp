@@ -445,36 +445,6 @@ protected:
 
 
 /**
- * \brief Print the results of a Checksums calculation
- */
-class ChecksumsResultPrinter
-{
-public:
-
-	virtual ~ChecksumsResultPrinter() = default;
-
-	/**
-	 * \brief Print the results to the specified stream
-	 *
-	 * \param[in] checksums checksums
-	 * \param[in] filenames filenames
-	 * \param[in] toc       TOC (whose filenames are ignored)
-	 * \param[in] arid      ARId
-	 */
-	void out(std::ostream &out, const Checksums &checksums,
-			const std::vector<std::string> &filenames,
-			const TOC &toc, const ARId &arid);
-
-private:
-
-	virtual void do_out(std::ostream &out, const Checksums &checksums,
-			const std::vector<std::string> &filenames,
-			const TOC &toc, const ARId &arid)
-	= 0;
-};
-
-
-/**
  * \brief A table based format for album data
  */
 class AlbumTableBase	: virtual public WithMetadataFlagMethods
@@ -523,16 +493,6 @@ public:
 	int total_metadata_columns() const;
 
 	/**
-	 * \brief Return TRUE iff the table contains at least 1 column of the
-	 * specified type.
-	 *
-	 * \param[in] type
-	 *
-	 * \return TRUE iff at least 1 column in the table has the specified type
-	 */
-	//bool has(const COL_TYPE type) const;
-
-	/**
 	 * \brief Set column type for specified column
 	 */
 	void assign_type(const int col, const COL_TYPE type);
@@ -546,8 +506,39 @@ public:
 	 */
 	COL_TYPE type_of(const int col) const;
 
+	/**
+	 * \brief Set widths of all columns with given type
+	 */
+	void set_widths(const COL_TYPE type, const int width);
+
+	/**
+	 * \brief Return TRUE iff the table contains at least 1 column of the
+	 * specified type.
+	 *
+	 * \param[in] type
+	 *
+	 * \return TRUE iff at least 1 column in the table has the specified type
+	 */
+	//bool has(const COL_TYPE type) const;
+
 
 protected:
+
+	/**
+	 * \brief Apply types and standard settings to columns
+	 */
+	int setup_columns();
+
+	/**
+	 * \brief Create ordered list of types to print columns for
+	 */
+	std::vector<arcstk::checksum::type> types_f(const Checksums &checksums)
+		const;
+
+	/**
+	 * \brief Print column titles
+	 */
+	void print_column_titles(std::ostream &out) const;
 
 	/**
 	 * \brief Convert from COL_TYPE to int
@@ -564,8 +555,79 @@ protected:
 	 */
 	int add_metadata(const std::vector<std::string> &filenames,
 		const std::vector<int32_t> &offsets,
-		const std::vector<int32_t> &lengths) override;
+		const std::vector<int32_t> &lengths) override; // TODO Remove
 };
+
+
+/**
+ * \brief Print the results of a Checksums calculation
+ */
+class ChecksumsResultPrinter
+{
+public:
+
+	virtual ~ChecksumsResultPrinter() = default;
+
+	/**
+	 * \brief Print the results to the specified stream
+	 *
+	 * \param[in] checksums checksums
+	 * \param[in] filenames filenames
+	 * \param[in] toc       TOC (whose filenames are ignored)
+	 * \param[in] arid      ARId
+	 */
+	void out(std::ostream &out, const Checksums &checksums,
+			const std::vector<std::string> &filenames,
+			const TOC &toc, const ARId &arid);
+
+private:
+
+	virtual void do_out(std::ostream &out, const Checksums &checksums,
+			const std::vector<std::string> &filenames,
+			const TOC &toc, const ARId &arid)
+	= 0;
+};
+
+
+/**
+ * \brief Print the results of a Verification
+ */
+class MatchResultPrinter
+{
+public:
+
+	virtual ~MatchResultPrinter() = default;
+
+	/**
+	 * \brief Print the results to the specified stream
+	 *
+	 * \param[in] out       Output stream
+	 * \param[in] checksums Checksums
+	 * \param[in] filenames Filenames
+	 * \param[in] response  Response
+	 * \param[in] match     Match to print
+	 * \param[in] version   Version
+	 * \param[in] toc       TOC (whose filenames are ignored)
+	 * \param[in] arid      ARId
+	 */
+	void out(std::ostream &out, const Checksums &checksums,
+			const std::vector<std::string> &filenames,
+			const ARResponse &response,
+			const Match &match, const int block, const bool version,
+			const TOC &toc, const ARId &arid);
+
+private:
+
+	virtual void do_out(std::ostream &out, const Checksums &checksums,
+			const std::vector<std::string> &filenames,
+			const ARResponse &response,
+			const Match &match, const int block, const bool version,
+			const TOC &toc, const ARId &arid)
+	= 0;
+};
+
+
+// Concrete classes ----
 
 
 /**
@@ -574,7 +636,6 @@ protected:
 class AlbumChecksumsTableFormat final   : public AlbumTableBase
 										, public ChecksumsResultPrinter
 {
-
 public:
 
 	/**
@@ -596,17 +657,11 @@ public:
 	 */
 	~AlbumChecksumsTableFormat() noexcept override;
 
-
 private:
 
 	void do_out(std::ostream &out, const Checksums &checksums,
 			const std::vector<std::string> &filenames,
 			const TOC &toc, const ARId &arid) override;
-
-	/**
-	 * \brief Apply type specific formattings to columns
-	 */
-	void setup_metadata_cols();
 
 	/**
 	 * \brief Hexadecimal layout used for Checksums columns
@@ -620,8 +675,8 @@ private:
  */
 class AlbumMatchTableFormat final   : public OutputFormat
 									, public AlbumTableBase
+									, public MatchResultPrinter
 {
-
 public:
 
 	/**
@@ -652,7 +707,7 @@ public:
 	 */
 	void format(const Checksums &checksums, const ARResponse &response,
 			const Match &match, const int block, const bool v2,
-			const ARId &id, const std::unique_ptr<TOC> toc);
+			const ARId &id, const std::unique_ptr<TOC> toc); // TODO Remove
 
 	/**
 	 * \brief Formats the match information
@@ -666,12 +721,17 @@ public:
 	 */
 	void format(const Checksums &checksums, const ARResponse &response,
 			const Match &match, const int block, const bool v2,
-			const std::vector<std::string> &filenames);
-
+			const std::vector<std::string> &filenames); // TODO Remove
 
 private:
 
-	std::unique_ptr<Lines> do_lines() override;
+	std::unique_ptr<Lines> do_lines() override; // TODO Remove
+
+	void do_out(std::ostream &out, const Checksums &checksums,
+			const std::vector<std::string> &filenames,
+			const ARResponse &response,
+			const Match &match, const int block, const bool version,
+			const TOC &toc, const ARId &arid) override;
 
 	/**
 	 * \brief Add the checkums match to the table starting in the specified
@@ -690,17 +750,17 @@ private:
 	 */
 	void add_checksums_match(const int start_col,
 		const Checksums &checksums, const ARResponse &response,
-		const Match &match, const int block, const bool version);
+		const Match &match, const int block, const bool version); // TODO Remove
 
 	/**
 	 * \brief Internal line buffer
 	 */
-	std::unique_ptr<DefaultLines> lines_;
+	std::unique_ptr<DefaultLines> lines_; // TODO Remove
 
 	/**
 	 * \brief Hexadecimal layout used for Checksums columns
 	 */
-	HexLayout hexl_;
+	HexLayout hexlayout_;
 };
 
 
