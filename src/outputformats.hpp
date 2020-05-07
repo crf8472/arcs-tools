@@ -527,12 +527,12 @@ protected:
 	/**
 	 * \brief Apply types and standard settings to columns
 	 */
-	int setup_columns();
+	int columns_apply_settings();
 
 	/**
 	 * \brief Create ordered list of types to print columns for
 	 */
-	std::vector<arcstk::checksum::type> types_f(const Checksums &checksums)
+	std::vector<arcstk::checksum::type> typelist(const Checksums &checksums)
 		const;
 
 	/**

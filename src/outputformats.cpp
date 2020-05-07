@@ -533,7 +533,7 @@ void AlbumTableBase::set_widths(const COL_TYPE type, const int width)
 }
 
 
-int AlbumTableBase::setup_columns()
+int AlbumTableBase::columns_apply_settings()
 {
 	std::size_t md_cols = 0;
 
@@ -593,7 +593,7 @@ AlbumTableBase::COL_TYPE AlbumTableBase::convert_to(const int type) const
 }
 
 
-std::vector<arcstk::checksum::type> AlbumTableBase::types_f(
+std::vector<arcstk::checksum::type> AlbumTableBase::typelist(
 		const Checksums &checksums) const
 {
 	const auto& defined_types = arcstk::checksum::types;
@@ -719,21 +719,21 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 		const std::vector<std::string> &filenames,
 		const TOC &toc, const ARId &/*arid*/)
 {
-	auto types_to_print = types_f(checksums);
+	auto types_to_print = typelist(checksums);
 
 	resize(1/*titles*/ + checksums.size(),
 			total_metadata_columns() + types_to_print.size());
 
-	// Assign column types to columns
+	// Apply column settings
 
-	const auto md_offset = setup_columns();
+	const auto md_offset = columns_apply_settings();
 
 	set_widths(COL_TYPE::FILENAME, optimal_width(filenames));
 
-	// Set checksum::type's name as column title for CHECKSUM columns
+	// Type each column on the "right" as 'CHECKSUM' and apply defaults
 	{
 		auto col = md_offset;
-		auto type_to_print { types_to_print.cbegin() };
+		auto type_to_print = types_to_print.cbegin();
 		while (col < columns() and type_to_print != types_to_print.cend())
 		{
 			assign_type(col, COL_TYPE::CHECKSUM);
@@ -745,11 +745,10 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 		}
 	}
 
+	// Print table
+
 	print_column_titles(out);
 
-	// Row contents
-
-	using COL_TYPE = AlbumTableBase::COL_TYPE;
 	std::string cell{};
 	int trackno = 1;;
 
@@ -922,19 +921,20 @@ void AlbumMatchTableFormat::do_out(std::ostream &out, const Checksums &checksums
 			const Match &match, const int block, const bool version,
 			const TOC &toc, const ARId &arid)
 {
-	auto types_to_print = types_f(checksums);
+	auto types_to_print = typelist(checksums);
 
 	resize(1/*titles*/ + checksums.size(),
 			total_metadata_columns() + types_to_print.size() * 2);
 
-	// Assign column types to columns
+	// Apply column settings
 
-	const auto md_offset = setup_columns();
+	const auto md_offset = columns_apply_settings();
 
 	set_widths(COL_TYPE::FILENAME, optimal_width(filenames));
 
+	// Type each column on the "right" as 'CHECKSUM' and apply defaults
 	auto col = md_offset;
-	auto type_to_print { types_to_print.cbegin() };
+	auto type_to_print = types_to_print.cbegin();
 	while (col < columns() and type_to_print != types_to_print.cend())
 	{
 		assign_type(col, COL_TYPE::CHECKSUM);
