@@ -137,6 +137,65 @@ std::unique_ptr<Options> ARVerifyConfigurator::parse_options(CLIParser& cli)
 // ARVerifyApplication
 
 
+ARResponse ARVerifyApplication::parse_response(const Options &options) const
+{
+	// Parse the AccurateRip response
+
+	std::string responsefile(options.get(ARVerifyOptions::RESPONSEFILE));
+
+	std::unique_ptr<ARStreamParser> parser;
+
+	if (responsefile.empty())
+	{
+		ARCS_LOG_DEBUG << "Parse response from stdin";
+
+		parser = std::make_unique<ARStdinParser>();
+	} else
+	{
+		ARCS_LOG_DEBUG << "Parse response from file " << responsefile;
+
+		auto file_parser { std::make_unique<ARFileParser>() };
+		file_parser->set_file(responsefile);
+
+		parser = std::move(file_parser);
+	}
+
+	ARResponse response;
+	auto c_handler { std::make_unique<DefaultContentHandler>() };
+	c_handler->set_object(response);
+	parser->set_content_handler(std::move(c_handler));
+	parser->set_error_handler(std::make_unique<DefaultErrorHandler>());
+
+	try
+	{
+		if (parser->parse() == 0)
+		{
+			this->fatal_error("No bytes parsed, exit");
+		}
+	} catch (const std::exception& e)
+	{
+		this->fatal_error(e.what());
+	}
+
+	ARCS_LOG_DEBUG << "Response object created";
+
+	return response;
+}
+
+
+std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
+		const Options &options) const
+{
+	const bool with_toc = !options.get(ARCalcOptions::METAFILE).empty();
+
+	// show track + offset only when toc is requested
+	// show filenames otherwise
+	// show length in every case
+	return std::make_unique<AlbumMatchTableFormat>(
+				0, with_toc, with_toc, true, not with_toc);
+}
+
+
 void ARVerifyApplication::log_matching_files(const Checksums &checksums,
 		const Match &match, const uint32_t block,
 		const bool version) const
@@ -176,54 +235,6 @@ std::string ARVerifyApplication::do_name() const
 
 int ARVerifyApplication::do_run(const Options &options)
 {
-	// Parse the AccurateRip response
-
-	ARResponse response; // Response object to be build be content handler
-
-	// Parse reference data to response object
-	{
-		std::string responsefile(options.get(ARVerifyOptions::RESPONSEFILE));
-
-		std::unique_ptr<ARStreamParser> parser;
-
-		if (responsefile.empty())
-		{
-			ARCS_LOG_DEBUG << "Parse response from stdin";
-
-			parser = std::make_unique<ARStdinParser>();
-		} else
-		{
-			ARCS_LOG_DEBUG << "Parse response from file " << responsefile;
-
-			auto file_parser { std::make_unique<ARFileParser>() };
-			file_parser->set_file(responsefile);
-
-			parser = std::move(file_parser);
-		}
-
-		auto c_handler { std::make_unique<DefaultContentHandler>() };
-		c_handler->set_object(response);
-		parser->set_content_handler(std::move(c_handler));
-		parser->set_error_handler(std::make_unique<DefaultErrorHandler>());
-
-		try
-		{
-			if (parser->parse() == 0)
-			{
-				this->fatal_error("No bytes parsed, exit");
-			}
-		} catch (const std::exception& e)
-		{
-			this->fatal_error(e.what());
-		}
-
-		ARCS_LOG_DEBUG << "Response object created";
-	}
-
-
-	std::unique_ptr<const Matcher> diff;
-	std::unique_ptr<AlbumMatchTableFormat> format;
-
 	// Calculate the actual ARCSs from input files
 
 	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(options);
@@ -233,53 +244,49 @@ int ARVerifyApplication::do_run(const Options &options)
 		this->fatal_error("Calculation returned no checksums.");
 	}
 
+	// Parse reference ARCSs from AccurateRip
 
-	if (const auto metafilename = options.get(ARCalcOptions::METAFILE);
-			metafilename.empty())
-	{
-		// No Offsets => No ARId => No TOC
-		// These files may or may not form an album. If it is an album, it must
-		// have been requested as such from cli. However, we have no metadata
-		// and will therefore only print filename, length and checksum.
+	auto response = parse_response(options);
 
-		auto audiofilenames = options.get_arguments();
+	// Perform match
 
-		diff = std::make_unique<TracksetMatcher>(checksums, response);
+	std::unique_ptr<const Matcher> diff;
 
-		this->log_matching_files(checksums, *diff->match(), 1, true);
+	auto format = configure_format(options);
 
-		const int rows = std::max(checksums.size(),
-				static_cast<std::size_t>(response.tracks_per_block()));
+	const bool album_requested = !options.get(ARCalcOptions::METAFILE).empty();
 
-		format = std::make_unique<AlbumMatchTableFormat>(
-				rows, false, false, true, true);
-
-		format->format(checksums, response, *diff->match(),
-				diff->best_match(), diff->matches_v2(), audiofilenames);
-	} else
+	if (album_requested)
 	{
 		// With Offsets, ARId and Result
+
+		if (!toc)
+		{
+			ARCS_LOG_ERROR << "Calculation returned no TOC.";
+			// TODO throw;
+		}
 
 		if (arid.empty())
 		{
 			ARCS_LOG_ERROR << "Calculation returned no identifier.";
 		}
-		if (!toc)
-		{
-			ARCS_LOG_ERROR << "Calculation returned no TOC.";
-		}
-
-		const auto& [ single_audio_file, pw_distinct ] = audiofile_layout(*toc);
 
 		diff = std::make_unique<AlbumMatcher>(checksums, arid, response);
 
-		format = std::make_unique<AlbumMatchTableFormat>(
-				checksums.size(), true, true, true, !single_audio_file);
+		const auto& [ single_audio_file, pw_distinct ] = audiofile_layout(*toc);
+		// pass !single_audio_file to table
+	} else
+	{
+		// No Offsets => No ARId => No TOC
 
-		format->format(checksums, response, *diff->match(),
-				diff->best_match(), diff->matches_v2(), arid, std::move(toc));
+		// These files may or may not form a complete album. If it is an album,
+		// it must have been requested as such from cli. However, we have no
+		// metadata and will therefore only print filename, length and checksum.
+
+		diff = std::make_unique<TracksetMatcher>(checksums, response);
+
+		this->log_matching_files(checksums, *diff->match(), 1, true);
 	}
-
 
 	// Print match results
 
@@ -294,7 +301,29 @@ int ARVerifyApplication::do_run(const Options &options)
 			<< " in response, having difference " << diff->best_difference();
 	}
 
-	this->print(*format->lines(), options.get(ARCalcOptions::OUT));
+	// Configure output stream
+
+	std::streambuf *buf;
+	std::ofstream out_file_stream;
+	if (auto filename = options.get(ARCalcOptions::OUT); filename.empty())
+	{
+		buf = std::cout.rdbuf();
+	} else
+	{
+		out_file_stream.open(filename);
+		buf = out_file_stream.rdbuf();
+	}
+	std::ostream out_stream(buf);
+
+	// Print results
+
+	auto filenames = toc
+		? arcstk::toc::get_filenames(toc)
+		: options.get_arguments();
+	const TOC *tocptr = toc ? toc.get() : nullptr;
+
+	format->out(out_stream, checksums, filenames, response, *diff->match(),
+				diff->best_match(), diff->matches_v2(), tocptr, arid);
 
 	return EXIT_SUCCESS;
 }

@@ -414,7 +414,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 		? arcstk::toc::get_filenames(toc)
 		: options.get_arguments();
 
-	format->out(out_stream, checksums, filenames, *toc, arid);
+	format->out(out_stream, checksums, filenames, toc.get(), arid);
 
 	return EXIT_SUCCESS;
 }

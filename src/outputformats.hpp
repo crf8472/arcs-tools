@@ -427,20 +427,6 @@ protected:
 	 * \return The track lengths of \c checksums
 	 */
 	std::vector<int32_t> get_lengths(const Checksums &checksums) const;
-
-	/**
-	 * \brief Format the toc data.
-	 *
-	 * \param[in] filenames Filenames
-	 * \param[in] offsets   Offsets
-	 * \param[in] lengths   Lengths
-	 *
-	 * \return Number of currently used metadata columns
-	 */
-	virtual int add_metadata(const std::vector<std::string> &filenames,
-		const std::vector<int32_t> &offsets,
-		const std::vector<int32_t> &lengths)
-	= 0;
 };
 
 
@@ -454,13 +440,17 @@ class AlbumTableBase	: virtual public WithMetadataFlagMethods
 
 public:
 
+	/**
+	 * \brief Column type
+	 */
 	enum class COL_TYPE : int
 	{
 		TRACK    = 1,
 		FILENAME = 2,
 		OFFSET   = 3,
 		LENGTH   = 4,
-		CHECKSUM = 5
+		CHECKSUM = 5,
+		MATCH    = 6
 	};
 
 	/**
@@ -507,19 +497,19 @@ public:
 	COL_TYPE type_of(const int col) const;
 
 	/**
+	 * \brief Return current default width for columns of the given type
+	 */
+	int default_width(const COL_TYPE type) const;
+
+	/**
+	 * \brief Return current default title for columns of the given type
+	 */
+	std::string default_title(const COL_TYPE type) const;
+
+	/**
 	 * \brief Set widths of all columns with given type
 	 */
 	void set_widths(const COL_TYPE type, const int width);
-
-	/**
-	 * \brief Return TRUE iff the table contains at least 1 column of the
-	 * specified type.
-	 *
-	 * \param[in] type
-	 *
-	 * \return TRUE iff at least 1 column in the table has the specified type
-	 */
-	//bool has(const COL_TYPE type) const;
 
 
 protected:
@@ -550,12 +540,18 @@ protected:
 	 */
 	COL_TYPE convert_to(const int type) const;
 
+
+private:
+
 	/**
-	 * \brief Return number of declared metadata columns.
+	 * \brief Called by columns_apply_settings after the metadata columns are
+	 * initialized
+	 *
+	 * It is expected that this function initializes the columns that are
+	 * typed CHECKSUM and MATCH.
 	 */
-	int add_metadata(const std::vector<std::string> &filenames,
-		const std::vector<int32_t> &offsets,
-		const std::vector<int32_t> &lengths) override; // TODO Remove
+	virtual void columns_apply_cs_settings()
+	= 0;
 };
 
 
@@ -571,20 +567,22 @@ public:
 	/**
 	 * \brief Print the results to the specified stream
 	 *
+	 * Ignores the filenames of TOC.
+	 *
 	 * \param[in] checksums checksums
 	 * \param[in] filenames filenames
-	 * \param[in] toc       TOC (whose filenames are ignored)
+	 * \param[in] toc       TOC
 	 * \param[in] arid      ARId
 	 */
 	void out(std::ostream &out, const Checksums &checksums,
 			const std::vector<std::string> &filenames,
-			const TOC &toc, const ARId &arid);
+			const TOC *toc, const ARId &arid);
 
 private:
 
 	virtual void do_out(std::ostream &out, const Checksums &checksums,
 			const std::vector<std::string> &filenames,
-			const TOC &toc, const ARId &arid)
+			const TOC *toc, const ARId &arid)
 	= 0;
 };
 
@@ -614,7 +612,7 @@ public:
 			const std::vector<std::string> &filenames,
 			const ARResponse &response,
 			const Match &match, const int block, const bool version,
-			const TOC &toc, const ARId &arid);
+			const TOC *toc, const ARId &arid);
 
 private:
 
@@ -622,7 +620,7 @@ private:
 			const std::vector<std::string> &filenames,
 			const ARResponse &response,
 			const Match &match, const int block, const bool version,
-			const TOC &toc, const ARId &arid)
+			const TOC *toc, const ARId &arid)
 	= 0;
 };
 
@@ -659,9 +657,11 @@ public:
 
 private:
 
+	void columns_apply_cs_settings() override;
+
 	void do_out(std::ostream &out, const Checksums &checksums,
 			const std::vector<std::string> &filenames,
-			const TOC &toc, const ARId &arid) override;
+			const TOC *toc, const ARId &arid) override;
 
 	/**
 	 * \brief Hexadecimal layout used for Checksums columns
@@ -673,8 +673,7 @@ private:
 /**
  * \brief Simple table format for album-based @link Match Matches @endlink.
  */
-class AlbumMatchTableFormat final   : public OutputFormat
-									, public AlbumTableBase
+class AlbumMatchTableFormat final   : public AlbumTableBase
 									, public MatchResultPrinter
 {
 public:
@@ -696,66 +695,15 @@ public:
 	 */
 	~AlbumMatchTableFormat() noexcept override;
 
-	/**
-	 * \brief Format the match information
-	 *
-	 * \param[in] checksums Checksums to print
-	 * \param[in] response  Response to match
-	 * \param[in] match     Match information
-	 * \param[in] block     The block to print
-	 * \param[in] v2        Indicate whether to use v2
-	 */
-	void format(const Checksums &checksums, const ARResponse &response,
-			const Match &match, const int block, const bool v2,
-			const ARId &id, const std::unique_ptr<TOC> toc); // TODO Remove
-
-	/**
-	 * \brief Formats the match information
-	 *
-	 * \param[in] checksums Checksums to print
-	 * \param[in] response  Response to match
-	 * \param[in] match     Match information
-	 * \param[in] block     The block to print
-	 * \param[in] v2        Indicate whether to use v2
-	 * \param[in] filenames Filenames
-	 */
-	void format(const Checksums &checksums, const ARResponse &response,
-			const Match &match, const int block, const bool v2,
-			const std::vector<std::string> &filenames); // TODO Remove
-
 private:
 
-	std::unique_ptr<Lines> do_lines() override; // TODO Remove
+	void columns_apply_cs_settings() override;
 
 	void do_out(std::ostream &out, const Checksums &checksums,
 			const std::vector<std::string> &filenames,
 			const ARResponse &response,
 			const Match &match, const int block, const bool version,
-			const TOC &toc, const ARId &arid) override;
-
-	/**
-	 * \brief Add the checkums match to the table starting in the specified
-	 * column.
-	 *
-	 * If one activates other columns except 'filename' and 'length'
-	 * they are printed empty. If the number of checksum types is bigger than
-	 * the <tt>columns() - start_col</tt> a crash is likely to happen.
-	 *
-	 * \param[in] start_col Column to start
-	 * \param[in] checksums The Checksums to add
-	 * \param[in] response  The Response to add
-	 * \param[in] match     The Match to a block from
-	 * \param[in] block     The matched block to add
-	 * \param[in] version   The ARCS version to add
-	 */
-	void add_checksums_match(const int start_col,
-		const Checksums &checksums, const ARResponse &response,
-		const Match &match, const int block, const bool version); // TODO Remove
-
-	/**
-	 * \brief Internal line buffer
-	 */
-	std::unique_ptr<DefaultLines> lines_; // TODO Remove
+			const TOC *toc, const ARId &arid) override;
 
 	/**
 	 * \brief Hexadecimal layout used for Checksums columns

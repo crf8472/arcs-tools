@@ -74,6 +74,14 @@ private:
 class ARVerifyApplication final : public ARApplication
 {
 	/**
+	 * \brief Parse the input for an ARResponse
+	 */
+	ARResponse parse_response(const Options &options) const;
+
+	std::unique_ptr<MatchResultPrinter> configure_format(const Options &options)
+		const;
+
+	/**
 	 * \brief Log matching files from a file list.
 	 *
 	 * \param[in] checksums Checksums to get matching tracks
