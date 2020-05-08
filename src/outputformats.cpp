@@ -606,8 +606,6 @@ int AlbumTableBase::columns_apply_settings()
 		set_width(c, default_width(type));
 	}
 
-	columns_apply_cs_settings();
-
 	return md_cols;
 }
 
@@ -680,9 +678,23 @@ AlbumChecksumsTableFormat::AlbumChecksumsTableFormat(const int rows,
 AlbumChecksumsTableFormat::~AlbumChecksumsTableFormat() = default;
 
 
-void AlbumChecksumsTableFormat::columns_apply_cs_settings()
+int AlbumChecksumsTableFormat::columns_apply_cs_settings(
+		const std::vector<arcstk::checksum::type> &types)
 {
-	// TODO
+	// Type each column on the "right" as 'CHECKSUM' and apply defaults
+	std::size_t col = total_metadata_columns();
+	auto type_to_print = types.cbegin();
+	while (col < columns() and type_to_print != types.cend())
+	{
+		assign_type(col, COL_TYPE::CHECKSUM);
+		set_title(col, arcstk::checksum::type_name(*type_to_print));
+		set_width(col, default_width(COL_TYPE::CHECKSUM));
+
+		++col;
+		++type_to_print;
+	}
+
+	return col - total_metadata_columns();
 }
 
 
@@ -699,23 +711,9 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 	// Apply column settings
 
 	const auto md_offset = columns_apply_settings();
+	columns_apply_cs_settings(types_to_print);
 
 	set_widths(COL_TYPE::FILENAME, optimal_width(filenames));
-
-	// Type each column on the "right" as 'CHECKSUM' and apply defaults
-	{
-		std::size_t col = md_offset;
-		auto type_to_print = types_to_print.cbegin();
-		while (col < columns() and type_to_print != types_to_print.cend())
-		{
-			assign_type(col, COL_TYPE::CHECKSUM);
-			set_title(col, arcstk::checksum::type_name(*type_to_print));
-			set_width(col, 8); // TODO Magic number
-
-			++col;
-			++type_to_print;
-		}
-	}
 
 	if (!toc) { set_offset(false); }
 
@@ -784,41 +782,16 @@ AlbumMatchTableFormat::AlbumMatchTableFormat(const int rows,
 AlbumMatchTableFormat::~AlbumMatchTableFormat() noexcept = default;
 
 
-void AlbumMatchTableFormat::columns_apply_cs_settings()
+int AlbumMatchTableFormat::columns_apply_cs_settings(
+		const std::vector<arcstk::checksum::type> &types)
 {
-	// TODO
-}
+	// Type each column on the "right" as 'CHECKSUM' and 'MATCH' in
+	// alternating order and apply defaults
 
+	auto type_to_print = types.cbegin();
+	std::size_t col_idx = total_metadata_columns();
 
-void AlbumMatchTableFormat::do_out(std::ostream &out,
-			const Checksums &checksums,
-			const std::vector<std::string> &filenames,
-			const ARResponse &response,
-			const Match &match, const int best, const bool version,
-			const TOC *toc, const ARId &/*arid*/)
-{
-	using TYPE = arcstk::checksum::type;
-
-	//auto types_to_print = typelist(checksums);
-	std::vector<TYPE> types_to_print = { version ? TYPE::ARCS2 : TYPE::ARCS1 };
-
-	const int total_entries = 1/*titles*/ +
-		(toc ? checksums.size()
-			: std::max(static_cast<int>(checksums.size()),
-				response.tracks_per_block()));
-
-	resize(total_entries, total_metadata_columns() + types_to_print.size() * 2);
-
-	// Apply column settings
-
-	const auto md_offset = columns_apply_settings();
-
-	set_widths(COL_TYPE::FILENAME, optimal_width(filenames));
-
-	// Type each column on the "right" as 'CHECKSUM' and apply defaults
-	auto type_to_print = types_to_print.cbegin();
-	std::size_t col_idx = md_offset;
-	while (col_idx < columns() and type_to_print != types_to_print.cend())
+	while (col_idx < columns() and type_to_print != types.cend())
 	{
 		assign_type(col_idx, COL_TYPE::CHECKSUM);
 		set_title(col_idx, arcstk::checksum::type_name(*type_to_print));
@@ -835,11 +808,39 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 		++type_to_print;
 	}
 
+	return col_idx - total_metadata_columns();
+}
+
+
+void AlbumMatchTableFormat::do_out(std::ostream &out,
+			const Checksums &checksums,
+			const std::vector<std::string> &filenames,
+			const ARResponse &response,
+			const Match &match, const int best, const bool version,
+			const TOC *toc, const ARId &/*arid*/)
+{
+	using TYPE = arcstk::checksum::type;
+
+	std::vector<TYPE> types_to_print = { version ? TYPE::ARCS2 : TYPE::ARCS1 };
+
+	const int total_entries = 1/*titles*/ +
+		(toc ? checksums.size()
+			: std::max(static_cast<int>(checksums.size()),
+				response.tracks_per_block()));
+
+	// Configure table
+
+	resize(total_entries, total_metadata_columns() + types_to_print.size() * 2);
+
+	const auto md_offset = columns_apply_settings();
+	columns_apply_cs_settings(types_to_print);
+	set_widths(COL_TYPE::FILENAME, optimal_width(filenames));
+
+	// Print contents
+
 	if (!toc) { set_offset(false); }
 
 	print_column_titles(out);
-
-	// Row contents
 
 	using COL_TYPE = AlbumTableBase::COL_TYPE;
 	TYPE cstype = TYPE::ARCS2; // default

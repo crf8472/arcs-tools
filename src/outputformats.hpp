@@ -550,7 +550,8 @@ private:
 	 * It is expected that this function initializes the columns that are
 	 * typed CHECKSUM and MATCH.
 	 */
-	virtual void columns_apply_cs_settings()
+	virtual int columns_apply_cs_settings(
+			const std::vector<arcstk::checksum::type> &types)
 	= 0;
 };
 
@@ -657,7 +658,8 @@ public:
 
 private:
 
-	void columns_apply_cs_settings() override;
+	int columns_apply_cs_settings(
+			const std::vector<arcstk::checksum::type> &types) override;
 
 	void do_out(std::ostream &out, const Checksums &checksums,
 			const std::vector<std::string> &filenames,
@@ -697,7 +699,8 @@ public:
 
 private:
 
-	void columns_apply_cs_settings() override;
+	int columns_apply_cs_settings(
+			const std::vector<arcstk::checksum::type> &types) override;
 
 	void do_out(std::ostream &out, const Checksums &checksums,
 			const std::vector<std::string> &filenames,
