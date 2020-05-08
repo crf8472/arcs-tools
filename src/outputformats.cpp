@@ -712,7 +712,6 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 
 	const auto md_offset = columns_apply_settings();
 	columns_apply_cs_settings(types_to_print);
-
 	set_widths(COL_TYPE::FILENAME, optimal_width(filenames));
 
 	if (!toc) { set_offset(false); }
@@ -836,9 +835,9 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 	columns_apply_cs_settings(types_to_print);
 	set_widths(COL_TYPE::FILENAME, optimal_width(filenames));
 
-	// Print contents
-
 	if (!toc) { set_offset(false); }
+
+	// Print contents
 
 	print_column_titles(out);
 
