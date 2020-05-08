@@ -245,7 +245,7 @@ private:
 /**
  * \brief Simple table format for ARId.
  */
-class ARIdTableFormat : public ARIdFormat
+class ARIdTableFormat final : public ARIdFormat
 {
 
 public:
@@ -415,18 +415,6 @@ public:
 	 * \param[in] filename Flag to set for printing the filename
 	 */
 	void set_filename(const bool &filename);
-
-
-protected:
-
-	/**
-	 * \brief Returns the track lengths of \c checksums in track order
-	 *
-	 * \param[in] checksums Checksums to get the track lengths from
-	 *
-	 * \return The track lengths of \c checksums
-	 */
-	std::vector<int32_t> get_lengths(const Checksums &checksums) const;
 };
 
 
@@ -540,6 +528,15 @@ protected:
 	 */
 	COL_TYPE convert_to(const int type) const;
 
+	/**
+	 * \brief Returns the track lengths of \c checksums in track order
+	 *
+	 * \param[in] checksums Checksums to get the track lengths from
+	 *
+	 * \return The track lengths of \c checksums
+	 */
+	std::vector<int32_t> get_lengths(const Checksums &checksums) const;
+
 
 private:
 
@@ -557,13 +554,22 @@ private:
 
 
 /**
- * \brief Print the results of a Checksums calculation
+ * \brief Common base class for printers
  */
-class ChecksumsResultPrinter
+class Printer
 {
 public:
 
-	virtual ~ChecksumsResultPrinter() = default;
+	virtual ~Printer() = default;
+};
+
+
+/**
+ * \brief Print the results of a Checksums calculation
+ */
+class ChecksumsResultPrinter : public Printer
+{
+public:
 
 	/**
 	 * \brief Print the results to the specified stream
@@ -591,11 +597,9 @@ private:
 /**
  * \brief Print the results of a Verification
  */
-class MatchResultPrinter
+class MatchResultPrinter : public Printer
 {
 public:
-
-	virtual ~MatchResultPrinter() = default;
 
 	/**
 	 * \brief Print the results to the specified stream

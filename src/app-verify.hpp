@@ -78,8 +78,8 @@ class ARVerifyApplication final : public ARApplication
 	 */
 	ARResponse parse_response(const Options &options) const;
 
-	std::unique_ptr<MatchResultPrinter> configure_format(const Options &options)
-		const;
+	std::unique_ptr<MatchResultPrinter> configure_format(const Options &options,
+		const bool with_filenames) const;
 
 	/**
 	 * \brief Log matching files from a file list.

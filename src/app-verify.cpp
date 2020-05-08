@@ -52,6 +52,7 @@ using arcstk::ARId;
 using arcstk::ARResponse;
 using arcstk::ARStdinParser;
 using arcstk::Checksums;
+using arcstk::Logging;
 using arcstk::DefaultContentHandler;
 using arcstk::DefaultErrorHandler;
 using arcstk::Matcher;
@@ -184,7 +185,7 @@ ARResponse ARVerifyApplication::parse_response(const Options &options) const
 
 
 std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
-		const Options &options) const
+		const Options &options, const bool with_filenames) const
 {
 	const bool with_toc = !options.get(ARCalcOptions::METAFILE).empty();
 
@@ -192,7 +193,7 @@ std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
 	// show filenames otherwise
 	// show length in every case
 	return std::make_unique<AlbumMatchTableFormat>(
-				0, with_toc, with_toc, true, not with_toc);
+				0, with_toc, with_toc, true, with_filenames);
 }
 
 
@@ -252,9 +253,8 @@ int ARVerifyApplication::do_run(const Options &options)
 
 	std::unique_ptr<const Matcher> diff;
 
-	auto format = configure_format(options);
-
 	const bool album_requested = !options.get(ARCalcOptions::METAFILE).empty();
+	bool with_filenames = true;
 
 	if (album_requested)
 	{
@@ -271,21 +271,28 @@ int ARVerifyApplication::do_run(const Options &options)
 			ARCS_LOG_ERROR << "Calculation returned no identifier.";
 		}
 
-		diff = std::make_unique<AlbumMatcher>(checksums, arid, response);
+		// Verify pairwise distinct audio files
 
 		const auto& [ single_audio_file, pw_distinct ] = audiofile_layout(*toc);
-		// pass !single_audio_file to table
+
+		if (not single_audio_file and not pw_distinct)
+		{
+			// TODO Throw! This is currently unsupported
+		}
+
+		with_filenames = not single_audio_file;
+
+		diff = std::make_unique<AlbumMatcher>(checksums, arid, response);
 	} else
 	{
 		// No Offsets => No ARId => No TOC
 
-		// These files may or may not form a complete album. If it is an album,
-		// it must have been requested as such from cli. However, we have no
-		// metadata and will therefore only print filename, length and checksum.
-
 		diff = std::make_unique<TracksetMatcher>(checksums, response);
 
-		this->log_matching_files(checksums, *diff->match(), 1, true);
+		if (Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG))
+		{
+			log_matching_files(checksums, *diff->match(), 1, true);
+		}
 	}
 
 	// Print match results
@@ -321,6 +328,8 @@ int ARVerifyApplication::do_run(const Options &options)
 		? arcstk::toc::get_filenames(toc)
 		: options.get_arguments();
 	const TOC *tocptr = toc ? toc.get() : nullptr;
+
+	auto format = configure_format(options, with_filenames);
 
 	format->out(out_stream, checksums, filenames, response, *diff->match(),
 				diff->best_match(), diff->matches_v2(), tocptr, arid);

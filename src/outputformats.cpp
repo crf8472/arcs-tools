@@ -453,19 +453,6 @@ void WithMetadataFlagMethods::set_filename(const bool &filename)
 }
 
 
-std::vector<int32_t> WithMetadataFlagMethods::get_lengths(
-		const Checksums &checksums) const
-{
-	std::vector<int32_t> checksum_lengths{};
-	checksum_lengths.reserve(checksums.size());
-	for (const auto& checksum : checksums)
-	{
-		checksum_lengths.push_back(checksum.length());
-	}
-	return checksum_lengths;
-}
-
-
 // ChecksumsResultPrinter
 
 
@@ -625,20 +612,22 @@ AlbumTableBase::COL_TYPE AlbumTableBase::convert_to(const int type) const
 std::vector<arcstk::checksum::type> AlbumTableBase::typelist(
 		const Checksums &checksums) const
 {
-	const auto& defined_types = arcstk::checksum::types;
 
 	// Assume identical type sets in each track
-	const auto& used_types    = checksums[0].types();
-
-	// Construct types_to_print as list of all used types in the order they
-	// appear in arcstk::checksum::types
-	using cstype = arcstk::checksum::type;
-	std::vector<cstype> types_to_print{};
-	types_to_print.reserve(defined_types.size());
+	const auto& used_types = checksums[0].types();
 	const auto absent { used_types.end() };
-	std::copy_if(used_types.begin(), used_types.end(),
+
+	// Construct a list of all used types in the order they
+	// appear in arcstk::checksum::types
+
+	const auto& defined_types = arcstk::checksum::types;
+
+	std::vector<arcstk::checksum::type> types_to_print{};
+	types_to_print.reserve(defined_types.size());
+
+	std::copy_if(defined_types.begin(), defined_types.end(),
 			std::back_inserter(types_to_print),
-			[used_types, absent](const cstype& t)
+			[used_types, absent](const arcstk::checksum::type& t)
 			{
 				return used_types.find(t) != absent;
 			});
@@ -728,27 +717,36 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 	{
 		for (std::size_t col = 0; col < columns(); ++col) // print cell
 		{
-			if (track()    and type_of(col) == COL_TYPE::TRACK)
+			switch (type_of(col))
 			{
-				cell = std::to_string(trackno);
-			} else
-			if (filename() and type_of(col) == COL_TYPE::FILENAME)
-			{
-				cell = filenames.at(row);
-			} else
-			if (offset()   and type_of(col) == COL_TYPE::OFFSET)
-			{
-				cell = std::to_string(toc->offset(trackno));
-			} else
-			if (length()   and type_of(col) == COL_TYPE::LENGTH)
-			{
-				cell = std::to_string(checksums[row].length());
-			} else
-			{
-				cstype = types_to_print[col - md_offset];
+				case COL_TYPE::TRACK    :
+					if (track())
+						{ cell = std::to_string(trackno); }
+					break;
 
-				cell = hexlayout_.format(checksums[row].get(cstype).value(),
-						width(col));
+				case COL_TYPE::FILENAME :
+					if (filename())
+						{ cell = filenames.at(row); }
+					break;
+
+				case COL_TYPE::OFFSET   :
+					if (offset())
+						{ cell = std::to_string(toc->offset(trackno)); }
+					break;
+
+				case COL_TYPE::LENGTH   :
+					if (length())
+						{ cell = std::to_string(checksums[row].length()); }
+					break;
+
+				case COL_TYPE::CHECKSUM :
+					cstype = types_to_print[col - md_offset];
+					cell = hexlayout_.format(
+							checksums[row].get(cstype).value(),
+							width(col));
+					break;
+
+				case COL_TYPE::MATCH    : break;
 			}
 
 			out << std::setw(width(col))
@@ -851,42 +849,47 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 	{
 		for (std::size_t col = 0; col < columns(); ++col) // print cell
 		{
-			if (track()    and type_of(col) == COL_TYPE::TRACK)
+			switch (type_of(col))
 			{
-				cell = std::to_string(trackno);
-			} else
-			if (filename() and type_of(col) == COL_TYPE::FILENAME)
-			{
-				cell = filenames.at(row);
-			} else
-			if (offset()   and type_of(col) == COL_TYPE::OFFSET)
-			{
-				cell = std::to_string(toc->offset(trackno));
-			} else
-			if (length()   and type_of(col) == COL_TYPE::LENGTH)
-			{
-				cell = std::to_string(checksums[row].length());
-			} else
-			if (type_of(col) == COL_TYPE::CHECKSUM)
-			{
-				cstype = types_to_print[col - md_offset - m_columns];
+				case COL_TYPE::TRACK    :
+					if (track())
+						{ cell = std::to_string(trackno); }
+					break;
 
-				cell = hexlayout_.format(checksums[row].get(cstype).value(),
-						width(col));
-			} else // MATCH
-			{
-				++ m_columns;
+				case COL_TYPE::FILENAME :
+					if (filename())
+						{ cell = filenames.at(row); }
+					break;
 
-				cstype = types_to_print[col - md_offset - m_columns];
+				case COL_TYPE::OFFSET   :
+					if (offset())
+						{ cell = std::to_string(toc->offset(trackno)); }
+					break;
 
-				if (match.track(best, row, cstype == TYPE::ARCS2))
-				{
-					cell = "   ==   ";
-				} else
-				{
-					cell = hexlayout_.format(response[best].at(row).arcs(),
-						width(col));
-				}
+				case COL_TYPE::LENGTH   :
+					if (length())
+						{ cell = std::to_string(checksums[row].length()); }
+					break;
+
+				case COL_TYPE::CHECKSUM :
+					cstype = types_to_print[col - md_offset - m_columns];
+					cell = hexlayout_.format(
+							checksums[row].get(cstype).value(),
+							width(col));
+					break;
+
+				case COL_TYPE::MATCH    :
+					cstype = types_to_print[col - md_offset - m_columns];
+					++ m_columns;
+					if (match.track(best, row, version))
+					{
+						cell = "   ==   ";
+					} else
+					{
+						cell = hexlayout_.format(response[best].at(row).arcs(),
+							width(col));
+					}
+					break;
 			}
 
 			out << std::setw(width(col))
