@@ -3,6 +3,7 @@
 #endif
 
 #include <iostream>
+#include <fstream>
 #include <memory>
 #include <string>
 
@@ -158,28 +159,38 @@ int ARIdApplication::do_run(const Options &options)
 	}
 
 	// Adjust format and print information
+	std::unique_ptr<ARIdPrinter> format;
+
+	if (options.is_set(ARIdOptions::PROFILE))
 	{
-		std::unique_ptr<ARIdFormat> format;
-
-		if (options.is_set(ARIdOptions::PROFILE))
-		{
-			format = std::make_unique<ARIdTableFormat>();
-		} else
-		{
-			format = std::make_unique<ARIdTableFormat>(
-				options.is_set(ARIdOptions::URL),
-				options.is_set(ARIdOptions::DBID),
-				false /* no track count */,
-				false /* no disc id 1 */,
-				false /* no disc id 2 */,
-				options.is_set(ARIdOptions::CDDBID)
-			);
-		}
-
-		format->format(*id, options.get(ARIdOptions::PRE));
-
-		this->print(*format->lines(), options.get(ARIdOptions::OUT));
+		format = std::make_unique<ARIdTableFormat>();
+	} else
+	{
+		format = std::make_unique<ARIdTableFormat>(
+			options.is_set(ARIdOptions::URL),
+			options.is_set(ARIdOptions::DBID),
+			false /* no track count */,
+			false /* no disc id 1 */,
+			false /* no disc id 2 */,
+			options.is_set(ARIdOptions::CDDBID)
+		);
 	}
+
+	// Configure output stream
+
+	std::streambuf *buf;
+	std::ofstream out_file_stream;
+	if (auto filename = options.get(ARIdOptions::OUT); filename.empty())
+	{
+		buf = std::cout.rdbuf();
+	} else
+	{
+		out_file_stream.open(filename);
+		buf = out_file_stream.rdbuf();
+	}
+	std::ostream out_stream(buf);
+
+	format->out(out_stream, *id, options.get(ARIdOptions::PRE));
 
 	return EXIT_SUCCESS;
 }

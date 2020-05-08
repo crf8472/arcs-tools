@@ -93,8 +93,7 @@ private:
 /**
  * \brief Abstract base class for output formats of ARId.
  */
-class ARIdFormat	: virtual public OutputFormat
-					, protected WithInternalFlags
+class ARIdFormat	: protected WithInternalFlags
 {
 
 public:
@@ -218,12 +217,9 @@ public:
 	 * \param[in] id         The ARId to format
 	 * \param[in] alt_prefix Override the default URL prefix
 	 */
-	void format(const ARId &id, const std::string &alt_prefix);
-
+	std::string format(const ARId &id, const std::string &alt_prefix) const;
 
 private:
-
-	std::unique_ptr<Lines> do_lines() override;
 
 	/**
 	 * \brief Implements format().
@@ -231,56 +227,9 @@ private:
 	 * \param[in] id The ARId to format
 	 * \param[in] alt_prefix Override the default URL prefix
 	 */
-	virtual std::unique_ptr<Lines> do_format(const ARId &id,
-			const std::string &alt_prefix) const
+	virtual std::string do_format(const ARId &id, const std::string &alt_prefix)
+		const
 	= 0;
-
-	/**
-	 * \brief Internal representation of the lines
-	 */
-	std::unique_ptr<Lines> lines_;
-};
-
-
-/**
- * \brief Simple table format for ARId.
- */
-class ARIdTableFormat final : public ARIdFormat
-{
-
-public:
-
-	/**
-	 * \brief Default constructor.
-	 *
-	 * Sets all formatting flags to TRUE
-	 */
-	ARIdTableFormat();
-
-	/**
-	 * \brief Constructor setting all flags.
-	 *
-	 * \param[in] url         Set to TRUE for printing the URL
-	 * \param[in] filename    Set to TRUE for printing the filename
-	 * \param[in] track_count Set to TRUE for printing the track_count
-	 * \param[in] disc_id_1   Set to TRUE for printing the disc id1
-	 * \param[in] disc_id_2   Set to TRUE for printing the disc id2
-	 * \param[in] cddb_id     Set to TRUE for printing the cddb id
-	 */
-	ARIdTableFormat(const bool &url, const bool &filename,
-			const bool &track_count, const bool &disc_id_1,
-			const bool &disc_id_2, const bool &cddb_id);
-
-	/**
-	 * \brief Virtual default destructor.
-	 */
-	virtual ~ARIdTableFormat() noexcept;
-
-
-private:
-
-	std::unique_ptr<Lines> do_format(const ARId &id,
-			const std::string &alt_prefix) const override;
 };
 
 
@@ -565,6 +514,32 @@ public:
 
 
 /**
+ * \brief Print an ARId
+ */
+class ARIdPrinter : public Printer
+{
+public:
+
+	/**
+	 * \brief Print the results to the specified stream
+	 *
+	 * Ignores the filenames of TOC.
+	 *
+	 * \param[in] out    Output stream
+	 * \param[in] arid   ARId
+	 * \param[in] prefix URL prefix
+	 */
+	void out(std::ostream &out, const ARId &arid, const std::string &prefix);
+
+private:
+
+	virtual void do_out(std::ostream &out, const ARId &arid,
+			const std::string &prefix)
+	= 0;
+};
+
+
+/**
  * \brief Print the results of a Checksums calculation
  */
 class ChecksumsResultPrinter : public Printer
@@ -631,6 +606,53 @@ private:
 
 
 // Concrete classes ----
+
+
+/**
+ * \brief Simple table format for ARId.
+ */
+class ARIdTableFormat final : public ARIdFormat
+							, public StringTableBase
+							, public ARIdPrinter
+{
+
+public:
+
+	/**
+	 * \brief Default constructor.
+	 *
+	 * Sets all formatting flags to TRUE
+	 */
+	ARIdTableFormat();
+
+	/**
+	 * \brief Constructor setting all flags.
+	 *
+	 * \param[in] url         Set to TRUE for printing the URL
+	 * \param[in] filename    Set to TRUE for printing the filename
+	 * \param[in] track_count Set to TRUE for printing the track_count
+	 * \param[in] disc_id_1   Set to TRUE for printing the disc id1
+	 * \param[in] disc_id_2   Set to TRUE for printing the disc id2
+	 * \param[in] cddb_id     Set to TRUE for printing the cddb id
+	 */
+	ARIdTableFormat(const bool &url, const bool &filename,
+			const bool &track_count, const bool &disc_id_1,
+			const bool &disc_id_2, const bool &cddb_id);
+
+	/**
+	 * \brief Virtual default destructor.
+	 */
+	virtual ~ARIdTableFormat() noexcept;
+
+
+private:
+
+	void do_out(std::ostream &out, const ARId &arid,
+			const std::string &prefix) override;
+
+	std::string do_format(const ARId &id, const std::string &alt_prefix) const
+		override;
+};
 
 
 /**

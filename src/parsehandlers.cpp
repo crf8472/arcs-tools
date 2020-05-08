@@ -114,20 +114,10 @@ void ARParserContentPrintHandler::do_id(const uint8_t track_count,
 		const uint32_t disc_id1, const uint32_t disc_id2,
 		const uint32_t cddb_id)
 {
-	{
-		ARId id(track_count, disc_id1, disc_id2, cddb_id);
-		arid_fmt()->format(id, "");
-	}
+	ARId id(track_count, disc_id1, disc_id2, cddb_id);
 
 	std::ios_base::fmtflags prev_settings = out_stream_.flags();
-	{
-		auto arid_lines { arid_fmt()->lines() };
-		// TODO for (const std::string& line : arid_lines)
-		for (std::size_t i = 0; i < arid_lines->size(); ++i)
-		{
-			out_stream_ << arid_lines->get(i) << std::endl;
-		}
-	}
+	out_stream_ << arid_fmt()->format(id, "") << std::endl;
 	out_stream_.flags(prev_settings);
 }
 

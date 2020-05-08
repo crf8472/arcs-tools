@@ -25,9 +25,6 @@
 #include <arcstk/logging.hpp>
 #endif
 
-#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
-#include "outputformats.hpp"
-#endif
 #ifndef __ARCSTOOLS_PARSEHANDLERS_HPP__
 #include "parsehandlers.hpp"
 #endif
@@ -55,12 +52,9 @@ namespace {
 /**
  * \brief Wrap a vector in an istream.
  */
-template<typename CharT, typename TraitsT = std::char_traits<CharT> >
+template <typename CharT, typename TraitsT = std::char_traits<CharT>>
 class istreamwrapper : public std::basic_streambuf<CharT, TraitsT>
 {
-
-// learned from https://stackoverflow.com/a/8815308
-
 public:
 
 	/**
