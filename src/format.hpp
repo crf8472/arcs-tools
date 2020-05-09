@@ -24,225 +24,334 @@
 #include <arcstk/identifier.hpp>
 #endif
 
-/**
- * \brief A sequence of lines formatted for output.
- */
-class Lines
-{
+using arcstk::ARId;
 
+
+/**
+ * \brief Internal flag API
+ *
+ * Provides 32 boolean states with accessors.
+ */
+class WithInternalFlags
+{
 public:
 
 	/**
-	 * \brief Virtual default destructor.
+	 * \brief Constructor
+	 *
+	 * \param[in] flags Initial internal state
 	 */
-	virtual ~Lines() noexcept;
+	WithInternalFlags(const uint32_t flags);
 
 	/**
-	 * \brief Number of lines.
-	 *
-	 * \return The number of lines
+	 * \brief Default Constructor
 	 */
-	std::size_t size() const;
+	WithInternalFlags() : WithInternalFlags(0) { /* empty */ };
 
 	/**
-	 * \brief Get a line by index.
+	 * \brief Set the specified flag to the specified value.
 	 *
-	 * Trying to get a line with an index bigger than size() - 1 results in an
-	 * exception.
-	 *
-	 * \param[in] i The index to get the line for
-	 *
-	 * \return The line with index i
+	 * \param[in] idx   Index to set
+	 * \param[in] value Value to set
 	 */
-	std::string get(const uint32_t &i) const;
+	void set_flag(const int idx, const bool value);
 
 	/**
-	 * \brief Add a line as first line.
+	 * \brief Return the specified flag.
 	 *
-	 * \param[in] line The line to set as new first line
+	 * \param[in] idx   Index to return
+	 *
+	 * \return The value of the specified flag
 	 */
-	void prepend(const std::string &line);
-
-	/**
-	 * \brief Add a line as last line.
-	 *
-	 * \param[in] line The line to set as new last line
-	 */
-	void append(const std::string &line);
-
-	/**
-	 * \brief Append other lines as new lines below the existing lines.
-	 *
-	 * \param[in] lines Lines to append
-	 */
-	void append(const Lines &lines);
-
-	/**
-	 * \brief TRUE iff there are no actual lines in the sequence.
-	 *
-	 * Equivalent to the check whether size() is 0.
-	 *
-	 * \return TRUE iff there are no actual lines in this sequence
-	 */
-	bool empty() const;
-
+	bool flag(const int idx) const;
 
 private:
 
 	/**
-	 * \brief Implements size() const.
-	 *
-	 * \return The number of lines
+	 * \brief Implementation of the flags
 	 */
-	virtual std::size_t do_size() const
-	= 0;
-
-	/**
-	 * \brief Implements get(const uint32_t &i) const.
-	 *
-	 * \param[in] i The index to get the line for
-	 *
-	 * \return The line with index i
-	 */
-	virtual std::string do_get(const uint32_t &i) const
-	= 0;
-
-	/**
-	 * \brief Implements prepend(const std::string &line)
-	 *
-	 * \param[in] line The line to set as new first line
-	 */
-	virtual void do_prepend(const std::string &line)
-	= 0;
-
-	/**
-	 * \brief Implements append(const std::string &line)
-	 *
-	 * \param[in] line The line to set as new last line
-	 */
-	virtual void do_append(const std::string &line)
-	= 0;
-
-	/**
-	 * \brief Implements empty() const.
-	 *
-	 * \return TRUE iff there are no actual lines in this sequence
-	 */
-	virtual bool do_empty() const
-	= 0;
+	uint32_t flags_;
 };
 
 
 /**
- * \brief Default implementation of Lines.
+ * \brief Abstract base class for output formats of ARId.
  */
-class DefaultLines final : virtual public Lines
+class ARIdLayout : protected WithInternalFlags
 {
-
-public: /* types */
-
-	/**
-	 * \brief Const_iterator for Lines
-	 */
-	using const_iterator = std::deque<std::string>::const_iterator;
-
-
-public: /* functions */
+public:
 
 	/**
 	 * \brief Default constructor.
+	 *
+	 * Sets all formatting flags to TRUE
 	 */
-	DefaultLines();
+	ARIdLayout();
 
 	/**
-	 * \brief Copy constructor
+	 * \brief Constructor setting all flags.
 	 *
-	 * \param[in] rhs The instance to copy
+	 * \param[in] url         Set to TRUE for printing the URL
+	 * \param[in] filename    Set to TRUE for printing the filename
+	 * \param[in] track_count Set to TRUE for printing the track_count
+	 * \param[in] disc_id_1   Set to TRUE for printing the disc id1
+	 * \param[in] disc_id_2   Set to TRUE for printing the disc id2
+	 * \param[in] cddb_id     Set to TRUE for printing the cddb id
 	 */
-	DefaultLines(const DefaultLines &rhs);
+	ARIdLayout(const bool &url, const bool &filename,
+			const bool &track_count, const bool &disc_id_1,
+			const bool &disc_id_2, const bool &cddb_id);
 
 	/**
-	 * \brief Const iterator pointing to the first line.
-	 *
-	 * \return Iterator pointing to first line
+	 * \brief Virtual default destructor
 	 */
-	const_iterator begin() const;
+	virtual ~ARIdLayout() noexcept;
 
 	/**
-	 * \brief Const iterator pointing behind the last line.
+	 * \brief Returns TRUE iff instance is configured to format the URL.
 	 *
-	 * \return Iterator pointing behind the last line
+	 * \return URL flag
 	 */
-	const_iterator end() const;
+	bool url() const;
 
 	/**
-	 * \brief Const iterator pointing to the first line.
+	 * \brief Set to TRUE to print the URL.
 	 *
-	 * \return Const iterator pointing to first line
+	 * \param[in] url Flag to indicate that the URL has to be printed
 	 */
-	const_iterator cbegin() const;
+	void set_url(const bool url);
 
 	/**
-	 * \brief Const iterator pointing behind the last line.
+	 * \brief Returns TRUE iff instance is configured to format the filename.
 	 *
-	 * \return Const iterator pointing behind the last line
+	 * \return Filename flag
 	 */
-	const_iterator cend() const;
+	bool filename() const;
 
-	std::size_t do_size() const final;
+	/**
+	 * \brief Set to TRUE to print the filename.
+	 *
+	 * \param[in] filename Flag to indicate that the filename has to be printed
+	 */
+	void set_filename(const bool filename);
 
-	std::string do_get(const uint32_t &i) const final;
+	/**
+	 * \brief Returns TRUE iff instance is configured to format the track_count.
+	 *
+	 * \return Track count flag
+	 */
+	bool track_count() const;
 
-	void do_prepend(const std::string &line) final;
+	/**
+	 * \brief Set to TRUE to print the track count.
+	 *
+	 * \param[in] trackcount Flag to indicate that the track count has to be printed
+	 */
+	void set_trackcount(const bool trackcount);
 
-	void do_append(const std::string &line) final;
+	/**
+	 * \brief Returns TRUE iff instance is configured to format the disc id 1.
+	 *
+	 * \return Disc id 1 flag
+	 */
+	bool disc_id_1() const;
 
-	bool do_empty() const final;
+	/**
+	 * \brief Set to TRUE to print the first disc id.
+	 *
+	 * \param[in] disc_id_1 Flag to indicate that the first disc id has to be printed
+	 */
+	void set_disc_id_1(const bool disc_id_1);
 
+	/**
+	 * \brief Returns TRUE iff instance is configured to format the disc id 2.
+	 *
+	 * \return Disc id 2 flag
+	 */
+	bool disc_id_2() const;
+
+	/**
+	 * \brief Set to TRUE to print the second disc id.
+	 *
+	 * \param[in] disc_id_2 Flag to indicate that the first disc id has to be printed
+	 */
+	void set_disc_id_2(const bool disc_id_2);
+
+	/**
+	 * \brief Returns TRUE iff instance is configured to format the cddb id.
+	 *
+	 * \return CDDB id flag
+	 */
+	bool cddb_id() const;
+
+	/**
+	 * \brief Set to TRUE to print the cddb id.
+	 *
+	 * \param[in] cddb_id Flag to indicate that the cddb id has to be printed
+	 */
+	void set_cddb_id(const bool cddb_id);
+
+	/**
+	 * \brief Format the ARId passed.
+	 *
+	 * The default URL prefix 'http://www.accuraterip.com/accuraterip/' can
+	 * be overriden for output.
+	 *
+	 * \param[in] id         The ARId to format
+	 * \param[in] alt_prefix Override the default URL prefix
+	 */
+	std::string format(const ARId &id, const std::string &alt_prefix) const;
 
 private:
 
 	/**
-	 * \brief Internal representation of the lines.
+	 * \brief Implements format().
+	 *
+	 * \param[in] id The ARId to format
+	 * \param[in] alt_prefix Override the default URL prefix
 	 */
-	std::deque<std::string> lines_;
+	virtual std::string do_format(const ARId &id, const std::string &alt_prefix)
+		const
+	= 0;
 };
 
 
 /**
- * \brief Abstract base class for output formats.
+ * \brief Abstract base class for output formats that conatin an ARId.
  *
- * A format provides lines for output. The interface for the actual formatting
- * is not specified but as a convention, the subclasses use a method format()
- * that recieves the object to be formatted as an argument.
+ * \todo Make a template from this (also see WithChecksums)
  */
-class OutputFormat
+class WithARId
 {
-
 public:
+
+	/**
+	 * \brief Constructor.
+	 */
+	WithARId();
+
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] arid_layout The ARIdLayout to set
+	 */
+	explicit WithARId(std::unique_ptr<ARIdLayout> arid_layout);
 
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	virtual ~OutputFormat() noexcept;
+	virtual ~WithARId() noexcept;
 
 	/**
-	 * \brief Return lines formatted for output.
+	 * \brief Set the format to use for formatting the ARId.
 	 *
-	 * \return The output according to the formatting rules of this instance
+	 * \param[in] format The ARIdLayout to set
 	 */
-	std::unique_ptr<Lines> lines();
+	void set_arid_layout(std::unique_ptr<ARIdLayout> arid_layout);
 
+	/**
+	 * \brief Read the format to use for formatting the ARId.
+	 *
+	 * \return The internal ARIdLayout
+	 */
+	ARIdLayout* arid_layout();
 
 private:
 
 	/**
-	 * \brief Implements lines().
-	 *
-	 * \return The output according to the formatting rules of this instance
+	 * \brief Format for the ARId.
 	 */
-	virtual std::unique_ptr<Lines> do_lines()
-	= 0;
+	std::unique_ptr<ARIdLayout> arid_layout_;
+};
+
+
+/**
+ * \brief Adds flags for showing track, offset, length or filename.
+ */
+class WithMetadataFlagMethods : protected WithInternalFlags
+{
+public:
+
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] track    Set to TRUE for printing track number (if any)
+	 * \param[in] offset   Set to TRUE for printing offset (if any)
+	 * \param[in] length   Set to TRUE for printing length (if any)
+	 * \param[in] filename Set to TRUE for printing filename (if any)
+	 */
+	WithMetadataFlagMethods(const bool track, const bool offset,
+			const bool length, const bool filename);
+
+	/**
+	 * \brief Default constructor.
+	 *
+	 * Constructs an instance with all flags FALSE.
+	 */
+	WithMetadataFlagMethods() : WithMetadataFlagMethods(
+			false, false, false, false) {}
+
+	/**
+	 * \brief Virtual default destructor
+	 */
+	virtual ~WithMetadataFlagMethods() noexcept;
+
+	/**
+	 * \brief Returns TRUE iff instance is configured to format the track
+	 * number.
+	 *
+	 * \return Flag for printing the track number
+	 */
+	bool track() const;
+
+	/**
+	 * \brief Activate or deactivate the printing of the track number.
+	 *
+	 * \param[in] track Flag to set for printing the track number
+	 */
+	void set_track(const bool &track);
+
+	/**
+	 * \brief Returns TRUE iff instance is configured to format the offset.
+	 *
+	 * \return Flag for printing the offset
+	 */
+	bool offset() const;
+
+	/**
+	 * \brief Activate or deactivate the printing of the offsets.
+	 *
+	 * \param[in] offset Flag to set for printing the offset
+	 */
+	void set_offset(const bool &offset);
+
+	/**
+	 * \brief Returns TRUE iff instance is configured to format the length.
+	 *
+	 * \return Flag for printing the length
+	 */
+	bool length() const;
+
+	/**
+	 * \brief Activate or deactivate the printing of the lengths.
+	 *
+	 * \param[in] length Flag to set for printing the length
+	 */
+	void set_length(const bool &length);
+
+	/**
+	 * \brief Returns TRUE iff instance is configured to format the filename.
+	 *
+	 * \return Flag for printing the filename
+	 */
+	bool filename() const;
+
+	/**
+	 * \brief Activate or deactivate the printing of the filenames.
+	 *
+	 * \param[in] filename Flag to set for printing the filename
+	 */
+	void set_filename(const bool &filename);
 };
 
 
@@ -251,7 +360,6 @@ private:
  */
 class NumberLayout
 {
-
 public:
 
 	/**
@@ -267,7 +375,6 @@ public:
 	 */
 	std::string format(const uint32_t &number, const int width) const;
 
-
 private:
 
 	/**
@@ -282,7 +389,7 @@ private:
 
 
 /**
- * \brief Default layout: unaltered right numbers, unaltered left text
+ * \brief Default layout: unaltered decimal numbers
  */
 class DefaultLayout : public NumberLayout
 {
@@ -294,11 +401,10 @@ private:
 
 
 /**
- * \brief Hexadecimal numbers, unaltered text
+ * \brief Hexadecimal numbers
  */
 class HexLayout : public NumberLayout
 {
-
 public:
 
 	/**
@@ -334,7 +440,6 @@ public:
 	 */
 	bool is_uppercase() const;
 
-
 private:
 
 	std::string do_format(const uint32_t &number, const int width) const
@@ -355,7 +460,7 @@ inline int optimal_width(Container&& list)
 {
 	std::size_t width = 0;
 
-	for (const auto& entry : list)
+	for (const auto& entry : list)   // TODO Do this with STL!
 	{
 		if (entry.length() > width)
 		{
@@ -378,6 +483,8 @@ class StringTable
 {
 
 public:
+
+	friend std::ostream& operator<< (std::ostream &o, const StringTable &table);
 
 	/**
 	 * \brief Virtual destructor.
@@ -507,14 +614,13 @@ public:
 	 */
 	std::string cell(const int row, const int col) const;
 
-	void resize(const int rows, const int cols);
-
 	/**
-	 * \brief Print the table
+	 * \brief Reset the dimensions of the table
 	 *
-	 * \return The printed table
+	 * \param[in] rows Number of rows
+	 * \param[in] cols Number of columns
 	 */
-	std::unique_ptr<Lines> print() const;
+	void resize(const int rows, const int cols);
 
 	/**
 	 * \brief Access operator
@@ -525,9 +631,6 @@ public:
 	 * \return Formatted cell content
 	 */
 	std::string operator() (const int row, const int col) const;
-
-	friend std::ostream& operator<< (std::ostream &o, const StringTable &table);
-
 
 protected:
 
@@ -542,7 +645,6 @@ protected:
 	 * \throws std::out_of_range If row > rows() or row < 0.
 	 */
 	void bounds_check(const int row, const int col) const;
-
 
 private:
 
@@ -686,6 +788,12 @@ private:
 	virtual std::string do_cell(const int row, const int col) const
 	= 0;
 
+	/**
+	 * \brief Implements StringTable::resize(const int, const int)
+	 *
+	 * \param[in] rows  Number of rows
+	 * \param[in] cols  Number of columns
+	 */
 	virtual void do_resize(const int rows, const int cols)
 	= 0;
 
@@ -700,14 +808,6 @@ private:
 	 */
 	virtual void do_bounds_check(const int row, const int col) const
 	= 0;
-
-	/**
-	 * \brief Implements StringTable::
-	 *
-	 * \return The printed table
-	 */
-	virtual std::unique_ptr<Lines> do_print() const
-	= 0;
 };
 
 
@@ -716,7 +816,6 @@ private:
  */
 class StringTableBase : public StringTable
 {
-
 public:
 
 	/**
@@ -728,24 +827,16 @@ public:
 	StringTableBase(const int rows, const int columns);
 
 	/**
+	 * \brief Default constructor
+	 *
+	 * Constructs a table with dimensions 0,0
+	 */
+	StringTableBase() : StringTableBase(0, 0) { /* empty */ }
+
+	/**
 	 * \brief Non-virtual default destructor
 	 */
 	~StringTableBase() noexcept;
-
-
-protected:
-
-	/**
-	 * \brief Validate that table has at least specified size
-	 *
-	 * \param[in] rows
-	 * \param[in] columns
-	 *
-	 * \throws Exception reporting that table is too small
-	 */
-	void validate_table_dimensions(const unsigned int rows,
-			const unsigned int columns) const;
-
 
 private:
 
@@ -774,7 +865,6 @@ private:
 	void do_resize(const int rows, const int cols) override;
 	void do_bounds_check(const int row, const int col) const override;
 
-	std::unique_ptr<Lines> do_print() const override;
 
 	// forward declaration
 	class Impl;

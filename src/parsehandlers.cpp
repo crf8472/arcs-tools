@@ -54,13 +54,13 @@ ARParserContentPrintHandler::~ARParserContentPrintHandler() = default;
 
 
 void ARParserContentPrintHandler::set_arid_format(
-		std::unique_ptr<ARIdFormat> format)
+		std::unique_ptr<ARIdLayout> format)
 {
 	arid_format_ = std::move(format);
 }
 
 
-const ARIdFormat& ARParserContentPrintHandler::arid_format() const
+const ARIdLayout& ARParserContentPrintHandler::arid_format() const
 {
 	return *arid_format_;
 }
@@ -79,13 +79,13 @@ const ARTripletFormat& ARParserContentPrintHandler::triplet_format() const
 }
 
 
-ARIdFormat* ARParserContentPrintHandler::arid_fmt()
+ARIdLayout* ARParserContentPrintHandler::arid_layout()
 {
 	return arid_format_.get();
 }
 
 
-ARTripletFormat* ARParserContentPrintHandler::triplet_fmt()
+ARTripletFormat* ARParserContentPrintHandler::triplet_format()
 {
 	return triplet_format_.get();
 }
@@ -102,10 +102,7 @@ void ARParserContentPrintHandler::do_start_block()
 	++block_counter_;
 
 	std::ios_base::fmtflags prev_settings = out_stream_.flags();
-
-	out_stream_ << "---------- Block " <<
-		std::dec << block_counter_ << std::endl;
-
+	out_stream_ << "---------- Block " << std::dec << block_counter_ << " : ";
 	out_stream_.flags(prev_settings);
 }
 
@@ -116,32 +113,17 @@ void ARParserContentPrintHandler::do_id(const uint8_t track_count,
 {
 	ARId id(track_count, disc_id1, disc_id2, cddb_id);
 
-	std::ios_base::fmtflags prev_settings = out_stream_.flags();
-	out_stream_ << arid_fmt()->format(id, "") << std::endl;
-	out_stream_.flags(prev_settings);
+	out_stream_ << arid_layout()->format(id, "") << std::endl;
 }
 
 
 void ARParserContentPrintHandler::do_triplet(const uint32_t arcs,
 		const uint8_t confidence, const uint32_t frame450_arcs)
 {
-	ARTripletFormat fmt;
-	{
-		++track_;
-		ARTriplet triplet(arcs, confidence, frame450_arcs);
-		triplet_fmt()->format(track_, triplet);
-	}
+	++track_;
+	ARTriplet triplet(arcs, confidence, frame450_arcs);
 
-	std::ios_base::fmtflags prev_settings = out_stream_.flags();
-	{
-		auto triplet_lines { triplet_fmt()->lines() };
-		// TODO for (const std::string& line : triplet_lines)
-		for (std::size_t i = 0; i < triplet_lines->size(); ++i)
-		{
-			out_stream_ << triplet_lines->get(i) << std::endl;
-		}
-	}
-	out_stream_.flags(prev_settings);
+	triplet_format()->out(out_stream_, track_, triplet);
 }
 
 
@@ -150,34 +132,11 @@ void ARParserContentPrintHandler::do_triplet(const uint32_t arcs,
 		const bool arcs_valid, const bool confidence_valid,
 		const bool frame450_arcs_valid)
 {
-	if (arcs_valid and confidence_valid and frame450_arcs_valid)
-	{
-		this->triplet(arcs, confidence, frame450_arcs);
-		return;
-	}
+	++track_;
+	ARTriplet triplet(arcs, confidence, frame450_arcs, arcs_valid,
+			confidence_valid, frame450_arcs_valid);
 
-	// TODO Do not double this up, just use do_triplet with bools or pass -1
-
-	ARTripletFormat fmt;
-	{
-		++track_;
-		ARTriplet triplet(arcs, confidence, frame450_arcs);
-		triplet_fmt()->format(track_, triplet);
-	}
-
-	std::ios_base::fmtflags prev_settings = out_stream_.flags();
-	{
-		auto triplet_lines = triplet_fmt()->lines();
-		// TODO for (const std::string& line : triplet_lines)
-		for (std::size_t i = 0; i < triplet_lines->size(); ++i)
-		{
-			out_stream_ << triplet_lines->get(i) << std::endl;
-		}
-		out_stream_ << "arcs: "  << (arcs_valid          ? "ok" : "broken")
-			<< "confidence: "    << (confidence_valid    ? "ok" : "broken")
-			<< "frame450 arcs: " << (frame450_arcs_valid ? "ok" : "broken");
-	}
-	out_stream_.flags(prev_settings);
+	triplet_format()->out(out_stream_, track_, triplet);
 }
 
 
@@ -190,10 +149,8 @@ void ARParserContentPrintHandler::do_end_block()
 void ARParserContentPrintHandler::do_end_input()
 {
 	std::ios_base::fmtflags prev_settings = out_stream_.flags();
-
 	out_stream_ << "EOF======= Blocks: " <<
 		std::dec << block_counter_ << std::endl;
-
 	out_stream_.flags(prev_settings);
 }
 

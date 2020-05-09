@@ -38,243 +38,6 @@ constexpr auto to_underlying(E e) noexcept
 }
 
 
-// WithInternalFlags
-
-
-WithInternalFlags::WithInternalFlags(const uint32_t flags)
-	: flags_(flags)
-{
-	// empty
-}
-
-
-void WithInternalFlags::set_flag(const int idx, const bool value)
-{
-	if (value)
-	{
-		flags_ |= (1 << idx); // <= true
-	} else
-	{
-		flags_ &= ~(0 << idx); // <= false
-	}
-}
-
-
-bool WithInternalFlags::flag(const int idx) const
-{
-	return flags_ & (1 << idx);
-}
-
-
-// ARIdFormat
-
-
-ARIdFormat::ARIdFormat()
-	: WithInternalFlags(0xFFFFFFFF) // all flags true
-{
-	// empty
-}
-
-
-ARIdFormat::ARIdFormat(const bool &url, const bool &filename,
-		const bool &track_count, const bool &disc_id_1, const bool &disc_id_2,
-		const bool &cddb_id)
-	: WithInternalFlags(
-			0
-			| url
-			| (filename    << 1)
-			| (track_count << 2)
-			| (disc_id_1   << 3)
-			| (disc_id_2   << 4)
-			| (cddb_id     << 5)
-		)
-{
-	// empty
-}
-
-
-ARIdFormat::~ARIdFormat() noexcept = default;
-
-
-bool ARIdFormat::url() const
-{
-	return flag(0);
-}
-
-
-void ARIdFormat::set_url(const bool url)
-{
-	this->set_flag(0, url);
-}
-
-
-bool ARIdFormat::filename() const
-{
-	return flag(1);
-}
-
-
-void ARIdFormat::set_filename(const bool filename)
-{
-	this->set_flag(1, filename);
-}
-
-
-bool ARIdFormat::track_count() const
-{
-	return flag(2);
-}
-
-
-void ARIdFormat::set_trackcount(const bool trackcount)
-{
-	this->set_flag(2, trackcount);
-}
-
-
-bool ARIdFormat::disc_id_1() const
-{
-	return flag(3);
-}
-
-
-void ARIdFormat::set_disc_id_1(const bool disc_id_1)
-{
-	this->set_flag(3, disc_id_1);
-}
-
-
-bool ARIdFormat::disc_id_2() const
-{
-	return flag(4);
-}
-
-
-void ARIdFormat::set_disc_id_2(const bool disc_id_2)
-{
-	this->set_flag(4, disc_id_2);
-}
-
-
-bool ARIdFormat::cddb_id() const
-{
-	return flag(5);
-}
-
-
-void ARIdFormat::set_cddb_id(const bool cddb_id)
-{
-	this->set_flag(5, cddb_id);
-}
-
-
-std::string ARIdFormat::format(const ARId &id, const std::string &alt_prefix)
-	const
-{
-	return this->do_format(id, alt_prefix);
-}
-
-
-// WithARId
-
-
-WithARId::WithARId()
-	: arid_format_(nullptr)
-{
-	// empty
-}
-
-
-WithARId::WithARId(std::unique_ptr<ARIdFormat> arid_format)
-	: arid_format_(std::move(arid_format))
-{
-	// empty
-}
-
-
-WithARId::~WithARId() noexcept = default;
-
-
-void WithARId::set_arid_format(std::unique_ptr<ARIdFormat> format)
-{
-	if (arid_format_)
-	{
-		arid_format_.reset();
-	}
-
-	arid_format_ = std::move(format);
-}
-
-
-ARIdFormat* WithARId::arid_format()
-{
-	return arid_format_ ? arid_format_.get() : nullptr;
-}
-
-
-// WithMetadataFlagMethods
-
-
-WithMetadataFlagMethods::WithMetadataFlagMethods(const bool track,
-		const bool offset, const bool length, const bool filename)
-	: WithInternalFlags(
-			0 | track | (offset << 1) | (length << 2) | (filename << 3))
-{
-	// empty
-}
-
-
-WithMetadataFlagMethods::~WithMetadataFlagMethods() noexcept = default;
-
-
-bool WithMetadataFlagMethods::track() const
-{
-	return this->flag(0);
-}
-
-
-void WithMetadataFlagMethods::set_track(const bool &track)
-{
-	this->set_flag(0, track);
-}
-
-
-bool WithMetadataFlagMethods::offset() const
-{
-	return this->flag(1);
-}
-
-
-void WithMetadataFlagMethods::set_offset(const bool &offset)
-{
-	this->set_flag(1, offset);
-}
-
-
-bool WithMetadataFlagMethods::length() const
-{
-	return this->flag(2);
-}
-
-
-void WithMetadataFlagMethods::set_length(const bool &length)
-{
-	this->set_flag(2, length);
-}
-
-
-bool WithMetadataFlagMethods::filename() const
-{
-	return this->flag(3);
-}
-
-
-void WithMetadataFlagMethods::set_filename(const bool &filename)
-{
-	this->set_flag(3, filename);
-}
-
-
 // ARIdPrinter
 
 
@@ -283,6 +46,29 @@ void ARIdPrinter::out(std::ostream &out, const ARId &arid,
 {
 	const auto flags = out.flags();
 	this->do_out(out, arid, prefix);
+	out.flags(flags);
+}
+
+
+// ARTripletPrinter
+
+
+void ARTripletPrinter::out(std::ostream &out, const int track,
+		const ARTriplet &triplet)
+{
+	const auto flags = out.flags();
+	this->do_out(out, track, triplet);
+	out.flags(flags);
+}
+
+
+// ARBlockPrinter
+
+
+void ARBlockPrinter::out(std::ostream &out, const ARBlock &block)
+{
+	const auto flags = out.flags();
+	this->do_out(out, block);
 	out.flags(flags);
 }
 
@@ -320,18 +106,19 @@ void MatchResultPrinter::out(std::ostream &out, const Checksums &checksums,
 
 
 AlbumTableBase::AlbumTableBase(const int rows, const int columns)
-	: WithMetadataFlagMethods(true, true, true, true)
-	, StringTableBase(rows, columns)
+	: StringTableBase(rows, columns)
+	, WithMetadataFlagMethods(true, true, true, true)
 {
 	// empty
 }
 
 
 AlbumTableBase::AlbumTableBase(const int rows, const int columns,
-			const bool track, const bool offset, const bool length,
-			const bool filename)
-	: WithMetadataFlagMethods(track, offset, length, filename)
-	, StringTableBase(rows, columns)
+			const bool show_track, const bool show_offset,
+			const bool show_length, const bool show_filename)
+	: StringTableBase(rows, columns)
+	, WithMetadataFlagMethods(
+			show_track, show_offset, show_length, show_filename)
 {
 	// empty
 }
@@ -486,7 +273,7 @@ void AlbumTableBase::print_column_titles(std::ostream &out) const
 
 
 ARIdTableFormat::ARIdTableFormat()
-	: ARIdFormat()
+	: ARIdLayout()
 	, StringTableBase(0, 0)
 {
 	// empty
@@ -496,7 +283,7 @@ ARIdTableFormat::ARIdTableFormat()
 ARIdTableFormat::ARIdTableFormat(const bool &url, const bool &filename,
 		const bool &track_count, const bool &disc_id_1, const bool &disc_id_2,
 		const bool &cddb_id)
-	: ARIdFormat(url, filename, track_count, disc_id_1, disc_id_2, cddb_id)
+	: ARIdLayout(url, filename, track_count, disc_id_1, disc_id_2, cddb_id)
 	, StringTableBase(0, 0)
 {
 	// empty
@@ -507,7 +294,7 @@ ARIdTableFormat::~ARIdTableFormat() noexcept = default;
 
 
 std::string ARIdTableFormat::do_format(const ARId &id,
-			const std::string &alt_prefix) const
+			const std::string &/*alt_prefix*/) const
 {
 	return id.to_string();
 }
@@ -669,11 +456,10 @@ void ARIdTableFormat::do_out(std::ostream &out, const ARId &id,
 
 
 AlbumChecksumsTableFormat::AlbumChecksumsTableFormat(const int rows,
-		const int columns, const bool track, const bool offset,
-		const bool length, const bool filename)
-	: WithMetadataFlagMethods(track, offset, length, filename)
-	, StringTableBase(rows, columns)
-	, AlbumTableBase(rows, columns, track, offset, length, filename)
+		const int columns, const bool show_track, const bool show_offset,
+		const bool show_length, const bool show_filename)
+	: AlbumTableBase(rows, columns,
+			show_track, show_offset, show_length, show_filename)
 	, hexlayout_()
 {
 	hexlayout_.set_show_base(false);
@@ -780,12 +566,13 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 
 
 AlbumMatchTableFormat::AlbumMatchTableFormat(const int rows,
-			const bool track, const bool offset, const bool length,
-			const bool filename)
-	: WithMetadataFlagMethods(track, offset, length, filename)
-	, StringTableBase(rows, (track + offset + length + filename + 2))
-	, AlbumTableBase(rows, (track + offset + length + filename + 2),
-			track, offset, length, filename)
+			const bool show_track,
+			const bool show_offset,
+			const bool show_length,
+			const bool show_filename)
+	: AlbumTableBase(rows,
+			(show_track + show_offset + show_length + show_filename + 2),
+			show_track, show_offset, show_length, show_filename)
 	, hexlayout_()
 {
 	hexlayout_.set_show_base(false);
@@ -924,72 +711,25 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 // ARTripletFormat
 
 
-ARTripletFormat::ARTripletFormat()
-	: lines_()
-{
-	// empty
-}
-
-
-ARTripletFormat::~ARTripletFormat() noexcept = default;
-
-
-void ARTripletFormat::format(const unsigned int &track,
+void ARTripletFormat::do_out(std::ostream &out, const int track,
 		const ARTriplet &triplet)
 {
-	lines_ = this->do_format(track, triplet);
-}
+	HexLayout hex;
+	hex.set_show_base(false);
+	hex.set_uppercase(true);
 
+	out << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
 
-std::unique_ptr<Lines> ARTripletFormat::do_lines()
-{
-	return std::move(lines_);
-}
+	out << std::setw(8) << std::setfill('0') << hex.format(triplet.arcs(), 8);
 
-
-std::unique_ptr<Lines> ARTripletFormat::do_format(const unsigned int &track,
-		const ARTriplet &triplet) const
-{
-	std::stringstream linestr;
-
-	std::ios_base::fmtflags dec_flags;
-	dec_flags  =  linestr.flags();
-	dec_flags &= ~linestr.basefield;
-	dec_flags &= ~linestr.adjustfield;
-
-	dec_flags |= linestr.right;        // align fields to the right margin
-	dec_flags |= linestr.dec;          // set decimal representation
-
-
-	std::ios_base::fmtflags hex_flags;
-	hex_flags  =  linestr.flags();
-	hex_flags &= ~linestr.basefield;
-	hex_flags &= ~linestr.adjustfield;
-
-	hex_flags |= linestr.right;        // align fields to the right margin
-	hex_flags |= linestr.hex;          // set hexadecimal representation
-	hex_flags |= linestr.uppercase;    // show digits A-F in uppercase
-
-	linestr.flags(dec_flags);
-	linestr << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
-
-	linestr.flags(hex_flags);
-	linestr << std::setw(8) << std::setfill('0')
-			<< static_cast<unsigned int>(triplet.arcs());
-
-	linestr.flags(dec_flags);
-	linestr << " (" << std::setw(2) << std::setfill('0')
+	out << " (" << std::setw(2) << std::setfill('0')
 			<< static_cast<unsigned int>(triplet.confidence())
 			<< ") ";
 
-	linestr.flags(hex_flags);
-	linestr << std::setw(8) << std::setfill('0')
-			<< static_cast<unsigned int>(triplet.frame450_arcs());
+	out << std::setw(8) << std::setfill('0')
+		<< hex.format(triplet.frame450_arcs(), 8);
 
-	auto lines { std::make_unique<DefaultLines>() };
-	lines->append(linestr.str());
-
-	return lines;
+	out << std::endl;
 }
 
 
@@ -998,7 +738,6 @@ std::unique_ptr<Lines> ARTripletFormat::do_format(const unsigned int &track,
 
 ARBlockFormat::ARBlockFormat()
 	: WithARId()
-	, lines_()
 	, triplet_format_(nullptr)
 {
 	// empty
@@ -1025,40 +764,21 @@ const ARTripletFormat& ARBlockFormat::triplet_format() const
 }
 
 
-void ARBlockFormat::format(const ARBlock &block)
-{
-	lines_ = this->do_format(block);
-}
-
-
 ARTripletFormat* ARBlockFormat::triplet_fmt()
 {
 	return triplet_format_.get();
 }
 
 
-std::unique_ptr<Lines> ARBlockFormat::do_lines()
-{
-	return std::move(lines_);
-}
-
-
 // ARBlockTableFormat
 
 
-ARBlockTableFormat::ARBlockTableFormat() = default;
-
-
-ARBlockTableFormat::~ARBlockTableFormat() noexcept = default;
-
-
-std::unique_ptr<Lines> ARBlockTableFormat::do_format(const ARBlock &block)
+void ARBlockTableFormat::do_out(std::ostream &out, const ARBlock &block)
 {
-	auto lines { std::make_unique<DefaultLines>() };
-
-	if (arid_format())
+	if (arid_layout())
 	{
-		lines->append(arid_format()->format(block.id(), ""));
+		auto arid = arid_layout()->format(block.id(), "");
+		out << arid;
 	}
 
 	if (triplet_fmt())
@@ -1068,62 +788,8 @@ std::unique_ptr<Lines> ARBlockTableFormat::do_format(const ARBlock &block)
 		{
 			++trk;
 
-			triplet_fmt()->format(trk, triplet);
-			lines->append(*triplet_fmt()->lines());
+			triplet_fmt()->out(out, trk, triplet);
 		}
-	}
-
-	return lines;
-}
-
-
-// OffsetsFormat
-
-
-OffsetsFormat::~OffsetsFormat() noexcept = default;
-
-
-void OffsetsFormat::format(const std::vector<uint32_t> &offsets)
-{
-	this->do_format(offsets);
-}
-
-
-std::unique_ptr<Lines> OffsetsFormat::do_lines()
-{
-	return std::move(lines_);
-}
-
-
-void OffsetsFormat::do_format(const std::vector<uint32_t> &offsets)
-{
-	std::stringstream linestr;
-
-	std::ios_base::fmtflags dec_flags;
-	dec_flags  =  linestr.flags();
-	dec_flags &= ~linestr.basefield;
-	dec_flags &= ~linestr.adjustfield;
-
-	dec_flags |= linestr.right;        // align fields to the right margin
-	dec_flags |= linestr.dec;          // set decimal representation
-
-	linestr.flags(dec_flags);
-
-	auto lines { this->lines_.get() };
-
-	for (uint8_t i = 0; i < offsets.size(); ++i)
-	{
-		linestr << "Track ";
-
-		linestr << std::setw(2) << static_cast<unsigned int>(i + 1);
-
-		linestr << ": ";
-
-		linestr << std::setw(6) << static_cast<unsigned int>(offsets[i]);
-
-		lines->append(linestr.str());
-
-		linestr.str("");
 	}
 }
 
@@ -1194,11 +860,5 @@ void FormatList::add_data(const std::string &fmt_name, const std::string &desc,
 	this->update_cell(curr_row_, ++col, version);
 
 	++curr_row_;
-}
-
-
-std::unique_ptr<Lines> FormatList::do_lines()
-{
-	return this->print();
 }
 

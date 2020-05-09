@@ -60,14 +60,14 @@ public:
 	 *
 	 * \param[in] format The print format to use
 	 */
-	void set_arid_format(std::unique_ptr<ARIdFormat> format);
+	void set_arid_format(std::unique_ptr<ARIdLayout> format);
 
 	/**
 	 * \brief Read-access to the print format used for ARIds.
 	 *
 	 * \return The print format used for ARIds
 	 */
-	const ARIdFormat& arid_format() const;
+	const ARIdLayout& arid_format() const;
 
 	/**
 	 * \brief Sets the format for printing track information.
@@ -98,14 +98,14 @@ protected:
 	 *
 	 * \return The print format used
 	 */
-	ARIdFormat* arid_fmt();
+	ARIdLayout* arid_layout();
 
 	/**
 	 * \brief Non-const-access to the print format for subclasses.
 	 *
 	 * \return The print format used
 	 */
-	ARTripletFormat* triplet_fmt();
+	ARTripletFormat* triplet_format();
 
 
 private:
@@ -147,7 +147,7 @@ private:
 	/**
 	 * \brief Internal format used for printing the ARIds.
 	 */
-	std::unique_ptr<ARIdFormat> arid_format_;
+	std::unique_ptr<ARIdLayout> arid_format_;
 
 	/**
 	 * \brief Internal format used for printing the triplets.

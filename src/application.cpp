@@ -90,7 +90,11 @@ void ARApplication::fatal_error(const std::string &message) const
 
 void ARApplication::output(const StringTable &table) const
 {
-	// if (table.empty()) return;
+	// TODO table empty
+	//if (table.empty())
+	//{
+	//	return;
+	//}
 
 	std::cout << table;
 }
@@ -108,42 +112,5 @@ void ARApplication::output(const StringTable &table, const std::string &filename
 	std::ofstream out_file_stream;
 	out_file_stream.open(filename);
 	out_file_stream << table;
-}
-
-
-void ARApplication::print(const Lines &lines, const std::string &filename) const
-{
-	if (lines.empty())
-	{
-		return;
-	}
-
-	// Prepare Output Stream
-
-	std::streambuf *buf;
-	std::ofstream out_file_stream;
-
-	if (filename.empty())
-	{
-		buf = std::cout.rdbuf();
-	} else
-	{
-		out_file_stream.open(filename);
-		buf = out_file_stream.rdbuf();
-	}
-
-	std::ostream out_stream(buf);
-
-	// Print
-
-	std::ios_base::fmtflags orig_flags = std::cout.flags(); // save flags
-
-	//for (const std::string& line : lines)
-	for (std::size_t i = 0; i < lines.size(); ++i) // TODO: for (const std::string& line : *lines)
-	{
-		out_stream << lines.get(i) << std::endl;
-	}
-
-	std::cout.flags(orig_flags); // restore flags
 }
 

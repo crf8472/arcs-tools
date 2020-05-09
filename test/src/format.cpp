@@ -5,15 +5,6 @@
 #endif
 
 
-TEST_CASE ( "DefaultLines", "[defaultlines]" )
-{
-	SECTION ( "Construct DefaultLines" )
-	{
-		std::unique_ptr<DefaultLines> lines = std::make_unique<DefaultLines>();
-	}
-}
-
-
 TEST_CASE ( "HexLayout", "[hexlayout]" )
 {
 	auto hex_layout = std::make_unique<HexLayout>();
@@ -24,12 +15,30 @@ TEST_CASE ( "HexLayout", "[hexlayout]" )
 }
 
 
+TEST_CASE ( "WithMetadataFlagMethods", "" )
+{
+	WithMetadataFlagMethods flags(true, true, false, false);
+
+	REQUIRE ( flags.track() );
+	REQUIRE ( flags.offset() );
+	REQUIRE ( not flags.length() );
+	REQUIRE ( not flags.filename() );
+}
+
+
+TEST_CASE ( "AlbumTableBase", "" )
+{
+	WithMetadataFlagMethods table(true, true, false, false);
+
+	REQUIRE ( table.track() );
+	REQUIRE ( table.offset() );
+	REQUIRE ( not table.length() );
+	REQUIRE ( not table.filename() );
+}
+
+
 TEST_CASE ( "StringTableBase", "[stringtablebase]" )
 {
-	//auto hex_layout = std::make_unique<HexLayout>();
-	//hex_layout->set_show_base(true);
-	//CHECK ( hex_layout->shows_base() );
-
 	StringTableBase table(2, 4);
 
 	REQUIRE ( table.rows()    == 2 );
@@ -41,7 +50,6 @@ TEST_CASE ( "StringTableBase", "[stringtablebase]" )
 	table.set_width(1, 3);
 	table.set_width(2, 4);
 	//table.set_width(3, 10); // default
-	//
 
 	CHECK ( table.width(0) == 5 );
 	CHECK ( table.width(1) == 3 );
@@ -73,7 +81,6 @@ TEST_CASE ( "StringTableBase", "[stringtablebase]" )
 	//CHECK ( table.alignment(1) == true  );
 	//CHECK ( table.alignment(2) == true  );
 	//CHECK ( table.alignment(3) == false );
-
 }
 
 

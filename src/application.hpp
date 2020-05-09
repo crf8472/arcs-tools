@@ -96,17 +96,6 @@ protected:
 
 	void output(const StringTable &table) const;
 
-	/**
-	 * \brief Print lines to file or to stdout.
-	 *
-	 * If filename is empty, lines are printed to stdout. If lines are empty,
-	 * nothing is done.
-	 *
-	 * \param[in] lines    Lines to print
-	 * \param[in] filename Optional name of outfile
-	 */
-	virtual void print(const Lines &lines, const std::string &filename) const;
-
 private:
 
 	/**

@@ -16,127 +16,247 @@
 #include <vector>
 
 
-// Lines
+// WithInternalFlags
 
 
-Lines::~Lines() noexcept = default;
-
-
-std::size_t Lines::size() const
-{
-	return this->do_size();
-}
-
-
-std::string Lines::get(const uint32_t &i) const
-{
-	return this->do_get(i);
-}
-
-
-void Lines::prepend(const std::string &line)
-{
-	this->do_prepend(line);
-}
-
-
-void Lines::append(const std::string &line)
-{
-	this->do_append(line);
-}
-
-
-void Lines::append(const Lines &lines)
-{
-	for (std::size_t i = 0; i < lines.size(); ++i)
-	{
-		this->append(lines.get(i));
-	}
-}
-
-
-bool Lines::empty() const
-{
-	return this->do_empty();
-}
-
-
-// DefaultLines
-
-
-DefaultLines::DefaultLines()
-	: lines_()
+WithInternalFlags::WithInternalFlags(const uint32_t flags)
+	: flags_(flags)
 {
 	// empty
 }
 
 
-DefaultLines::DefaultLines(const DefaultLines &rhs) = default;
-
-
-DefaultLines::const_iterator DefaultLines::begin() const
+void WithInternalFlags::set_flag(const int idx, const bool value)
 {
-	return lines_.begin();
+	if (value)
+	{
+		flags_ |= (1 << idx);  // <= true
+	} else
+	{
+		flags_ &= ~(0 << idx); // <= false
+	}
 }
 
 
-DefaultLines::const_iterator DefaultLines::end() const
+bool WithInternalFlags::flag(const int idx) const
 {
-	return lines_.end();
+	return flags_ & (1 << idx);
 }
 
 
-DefaultLines::const_iterator DefaultLines::cbegin() const
+// ARIdLayout
+
+
+ARIdLayout::ARIdLayout()
+	: WithInternalFlags(0xFFFFFFFF) // all flags true
 {
-	return lines_.cbegin();
+	// empty
 }
 
 
-DefaultLines::const_iterator DefaultLines::cend() const
+ARIdLayout::ARIdLayout(const bool &url, const bool &filename,
+		const bool &track_count, const bool &disc_id_1, const bool &disc_id_2,
+		const bool &cddb_id)
+	: WithInternalFlags(
+			0
+			| url
+			| (filename    << 1)
+			| (track_count << 2)
+			| (disc_id_1   << 3)
+			| (disc_id_2   << 4)
+			| (cddb_id     << 5)
+		)
 {
-	return lines_.cend();
+	// empty
 }
 
 
-std::size_t DefaultLines::do_size() const
+ARIdLayout::~ARIdLayout() noexcept = default;
+
+
+bool ARIdLayout::url() const
 {
-	return lines_.size();
+	return flag(0);
 }
 
 
-std::string DefaultLines::do_get(const uint32_t &i) const
+void ARIdLayout::set_url(const bool url)
 {
-	return lines_.at(i);
+	this->set_flag(0, url);
 }
 
 
-void DefaultLines::do_prepend(const std::string &line)
+bool ARIdLayout::filename() const
 {
-	lines_.insert(lines_.begin(), line);
+	return flag(1);
 }
 
 
-void DefaultLines::do_append(const std::string &line)
+void ARIdLayout::set_filename(const bool filename)
 {
-	lines_.push_back(line);
+	this->set_flag(1, filename);
 }
 
 
-bool DefaultLines::do_empty() const
+bool ARIdLayout::track_count() const
 {
-	return lines_.empty();
+	return flag(2);
 }
 
 
-// OutputFormat
-
-
-OutputFormat::~OutputFormat() noexcept = default;
-
-
-std::unique_ptr<Lines> OutputFormat::lines()
+void ARIdLayout::set_trackcount(const bool trackcount)
 {
-	return do_lines();
+	this->set_flag(2, trackcount);
+}
+
+
+bool ARIdLayout::disc_id_1() const
+{
+	return flag(3);
+}
+
+
+void ARIdLayout::set_disc_id_1(const bool disc_id_1)
+{
+	this->set_flag(3, disc_id_1);
+}
+
+
+bool ARIdLayout::disc_id_2() const
+{
+	return flag(4);
+}
+
+
+void ARIdLayout::set_disc_id_2(const bool disc_id_2)
+{
+	this->set_flag(4, disc_id_2);
+}
+
+
+bool ARIdLayout::cddb_id() const
+{
+	return flag(5);
+}
+
+
+void ARIdLayout::set_cddb_id(const bool cddb_id)
+{
+	this->set_flag(5, cddb_id);
+}
+
+
+std::string ARIdLayout::format(const ARId &id, const std::string &alt_prefix)
+	const
+{
+	return this->do_format(id, alt_prefix);
+}
+
+
+// WithARId
+
+
+WithARId::WithARId()
+	: arid_layout_(nullptr)
+{
+	// empty
+}
+
+
+WithARId::WithARId(std::unique_ptr<ARIdLayout> arid_layout)
+	: arid_layout_(std::move(arid_layout))
+{
+	// empty
+}
+
+
+WithARId::~WithARId() noexcept = default;
+
+
+void WithARId::set_arid_layout(std::unique_ptr<ARIdLayout> format)
+{
+	if (arid_layout_)
+	{
+		arid_layout_.reset();
+	}
+
+	arid_layout_ = std::move(format);
+}
+
+
+ARIdLayout* WithARId::arid_layout()
+{
+	return arid_layout_ ? arid_layout_.get() : nullptr;
+}
+
+
+// WithMetadataFlagMethods
+
+
+WithMetadataFlagMethods::WithMetadataFlagMethods(
+		const bool show_track,
+		const bool show_offset,
+		const bool show_length,
+		const bool show_filename)
+	: WithInternalFlags(
+			0
+			| show_track
+			| (show_offset << 1)
+			| (show_length << 2)
+			| (show_filename << 3))
+{
+	// empty
+}
+
+
+WithMetadataFlagMethods::~WithMetadataFlagMethods() noexcept = default;
+
+
+bool WithMetadataFlagMethods::track() const
+{
+	return this->flag(0);
+}
+
+
+void WithMetadataFlagMethods::set_track(const bool &track)
+{
+	this->set_flag(0, track);
+}
+
+
+bool WithMetadataFlagMethods::offset() const
+{
+	return this->flag(1);
+}
+
+
+void WithMetadataFlagMethods::set_offset(const bool &offset)
+{
+	this->set_flag(1, offset);
+}
+
+
+bool WithMetadataFlagMethods::length() const
+{
+	return this->flag(2);
+}
+
+
+void WithMetadataFlagMethods::set_length(const bool &length)
+{
+	this->set_flag(2, length);
+}
+
+
+bool WithMetadataFlagMethods::filename() const
+{
+	return this->flag(3);
+}
+
+
+void WithMetadataFlagMethods::set_filename(const bool &filename)
+{
+	this->set_flag(3, filename);
 }
 
 
@@ -165,7 +285,7 @@ std::string DefaultLayout::do_format(const uint32_t &number, const int width)
 }
 
 
-// Hex8Layout
+// HexLayout
 
 
 HexLayout::HexLayout()
@@ -337,12 +457,6 @@ std::string StringTable::operator() (const int row, const int col) const
 void StringTable::resize(const int rows, const int cols)
 {
 	this->do_resize(rows, cols);
-}
-
-
-std::unique_ptr<Lines> StringTable::print() const
-{
-	return this->do_print();
 }
 
 
@@ -753,8 +867,6 @@ void StringTableBase::do_update_cell(const int row, const int col,
 {
 	this->bounds_check(row, col);
 	impl_->update_cell(row, col, text);
-	//impl_->columns_[col][row] = this->layout(col)->format(text,
-	//		this->column_width(col));
 }
 
 
@@ -768,57 +880,5 @@ std::string StringTableBase::do_cell(const int row, const int col) const
 void StringTableBase::do_bounds_check(const int row, const int col) const
 {
 	impl_->bounds_check(row, col);
-}
-
-
-void StringTableBase::validate_table_dimensions(const unsigned int rows,
-		const unsigned int columns) const
-{
-	if (rows > this->rows())
-	{
-		throw std::logic_error("Too much rows for this table");
-	}
-
-	if (columns > this->columns())
-	{
-		throw std::logic_error("Too much columns for this table");
-	}
-}
-
-
-std::unique_ptr<Lines> StringTableBase::do_print() const
-{
-	std::unique_ptr<DefaultLines> lines { std::make_unique<DefaultLines>() };
-
-	std::stringstream buf;
-
-	for (std::size_t col = 0; col < this->columns(); ++col)
-	{
-		buf << std::setw(this->width(col)) << std::left
-			<< this->title(col)
-			<< this->column_delimiter();
-	}
-	lines->append(buf.str());
-
-	buf.str("");
-	buf.clear();
-
-	for (std::size_t row = 0; row < this->rows(); ++row)
-	{
-		for (std::size_t col = 0; col < this->columns(); ++col)
-		{
-			buf << std::setw(this->width(col))
-				<< (this->alignment(col) > 0 ? std::left : std::right)
-				<< this->cell(row, col)
-				<< this->column_delimiter();
-		}
-
-		lines->append(buf.str());
-
-		buf.str("");
-		buf.clear();
-	}
-
-	return lines;
 }
 

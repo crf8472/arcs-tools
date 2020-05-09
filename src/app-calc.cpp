@@ -343,41 +343,46 @@ std::string ARCalcApplication::do_name() const
 
 int ARCalcApplication::run_info(const Options &options)
 {
+	const auto outfilename = options.get(ARCalcOptions::OUT);
+
+	// Configure output stream
+
+//	std::streambuf *buf;
+//	std::ofstream out_file_stream;
+//	if (auto filename = options.get(ARCalcOptions::OUT); filename.empty())
+//	{
+//		buf = std::cout.rdbuf();
+//	} else
+//	{
+//		out_file_stream.open(filename);
+//		buf = out_file_stream.rdbuf();
+//	}
+//	std::ostream out_stream(buf);
+
+	FormatCollector collector;
+	auto apply_func = std::bind(&FormatCollector::add, &collector,
+			std::placeholders::_1);
+
 	if (options.is_set(ARCalcOptions::LIST_TOC_FORMATS))
 	{
 		TOCParser p;
-		FormatCollector collector;
-
-		p.selection().traverse_descriptors(std::bind(
-				&FormatCollector::add, &collector, std::placeholders::_1));
-
-		FormatList list(collector.info().size());
-
-		for (const auto& entry : collector.info())
-		{
-			list.format(entry[0], entry[1], entry[2], entry[3]);
-		}
-
-		this->print(*list.lines(), options.get(ARCalcOptions::OUT));
+		p.selection().traverse_descriptors(apply_func);
 	}
 
 	if (options.is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
 	{
 		ARCSCalculator c;
-		FormatCollector collector;
-
-		c.selection().traverse_descriptors(std::bind(
-				&FormatCollector::add, &collector, std::placeholders::_1));
-
-		FormatList list(collector.info().size());
-
-		for (const auto& entry : collector.info())
-		{
-			list.format(entry[0], entry[1], entry[2], entry[3]);
-		}
-
-		this->print(*list.lines(), options.get(ARCalcOptions::OUT));
+		c.selection().traverse_descriptors(apply_func);
 	}
+
+	FormatList list(collector.info().size());
+	for (const auto& entry : collector.info())
+	{
+		list.format(entry[0], entry[1], entry[2], entry[3]);
+	}
+
+	//out_stream << list;
+	this->output(list, outfilename);
 
 	return EXIT_SUCCESS;
 }
