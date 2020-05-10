@@ -272,19 +272,6 @@ std::string NumberLayout::format(const uint32_t &number, const int width) const
 }
 
 
-// DefaultLayout
-
-
-std::string DefaultLayout::do_format(const uint32_t &number, const int width)
-	const
-{
-	std::stringstream ss;
-
-	ss << std::dec << std::setw(width) << std::right << number;
-	return ss.str();
-}
-
-
 // HexLayout
 
 

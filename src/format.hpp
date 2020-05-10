@@ -28,6 +28,26 @@ using arcstk::ARId;
 
 
 /**
+ * \brief Minimal fitting width (= longest entry) of a string column
+ */
+template<class Container, typename = arcstk::IsFilenameContainer<Container>>
+inline int optimal_width(Container&& list)
+{
+	std::size_t width = 0;
+
+	for (const auto& entry : list)   // TODO Do this with STL!
+	{
+		if (entry.length() > width)
+		{
+			width = entry.length();
+		}
+	}
+
+	return width;
+}
+
+
+/**
  * \brief Internal flag API
  *
  * Provides 32 boolean states with accessors.
@@ -389,18 +409,6 @@ private:
 
 
 /**
- * \brief Default layout: unaltered decimal numbers
- */
-class DefaultLayout : public NumberLayout
-{
-private:
-
-	std::string do_format(const uint32_t &number, const int width) const
-		override;
-};
-
-
-/**
  * \brief Hexadecimal numbers
  */
 class HexLayout : public NumberLayout
@@ -453,31 +461,10 @@ private:
 
 
 /**
- * \brief Minimal fitting width (= longest entry) of a string column
- */
-template<class Container, typename = arcstk::IsFilenameContainer<Container>>
-inline int optimal_width(Container&& list)
-{
-	std::size_t width = 0;
-
-	for (const auto& entry : list)   // TODO Do this with STL!
-	{
-		if (entry.length() > width)
-		{
-			width = entry.length();
-		}
-	}
-
-	return width;
-}
-
-
-/**
  * \brief A table with formatted columns
  */
 class TableLayout
 {
-
 public:
 
 	/**
