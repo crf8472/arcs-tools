@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <memory>
+#include <vector>
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
@@ -19,6 +20,41 @@
 #ifndef __ARCSTOOLS_VERSION_HPP__
 #include "version.hpp"
 #endif
+
+
+using arcsdec::FileFormat;
+
+
+// FormatCollector
+
+
+FormatCollector::FormatCollector()
+	: info_ {}
+{
+	// empty
+}
+
+
+void FormatCollector::add(const FileReaderDescriptor &descriptor)
+{
+	auto name = descriptor.name();
+
+	auto formats = descriptor.formats();
+
+	std::stringstream desc;
+	for (const auto& f : formats)
+	{
+		desc << arcsdec::name(f) << ",";
+	}
+
+	info_.push_back( { name, desc.str(), "-", "-" } );
+}
+
+
+std::vector<std::array<std::string, 4>> FormatCollector::info() const
+{
+	return info_;
+}
 
 
 // ARApplication

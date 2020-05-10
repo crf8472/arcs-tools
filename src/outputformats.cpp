@@ -28,8 +28,6 @@ using arcstk::ARId;
 using arcstk::Checksum;
 using arcstk::TOC;
 
-using arcsdec::FileFormat;
-
 
 template <typename E>
 constexpr auto to_underlying(E e) noexcept
@@ -791,38 +789,6 @@ void ARBlockTableFormat::do_out(std::ostream &out, const ARBlock &block)
 			triplet_fmt()->out(out, trk, triplet);
 		}
 	}
-}
-
-
-// FormatCollector
-
-
-FormatCollector::FormatCollector()
-	: info_ {}
-{
-	// empty
-}
-
-
-void FormatCollector::add(const FileReaderDescriptor &descriptor)
-{
-	auto name = descriptor.name();
-
-	auto formats = descriptor.formats();
-
-	std::stringstream desc;
-	for (const auto& f : formats)
-	{
-		desc << arcsdec::name(f) << ",";
-	}
-
-	info_.push_back( { name, desc.str(), "-", "-" } );
-}
-
-
-std::vector<std::array<std::string, 4>> FormatCollector::info() const
-{
-	return info_;
 }
 
 

@@ -17,6 +17,10 @@
 #include <arcstk/logging.hpp>
 #endif
 
+#ifndef __LIBARCSDEC_DESCRIPTORS_HPP__
+#include <arcsdec/descriptors.hpp>
+#endif
+
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
 #endif
@@ -28,6 +32,19 @@
 #endif
 
 
+using arcsdec::FileReaderDescriptor;
+
+
+/**
+ * \brief Output an object that overloads operator << for std::ostream
+ *
+ * If a filename is specified, the output is directed to the file with the
+ * specified name. The default value for filename is "" which means that
+ * the output goes to std::cout.
+ *
+ * \param[in] object   The object to print
+ * \param[in] filename Optional filename, default is ""
+ */
 template <typename T>
 inline auto output(const T &object, const std::string &filename = "")
 	-> decltype( std::cerr << object, void() )
@@ -43,6 +60,35 @@ inline auto output(const T &object, const std::string &filename = "")
 		out_file_stream << object;
 	}
 }
+
+
+/**
+ * \brief Collect descriptor infos
+ */
+class FormatCollector
+{
+public:
+
+	FormatCollector();
+
+	/**
+	 * \brief Add information represented by a descriptor
+	 *
+	 * \param[in] descriptor Add the info from this descriptor
+	 */
+	void add(const FileReaderDescriptor &descriptor);
+
+	/**
+	 * \brief Get the collected information
+	 *
+	 * \return Information collected
+	 */
+	std::vector<std::array<std::string, 4>> info() const;
+
+private:
+
+	std::vector<std::array<std::string, 4>> info_;
+};
 
 
 /**

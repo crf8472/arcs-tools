@@ -26,10 +26,6 @@
 #include <arcstk/match.hpp>
 #endif
 
-#ifndef __LIBARCSDEC_DESCRIPTORS_HPP__
-#include <arcsdec/descriptors.hpp>
-#endif
-
 #ifndef __ARCSTOOLS_FORMAT_HPP__
 #include "format.hpp"
 #endif
@@ -43,8 +39,6 @@ using arcstk::Checksums;
 using arcstk::Match;
 using arcstk::TOC;
 
-using arcsdec::FileReaderDescriptor;
-
 
 /**
  * \brief A table based format for album data
@@ -53,7 +47,6 @@ class AlbumTableBase	: public WithMetadataFlagMethods
 						, virtual public WithARId
 						, virtual public StringTableLayout
 {
-
 public:
 
 	/**
@@ -127,7 +120,6 @@ public:
 	 */
 	void set_widths(const COL_TYPE type, const int width);
 
-
 protected:
 
 	/**
@@ -164,7 +156,6 @@ protected:
 	 * \return The track lengths of \c checksums
 	 */
 	std::vector<int32_t> get_lengths(const Checksums &checksums) const;
-
 
 private:
 
@@ -339,7 +330,6 @@ class ARIdTableFormat final : public ARIdLayout
 							, public StringTableLayout
 							, public ARIdPrinter
 {
-
 public:
 
 	/**
@@ -367,7 +357,6 @@ public:
 	 * \brief Virtual default destructor.
 	 */
 	virtual ~ARIdTableFormat() noexcept;
-
 
 private:
 
@@ -517,7 +506,6 @@ public:
 	 */
 	const ARTripletFormat& triplet_format() const;
 
-
 protected:
 
 	/**
@@ -526,7 +514,6 @@ protected:
 	 * \return The internal ARTripletFormat
 	 */
 	ARTripletFormat* triplet_fmt();
-
 
 private:
 
@@ -546,25 +533,6 @@ class ARBlockTableFormat : public ARBlockFormat
 private:
 
 	void do_out(std::ostream &out, const ARBlock &block) override;
-};
-
-
-/**
- * \brief Collect descriptor infos
- */
-class FormatCollector
-{
-public:
-
-	FormatCollector();
-
-	void add(const FileReaderDescriptor &descriptor);
-
-	std::vector<std::array<std::string, 4>> info() const;
-
-private:
-
-	std::vector<std::array<std::string, 4>> info_;
 };
 
 
