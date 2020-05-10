@@ -479,7 +479,6 @@ private:
  */
 class ARBlockFormat : virtual public WithARId
 {
-
 public:
 
 	/**

@@ -44,10 +44,12 @@ using arcsdec::FileReaderDescriptor;
  *
  * \param[in] object   The object to print
  * \param[in] filename Optional filename, default is ""
+ *
+ * \return void iff object overloads operator << for std::ostream
  */
 template <typename T>
 inline auto output(const T &object, const std::string &filename = "")
-	-> decltype( std::cerr << object, void() )
+	-> decltype( std::cout << object, void() )
 {
 	if (filename.empty())
 	{

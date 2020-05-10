@@ -787,7 +787,10 @@ private:
 	 */
 	std::vector<std::string> cells_;
 
-	int cols_;
+	/**
+	 * \brief Number of columns.
+	 */
+	int cols_; // TODO Redundant value, also in StringTableLayout
 };
 
 
@@ -795,7 +798,7 @@ StringTable::Impl::Impl(const int rows, const int cols)
 	: cells_ (rows * cols)
 	, cols_ (cols)
 {
-	//cells_.resize();
+	// empty
 }
 
 
