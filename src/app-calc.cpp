@@ -345,20 +345,6 @@ int ARCalcApplication::run_info(const Options &options)
 {
 	const auto outfilename = options.get(ARCalcOptions::OUT);
 
-	// Configure output stream
-
-//	std::streambuf *buf;
-//	std::ofstream out_file_stream;
-//	if (auto filename = options.get(ARCalcOptions::OUT); filename.empty())
-//	{
-//		buf = std::cout.rdbuf();
-//	} else
-//	{
-//		out_file_stream.open(filename);
-//		buf = out_file_stream.rdbuf();
-//	}
-//	std::ostream out_stream(buf);
-
 	FormatCollector collector;
 	auto apply_func = std::bind(&FormatCollector::add, &collector,
 			std::placeholders::_1);
@@ -381,7 +367,6 @@ int ARCalcApplication::run_info(const Options &options)
 		list.append_line(entry[0], entry[1], entry[2], entry[3]);
 	}
 
-	//out_stream << list;
 	output(list, outfilename);
 
 	return EXIT_SUCCESS;

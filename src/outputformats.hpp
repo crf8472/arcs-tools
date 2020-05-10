@@ -46,8 +46,6 @@ using arcstk::TOC;
 using arcsdec::FileReaderDescriptor;
 
 
-
-
 /**
  * \brief A table based format for album data
  */
@@ -334,9 +332,6 @@ private:
 };
 
 
-// Concrete classes ----
-
-
 /**
  * \brief Simple table format for ARId.
  */
@@ -559,7 +554,6 @@ private:
  */
 class FormatCollector
 {
-
 public:
 
 	FormatCollector();
@@ -567,7 +561,6 @@ public:
 	void add(const FileReaderDescriptor &descriptor);
 
 	std::vector<std::array<std::string, 4>> info() const;
-
 
 private:
 
