@@ -582,8 +582,6 @@ public:
 	 */
 	void resize(const int rows, const int cols);
 
-protected:
-
 	/**
 	 * \brief Perform a bounds check and throw std::out_of_range on illegal
 	 * values.
@@ -735,19 +733,65 @@ private:
 };
 
 
-class StringTableBase;
+/**
+ * \brief
+ */
+class StringTableLayout : public TableLayout
+{
+public:
 
-std::ostream& operator << (std::ostream &o, const StringTableBase &table);
+	StringTableLayout(const int rows, const int cols);
+
+	StringTableLayout() : StringTableLayout(0, 0) { /* empty */ }
+
+	~StringTableLayout() noexcept;
+
+private:
+
+	std::size_t do_rows() const override;
+	std::size_t do_columns() const override;
+
+	void do_set_width(const int col, const int width) override;
+	int do_width(const int col) const override;
+
+	void do_set_alignment(const int col, const bool align) override;
+	bool do_alignment(const int col) const override;
+
+	void do_set_title(const int col, const std::string &name) override;
+	std::string do_title(const int col) const override;
+
+	void do_set_type(const int col, const int type) override;
+	int do_type(const int col) const override;
+
+	void do_set_column_delimiter(const std::string &delim) override;
+	std::string do_column_delimiter() const override;
+
+	void do_resize(const int rows, const int cols) override;
+	void do_bounds_check(const int row, const int col) const override;
+
+	// forward declaration
+	class Impl;
+
+	/**
+	 * \brief Private implementation
+	 */
+	std::unique_ptr<Impl> impl_;
+};
+
+
+class StringTable;
+
+std::ostream& operator << (std::ostream &o, const StringTable &table);
 
 /**
  * \brief Abstract base class for StringTables
  */
-class StringTableBase : public TableLayout
+class StringTable : public StringTableLayout
 {
 public:
 
 	friend std::ostream& operator<< (std::ostream &o,
-			const StringTableBase &table);
+			const StringTable &table);
 
 	/**
 	 * \brief Constructor
@@ -755,19 +799,19 @@ public:
 	 * \param[in] rows    Number of rows (including header, if any)
 	 * \param[in] columns Number of columns (including label column, if any)
 	 */
-	StringTableBase(const int rows, const int columns);
+	StringTable(const int rows, const int columns);
 
 	/**
 	 * \brief Default constructor
 	 *
 	 * Constructs a table with dimensions 0,0
 	 */
-	StringTableBase() : StringTableBase(0, 0) { /* empty */ }
+	StringTable() : StringTable(0, 0) { /* empty */ }
 
 	/**
 	 * \brief Non-virtual default destructor
 	 */
-	~StringTableBase() noexcept;
+	~StringTable() noexcept;
 
 	/**
 	 * \brief Updates an existing cell.
@@ -801,27 +845,6 @@ public:
 	std::string operator() (const int row, const int col) const;
 
 private:
-
-	std::size_t do_rows() const override;
-	std::size_t do_columns() const override;
-
-	void do_set_width(const int col, const int width) override;
-	int do_width(const int col) const override;
-
-	void do_set_alignment(const int col, const bool align) override;
-	bool do_alignment(const int col) const override;
-
-	void do_set_title(const int col, const std::string &name) override;
-	std::string do_title(const int col) const override;
-
-	void do_set_type(const int col, const int type) override;
-	int do_type(const int col) const override;
-
-	void do_set_column_delimiter(const std::string &delim) override;
-	std::string do_column_delimiter() const override;
-
-	void do_resize(const int rows, const int cols) override;
-	void do_bounds_check(const int row, const int col) const override;
 
 	/**
 	 * \brief Implements StringTable::

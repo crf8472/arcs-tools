@@ -106,7 +106,7 @@ void MatchResultPrinter::out(std::ostream &out, const Checksums &checksums,
 
 
 AlbumTableBase::AlbumTableBase(const int rows, const int columns)
-	: StringTableBase(rows, columns)
+	: StringTableLayout(rows, columns)
 	, WithMetadataFlagMethods(true, true, true, true)
 {
 	// empty
@@ -116,7 +116,7 @@ AlbumTableBase::AlbumTableBase(const int rows, const int columns)
 AlbumTableBase::AlbumTableBase(const int rows, const int columns,
 			const bool show_track, const bool show_offset,
 			const bool show_length, const bool show_filename)
-	: StringTableBase(rows, columns)
+	: StringTableLayout(rows, columns)
 	, WithMetadataFlagMethods(
 			show_track, show_offset, show_length, show_filename)
 {
@@ -274,7 +274,7 @@ void AlbumTableBase::print_column_titles(std::ostream &out) const
 
 ARIdTableFormat::ARIdTableFormat()
 	: ARIdLayout()
-	, StringTableBase(0, 0)
+	, StringTableLayout(0, 0)
 {
 	// empty
 }
@@ -284,7 +284,7 @@ ARIdTableFormat::ARIdTableFormat(const bool &url, const bool &filename,
 		const bool &track_count, const bool &disc_id_1, const bool &disc_id_2,
 		const bool &cddb_id)
 	: ARIdLayout(url, filename, track_count, disc_id_1, disc_id_2, cddb_id)
-	, StringTableBase(0, 0)
+	, StringTableLayout(0, 0)
 {
 	// empty
 }
@@ -829,28 +829,34 @@ std::vector<std::array<std::string, 4>> FormatCollector::info() const
 // FormatList
 
 
-FormatList::FormatList(const std::size_t entry_count)
-	: StringTableBase(entry_count, 4)
+FormatList::FormatList(const std::size_t rows)
+	: StringTable(rows, 4)
 	, curr_row_(0)
 {
 	int col = -1;
 
-	this->set_title(++col, "Name");
-	this->set_title(++col, "Short Desc.");
-	this->set_title(++col, "Lib");
-	this->set_title(++col, "Version");
+	set_title(++col, "Name");
+	set_width(col, title(col).length() + 6);
+	set_alignment(col, true);
+
+	set_title(++col, "Short Desc.");
+	set_width(col, title(col).length() + 4);
+	set_alignment(col, true);
+
+	set_title(++col, "Lib");
+	set_width(col, title(col).length() + 5);
+	set_alignment(col, true);
+
+	set_title(++col, "Version");
+	set_width(col, title(col).length());
+	set_alignment(col, true);
 }
 
 
-void FormatList::format(const std::string &fmt_name, const std::string &desc,
-		const std::string &lib_name, const std::string &version)
-{
-	this->add_data(fmt_name, desc, lib_name, version);
-}
-
-
-void FormatList::add_data(const std::string &fmt_name, const std::string &desc,
-		const std::string &lib_name, const std::string &version)
+void FormatList::append_line(const std::string &fmt_name,
+		const std::string &desc,
+		const std::string &lib_name,
+		const std::string &version)
 {
 	int col = -1;
 

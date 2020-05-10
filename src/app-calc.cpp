@@ -378,7 +378,7 @@ int ARCalcApplication::run_info(const Options &options)
 	FormatList list(collector.info().size());
 	for (const auto& entry : collector.info())
 	{
-		list.format(entry[0], entry[1], entry[2], entry[3]);
+		list.append_line(entry[0], entry[1], entry[2], entry[3]);
 	}
 
 	//out_stream << list;

@@ -433,11 +433,10 @@ void TableLayout::bounds_check(const int row, const int col) const
 
 
 /**
- * \brief Private implementation of a StringTableBase
+ * \brief Private implementation of a StringTableLayout
  */
-class StringTableBase::Impl final
+class StringTableLayout::Impl final
 {
-
 public:
 
 	Impl(const int rows, const int columns);
@@ -463,43 +462,22 @@ public:
 	std::string col_delim() const;
 
 	/**
-	 * \brief Perform a bounds check
-	 */
-	void bounds_check(const int row, const int col) const;
-
-	/**
 	 * \brief Resize to new dimensions
 	 */
 	void resize(const int rows, const int cols);
 
-	std::string get(const int row, const int col) const;
-	std::string cell(const int row, const int col) const;
-	void update_cell(const int row, const int col, const std::string &text);
+	/**
+	 * \brief Perform a bounds check
+	 */
+	void bounds_check(const int row, const int col) const;
 
 private:
-
-	/**
-	 * \brief Return index of the cell in row \c row dn column \c col.
-	 *
-	 * \param[in] row Row index
-	 * \param[in] col Column index
-	 *
-	 * \return Index of the table cell
-	 */
-	int index(const int row, const int col) const;
 
 	bool legal_row(const int row) const;
 
 	bool legal_col(const int col) const;
 
 	bool legal_width(const int width) const;
-
-private:
-
-	/**
-	 * \brief The table content.
-	 */
-	std::vector<std::string> cells_;
 
 	/**
 	 * \brief The column widths.
@@ -538,129 +516,99 @@ private:
 };
 
 
-StringTableBase::Impl::Impl(const int rows, const int cols)
-	: cells_        ()
-	, widths_       ()
-	, alignments_   ()
-	, titles_       ()
-	, types_        ()
+StringTableLayout::Impl::Impl(const int rows, const int cols)
+	: widths_       (cols)
+	, alignments_   (cols)
+	, titles_       (cols)
+	, types_        (cols)
 	, rows_         { rows }
 	, cols_         { cols }
 	, column_delim_ { " " }
 {
-	resize(rows, cols);
+	// empty
 }
 
 
-StringTableBase::Impl::~Impl() noexcept = default;
+StringTableLayout::Impl::~Impl() noexcept = default;
 
 
-int StringTableBase::Impl::rows() const
+int StringTableLayout::Impl::rows() const
 {
 	return rows_;
 }
 
 
-int StringTableBase::Impl::columns() const
+int StringTableLayout::Impl::columns() const
 {
 	return cols_;
 }
 
 
-std::string StringTableBase::Impl::cell(const int row, const int col) const
-{
-	return this->get(row, col);
-}
-
-
-void StringTableBase::Impl::update_cell(const int row, const int col,
-		const std::string &text)
-{
-	cells_[index(row, col)] = text;
-}
-
-
-std::string StringTableBase::Impl::get(const int row, const int col) const
-{
-	auto text = cells_[index(row, col)];
-
-	if (auto width = static_cast<std::size_t>(widths_[col]);
-			text.length() > width)
-	{
-		return text.substr(0, width - 1) + "~";
-	}
-
-	return text;
-}
-
-
-void StringTableBase::Impl::set_width(const int col, const int width)
+void StringTableLayout::Impl::set_width(const int col, const int width)
 {
 	widths_[col] = width;
 }
 
 
-int StringTableBase::Impl::width(const int col)
+int StringTableLayout::Impl::width(const int col)
 {
 	return widths_[col];
 }
 
 
-void StringTableBase::Impl::set_alignment(const int col, const bool align)
+void StringTableLayout::Impl::set_alignment(const int col, const bool align)
 {
 	alignments_[col] = align;
 }
 
 
-bool StringTableBase::Impl::alignment(const int col)
+bool StringTableLayout::Impl::alignment(const int col)
 {
 	return alignments_[col];
 }
 
 
-void StringTableBase::Impl::set_title(const int col,
+void StringTableLayout::Impl::set_title(const int col,
 		const std::string &title)
 {
 	titles_[col] = title;
 }
 
 
-std::string StringTableBase::Impl::title(const int col) const
+std::string StringTableLayout::Impl::title(const int col) const
 {
 	return titles_[col];
 }
 
 
-void StringTableBase::Impl::set_type(const int col, const int type)
+void StringTableLayout::Impl::set_type(const int col, const int type)
 {
 	types_[col] = type;
 }
 
 
-int StringTableBase::Impl::type(const int col) const
+int StringTableLayout::Impl::type(const int col) const
 {
 	return types_[col];
 }
 
 
-void StringTableBase::Impl::set_col_delim(const std::string &delim)
+void StringTableLayout::Impl::set_col_delim(const std::string &delim)
 {
 	column_delim_ = delim;
 }
 
 
-std::string StringTableBase::Impl::col_delim() const
+std::string StringTableLayout::Impl::col_delim() const
 {
 	return column_delim_;
 }
 
 
-void StringTableBase::Impl::resize(const int rows, const int cols)
+void StringTableLayout::Impl::resize(const int rows, const int cols)
 {
 	rows_ = rows;
 	cols_ = cols;
-
-	cells_.resize(rows_ * columns());
 
 	widths_.resize(columns());
 	alignments_.resize(columns());
@@ -669,13 +617,7 @@ void StringTableBase::Impl::resize(const int rows, const int cols)
 }
 
 
-int StringTableBase::Impl::index(const int row, const int col) const
-{
-	return row * columns() + col;
-}
-
-
-void StringTableBase::Impl::bounds_check(const int row, const int col) const
+void StringTableLayout::Impl::bounds_check(const int row, const int col) const
 {
 	if (not legal_row(row))
 	{
@@ -691,38 +633,219 @@ void StringTableBase::Impl::bounds_check(const int row, const int col) const
 }
 
 
-bool StringTableBase::Impl::legal_row(const int row) const
+bool StringTableLayout::Impl::legal_row(const int row) const
 {
 	return row >= 0 && row < rows();
 }
 
 
-bool StringTableBase::Impl::legal_col(const int col) const
+bool StringTableLayout::Impl::legal_col(const int col) const
 {
 	return col >= 0 && col < columns();
 }
 
 
-bool StringTableBase::Impl::legal_width(const int width) const
+bool StringTableLayout::Impl::legal_width(const int width) const
 {
 	return width > 0 && width < 32; // defines maximum width
 }
 
 
-// StringTableBase
+// StringTableLayout
 
 
-StringTableBase::StringTableBase(const int rows, const int columns)
-	: impl_(std::make_unique<StringTableBase::Impl>(rows, columns))
+StringTableLayout::StringTableLayout(const int rows, const int cols)
+	: impl_ { std::make_unique<Impl>(rows, cols) }
 {
 	// empty
 }
 
 
-StringTableBase::~StringTableBase() noexcept = default;
+StringTableLayout::~StringTableLayout() = default;
 
 
-void StringTableBase::update_cell(const int row, const int col,
+std::size_t StringTableLayout::do_rows() const
+{
+	return impl_->rows();
+}
+
+
+std::size_t StringTableLayout::do_columns() const
+{
+	return impl_->columns();
+}
+
+
+void StringTableLayout::do_resize(const int rows, const int cols)
+{
+	impl_->resize(rows, cols);
+}
+
+
+void StringTableLayout::do_set_width(const int col, const int width)
+{
+	impl_->set_width(col, width);
+}
+
+
+int StringTableLayout::do_width(const int col) const
+{
+	return impl_->width(col);
+}
+
+
+void StringTableLayout::do_set_alignment(const int col, const bool align)
+{
+	impl_->set_alignment(col, align);
+}
+
+
+bool StringTableLayout::do_alignment(const int col) const
+{
+	return impl_->alignment(col);
+}
+
+
+void StringTableLayout::do_set_title(const int col, const std::string &title)
+{
+	impl_->set_title(col, title);
+}
+
+
+std::string StringTableLayout::do_title(const int col) const
+{
+	return impl_->title(col);
+}
+
+
+void StringTableLayout::do_set_type(const int col, const int type)
+{
+	impl_->set_type(col, type);
+}
+
+
+int StringTableLayout::do_type(const int col) const
+{
+	return impl_->type(col);
+}
+
+
+void StringTableLayout::do_set_column_delimiter(const std::string &delim)
+{
+	impl_->set_col_delim(delim);
+}
+
+
+std::string StringTableLayout::do_column_delimiter() const
+{
+	return impl_->col_delim();
+}
+
+
+void StringTableLayout::do_bounds_check(const int row, const int col) const
+{
+	impl_->bounds_check(row, col);
+}
+
+
+/**
+ * \brief Private implementation of a StringTableBase
+ */
+class StringTable::Impl final
+{
+public:
+
+	Impl(const int rows, const int columns);
+
+	/**
+	 * \brief Resize to new dimensions
+	 */
+	void resize(const int rows, const int cols);
+
+	std::string get(const int row, const int col) const;
+
+	std::string cell(const int row, const int col) const;
+
+	void update_cell(const int row, const int col, const std::string &text);
+
+	StringTableLayout& layout();
+
+private:
+
+	/**
+	 * \brief Return index of the cell in row \c row dn column \c col.
+	 *
+	 * \param[in] row Row index
+	 * \param[in] col Column index
+	 *
+	 * \return Index of the table cell
+	 */
+	int index(const int row, const int col) const;
+
+	/**
+	 * \brief The table content.
+	 */
+	std::vector<std::string> cells_;
+
+	int cols_;
+};
+
+
+StringTable::Impl::Impl(const int rows, const int cols)
+	: cells_ (rows * cols)
+	, cols_ (cols)
+{
+	//cells_.resize();
+}
+
+
+void StringTable::Impl::resize(const int rows, const int cols)
+{
+	cols_ = cols;
+	cells_.resize(rows * cols);
+}
+
+
+std::string StringTable::Impl::get(const int row, const int col) const
+{
+	return cells_[index(row, col)];
+}
+
+
+std::string StringTable::Impl::cell(const int row, const int col) const
+{
+	return this->get(row, col);
+}
+
+
+void StringTable::Impl::update_cell(const int row, const int col,
+		const std::string &text)
+{
+	cells_[index(row, col)] = text;
+}
+
+
+int StringTable::Impl::index(const int row, const int col) const
+{
+	return row * cols_ + col;
+}
+
+
+// StringTable
+
+
+StringTable::StringTable(const int rows, const int columns)
+	: StringTableLayout(rows, columns)
+	, impl_(std::make_unique<StringTable::Impl>(rows, columns))
+{
+	// empty
+}
+
+
+StringTable::~StringTable() noexcept = default;
+
+
+void StringTable::update_cell(const int row, const int col,
 		const std::string &text)
 {
 	this->bounds_check(row, col);
@@ -730,98 +853,28 @@ void StringTableBase::update_cell(const int row, const int col,
 }
 
 
-std::string StringTableBase::cell(const int row, const int col) const
+std::string StringTable::cell(const int row, const int col) const
 {
+	auto text = impl_->get(row, col);
+
+	if (auto w1dth = static_cast<std::size_t>(width(col));
+			text.length() > w1dth)
+	{
+		return text.substr(0, w1dth - 1) + "~";
+	}
+
 	this->bounds_check(row, col);
 	return this->do_cell(row, col);
 }
 
 
-std::string StringTableBase::operator() (const int row, const int col) const
+std::string StringTable::operator() (const int row, const int col) const
 {
-	return this->do_cell(row, col);
+	return impl_->get(row, col);
 }
 
 
-std::size_t StringTableBase::do_rows() const
-{
-	return impl_->rows();
-}
-
-
-std::size_t StringTableBase::do_columns() const
-{
-	return impl_->columns();
-}
-
-
-void StringTableBase::do_resize(const int rows, const int cols)
-{
-	impl_->resize(rows, cols);
-}
-
-
-void StringTableBase::do_set_width(const int col, const int width)
-{
-	impl_->set_width(col, width);
-}
-
-
-int StringTableBase::do_width(const int col) const
-{
-	return impl_->width(col);
-}
-
-
-void StringTableBase::do_set_alignment(const int col, const bool align)
-{
-	impl_->set_alignment(col, align);
-}
-
-
-bool StringTableBase::do_alignment(const int col) const
-{
-	return impl_->alignment(col);
-}
-
-
-void StringTableBase::do_set_title(const int col, const std::string &title)
-{
-	impl_->set_title(col, title);
-}
-
-
-std::string StringTableBase::do_title(const int col) const
-{
-	return impl_->title(col);
-}
-
-
-void StringTableBase::do_set_type(const int col, const int type)
-{
-	impl_->set_type(col, type);
-}
-
-
-int StringTableBase::do_type(const int col) const
-{
-	return impl_->type(col);
-}
-
-
-void StringTableBase::do_set_column_delimiter(const std::string &delim)
-{
-	impl_->set_col_delim(delim);
-}
-
-
-std::string StringTableBase::do_column_delimiter() const
-{
-	return impl_->col_delim();
-}
-
-
-void StringTableBase::do_update_cell(const int row, const int col,
+void StringTable::do_update_cell(const int row, const int col,
 		const std::string &text)
 {
 	this->bounds_check(row, col);
@@ -829,20 +882,14 @@ void StringTableBase::do_update_cell(const int row, const int col,
 }
 
 
-std::string StringTableBase::do_cell(const int row, const int col) const
+std::string StringTable::do_cell(const int row, const int col) const
 {
 	this->bounds_check(row, col);
 	return impl_->cell(row, col);
 }
 
 
-void StringTableBase::do_bounds_check(const int row, const int col) const
-{
-	impl_->bounds_check(row, col);
-}
-
-
-std::ostream& operator << (std::ostream &out, const StringTableBase &table)
+std::ostream& operator << (std::ostream &out, const StringTable &table)
 {
 	std::size_t col = 0;
 

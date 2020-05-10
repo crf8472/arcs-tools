@@ -53,7 +53,7 @@ using arcsdec::FileReaderDescriptor;
  */
 class AlbumTableBase	: public WithMetadataFlagMethods
 						, virtual public WithARId
-						, virtual public StringTableBase
+						, virtual public StringTableLayout
 {
 
 public:
@@ -341,7 +341,7 @@ private:
  * \brief Simple table format for ARId.
  */
 class ARIdTableFormat final : public ARIdLayout
-							, public StringTableBase
+							, public StringTableLayout
 							, public ARIdPrinter
 {
 
@@ -578,20 +578,14 @@ private:
 /**
  * \brief Print supported formats.
  */
-class FormatList : public StringTableBase
+class FormatList : public StringTable
 {
-
 public:
 
 	/**
 	 * \brief Constructor
 	 */
-	FormatList(std::size_t entry_count);
-
-	/**
-	 * \brief Inspect the specified descriptor for printable information.
-	 */
-	void inspect(const FileReaderDescriptor &descriptor);
+	FormatList(std::size_t rows);
 
 	/**
 	 * \brief Format the metadata/audio format info.
@@ -600,18 +594,8 @@ public:
 	 * \param[in] lib_name
 	 * \param[in] version
 	 */
-	void format(const std::string &fmt_name, const std::string &lib_name,
+	void append_line(const std::string &fmt_name, const std::string &lib_name,
 			const std::string &desc, const std::string &version);
-
-
-protected:
-
-	/**
-	 * \brief Add a format description
-	 */
-	void add_data(const std::string &fmt_name, const std::string &lib_name,
-			const std::string &desc, const std::string &version);
-
 
 private:
 

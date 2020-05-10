@@ -37,22 +37,24 @@ TEST_CASE ( "AlbumTableBase", "" )
 }
 
 
-TEST_CASE ( "StringTableBase", "[stringtablebase]" )
+TEST_CASE ( "StringTable", "[stringtable]" )
 {
-	StringTableBase table(2, 4);
-
-	REQUIRE ( table.rows()    == 2 );
-	REQUIRE ( table.columns() == 4 );
+	StringTable table(2, 4);
 
 	// Set widths
 
 	table.set_width(0, 5);
-	table.set_width(1, 3);
+	table.set_width(1, 4);
 	table.set_width(2, 4);
-	//table.set_width(3, 10); // default
+	table.set_width(3, 10);
+
+	REQUIRE ( table.rows()    == 2 );
+	REQUIRE ( table.columns() == 4 );
+
+	//
 
 	CHECK ( table.width(0) == 5 );
-	CHECK ( table.width(1) == 3 );
+	CHECK ( table.width(1) == 4 );
 	CHECK ( table.width(2) == 4 );
 
 	// Set contents
