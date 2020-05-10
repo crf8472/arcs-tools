@@ -1,6 +1,9 @@
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #define __ARCSTOOLS_APPLICATION_HPP__
 
+#include <iostream>
+#include <fstream>
+
 /**
  * \file
  *
@@ -23,6 +26,24 @@
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
 #include "options.hpp"
 #endif
+
+
+template <typename T>
+inline auto output(const T &object, const std::string &filename = "")
+	-> decltype( std::cerr << object, void() )
+{
+	if (filename.empty())
+	{
+		std::cout << object;
+	} else
+	{
+		std::ofstream out_file_stream;
+		out_file_stream.open(filename);
+
+		out_file_stream << object;
+	}
+}
+
 
 /**
  * \brief Abstract base class for AR tools command line applications.
@@ -70,7 +91,6 @@ public:
 	 */
 	void print_usage() const;
 
-
 protected:
 
 	/**
@@ -91,10 +111,6 @@ protected:
 	 * \param[in] message The error message
 	 */
 	void fatal_error(const std::string &message) const;
-
-	void output(const StringTable &table, const std::string &filename) const;
-
-	void output(const StringTable &table) const;
 
 private:
 

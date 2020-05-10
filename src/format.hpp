@@ -472,10 +472,6 @@ inline int optimal_width(Container&& list)
 }
 
 
-class StringTable;
-
-std::ostream& operator << (std::ostream &o, const StringTable &table);
-
 /**
  * \brief A table with formatted columns
  */
@@ -483,8 +479,6 @@ class StringTable
 {
 
 public:
-
-	friend std::ostream& operator<< (std::ostream &o, const StringTable &table);
 
 	/**
 	 * \brief Virtual destructor.
@@ -811,12 +805,19 @@ private:
 };
 
 
+class StringTableBase;
+
+std::ostream& operator << (std::ostream &o, const StringTableBase &table);
+
 /**
  * \brief Abstract base class for StringTables
  */
 class StringTableBase : public StringTable
 {
 public:
+
+	friend std::ostream& operator<< (std::ostream &o,
+			const StringTableBase &table);
 
 	/**
 	 * \brief Constructor

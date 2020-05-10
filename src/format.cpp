@@ -466,7 +466,7 @@ void StringTable::bounds_check(const int row, const int col) const
 }
 
 
-std::ostream& operator << (std::ostream &out, const StringTable &table)
+std::ostream& operator << (std::ostream &out, const StringTableBase &table)
 {
 	std::size_t col = 0;
 

@@ -87,30 +87,3 @@ void ARApplication::fatal_error(const std::string &message) const
 	throw std::runtime_error(message);
 }
 
-
-void ARApplication::output(const StringTable &table) const
-{
-	// TODO table empty
-	//if (table.empty())
-	//{
-	//	return;
-	//}
-
-	std::cout << table;
-}
-
-
-void ARApplication::output(const StringTable &table, const std::string &filename)
-	const
-{
-	if (filename.empty())
-	{
-		output(table);
-		return;
-	}
-
-	std::ofstream out_file_stream;
-	out_file_stream.open(filename);
-	out_file_stream << table;
-}
-

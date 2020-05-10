@@ -382,7 +382,7 @@ int ARCalcApplication::run_info(const Options &options)
 	}
 
 	//out_stream << list;
-	this->output(list, outfilename);
+	output(list, outfilename);
 
 	return EXIT_SUCCESS;
 }
