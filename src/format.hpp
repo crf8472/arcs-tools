@@ -475,7 +475,7 @@ inline int optimal_width(Container&& list)
 /**
  * \brief A table with formatted columns
  */
-class StringTable
+class TableLayout
 {
 
 public:
@@ -483,7 +483,7 @@ public:
 	/**
 	 * \brief Virtual destructor.
 	 */
-	virtual ~StringTable() noexcept;
+	virtual ~TableLayout() noexcept;
 
 	/**
 	 * \brief Returns the number of rows (without header)
@@ -588,43 +588,12 @@ public:
 	std::string column_delimiter() const;
 
 	/**
-	 * \brief Updates an existing cell.
-	 *
-	 * \param[in] col  Column index
-	 * \param[in] row  Row index
-	 * \param[in] text New cell text
-	 *
-	 * \throws std::out_of_range If col > columns() or col < 0.
-	 */
-	void update_cell(const int row, const int col, const std::string &text);
-
-	/**
-	 * \brief Returns the content of the specified cell.
-	 *
-	 * \param[in] col  Column index
-	 * \param[in] row  Row index
-	 *
-	 * \throws std::out_of_range If col > columns() or col < 0.
-	 */
-	std::string cell(const int row, const int col) const;
-
-	/**
 	 * \brief Reset the dimensions of the table
 	 *
 	 * \param[in] rows Number of rows
 	 * \param[in] cols Number of columns
 	 */
 	void resize(const int rows, const int cols);
-
-	/**
-	 * \brief Access operator
-	 *
-	 * \param[in] row Row index
-	 * \param[in] col Column index
-	 *
-	 * \return Formatted cell content
-	 */
-	std::string operator() (const int row, const int col) const;
 
 protected:
 
@@ -812,7 +781,7 @@ std::ostream& operator << (std::ostream &o, const StringTableBase &table);
 /**
  * \brief Abstract base class for StringTables
  */
-class StringTableBase : public StringTable
+class StringTableBase : public TableLayout
 {
 public:
 
@@ -838,6 +807,37 @@ public:
 	 * \brief Non-virtual default destructor
 	 */
 	~StringTableBase() noexcept;
+
+	/**
+	 * \brief Updates an existing cell.
+	 *
+	 * \param[in] col  Column index
+	 * \param[in] row  Row index
+	 * \param[in] text New cell text
+	 *
+	 * \throws std::out_of_range If col > columns() or col < 0.
+	 */
+	void update_cell(const int row, const int col, const std::string &text);
+
+	/**
+	 * \brief Returns the content of the specified cell.
+	 *
+	 * \param[in] col  Column index
+	 * \param[in] row  Row index
+	 *
+	 * \throws std::out_of_range If col > columns() or col < 0.
+	 */
+	std::string cell(const int row, const int col) const;
+
+	/**
+	 * \brief Access operator
+	 *
+	 * \param[in] row Row index
+	 * \param[in] col Column index
+	 *
+	 * \return Formatted cell content
+	 */
+	std::string operator() (const int row, const int col) const;
 
 private:
 

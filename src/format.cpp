@@ -355,144 +355,93 @@ std::string HexLayout::do_format(const uint32_t &number, const int width) const
 }
 
 
-// StringTable
+// TableLayout
 
 
-StringTable::~StringTable() noexcept = default;
+TableLayout::~TableLayout() noexcept = default;
 
 
-std::size_t StringTable::rows() const
+std::size_t TableLayout::rows() const
 {
 	return this->do_rows();
 }
 
 
-std::size_t StringTable::columns() const
+std::size_t TableLayout::columns() const
 {
 	return this->do_columns();
 }
 
 
-void StringTable::set_width(const int col, const int width)
+void TableLayout::set_width(const int col, const int width)
 {
 	this->do_set_width(col, width);
 }
 
 
-int StringTable::width(const int col) const
+int TableLayout::width(const int col) const
 {
 	return this->do_width(col);
 }
 
 
-void StringTable::set_alignment(const int col, const bool align)
+void TableLayout::set_alignment(const int col, const bool align)
 {
 	this->do_set_alignment(col, align);
 }
 
 
-bool StringTable::alignment(const int col) const
+bool TableLayout::alignment(const int col) const
 {
 	return this->do_alignment(col);
 }
 
 
-void StringTable::set_title(const int col, const std::string &title)
+void TableLayout::set_title(const int col, const std::string &title)
 {
 	this->do_set_title(col, title);
 }
 
 
-std::string StringTable::title(const int col) const
+std::string TableLayout::title(const int col) const
 {
 	return this->do_title(col);
 }
 
 
-void StringTable::set_type(const int col, const int type)
+void TableLayout::set_type(const int col, const int type)
 {
 	this->do_set_type(col, type);
 }
 
 
-int StringTable::type(const int col) const
+int TableLayout::type(const int col) const
 {
 	return this->do_type(col);
 }
 
 
-void StringTable::set_column_delimiter(const std::string &delim)
+void TableLayout::set_column_delimiter(const std::string &delim)
 {
 	this->do_set_column_delimiter(delim);
 }
 
 
-std::string StringTable::column_delimiter() const
+std::string TableLayout::column_delimiter() const
 {
 	return this->do_column_delimiter();
 }
 
 
-void StringTable::update_cell(const int row, const int col,
-		const std::string &text)
-{
-	this->bounds_check(row, col);
-	this->do_update_cell(row, col, text);
-}
-
-
-std::string StringTable::cell(const int row, const int col) const
-{
-	this->bounds_check(row, col);
-	return this->do_cell(row, col);
-}
-
-
-std::string StringTable::operator() (const int row, const int col) const
-{
-	return this->do_cell(row, col);
-}
-
-
-void StringTable::resize(const int rows, const int cols)
+void TableLayout::resize(const int rows, const int cols)
 {
 	this->do_resize(rows, cols);
 }
 
 
-void StringTable::bounds_check(const int row, const int col) const
+void TableLayout::bounds_check(const int row, const int col) const
 {
 	this->do_bounds_check(row, col);
-}
-
-
-std::ostream& operator << (std::ostream &out, const StringTableBase &table)
-{
-	std::size_t col = 0;
-
-	// Column titles
-	for (; col < table.columns(); ++col)
-	{
-		out << std::setw(table.width(col)) << std::left
-			<< table.title(col)
-			<< table.column_delimiter();
-	}
-	out << std::endl;
-
-	// Row contents
-	for (std::size_t row = 0; row < table.rows(); ++row)
-	{
-		for (col = 0; col < table.columns(); ++col)
-		{
-			out << std::setw(table.width(col))
-				<< (table.alignment(col) > 0 ? std::left : std::right)
-				<< table.cell(row, col)
-				<< table.column_delimiter();
-		}
-		out << std::endl;
-	}
-
-	return out;
 }
 
 
@@ -784,6 +733,26 @@ StringTableBase::StringTableBase(const int rows, const int columns)
 StringTableBase::~StringTableBase() noexcept = default;
 
 
+void StringTableBase::update_cell(const int row, const int col,
+		const std::string &text)
+{
+	this->bounds_check(row, col);
+	this->do_update_cell(row, col, text);
+}
+
+
+std::string StringTableBase::cell(const int row, const int col) const
+{
+	this->bounds_check(row, col);
+	return this->do_cell(row, col);
+}
+
+
+std::string StringTableBase::operator() (const int row, const int col) const
+{
+	return this->do_cell(row, col);
+}
+
 std::size_t StringTableBase::do_rows() const
 {
 	return impl_->rows();
@@ -880,5 +849,35 @@ std::string StringTableBase::do_cell(const int row, const int col) const
 void StringTableBase::do_bounds_check(const int row, const int col) const
 {
 	impl_->bounds_check(row, col);
+}
+
+
+std::ostream& operator << (std::ostream &out, const StringTableBase &table)
+{
+	std::size_t col = 0;
+
+	// Column titles
+	for (; col < table.columns(); ++col)
+	{
+		out << std::setw(table.width(col)) << std::left
+			<< table.title(col)
+			<< table.column_delimiter();
+	}
+	out << std::endl;
+
+	// Row contents
+	for (std::size_t row = 0; row < table.rows(); ++row)
+	{
+		for (col = 0; col < table.columns(); ++col)
+		{
+			out << std::setw(table.width(col))
+				<< (table.alignment(col) > 0 ? std::left : std::right)
+				<< table.cell(row, col)
+				<< table.column_delimiter();
+		}
+		out << std::endl;
+	}
+
+	return out;
 }
 
