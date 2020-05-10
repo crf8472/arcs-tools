@@ -578,7 +578,7 @@ private:
 /**
  * \brief Print supported formats.
  */
-class FormatList : virtual public StringTableBase
+class FormatList : public StringTableBase
 {
 
 public:

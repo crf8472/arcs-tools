@@ -713,32 +713,6 @@ private:
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::
-	 *
-	 * \param[in] row  Row index
-	 * \param[in] col  Column index
-	 * \param[in] text New cell text
-	 *
-	 * \throws std::out_of_range If col > columns() or col < 0.
-	 */
-	virtual void do_update_cell(const int row, const int col,
-			const std::string &text)
-	= 0;
-
-	/**
-	 * \brief Implements StringTable::cell(const int, const int)
-	 *
-	 * \param[in] row  Row index
-	 * \param[in] col  Column index
-	 *
-	 * \throws std::out_of_range If col > columns() or col < 0.
-	 *
-	 * \return Content of cell(row, col)
-	 */
-	virtual std::string do_cell(const int row, const int col) const
-	= 0;
-
-	/**
 	 * \brief Implements StringTable::resize(const int, const int)
 	 *
 	 * \param[in] rows  Number of rows
@@ -846,13 +820,32 @@ private:
 	void do_set_column_delimiter(const std::string &delim) override;
 	std::string do_column_delimiter() const override;
 
-	void do_update_cell(const int row, const int col,
-			const std::string &text) override;
-	std::string do_cell(const int row, const int col) const override;
-
 	void do_resize(const int rows, const int cols) override;
 	void do_bounds_check(const int row, const int col) const override;
 
+	/**
+	 * \brief Implements StringTable::
+	 *
+	 * \param[in] row  Row index
+	 * \param[in] col  Column index
+	 * \param[in] text New cell text
+	 *
+	 * \throws std::out_of_range If col > columns() or col < 0.
+	 */
+	virtual void do_update_cell(const int row, const int col,
+			const std::string &text);
+
+	/**
+	 * \brief Implements StringTable::cell(const int, const int)
+	 *
+	 * \param[in] row  Row index
+	 * \param[in] col  Column index
+	 *
+	 * \throws std::out_of_range If col > columns() or col < 0.
+	 *
+	 * \return Content of cell(row, col)
+	 */
+	virtual std::string do_cell(const int row, const int col) const;
 
 	// forward declaration
 	class Impl;

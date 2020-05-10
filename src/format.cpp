@@ -462,11 +462,6 @@ public:
 	void set_col_delim(const std::string &delim);
 	std::string col_delim() const;
 
-	std::string get(const int row, const int col) const;
-
-	std::string cell(const int row, const int col) const;
-	void update_cell(const int row, const int col, const std::string &text);
-
 	/**
 	 * \brief Perform a bounds check
 	 */
@@ -476,6 +471,10 @@ public:
 	 * \brief Resize to new dimensions
 	 */
 	void resize(const int rows, const int cols);
+
+	std::string get(const int row, const int col) const;
+	std::string cell(const int row, const int col) const;
+	void update_cell(const int row, const int col, const std::string &text);
 
 private:
 
@@ -570,25 +569,28 @@ int StringTableBase::Impl::columns() const
 
 std::string StringTableBase::Impl::cell(const int row, const int col) const
 {
-	return get(row, col);
+	return this->get(row, col);
 }
 
 
 void StringTableBase::Impl::update_cell(const int row, const int col,
 		const std::string &text)
 {
-	if (text.length() > static_cast<std::size_t>(widths_[col]))
-	{
-		// TODO
-	}
-
 	cells_[index(row, col)] = text;
 }
 
 
 std::string StringTableBase::Impl::get(const int row, const int col) const
 {
-	return cells_[index(row, col)];
+	auto text = cells_[index(row, col)];
+
+	if (auto width = static_cast<std::size_t>(widths_[col]);
+			text.length() > width)
+	{
+		return text.substr(0, width - 1) + "~";
+	}
+
+	return text;
 }
 
 
@@ -739,6 +741,7 @@ std::string StringTableBase::operator() (const int row, const int col) const
 {
 	return this->do_cell(row, col);
 }
+
 
 std::size_t StringTableBase::do_rows() const
 {
