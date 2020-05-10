@@ -858,6 +858,8 @@ void StringTable::update_cell(const int row, const int col,
 
 std::string StringTable::cell(const int row, const int col) const
 {
+	this->bounds_check(row, col);
+
 	auto text = impl_->get(row, col);
 
 	if (auto w1dth = static_cast<std::size_t>(width(col));
@@ -866,8 +868,7 @@ std::string StringTable::cell(const int row, const int col) const
 		return text.substr(0, w1dth - 1) + "~";
 	}
 
-	this->bounds_check(row, col);
-	return this->do_cell(row, col);
+	return text;
 }
 
 
