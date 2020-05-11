@@ -274,7 +274,7 @@ ARIdTableFormat::ARIdTableFormat()
 	: ARIdLayout()
 	, StringTableLayout(0, 0)
 {
-	// empty
+	this->init(0, 0);
 }
 
 
@@ -284,11 +284,17 @@ ARIdTableFormat::ARIdTableFormat(const bool &url, const bool &filename,
 	: ARIdLayout(url, filename, track_count, disc_id_1, disc_id_2, cddb_id)
 	, StringTableLayout(0, 0)
 {
-	// empty
+	this->init(0, 0);
 }
 
 
 ARIdTableFormat::~ARIdTableFormat() noexcept = default;
+
+
+void ARIdTableFormat::init(const int /* rows */, const int /* cols */)
+{
+	// empty
+}
 
 
 std::string ARIdTableFormat::do_format(const ARId &id,
@@ -460,12 +466,18 @@ AlbumChecksumsTableFormat::AlbumChecksumsTableFormat(const int rows,
 			show_track, show_offset, show_length, show_filename)
 	, hexlayout_()
 {
-	hexlayout_.set_show_base(false);
-	hexlayout_.set_uppercase(true);
+	this->init(rows, columns);
 }
 
 
 AlbumChecksumsTableFormat::~AlbumChecksumsTableFormat() = default;
+
+
+void AlbumChecksumsTableFormat::init(const int /* rows */, const int /* cols */)
+{
+	hexlayout_.set_show_base(false);
+	hexlayout_.set_uppercase(true);
+}
 
 
 int AlbumChecksumsTableFormat::columns_apply_cs_settings(
@@ -573,12 +585,18 @@ AlbumMatchTableFormat::AlbumMatchTableFormat(const int rows,
 			show_track, show_offset, show_length, show_filename)
 	, hexlayout_()
 {
-	hexlayout_.set_show_base(false);
-	hexlayout_.set_uppercase(true);
+	this->init(rows, this->columns());
 }
 
 
 AlbumMatchTableFormat::~AlbumMatchTableFormat() noexcept = default;
+
+
+void AlbumMatchTableFormat::init(const int /* rows */, const int /* cols */)
+{
+	hexlayout_.set_show_base(false);
+	hexlayout_.set_uppercase(true);
+}
 
 
 int AlbumMatchTableFormat::columns_apply_cs_settings(
@@ -795,9 +813,15 @@ void ARBlockTableFormat::do_out(std::ostream &out, const ARBlock &block)
 // FormatList
 
 
-FormatList::FormatList(const std::size_t rows)
-	: StringTable(rows, 4)
+FormatList::FormatList(const std::size_t entries)
+	: StringTable(entries, 4)
 	, curr_row_(0)
+{
+	this->init(static_cast<int>(rows()), static_cast<int>(columns()));
+}
+
+
+void FormatList::init(const int /* rows */, const int /* cols */)
 {
 	int col = -1;
 

@@ -762,8 +762,6 @@ public:
 	 */
 	void resize(const int rows, const int cols);
 
-	std::string get(const int row, const int col) const;
-
 	std::string cell(const int row, const int col) const;
 
 	void update_cell(const int row, const int col, const std::string &text);
@@ -809,15 +807,9 @@ void StringTable::Impl::resize(const int rows, const int cols)
 }
 
 
-std::string StringTable::Impl::get(const int row, const int col) const
-{
-	return cells_[index(row, col)];
-}
-
-
 std::string StringTable::Impl::cell(const int row, const int col) const
 {
-	return this->get(row, col);
+	return cells_[index(row, col)];
 }
 
 
@@ -860,7 +852,7 @@ std::string StringTable::cell(const int row, const int col) const
 {
 	this->bounds_check(row, col);
 
-	auto text = impl_->get(row, col);
+	auto text = impl_->cell(row, col);
 
 	if (auto w1dth = static_cast<std::size_t>(width(col));
 			text.length() > w1dth)
@@ -874,7 +866,7 @@ std::string StringTable::cell(const int row, const int col) const
 
 std::string StringTable::operator() (const int row, const int col) const
 {
-	return impl_->get(row, col);
+	return impl_->cell(row, col);
 }
 
 

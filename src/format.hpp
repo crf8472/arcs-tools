@@ -734,19 +734,36 @@ private:
 
 
 /**
- * \brief
+ * \brief Base class for a table of strings layout.
+ *
+ * Implement function \c init() in a subclass to get a concrete layout.
  */
 class StringTableLayout : public TableLayout
 {
 public:
 
+	/**
+	 * \brief Constructor
+	 *
+	 * \param[in] rows    Number of rows (including header, if any)
+	 * \param[in] columns Number of columns (including label column, if any)
+	 */
 	StringTableLayout(const int rows, const int cols);
 
+	/**
+	 * \brief Default constructor constructs a table with dimensions 0,0
+	 */
 	StringTableLayout() : StringTableLayout(0, 0) { /* empty */ }
 
-	~StringTableLayout() noexcept;
+	/**
+	 * \brief Virtual default destructor.
+	 */
+	virtual ~StringTableLayout() noexcept;
 
 private:
+
+	virtual void init(const int rows, const int cols)
+	= 0;
 
 	std::size_t do_rows() const override;
 	std::size_t do_columns() const override;
@@ -784,7 +801,9 @@ class StringTable;
 std::ostream& operator << (std::ostream &o, const StringTable &table);
 
 /**
- * \brief Abstract base class for StringTables
+ * \brief A table of strings.
+ *
+ * Implement function \c init() in a subclass to get a concrete table.
  */
 class StringTable : public StringTableLayout
 {
@@ -802,9 +821,7 @@ public:
 	StringTable(const int rows, const int columns);
 
 	/**
-	 * \brief Default constructor
-	 *
-	 * Constructs a table with dimensions 0,0
+	 * \brief Default constructor constructs a table with dimensions 0,0
 	 */
 	StringTable() : StringTable(0, 0) { /* empty */ }
 
@@ -814,11 +831,13 @@ public:
 	~StringTable() noexcept;
 
 	/**
-	 * \brief Updates an existing cell.
+	 * \brief Updates an existing cell with specified text.
 	 *
-	 * \param[in] col  Column index
-	 * \param[in] row  Row index
-	 * \param[in] text New cell text
+	 * Performs bounds checking and throws on illegal values.
+	 *
+	 * \param[in] row  Row index to access
+	 * \param[in] col  Column index to access
+	 * \param[in] text New text for specified cell
 	 *
 	 * \throws std::out_of_range If col > columns() or col < 0.
 	 */
@@ -827,27 +846,36 @@ public:
 	/**
 	 * \brief Returns the content of the specified cell.
 	 *
-	 * \param[in] col  Column index
-	 * \param[in] row  Row index
+	 * The result is equivalent to \c (row, col) if \c row and \c col
+	 * have legal values, but \c cell() performs bounds checking and
+	 * throws on illegal values.
+	 *
+	 * \param[in] row Row index to access
+	 * \param[in] col Column index to access
+	 *
+	 * \return Content of the specified cell
 	 *
 	 * \throws std::out_of_range If col > columns() or col < 0.
 	 */
 	std::string cell(const int row, const int col) const;
 
 	/**
-	 * \brief Access operator
+	 * \brief Access operator.
 	 *
-	 * \param[in] row Row index
-	 * \param[in] col Column index
+	 * The result is equivalent to \c cell(row, col) if \c row and \c col
+	 * have legal values, but there is no bounds check performed.
 	 *
-	 * \return Formatted cell content
+	 * \param[in] row Row index to access
+	 * \param[in] col Column index to access
+	 *
+	 * \return Content of the specified cell
 	 */
 	std::string operator() (const int row, const int col) const;
 
 private:
 
 	/**
-	 * \brief Implements StringTable::
+	 * \brief Implements StringTable::update_cell(const int, const int)
 	 *
 	 * \param[in] row  Row index
 	 * \param[in] col  Column index

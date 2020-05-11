@@ -360,6 +360,8 @@ public:
 
 private:
 
+	void init(const int rows, const int cols) override;
+
 	void do_out(std::ostream &out, const ARId &arid,
 			const std::string &prefix) override;
 
@@ -396,6 +398,8 @@ public:
 	~AlbumChecksumsTableFormat() noexcept override;
 
 private:
+
+	void init(const int rows, const int cols) override;
 
 	int columns_apply_cs_settings(
 			const std::vector<arcstk::checksum::type> &types) override;
@@ -437,6 +441,8 @@ public:
 	~AlbumMatchTableFormat() noexcept override;
 
 private:
+
+	void init(const int rows, const int cols) override;
 
 	int columns_apply_cs_settings(
 			const std::vector<arcstk::checksum::type> &types) override;
@@ -558,6 +564,8 @@ public:
 			const std::string &desc, const std::string &version);
 
 private:
+
+	void init(const int rows, const int cols) override;
 
 	int curr_row_;
 };
