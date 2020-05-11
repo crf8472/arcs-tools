@@ -24,13 +24,24 @@
 #include <arcstk/identifier.hpp>
 #endif
 
+
 using arcstk::ARId;
+
+
+/**
+ * \brief Return underlying value of an integral enum
+ */
+template <typename E>
+inline constexpr auto to_underlying(E e) noexcept
+{
+    return static_cast<std::underlying_type_t<E>>(e);
+}
 
 
 /**
  * \brief Minimal fitting width (= longest entry) of a string column
  */
-template<class Container, typename = arcstk::IsFilenameContainer<Container>>
+template <class Container, typename = arcstk::IsFilenameContainer<Container>>
 inline int optimal_width(Container&& list)
 {
 	std::size_t width = 0;
@@ -85,6 +96,15 @@ public:
 	 */
 	bool flag(const int idx) const;
 
+	/**
+	 * \brief Return TRUE if the specified flag is the only flag set
+	 *
+	 * \param[in] idx   Index to return
+	 *
+	 * \return TRUE iff the specified flag is set an all others are not
+	 */
+	bool only(const int idx) const;
+
 private:
 
 	/**
@@ -100,6 +120,20 @@ private:
 class ARIdLayout : protected WithInternalFlags
 {
 public:
+
+	/**
+	 * \brief Show flags of the ARIdLayout
+	 */
+	enum class ARID_FLAG : int
+	{
+		URL      = 0,
+		FILENAME = 1,
+		TRACKS   = 2,
+		ID1      = 3,
+		ID2      = 4,
+		CDDBID   = 5,
+		COUNT    = 6
+	};
 
 	/**
 	 * \brief Default constructor.
@@ -210,6 +244,15 @@ public:
 	 * \param[in] cddb_id Flag to indicate that the cddb id has to be printed
 	 */
 	void set_cddb_id(const bool cddb_id);
+
+	/**
+	 * \brief Return TRUE if \c flag is the only flag set, otherwise FALSE
+	 *
+	 * \param[in] flag Flag to check
+	 *
+	 * \return TRUE iff \c flag is the only flag set, otherwise FALSE
+	 */
+	bool has_only(const ARID_FLAG flag) const;
 
 	/**
 	 * \brief Format the ARId passed.

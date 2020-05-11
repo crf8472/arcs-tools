@@ -29,13 +29,6 @@ using arcstk::Checksum;
 using arcstk::TOC;
 
 
-template <typename E>
-constexpr auto to_underlying(E e) noexcept
-{
-    return static_cast<std::underlying_type_t<E>>(e);
-}
-
-
 // ARIdPrinter
 
 
@@ -270,21 +263,17 @@ void AlbumTableBase::print_column_titles(std::ostream &out) const
 // ARIdTableFormat
 
 
-ARIdTableFormat::ARIdTableFormat()
-	: ARIdLayout()
-	, StringTableLayout(0, 0)
-{
-	this->init(0, 0);
-}
-
-
 ARIdTableFormat::ARIdTableFormat(const bool &url, const bool &filename,
 		const bool &track_count, const bool &disc_id_1, const bool &disc_id_2,
 		const bool &cddb_id)
 	: ARIdLayout(url, filename, track_count, disc_id_1, disc_id_2, cddb_id)
-	, StringTableLayout(0, 0)
+	, StringTableLayout(
+			url + filename + track_count + disc_id_1 + disc_id_2 + cddb_id, 0
+		)
+	, row_labels_ { "URL", "Filename", "Tracks", "ID1", "ID2", "CDDB ID" }
 {
-	this->init(0, 0);
+	resize(rows(), rows() > 1 ? 2 : 1);
+	this->init(rows(), columns());
 }
 
 
@@ -293,14 +282,127 @@ ARIdTableFormat::~ARIdTableFormat() noexcept = default;
 
 void ARIdTableFormat::init(const int /* rows */, const int /* cols */)
 {
-	// empty
+	set_alignment(0, -1);
+
+	if (columns() > 1) // If there is a label column, its width is known
+	{
+		set_width(0, optimal_width(row_labels_) + 2 /* colon + 1 WS */);
+	}
 }
 
 
 std::string ARIdTableFormat::do_format(const ARId &id,
-			const std::string &/*alt_prefix*/) const
+			const std::string &alt_prefix) const
 {
-	return id.to_string();
+	std::stringstream stream;
+	stream << std::left;
+
+	if (url())
+	{
+		if (not has_only(ARID_FLAG::URL))
+		{
+			stream << std::setw(width(0))
+				<< row_labels_[to_underlying(ARID_FLAG::URL)] + ":";
+		}
+
+		auto text = id.url();
+		if (not alt_prefix.empty())
+		{
+			text.replace(0, id.prefix().length(), alt_prefix);
+		}
+
+		stream << std::setw(text.length()) << text;
+	}
+
+	if (filename())
+	{
+		if (not has_only(ARID_FLAG::FILENAME))
+		{
+			stream << std::endl;
+			stream << std::setw(width(0))
+				<< row_labels_[to_underlying(ARID_FLAG::FILENAME)] + ":";
+		}
+
+		auto text = id.filename();
+		stream << std::setw(text.length()) << text;
+	}
+
+	if (track_count())
+	{
+		unsigned int tracks = id.track_count();
+
+		if (not has_only(ARID_FLAG::TRACKS))
+		{
+			stream << std::endl;
+
+			stream << std::setw(width(0))
+				<< row_labels_[to_underlying(ARID_FLAG::TRACKS)] + ":";
+
+			auto prev = stream.fill('0');
+			stream << std::setw(2) << tracks << std::setfill(prev);
+		} else
+		{
+			stream << tracks;
+		}
+	}
+
+	HexLayout hex;
+
+	if (disc_id_1())
+	{
+		auto text = hex.format(id.disc_id_1(), 8);
+
+		if (not has_only(ARID_FLAG::ID1))
+		{
+			stream << std::endl;
+
+			stream << std::setw(width(0))
+				<< row_labels_[to_underlying(ARID_FLAG::ID1)] + ":";
+
+			stream << std::setw(8) << text;
+		} else
+		{
+			stream << text;
+		}
+	}
+
+	if (disc_id_2())
+	{
+		auto text = hex.format(id.disc_id_2(), 8);
+
+		if (not has_only(ARID_FLAG::ID2))
+		{
+			stream << std::endl;
+
+			stream << std::setw(width(0))
+				<< row_labels_[to_underlying(ARID_FLAG::ID2)] + ":";
+
+			stream << std::setw(8) << text;
+		} else
+		{
+			stream << text;
+		}
+	}
+
+	if (cddb_id())
+	{
+		auto text = hex.format(id.cddb_id(), 8);
+
+		if (not has_only(ARID_FLAG::CDDBID))
+		{
+			stream << std::endl;
+
+			stream << std::setw(width(0))
+				<< row_labels_[to_underlying(ARID_FLAG::CDDBID)] + ":";
+
+			stream << std::setw(8) << text;
+		} else
+		{
+			stream << text;
+		}
+	}
+
+	return stream.str();
 }
 
 
@@ -308,151 +410,6 @@ void ARIdTableFormat::do_out(std::ostream &out, const ARId &id,
 		const std::string &alt_prefix)
 {
 	out << format(id, alt_prefix) << std::endl;
-	/*
-	std::ios_base::fmtflags dec_flags;
-	dec_flags  =  std::cout.flags();
-	dec_flags &= ~std::cout.basefield;
-	dec_flags &= ~std::cout.adjustfield;
-
-	dec_flags |= std::cout.right;        // align fields to the right margin
-	dec_flags |= std::cout.dec;          // set decimal representation
-
-
-	std::ios_base::fmtflags hex_flags;
-	hex_flags  =  std::cout.flags();
-	hex_flags &= ~std::cout.basefield;
-	hex_flags &= ~std::cout.adjustfield;
-
-	hex_flags |= std::cout.right;        // align fields to the right margin
-	hex_flags |= std::cout.hex;          // set hexadecimal representation
-	hex_flags |= std::cout.uppercase;    // show digits A-F in uppercase
-
-
-	std::unique_ptr<Lines> lines { std::make_unique<DefaultLines>() };
-
-	std::stringstream linestr;
-
-	if (url())
-	{
-		const bool url_only = not (filename() or track_count() or disc_id_1()
-			or disc_id_2() or cddb_id());
-
-		linestr.flags(dec_flags);
-
-		if (not url_only) { linestr << "URL:       "; }
-
-		if (alt_prefix.empty())
-		{
-			linestr << id.url();
-		} else
-		{
-			std::string modified_url { id.url() };
-			modified_url.replace(0, id.prefix().length(), alt_prefix);
-
-			linestr << modified_url;
-		}
-
-		lines->append(linestr.str());
-		linestr.str("");
-	}
-
-	if (filename())
-	{
-		const bool filename_only = not (url() or track_count() or disc_id_1()
-			or disc_id_2() or cddb_id());
-
-		linestr.flags(dec_flags);
-
-		if (not filename_only) { linestr << "Filename:  "; }
-
-		linestr << id.filename();
-
-		lines->append(linestr.str());
-		linestr.str("");
-	}
-
-	if (track_count())
-	{
-		linestr.flags(dec_flags);
-
-		const bool tracks_only = not (url() or filename() or disc_id_1()
-			or disc_id_2() or cddb_id());
-
-		if (not tracks_only)
-		{
-			linestr << "Tracks:    " << std::setw(2) << std::setfill('0')
-				<< static_cast<unsigned int>(id.track_count());
-		} else
-		{
-			linestr << static_cast<unsigned int>(id.track_count());
-		}
-
-		lines->append(linestr.str());
-		linestr.str("");
-	}
-
-	if (disc_id_1())
-	{
-		linestr.flags(hex_flags);
-
-		const bool id1_only = not (url() or filename() or track_count()
-			or disc_id_2() or cddb_id());
-
-		if (not id1_only)
-		{
-			linestr << "Disc id 1: " << std::setw(8) << std::setfill('0')
-				<< static_cast<unsigned int>(id.disc_id_1());
-		} else
-		{
-			linestr << static_cast<unsigned int>(id.disc_id_1());
-		}
-
-		lines->append(linestr.str());
-		linestr.str("");
-	}
-
-	if (disc_id_2())
-	{
-		linestr.flags(hex_flags);
-
-		const bool id2_only = not (url() or filename() or track_count()
-			or disc_id_1() or cddb_id());
-
-		if (not id2_only)
-		{
-			linestr << "Disc id 2: " << std::setw(8) << std::setfill('0')
-				<< static_cast<unsigned int>(id.disc_id_2());
-		} else
-		{
-			linestr << static_cast<unsigned int>(id.disc_id_2());
-		}
-
-		lines->append(linestr.str());
-		linestr.str("");
-	}
-
-	if (cddb_id())
-	{
-		linestr.flags(hex_flags);
-
-		const bool cddb_only = not (url() or filename() or track_count()
-			or disc_id_1() or disc_id_2());
-
-		if (not cddb_only)
-		{
-			linestr << "CDDB id:   " << std::setw(8) << std::setfill('0')
-				<< static_cast<unsigned int>(id.cddb_id());
-		} else
-		{
-			linestr << static_cast<unsigned int>(id.cddb_id());
-		}
-
-		lines->append(linestr.str());
-		linestr.str("");
-	}
-
-	return lines;
-	*/
 }
 
 

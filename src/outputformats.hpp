@@ -333,13 +333,6 @@ class ARIdTableFormat final : public ARIdLayout
 public:
 
 	/**
-	 * \brief Default constructor.
-	 *
-	 * Sets all formatting flags to TRUE
-	 */
-	ARIdTableFormat();
-
-	/**
 	 * \brief Constructor setting all flags.
 	 *
 	 * \param[in] url         Set to TRUE for printing the URL
@@ -352,6 +345,14 @@ public:
 	ARIdTableFormat(const bool &url, const bool &filename,
 			const bool &track_count, const bool &disc_id_1,
 			const bool &disc_id_2, const bool &cddb_id);
+
+	/**
+	 * \brief Default constructor.
+	 *
+	 * Sets all formatting flags to TRUE
+	 */
+	ARIdTableFormat() : ARIdTableFormat(true, true, false, false, false, false)
+	{ /* empty */ };
 
 	/**
 	 * \brief Virtual default destructor.
@@ -367,6 +368,8 @@ private:
 
 	std::string do_format(const ARId &id, const std::string &alt_prefix) const
 		override;
+
+	std::array<std::string, to_underlying(ARID_FLAG::COUNT)> row_labels_;
 };
 
 

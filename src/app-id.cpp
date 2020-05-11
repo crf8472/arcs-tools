@@ -153,17 +153,15 @@ int ARIdApplication::do_run(const Options &options)
 		id = calculator.calculate(audiofilename, metafilename);
 	}
 
-	if (id == nullptr)
-	{
-		this->fatal_error("Could not compute AccurateRip id.");
-	}
+	if (!id) { this->fatal_error("Could not compute AccurateRip id."); }
 
 	// Adjust format and print information
 	std::unique_ptr<ARIdPrinter> format;
 
 	if (options.is_set(ARIdOptions::PROFILE))
 	{
-		format = std::make_unique<ARIdTableFormat>();
+		format = std::make_unique<ARIdTableFormat>(
+				true, true, true, true, true, true);
 	} else
 	{
 		format = std::make_unique<ARIdTableFormat>(

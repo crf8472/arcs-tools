@@ -33,7 +33,7 @@ void WithInternalFlags::set_flag(const int idx, const bool value)
 		flags_ |= (1 << idx);  // <= true
 	} else
 	{
-		flags_ &= ~(0 << idx); // <= false
+		flags_ &= ~(1 << idx); // <= false
 	}
 }
 
@@ -41,6 +41,12 @@ void WithInternalFlags::set_flag(const int idx, const bool value)
 bool WithInternalFlags::flag(const int idx) const
 {
 	return flags_ & (1 << idx);
+}
+
+
+bool WithInternalFlags::only(const int idx) const
+{
+	return flag(idx) && (0 == (flags_ & ~(1 << idx)));
 }
 
 
@@ -59,12 +65,12 @@ ARIdLayout::ARIdLayout(const bool &url, const bool &filename,
 		const bool &cddb_id)
 	: WithInternalFlags(
 			0
-			| url
-			| (filename    << 1)
-			| (track_count << 2)
-			| (disc_id_1   << 3)
-			| (disc_id_2   << 4)
-			| (cddb_id     << 5)
+			| (url         << to_underlying(ARID_FLAG::URL))
+			| (filename    << to_underlying(ARID_FLAG::FILENAME))
+			| (track_count << to_underlying(ARID_FLAG::TRACKS))
+			| (disc_id_1   << to_underlying(ARID_FLAG::ID1))
+			| (disc_id_2   << to_underlying(ARID_FLAG::ID2))
+			| (cddb_id     << to_underlying(ARID_FLAG::CDDBID))
 		)
 {
 	// empty
@@ -76,73 +82,79 @@ ARIdLayout::~ARIdLayout() noexcept = default;
 
 bool ARIdLayout::url() const
 {
-	return flag(0);
+	return flag(to_underlying(ARID_FLAG::URL));
 }
 
 
 void ARIdLayout::set_url(const bool url)
 {
-	this->set_flag(0, url);
+	this->set_flag(to_underlying(ARID_FLAG::URL), url);
 }
 
 
 bool ARIdLayout::filename() const
 {
-	return flag(1);
+	return flag(to_underlying(ARID_FLAG::FILENAME));
 }
 
 
 void ARIdLayout::set_filename(const bool filename)
 {
-	this->set_flag(1, filename);
+	this->set_flag(to_underlying(ARID_FLAG::FILENAME), filename);
 }
 
 
 bool ARIdLayout::track_count() const
 {
-	return flag(2);
+	return flag(to_underlying(ARID_FLAG::TRACKS));
 }
 
 
 void ARIdLayout::set_trackcount(const bool trackcount)
 {
-	this->set_flag(2, trackcount);
+	this->set_flag(to_underlying(ARID_FLAG::TRACKS), trackcount);
 }
 
 
 bool ARIdLayout::disc_id_1() const
 {
-	return flag(3);
+	return flag(to_underlying(ARID_FLAG::ID1));
 }
 
 
 void ARIdLayout::set_disc_id_1(const bool disc_id_1)
 {
-	this->set_flag(3, disc_id_1);
+	this->set_flag(to_underlying(ARID_FLAG::ID1), disc_id_1);
 }
 
 
 bool ARIdLayout::disc_id_2() const
 {
-	return flag(4);
+	return flag(to_underlying(ARID_FLAG::ID2));
 }
 
 
 void ARIdLayout::set_disc_id_2(const bool disc_id_2)
 {
-	this->set_flag(4, disc_id_2);
+	this->set_flag(to_underlying(ARID_FLAG::ID2), disc_id_2);
 }
 
 
 bool ARIdLayout::cddb_id() const
 {
-	return flag(5);
+	return flag(to_underlying(ARID_FLAG::CDDBID));
 }
 
 
 void ARIdLayout::set_cddb_id(const bool cddb_id)
 {
-	this->set_flag(5, cddb_id);
+	this->set_flag(to_underlying(ARID_FLAG::CDDBID), cddb_id);
+}
+
+
+bool ARIdLayout::has_only(const ARID_FLAG flag) const
+{
+	return only(to_underlying(flag));
 }
 
 
