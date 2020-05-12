@@ -50,6 +50,12 @@ bool WithInternalFlags::only(const int idx) const
 }
 
 
+bool WithInternalFlags::only_one_flag() const
+{
+	return flags_ && !(flags_ & (flags_ - 1));
+}
+
+
 // ARIdLayout
 
 

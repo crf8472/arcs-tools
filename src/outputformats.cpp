@@ -268,11 +268,11 @@ ARIdTableFormat::ARIdTableFormat(const bool &url, const bool &filename,
 		const bool &cddb_id)
 	: ARIdLayout(url, filename, track_count, disc_id_1, disc_id_2, cddb_id)
 	, StringTableLayout(
-			url + filename + track_count + disc_id_1 + disc_id_2 + cddb_id, 0
+			url + filename + track_count + disc_id_1 + disc_id_2 + cddb_id,
+			only_one_flag() ? 1 : 2 // one or two columns
 		)
 	, row_labels_ { "URL", "Filename", "Tracks", "ID1", "ID2", "CDDB ID" }
 {
-	resize(rows(), rows() > 1 ? 2 : 1);
 	this->init(rows(), columns());
 }
 

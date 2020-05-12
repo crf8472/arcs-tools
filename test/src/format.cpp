@@ -33,6 +33,7 @@ TEST_CASE ( "WithInternalFlags", "" )
 	REQUIRE ( not flags.flag(7) );
 
 	REQUIRE ( flags.only(4) );
+	//REQUIRE ( flags.only_one_flag() );
 
 	flags.set_flag(7, true);
 
@@ -56,6 +57,7 @@ TEST_CASE ( "WithMetadataFlagMethods", "" )
 	REQUIRE ( not flags2.offset() );
 	REQUIRE ( flags2.length() );
 	REQUIRE ( not flags2.filename() );
+	//REQUIRE ( flags2.only_one_flag() );
 }
 
 

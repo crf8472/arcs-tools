@@ -105,6 +105,13 @@ public:
 	 */
 	bool only(const int idx) const;
 
+	/**
+	 * \brief Return TRUE if only one flag is set, otherwise FALSE
+	 *
+	 * \return TRUE if only one flag is set, otherwise FALSE
+	 */
+	bool only_one_flag() const;
+
 private:
 
 	/**
