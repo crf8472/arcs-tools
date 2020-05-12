@@ -335,6 +335,7 @@ std::string ARIdTableFormat::do_format(const ARId &id,
 				if (not alt_prefix.empty())
 				{
 					value.replace(0, id.prefix().length(), alt_prefix);
+					// FIXME If alt_prefix does not end with '/' ?
 				}
 				break;
 			case ARID_FLAG::FILENAME:
