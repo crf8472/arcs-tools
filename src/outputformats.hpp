@@ -494,67 +494,6 @@ private:
 
 
 /**
- * \brief Abstract base class for output formats of ARBlock.
- */
-class ARBlockFormat : virtual public WithARId
-{
-public:
-
-	/**
-	 * \brief Constructor.
-	 */
-	ARBlockFormat();
-
-	/**
-	 * \brief Virtual default destructor.
-	 */
-	virtual ~ARBlockFormat() noexcept;
-
-	/**
-	 * \brief Set the format to use for formatting the ARTriplets of the block.
-	 *
-	 * \param[in] format The ARTripletFormat to set
-	 */
-	void set_triplet_format(std::unique_ptr<ARTripletFormat> format);
-
-	/**
-	 * \brief Read the format to use for formatting the ARId.
-	 *
-	 * \return The internal ARTripletormat
-	 */
-	const ARTripletFormat& triplet_format() const;
-
-protected:
-
-	/**
-	 * \brief Read the format to use for formatting the ARTriplets of the block.
-	 *
-	 * \return The internal ARTripletFormat
-	 */
-	ARTripletFormat* triplet_fmt();
-
-private:
-
-	/**
-	 * \brief Internal ARTripletFormat to use.
-	 */
-	std::unique_ptr<ARTripletFormat> triplet_format_;
-};
-
-
-/**
- * \brief Table format for an ARBlock.
- */
-class ARBlockTableFormat : public ARBlockFormat
-						 , public ARBlockPrinter
-{
-private:
-
-	void do_out(std::ostream &out, const ARBlock &block) override;
-};
-
-
-/**
  * \brief Print supported formats.
  */
 class FormatList : public StringTable

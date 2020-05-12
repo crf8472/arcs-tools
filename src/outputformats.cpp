@@ -649,79 +649,43 @@ void ARTripletFormat::do_out(std::ostream &out, const int track,
 	hex.set_show_base(false);
 	hex.set_uppercase(true);
 
+	const int width_arcs = 8;
+	const int width_conf = 2;
+
 	out << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
 
-	out << std::setw(8) << std::setfill('0') << hex.format(triplet.arcs(), 8);
+	if (triplet.arcs_valid())
+	{
+		out << std::setw(width_arcs)
+			<< hex.format(triplet.arcs(), width_arcs);
+	} else
+	{
+		out << std::setw(width_arcs) << "????????";
+	}
 
-	out << " (" << std::setw(2) << std::setfill('0')
-			<< static_cast<unsigned int>(triplet.confidence())
-			<< ") ";
+	out << " ";
 
-	out << std::setw(8) << std::setfill('0')
-		<< hex.format(triplet.frame450_arcs(), 8);
+	out << "(";
+	if (triplet.confidence_valid())
+	{
+		out << std::setw(width_conf) << std::setfill('0')
+			<< static_cast<unsigned int>(triplet.confidence());
+	} else
+	{
+		out << "??";
+	}
+	out << ") ";
+
+	if (triplet.frame450_arcs_valid())
+	{
+		out << std::setw(width_arcs)
+			<< hex.format(triplet.frame450_arcs(), width_arcs);
+	} else
+	{
+		out << std::setw(width_arcs) << "????????";
+	}
 
 	out << std::endl;
-}
-
-
-// ARBlockFormat
-
-
-ARBlockFormat::ARBlockFormat()
-	: WithARId()
-	, triplet_format_(nullptr)
-{
-	// empty
-}
-
-
-ARBlockFormat::~ARBlockFormat() noexcept = default;
-
-
-void ARBlockFormat::set_triplet_format(std::unique_ptr<ARTripletFormat> format)
-{
-	if (triplet_format_)
-	{
-		triplet_format_.reset();
-	}
-
-	triplet_format_ = std::move(format);
-}
-
-
-const ARTripletFormat& ARBlockFormat::triplet_format() const
-{
-	return *triplet_format_;
-}
-
-
-ARTripletFormat* ARBlockFormat::triplet_fmt()
-{
-	return triplet_format_.get();
-}
-
-
-// ARBlockTableFormat
-
-
-void ARBlockTableFormat::do_out(std::ostream &out, const ARBlock &block)
-{
-	if (arid_layout())
-	{
-		auto arid = arid_layout()->format(block.id(), "");
-		out << arid;
-	}
-
-	if (triplet_fmt())
-	{
-		uint32_t trk = 0;
-		for (const auto& triplet : block)
-		{
-			++trk;
-
-			triplet_fmt()->out(out, trk, triplet);
-		}
-	}
 }
 
 
