@@ -433,7 +433,7 @@ public:
 
 
 /**
- * \brief Interface for formatting strings
+ * \brief Interface for formatting numbers
  */
 class NumberLayout
 {
@@ -466,7 +466,7 @@ private:
 
 
 /**
- * \brief Hexadecimal numbers
+ * \brief Format numbers in hexadecimal representation
  */
 class HexLayout : public NumberLayout
 {
