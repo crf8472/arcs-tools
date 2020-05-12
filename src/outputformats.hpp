@@ -363,13 +363,13 @@ private:
 
 	void init(const int rows, const int cols) override;
 
-	void print_label(std::ostream &out, const ARIdLayout::ARID_FLAG flag) const;
-
 	void do_out(std::ostream &out, const ARId &arid,
 			const std::string &prefix) override;
 
 	std::string do_format(const ARId &id, const std::string &alt_prefix) const
 		override;
+
+	void print_label(std::ostream &out, const ARIdLayout::ARID_FLAG flag) const;
 
 	/**
 	 * \brief Row labels

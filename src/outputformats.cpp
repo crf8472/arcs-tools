@@ -293,13 +293,6 @@ void ARIdTableFormat::init(const int /* rows */, const int /* cols */)
 }
 
 
-void ARIdTableFormat::print_label(std::ostream &out,
-		const ARIdLayout::ARID_FLAG flag) const
-{
-	out << std::setw(width(0)) << row_labels_[to_underlying(flag)] + ":";
-}
-
-
 std::string ARIdTableFormat::do_format(const ARId &id,
 			const std::string &alt_prefix) const
 {
@@ -368,6 +361,13 @@ void ARIdTableFormat::do_out(std::ostream &out, const ARId &id,
 		const std::string &alt_prefix)
 {
 	out << format(id, alt_prefix) << std::endl;
+}
+
+
+void ARIdTableFormat::print_label(std::ostream &out,
+		const ARIdLayout::ARID_FLAG flag) const
+{
+	out << std::setw(width(0)) << row_labels_[to_underlying(flag)] + ":";
 }
 
 
