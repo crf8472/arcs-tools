@@ -374,12 +374,12 @@ private:
 	/**
 	 * \brief Row labels
 	 */
-	std::array<std::string, to_underlying(ARID_FLAG::COUNT)> row_labels_;
+	const std::array<std::string, to_underlying(ARID_FLAG::COUNT)> row_labels_;
 
 	/**
 	 * \brief Iterable array of show flags
 	 */
-	std::array<ARID_FLAG,   to_underlying(ARID_FLAG::COUNT)> show_flags_;
+	const std::array<ARID_FLAG,   to_underlying(ARID_FLAG::COUNT)> show_flags_;
 };
 
 
