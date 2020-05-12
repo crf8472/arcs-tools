@@ -272,6 +272,8 @@ ARIdTableFormat::ARIdTableFormat(const bool &url, const bool &filename,
 			only_one_flag() ? 1 : 2 // one or two columns
 		)
 	, row_labels_ { "URL", "Filename", "Tracks", "ID1", "ID2", "CDDB ID" }
+	, show_flags_ { ARID_FLAG::URL, ARID_FLAG::FILENAME, ARID_FLAG::TRACKS,
+		ARID_FLAG::ID1, ARID_FLAG::ID2, ARID_FLAG::CDDBID }
 {
 	this->init(rows(), columns());
 }
@@ -291,115 +293,70 @@ void ARIdTableFormat::init(const int /* rows */, const int /* cols */)
 }
 
 
+void ARIdTableFormat::print_label(std::ostream &out,
+		const ARIdLayout::ARID_FLAG flag) const
+{
+	out << std::setw(width(0)) << row_labels_[to_underlying(flag)] + ":";
+}
+
+
 std::string ARIdTableFormat::do_format(const ARId &id,
 			const std::string &alt_prefix) const
 {
+	if (no_flags()) // return ARId as default
+	{
+		return id.to_string();
+	}
+
+	const bool label_requested = columns() > 1;
+
 	std::stringstream stream;
 	stream << std::left;
 
-	if (url())
-	{
-		if (not has_only(ARID_FLAG::URL))
-		{
-			stream << std::setw(width(0))
-				<< row_labels_[to_underlying(ARID_FLAG::URL)] + ":";
-		}
-
-		auto text = id.url();
-		if (not alt_prefix.empty())
-		{
-			text.replace(0, id.prefix().length(), alt_prefix);
-		}
-
-		stream << std::setw(text.length()) << text;
-	}
-
-	if (filename())
-	{
-		if (not has_only(ARID_FLAG::FILENAME))
-		{
-			stream << std::endl;
-			stream << std::setw(width(0))
-				<< row_labels_[to_underlying(ARID_FLAG::FILENAME)] + ":";
-		}
-
-		auto text = id.filename();
-		stream << std::setw(text.length()) << text;
-	}
-
-	if (track_count())
-	{
-		unsigned int tracks = id.track_count();
-
-		if (not has_only(ARID_FLAG::TRACKS))
-		{
-			stream << std::endl;
-
-			stream << std::setw(width(0))
-				<< row_labels_[to_underlying(ARID_FLAG::TRACKS)] + ":";
-
-			auto prev = stream.fill('0');
-			stream << std::setw(2) << tracks << std::setfill(prev);
-		} else
-		{
-			stream << tracks;
-		}
-	}
-
 	HexLayout hex;
+	hex.set_uppercase(true);
 
-	if (disc_id_1())
+	std::string value;
+
+	for (const auto& sflag : show_flags_)
 	{
-		auto text = hex.format(id.disc_id_1(), 8);
+		if (not flag(to_underlying(sflag))) { continue; }
 
-		if (not has_only(ARID_FLAG::ID1))
+		if (label_requested)
 		{
-			stream << std::endl;
-
-			stream << std::setw(width(0))
-				<< row_labels_[to_underlying(ARID_FLAG::ID1)] + ":";
-
-			stream << std::setw(8) << text;
-		} else
-		{
-			stream << text;
+			if (!stream.str().empty()) { stream << std::endl; }
+			print_label(stream, sflag);
 		}
-	}
 
-	if (disc_id_2())
-	{
-		auto text = hex.format(id.disc_id_2(), 8);
-
-		if (not has_only(ARID_FLAG::ID2))
+		switch (sflag)
 		{
-			stream << std::endl;
-
-			stream << std::setw(width(0))
-				<< row_labels_[to_underlying(ARID_FLAG::ID2)] + ":";
-
-			stream << std::setw(8) << text;
-		} else
-		{
-			stream << text;
+			case ARID_FLAG::URL:
+				value = id.url();
+				if (not alt_prefix.empty())
+				{
+					value.replace(0, id.prefix().length(), alt_prefix);
+				}
+				break;
+			case ARID_FLAG::FILENAME:
+				value = id.filename();
+				break;
+			case ARID_FLAG::TRACKS:
+				value = std::to_string(id.track_count());
+				break;
+			case ARID_FLAG::ID1:
+				value = hex.format(id.disc_id_1(), 8);
+				break;
+			case ARID_FLAG::ID2:
+				value = hex.format(id.disc_id_2(), 8);
+				break;
+			case ARID_FLAG::CDDBID:
+				value = hex.format(id.cddb_id(), 8);
+				break;
+			default:
+				break;
 		}
-	}
 
-	if (cddb_id())
-	{
-		auto text = hex.format(id.cddb_id(), 8);
-
-		if (not has_only(ARID_FLAG::CDDBID))
-		{
-			stream << std::endl;
-
-			stream << std::setw(width(0))
-				<< row_labels_[to_underlying(ARID_FLAG::CDDBID)] + ":";
-
-			stream << std::setw(8) << text;
-		} else
-		{
-			stream << text;
-		}
+		stream << std::setw(value.length()) << value;
 	}
 
 	return stream.str();

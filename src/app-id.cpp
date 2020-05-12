@@ -66,6 +66,7 @@ std::unique_ptr<Options> ARIdConfigurator::do_configure_options(
 
 	// Default function is URL
 
+	/*
 	if (    not options->is_set(ARIdOptions::CDDBID )
 		and not options->is_set(ARIdOptions::URL    )
 		and not options->is_set(ARIdOptions::DBID   )
@@ -73,6 +74,7 @@ std::unique_ptr<Options> ARIdConfigurator::do_configure_options(
 	{
 		options->set(ARIdOptions::URL);
 	}
+	*/
 
 	// Infile specified?
 

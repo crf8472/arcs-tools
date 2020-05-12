@@ -44,15 +44,21 @@ bool WithInternalFlags::flag(const int idx) const
 }
 
 
-bool WithInternalFlags::only(const int idx) const
+bool WithInternalFlags::no_flags() const
 {
-	return flag(idx) && (0 == (flags_ & ~(1 << idx)));
+	return flags_ == 0;
 }
 
 
 bool WithInternalFlags::only_one_flag() const
 {
 	return flags_ && !(flags_ & (flags_ - 1));
+}
+
+
+bool WithInternalFlags::only(const int idx) const
+{
+	return flag(idx) && only_one_flag();
 }
 
 

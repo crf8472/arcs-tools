@@ -97,13 +97,11 @@ public:
 	bool flag(const int idx) const;
 
 	/**
-	 * \brief Return TRUE if the specified flag is the only flag set
+	 * \brief Return true if no flags are set.
 	 *
-	 * \param[in] idx   Index to return
-	 *
-	 * \return TRUE iff the specified flag is set an all others are not
+	 * \return TRUE if no flags are set
 	 */
-	bool only(const int idx) const;
+	bool no_flags() const;
 
 	/**
 	 * \brief Return TRUE if only one flag is set, otherwise FALSE
@@ -111,6 +109,15 @@ public:
 	 * \return TRUE if only one flag is set, otherwise FALSE
 	 */
 	bool only_one_flag() const;
+
+	/**
+	 * \brief Return TRUE if the specified flag is the only flag set
+	 *
+	 * \param[in] idx   Index to return
+	 *
+	 * \return TRUE iff the specified flag is set an all others are not
+	 */
+	bool only(const int idx) const;
 
 private:
 
