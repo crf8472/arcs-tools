@@ -27,7 +27,7 @@ ARParserContentPrintHandler::ARParserContentPrintHandler()
 	: block_counter_(0)
 	, track_(0)
 	, arid_format_(std::make_unique<ARIdTableFormat>(
-				false, false, true, true, true, true))
+				false, false, false, false, false, false))
 	, triplet_format_(std::make_unique<ARTripletFormat>())
 	, out_file_stream_()
 	, out_stream_(std::cout.rdbuf())
@@ -41,7 +41,7 @@ ARParserContentPrintHandler::ARParserContentPrintHandler(
 	: block_counter_(0)
 	, track_(0)
 	, arid_format_(std::make_unique<ARIdTableFormat>(
-				false, false, true, true, true, true))
+				false, false, false, false, false, false))
 	, triplet_format_(std::make_unique<ARTripletFormat>())
 	, out_file_stream_(filename)
 	, out_stream_(out_file_stream_.rdbuf())
