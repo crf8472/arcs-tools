@@ -45,8 +45,8 @@ Print all information.
 
 \section EXAMPLES
 
-Compute ARId for audiofile.cue while having the real audio file in the same
-directory:
+Compute AccurateRip id for audiofile.cue while having the real audio file in the
+same directory:
 
 $ @TOOL_NAME_ID@ audiofile.cue
 

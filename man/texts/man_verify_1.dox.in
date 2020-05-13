@@ -20,8 +20,8 @@ TOC information and verifies them against reference checksums.
 
 \copydoc inc_calcdesc
 
-You have to pass either the reference as a binary file (some dBAR-*.bin file)
-using \b -r or pipe this data in via stdin.
+The reference checksums are mandatory. They can be specified by the name of a
+binary file (some dBAR-*.bin file) using \b -r or can be piped in via stdin.
 
 
 \section OPTIONS

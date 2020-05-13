@@ -11,25 +11,29 @@ https://codeberg.org/tristero/arcstk/src/branch/master/LICENSE
 
 \page inc_calcdesc
 
-If you pass no audiofiles, you must pass a metadata file with the TOC and the
-information about the audio files. The audio input is supposed to form an album.
+If a metadata file with the TOC is passed audio files may or may not be passed
+additionally.
 
-If you pass audiofiles and a metadata file, the names of the audiofiles will
-override potentially specified filenames in the metadata file. The audio input
-is supposed to form an album. If you pass a single audiofile together with a
-metadata file, the audiofile is supposed to contain all tracks of the album. If
-you pass multiple audiofiles together with a metadata file, the number of the
-audiofiles passed has to match exactly the number of tracks specified in the
-metadata file, otherwise the input will not be processed. To put it simpler, if
-you override audiofilenames in the metadata file, you either have to override
-them by a single audiofile holding all tracks or you have to specify exactly one
-distinct audiofile for each known track.
+If a metadata file and no audio files are specified, the name of the audio files
+must be present in the metadata file. The audio input is supposed to form an
+album.
 
-If you pass audiofiles and no metadata file, the audiofiles are processed in the
-order their names are passed. The audio input is not supposed to form an album,
-but can be declared to do so by using \b --album or the switches \b --first and
-\b --last to declare the first audio file in the list passed to be the first
-track of the album and the last audio file to be the last track.
+If audiofiles together with a metadata file are passed, the names of the
+audiofiles will override potentially specified filenames in the metadata file.
+The audio input is supposed to form an album. If a single audiofile is passed
+together with a metadata file, the audiofile is supposed to contain all tracks
+of the album. If multiple audiofiles are passed together with a metadata file,
+the number of the audiofiles passed has to match exactly the number of tracks
+specified in the metadata file, otherwise the input will not be processed. To
+put it simpler, if you override audiofilenames in the metadata file, you either
+have to override them by a single audiofile holding all tracks or you have to
+specify exactly one distinct audiofile for each known track.
+
+If audiofiles are passed without a metadata file, the audiofiles are processed
+in the order their names are passed. The audio input is not supposed to form an
+album, but can be declared to do so by using \b --album or the switches \b
+--first and \b --last to declare the first audio file in the list passed to be
+the first track of the album and the last audio file to be the last track.
 
 
 \page inc_logfileopt

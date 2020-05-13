@@ -15,7 +15,7 @@
 
 \section DESCRIPTION
 
-Parse valid responses from the AccurateRip database and output checksums,
+Parse responses from the AccurateRip database and output checksums,
 confidence values and the checksums for frame 450 for each profile contained in
 the response.
 
