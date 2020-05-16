@@ -31,9 +31,6 @@
 #ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
 #include "outputformats.hpp"
 #endif
-//#ifndef __ARCSTOOLS_TOOLS_FS_HPP__
-//#include "tools_fs.hpp"
-//#endif
 
 
 using arcstk::ARId;

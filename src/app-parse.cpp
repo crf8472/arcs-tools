@@ -29,9 +29,6 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
 #endif
-//#ifndef __ARCSTOOLS_OPTIONS_HPP__
-//#include "options.hpp"
-//#endif
 #ifndef __ARCSTOOLS_PARSEHANDLERS_HPP__
 #include "parsehandlers.hpp"
 #endif

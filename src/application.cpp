@@ -23,9 +23,6 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"          // for Configurator, CallSyntaxException
 #endif
-//#ifndef __ARCSTOOLS_OPTIONS_HPP__
-//#include "options.hpp"
-//#endif
 #ifndef __ARCSTOOLS_VERSION_HPP__
 #include "version.hpp"         // for ARCSTOOLS_VERSION_INFO
 #endif

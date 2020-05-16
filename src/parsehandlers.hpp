@@ -13,15 +13,10 @@
 #include <fstream>           // for ofstream, ostream
 #include <memory>            // for unique_ptr
 #include <string>            // for string
-//#include <ostream>
 
 #ifndef __LIBARCSTK_PARSE_HPP__
 #include <arcstk/parse.hpp>
 #endif
-
-//#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
-//#include "outputformats.hpp"
-//#endif
 
 class ARIdLayout;
 class ARTripletFormat;

@@ -25,9 +25,6 @@
 #include <arcsdec/calculators.hpp>
 #endif
 
-//#ifndef __ARCSTOOLS_ARCALC_HPP__
-//#include "app-calc.hpp"             // for ARCalcOptions, ARCalcConfigurator
-//#endif
 #ifndef __ARCSTOOLS_CLIPARSE_HPP__
 #include "cliparse.hpp"             // for CLIParser, __ARCSTOOLS_CLIPARSE_H...
 #endif

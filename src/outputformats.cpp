@@ -6,11 +6,8 @@
 #include <iomanip>    // for operator<<, setw, setfill
 #include <iostream>   // for ostream, operator<<, basic_ostream, endl, size_t
 #include <iterator>   // for back_insert_iterator, back_inserter
-//#include <sstream>
-//#include <stdexcept>
 #include <set>        // for operator!=, set, set<>::const_iterator
 #include <string>     // for string, operator<<, to_string, char_traits, ope...
-//#include <type_traits>
 #include <vector>     // for vector, allocator
 
 #ifndef __LIBARCSTK_CALCULATE_HPP__

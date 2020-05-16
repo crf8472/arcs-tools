@@ -5,7 +5,6 @@
 #include <fstream>                // for ostream, dec, ios_base, ios_base::f...
 #include <iostream>               // for cout
 #include <ostream>                // for operator<<, basic_ostream<>::__ostr...
-//#include <sstream>
 #include <utility>                // for move
 #include "format.hpp"             // for ARIdLayout
 #include "outputformats.hpp"      // for ARTripletFormat, ARIdTableFormat

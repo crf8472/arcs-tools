@@ -39,9 +39,6 @@
 #ifndef __ARCSTOOLS_FORMAT_HPP__
 #include "format.hpp"               // for operator<<
 #endif
-//#ifndef __ARCSTOOLS_OPTIONS_HPP__
-//#include "options.hpp"
-//#endif
 #ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
 #include "outputformats.hpp"
 #endif
