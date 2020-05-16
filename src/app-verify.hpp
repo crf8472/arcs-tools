@@ -9,13 +9,30 @@
  * Options, Configurator and Application for verify.
  */
 
+#include <cstdint>               // for uint16_t, uint32_t
+#include <memory>                // for unique_ptr
+#include <string>                // for string
+
 #ifndef __LIBARCSTK_MATCH_HPP__
 #include <arcstk/match.hpp>
 #endif
+#ifndef __LIBARCSTK_PARSE_HPP__
+#include <arcstk/parse.hpp>
+#endif
 
 #ifndef __ARCSTOOLS_ARCALC_HPP__
-#include "app-calc.hpp"
+#include "app-calc.hpp"          // for ARCalcConfigurator, ARCalcOptions
 #endif
+#ifndef __ARCSTOOLS_APPLICATION_HPP__
+#include "application.hpp"       // for ARApplication
+#endif
+#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
+#include "outputformats.hpp"     // for ARResponse, Checksums, Match
+#endif
+
+class CLIParser;
+class Configurator;
+class Options;
 
 
 using arcstk::Checksums;

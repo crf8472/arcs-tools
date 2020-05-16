@@ -7,8 +7,10 @@ extern "C" {
 #include <unistd.h>   // for stat
 }
 
+//#include <ostream>             // for operator<<, stringstream, basic_ostream
+
 #ifndef __LIBARCSTK_LOGGING_HPP__
-#include <arcstk/logging.hpp>
+#include <arcstk/logging.hpp>  // for ARCS_LOG_DEBUG
 #endif
 
 

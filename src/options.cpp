@@ -2,10 +2,12 @@
 #include "options.hpp"
 #endif
 
-#include <cmath>  // for pow
-#include <map>    // from .h
-#include <string> // from .h
-#include <vector> // from .h
+#include <cstdint>  // for uint16_t
+#include <cmath>    // for pow
+#include <map>      // for map, operator!=, _Rb_tree_const_iterator, _Rb_tre...
+#include <string>   // for string, basic_string
+#include <utility>  // for pair, make_pair
+#include <vector>   // for vector
 
 
 // Options

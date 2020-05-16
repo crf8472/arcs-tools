@@ -9,18 +9,21 @@
  * Options, Configurator and Application for id application.
  */
 
-#include <memory>
-#include <string>
+#include <cstdint>          // for uint8_t
+#include <memory>           // for unique_ptr
+#include <string>           // for string
 
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
-#include "application.hpp"
+#include "application.hpp"  // for ARApplication
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
-#include "config.hpp"
+#include "config.hpp"       // for Configurator
 #endif
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
-#include "options.hpp"
+#include "options.hpp"      // for Options, __ARCSTOOLS_OPTIONS_HPP__
 #endif
+
+class CLIParser;
 
 /**
  * \brief Configuration options for ARIdApplications.

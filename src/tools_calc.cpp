@@ -6,14 +6,14 @@
 #include "tools_calc.hpp"
 #endif
 
-
-#include <memory>
-#include <unordered_set>
-#include <string>
-#include <tuple>
-#include <utility>
-#include <vector>
-
+#include <memory>                   // for unique_ptr, make_unique
+#include <ostream>                  // for operator<<, basic_ostream, basic_...
+#include <stdexcept>                // for logic_error
+#include <string>                   // for string, char_traits, operator<<
+#include <tuple>                    // for make_tuple, tuple
+#include <unordered_set>            // for unordered_set
+#include <utility>                  // for move, make_pair, pair
+#include <vector>                   // for vector
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>

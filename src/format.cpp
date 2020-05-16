@@ -8,12 +8,10 @@
 #include "format.hpp"
 #endif
 
-#include <deque>
-#include <iomanip>
-#include <iostream>
-#include <limits>
-#include <sstream>
-#include <vector>
+#include <iomanip>             // for operator<<, setw, setfill
+#include <stdexcept>           // for out_of_range
+#include <utility>             // for move
+#include <vector>              // for vector, vector<>::reference, _Bit_refe...
 
 
 // WithInternalFlags

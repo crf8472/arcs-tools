@@ -2,42 +2,57 @@
 #include "app-calc.hpp"
 #endif
 
-#include <iostream>
-#include <functional>
-#include <fstream>
-#include <memory>
-#include <string>
-#include <tuple>
-#include <unordered_set>
-#include <vector>
+#include <array>                    // for array
+#include <cstdlib>                  // for EXIT_SUCCESS
+#include <fstream>                  // for operator<<, ostream, ofstream
+#include <functional>               // for _Bind, bind, _1
+#include <iostream>                 // for cout
+#include <memory>                   // for unique_ptr, allocator, make_unique
+#include <string>                   // for string, char_traits, operator<<
+#include <tuple>                    // for tuple, tuple_element<>::type
+#include <utility>                  // for move
+#include <vector>                   // for vector
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
 #endif
+#ifndef __LIBARCSTK_MATCH_HPP__
+#include <arcstk/match.hpp>         // for ARId, Checksums
+#endif
 
+#ifndef __LIBARCSDEC_AUDIOREADER_HPP__
+#include <arcsdec/audioreader.hpp>  // for AudioReaderSelection
+#endif
 #ifndef __LIBARCSDEC_CALCULATORS_HPP__
-#include <arcsdec/calculators.hpp>
+#include <arcsdec/calculators.hpp>  // for ARCSCalculator, TOCParser
+#endif
+#ifndef __LIBARCSDEC_METAPARSER_HPP__
+#include <arcsdec/metaparser.hpp>   // for MetadataParserSelection
 #endif
 
-#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
-#include "outputformats.hpp"
-#endif
 #ifndef __ARCSTOOLS_CLIPARSE_HPP__
-#include "cliparse.hpp"
+#include "cliparse.hpp"             // for CLIParser, __ARCSTOOLS_CLIPARSE_H...
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
 #endif
-#ifndef __ARCSTOOLS_OPTIONS_HPP__
-#include "options.hpp"
+#ifndef __ARCSTOOLS_FORMAT_HPP__
+#include "format.hpp"               // for operator<<
+#endif
+//#ifndef __ARCSTOOLS_OPTIONS_HPP__
+//#include "options.hpp"
+//#endif
+#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
+#include "outputformats.hpp"
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
-#include "tools_calc.hpp"
+#include "tools_calc.hpp"           // for ARCSMultifileAlbumCalculator
 #endif
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
-#include "tools_fs.hpp"
+#include "tools_fs.hpp"             // for path
 #endif
 
+class Options;
 
 using arcstk::ARId;
 using arcstk::Checksums;

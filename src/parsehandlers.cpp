@@ -2,12 +2,16 @@
 #include "parsehandlers.hpp"
 #endif
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
+#include <fstream>                // for ostream, dec, ios_base, ios_base::f...
+#include <iostream>               // for cout
+#include <ostream>                // for operator<<, basic_ostream<>::__ostr...
+//#include <sstream>
+#include <utility>                // for move
+#include "format.hpp"             // for ARIdLayout
+#include "outputformats.hpp"      // for ARTripletFormat, ARIdTableFormat
 
-#ifndef __LIBARCSTK_LOGGING_HPP__
-#include <arcstk/logging.hpp>
+#ifndef __LIBARCSTK_IDENTIFIER_HPP__
+#include <arcstk/identifier.hpp>  // for ARId
 #endif
 
 #ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__

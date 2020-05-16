@@ -2,10 +2,9 @@
 #include "cliparse.hpp"
 #endif
 
-#include <algorithm>
-#include <iostream>
-#include <string>
-#include <vector>
+#include <algorithm>  // for find
+#include <string>     // for string, allocator
+#include <vector>     // for vector
 
 
 // CLIParser

@@ -1,9 +1,6 @@
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #define __ARCSTOOLS_APPLICATION_HPP__
 
-#include <iostream>
-#include <fstream>
-
 /**
  * \file
  *
@@ -13,24 +10,23 @@
  * command line input.
  */
 
-#ifndef __LIBARCSTK_LOGGING_HPP__
-#include <arcstk/logging.hpp>
-#endif
+#include <array>                    // for array
+#include <iostream>                 // for cout
+#include <fstream>                  // for ofstream
+#include <memory>                   // for unique_ptr, allocator
+#include <string>                   // for string
+#include <vector>                   // for vector
+#include "options.hpp"              // for __ARCSTOOLS_OPTIONS_HPP__
 
 #ifndef __LIBARCSDEC_DESCRIPTORS_HPP__
-#include <arcsdec/descriptors.hpp>
+#include <arcsdec/descriptors.hpp>  // for FileReaderDescriptor
 #endif
 
-#ifndef __ARCSTOOLS_CONFIG_HPP__
-#include "config.hpp"
-#endif
-#ifndef __ARCSTOOLS_FORMAT_HPP__
-#include "format.hpp"
-#endif
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
 #include "options.hpp"
 #endif
 
+class Configurator;
 
 using arcsdec::FileReaderDescriptor;
 

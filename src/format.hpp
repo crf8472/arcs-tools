@@ -13,12 +13,11 @@
  * output stream from first to last.
  */
 
-#include <cstdint>
-#include <deque>
-#include <istream>
-#include <memory>
-#include <string>
-#include <vector>
+#include <cstdint>                // for uint32_t, uint8_t
+#include <istream>                // for size_t, ostream
+#include <memory>                 // for unique_ptr
+#include <string>                 // for string
+#include <type_traits>            // for underlying_type_t
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>

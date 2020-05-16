@@ -9,23 +9,24 @@
  * Provides parser handlers for ARParsers.
  */
 
-#include <cstdint>
-#include <fstream>
-#include <memory>
-#include <ostream>
+#include <cstdint>           // for uint32_t, uint8_t
+#include <fstream>           // for ofstream, ostream
+#include <memory>            // for unique_ptr
+#include <string>            // for string
+//#include <ostream>
 
 #ifndef __LIBARCSTK_PARSE_HPP__
 #include <arcstk/parse.hpp>
 #endif
 
-#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
-#include "outputformats.hpp"
-#endif
+//#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
+//#include "outputformats.hpp"
+//#endif
 
+class ARIdLayout;
+class ARTripletFormat;
 
 using arcstk::ContentHandler;
-
-
 
 /**
  * \brief Content handler that just prints the parsed content immediately.

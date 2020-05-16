@@ -4,10 +4,11 @@
  * \brief parse, a tool for parsing AccurateRip responses.
  */
 
-#include <iostream>
+#include <cstdlib>           // for EXIT_FAILURE
+#include <iostream>          // for operator<<, basic_ostream, endl, cerr
 
 #ifndef __ARCSTOOLS_APPARPARSE_HPP__
-#include "app-parse.hpp"
+#include "app-parse.hpp"     // for ARParseApplication
 #endif
 
 /**

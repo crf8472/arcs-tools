@@ -4,10 +4,11 @@
  * \brief calc, a tool to calculate AccurateRip checksums.
  */
 
-#include <iostream>
+#include <cstdlib>           // for EXIT_FAILURE
+#include <iostream>          // for operator<<, basic_ostream, endl, cerr
 
 #ifndef __ARCSTOOLS_APPARCALC_HPP__
-#include "app-calc.hpp"
+#include "app-calc.hpp"      // for ARCalcApplication
 #endif
 
 /**

@@ -11,9 +11,10 @@
  * CLIParser.
  */
 
-#include <map>
-#include <string>
-#include <vector>
+#include <cstdint>   // for uint16_t
+#include <map>       // for map
+#include <string>    // for string
+#include <vector>    // for vector
 
 
 /**

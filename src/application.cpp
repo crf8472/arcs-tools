@@ -2,25 +2,35 @@
 #include "application.hpp"
 #endif
 
-#include <iostream>
-#include <fstream>
-#include <memory>
-#include <vector>
+#include <cstdlib>             // for EXIT_SUCCESS
+#include <fstream>             // for operator<<, basic_ostream, char_traits
+#include <iostream>            // for cout
+#include <memory>              // for unique_ptr
+#include <set>                 // for set
+#include <stdexcept>           // for runtime_error
+#include <vector>              // for vector
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
 #endif
 
+#ifndef __ARCSTOOLS_APPLICATION_HPP__
+#include "application.hpp"
+#endif
 #ifndef __ARCSTOOLS_CLIPARSE_HPP__
-#include "cliparse.hpp"
+#include "cliparse.hpp"        // for __ARCSTOOLS_CLIPARSE_HPP__
 #endif
-#ifndef __ARCSTOOLS_OPTIONS_HPP__
-#include "options.hpp"
+#ifndef __ARCSTOOLS_CONFIG_HPP__
+#include "config.hpp"          // for Configurator, CallSyntaxException
 #endif
+//#ifndef __ARCSTOOLS_OPTIONS_HPP__
+//#include "options.hpp"
+//#endif
 #ifndef __ARCSTOOLS_VERSION_HPP__
-#include "version.hpp"
+#include "version.hpp"         // for ARCSTOOLS_VERSION_INFO
 #endif
 
+class Options;
 
 using arcsdec::FileFormat;
 

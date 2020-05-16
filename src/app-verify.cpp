@@ -2,12 +2,14 @@
 #include "app-verify.hpp"
 #endif
 
-#include <algorithm>
-#include <iomanip>
-#include <iostream>
-#include <filesystem>
-#include <memory>
-#include <string>
+#include <cstdlib>                  // for EXIT_SUCCESS
+#include <fstream>                  // for basic_ofstream<>::__filebuf_type
+#include <iostream>                 // for operator<<, ostream, cout, basic_...
+#include <memory>                   // for unique_ptr, make_unique, allocator
+#include <string>                   // for char_traits, operator<<, string
+#include <tuple>                    // for tuple_element<>::type
+#include <type_traits>              // for add_const<>::type
+#include <utility>                  // for move
 
 #ifndef __LIBARCSTK_MATCH_HPP__
 #include <arcstk/match.hpp>
@@ -16,33 +18,36 @@
 #include <arcstk/parse.hpp>
 #endif
 #ifndef __LIBARCSTK_LOGGING_HPP__
-#include <arcstk/logging.hpp>
+#include <arcstk/logging.hpp>       // for ARCS_LOG_DEBUG, ARCS_LOG_ERROR
 #endif
 
 #ifndef __LIBARCSDEC_CALCULATORS_HPP__
 #include <arcsdec/calculators.hpp>
 #endif
 
-#ifndef __ARCSTOOLS_ARCALC_HPP__
-#include "app-calc.hpp"
-#endif
-#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
-#include "outputformats.hpp"
-#endif
-#ifndef __ARCSTOOLS_PARSEHANDLERS_HPP__
-#include "parsehandlers.hpp"
-#endif
+//#ifndef __ARCSTOOLS_ARCALC_HPP__
+//#include "app-calc.hpp"             // for ARCalcOptions, ARCalcConfigurator
+//#endif
 #ifndef __ARCSTOOLS_CLIPARSE_HPP__
-#include "cliparse.hpp"
+#include "cliparse.hpp"             // for CLIParser, __ARCSTOOLS_CLIPARSE_H...
+#endif
+#ifndef __ARCSTOOLS_CONFIG_HPP__
+#include "config.hpp"               // for CallSyntaxException, Configurator
+#endif
+#ifndef __ARCSTOOLS_FORMAT_HPP__
+#include "format.hpp"               // for ARId
 #endif
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
-#include "options.hpp"
+#include "options.hpp"              // for Options, __ARCSTOOLS_OPTIONS_HPP__
+#endif
+#ifndef __ARCSTOOLS_PARSEHANDLERS_HPP__
+#include "parsehandlers.hpp"        // for ContentHandler
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
-#include "tools_calc.hpp"
+#include "tools_calc.hpp"           // for audiofile_layout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
-#include "tools_fs.hpp"
+#include "tools_fs.hpp"             // for file_exists
 #endif
 
 

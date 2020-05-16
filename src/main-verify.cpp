@@ -4,10 +4,11 @@
  * \brief verify, a tool to verify AccurateRip checksums.
  */
 
-#include <iostream>
+#include <cstdlib>           // for EXIT_FAILURE
+#include <iostream>          // for operator<<, basic_ostream, endl, cerr
 
 #ifndef __ARCSTOOLS_APPARVERIFY_HPP__
-#include "app-verify.hpp"
+#include "app-verify.hpp"    // for ARVerifyApplication
 #endif
 
 /**

@@ -13,15 +13,16 @@
  * class.
  */
 
-#include <memory>
-#include <stdexcept>
+#include <stdint.h>      // for uint8_t
+#include <memory>        // for unique_ptr
+#include <stdexcept>     // for runtime_error
+#include <string>        // for string
 
 #ifndef __ARCSTOOLS_CLIPARSE_HPP__
-#include "cliparse.hpp"
+#include "cliparse.hpp"  // for CLIParser
 #endif
-#ifndef __ARCSTOOLS_OPTIONS_HPP__
-#include "options.hpp"
-#endif
+
+class Options;
 
 
 /**

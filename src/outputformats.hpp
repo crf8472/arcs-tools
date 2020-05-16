@@ -11,10 +11,11 @@
  * from these formats. There is also a format for offsets.
  */
 
-#include <arcstk/identifier.hpp>
-#include <array>
-#include <utility>
-#include <vector>
+#include <array>                  // for array
+#include <cstdint>                // for int32_t
+#include <iosfwd>                 // for ostream, size_t
+#include <string>                 // for string
+#include <vector>                 // for vector
 
 #ifndef __LIBARCSTK_PARSE_HPP__
 #include <arcstk/parse.hpp>

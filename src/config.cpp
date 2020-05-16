@@ -2,9 +2,12 @@
 #include "config.hpp"
 #endif
 
-#include <sstream>
-#include <string>
-#include <type_traits> // for underlying_type
+#include <cstdio>              // for stdout
+#include <sstream>             // for operator<<, basic_ostream::operator<<
+#include <string>              // for char_traits, operator<<, operator+
+#include <type_traits>         // for add_const<>::type, __underlying_type_i...
+#include <utility>             // for move
+#include <vector>              // for vector
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
@@ -14,7 +17,7 @@
 #include "cliparse.hpp"
 #endif
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
-#include "options.hpp"
+#include "options.hpp"         // for Options, __ARCSTOOLS_OPTIONS_HPP__
 #endif
 
 

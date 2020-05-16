@@ -2,21 +2,19 @@
 #include "app-parse.hpp"
 #endif
 
-#ifdef _WIN32
+#ifdef _WIN32 // XXX This is completely untested
 
 #include <io.h>     // for stdin
 #include <fcntl.h>  // for _setmode, 0_BINARY
 
 #endif
 
-#include <array>
-#include <cstdio>   // for std::freopen, std::ferror, std::fread, std::feof
-#include <cstring>  // for std::strerror
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <streambuf> // for std::basic_streambuf
-#include <string>
+#include <cstdlib>             // for EXIT_SUCCESS
+#include <iostream>            // for operator<<, cout, ostream, basic_ostream
+#include <memory>              // for make_unique, unique_ptr, allocator
+#include <string>              // for string, operator<<, char_traits
+#include <utility>             // for move
+#include <vector>              // for vector
 
 #ifndef __LIBARCSTK_PARSE_HPP__
 #include <arcstk/parse.hpp>
@@ -25,22 +23,23 @@
 #include <arcstk/logging.hpp>
 #endif
 
-#ifndef __ARCSTOOLS_PARSEHANDLERS_HPP__
-#include "parsehandlers.hpp"
-#endif
 #ifndef __ARCSTOOLS_CLIPARSE_HPP__
 #include "cliparse.hpp"
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
 #endif
-#ifndef __ARCSTOOLS_OPTIONS_HPP__
-#include "options.hpp"
+//#ifndef __ARCSTOOLS_OPTIONS_HPP__
+//#include "options.hpp"
+//#endif
+#ifndef __ARCSTOOLS_PARSEHANDLERS_HPP__
+#include "parsehandlers.hpp"
 #endif
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
 #include "tools_fs.hpp"
 #endif
 
+class Options;
 
 using arcstk::ARFileParser;
 using arcstk::ARStdinParser;

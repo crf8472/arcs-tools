@@ -1,22 +1,20 @@
-#include <type_traits>
 #ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
 #include "outputformats.hpp"
 #endif
 
-#include <algorithm>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <type_traits>
-#include <vector>
+#include <algorithm>  // for max, copy_if
+#include <iomanip>    // for operator<<, setw, setfill
+#include <iostream>   // for ostream, operator<<, basic_ostream, endl, size_t
+#include <iterator>   // for back_insert_iterator, back_inserter
+//#include <sstream>
+//#include <stdexcept>
+#include <set>        // for operator!=, set, set<>::const_iterator
+#include <string>     // for string, operator<<, to_string, char_traits, ope...
+//#include <type_traits>
+#include <vector>     // for vector, allocator
 
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>
-#endif
-#ifndef __LIBARCSTK_LOGGING_HPP__
-#include <arcstk/logging.hpp>
 #endif
 
 #ifndef __ARCSTOOLS_FORMAT_HPP__

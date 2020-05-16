@@ -2,10 +2,11 @@
 #include "app-id.hpp"
 #endif
 
-#include <iostream>
-#include <fstream>
-#include <memory>
-#include <string>
+#include <cstdlib>                  // for EXIT_SUCCESS
+#include <fstream>                  // for operator<<, ostream, ofstream
+#include <iostream>                 // for cout
+#include <memory>                   // for unique_ptr, make_unique, allocator
+#include <string>                   // for string, char_traits, operator<<
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>
@@ -18,9 +19,6 @@
 #include <arcsdec/calculators.hpp>
 #endif
 
-#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
-#include "outputformats.hpp"
-#endif
 #ifndef __ARCSTOOLS_CLIPARSE_HPP__
 #include "cliparse.hpp"
 #endif
@@ -30,9 +28,12 @@
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
 #include "options.hpp"
 #endif
-#ifndef __ARCSTOOLS_TOOLS_FS_HPP__
-#include "tools_fs.hpp"
+#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
+#include "outputformats.hpp"
 #endif
+//#ifndef __ARCSTOOLS_TOOLS_FS_HPP__
+//#include "tools_fs.hpp"
+//#endif
 
 
 using arcstk::ARId;

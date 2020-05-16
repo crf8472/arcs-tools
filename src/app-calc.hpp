@@ -9,19 +9,29 @@
  * Options, Configurator and Application for calc application.
  */
 
+#include <cstdint>                // for uint8_t, uint16_t
+#include <memory>                 // for unique_ptr
+#include <string>                 // for string
+#include <tuple>                  // for tuple
+
+#ifndef __LIBARCSTK_CALCULATE_HPP__
+#include <arcstk/calculate.hpp>   // for Checksums, ARId, TOC
+#endif
+
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"
-#endif
-#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
-#include "outputformats.hpp"
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
 #endif
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
-#include "options.hpp"
+#include "options.hpp"            // for Options, __ARCSTOOLS_OPTIONS_HPP__
+#endif
+#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
+#include "outputformats.hpp"
 #endif
 
+class CLIParser;
 
 /**
  * \brief Options for configuring ARCSApplication instances.

@@ -4,10 +4,11 @@
  * \brief id, a tool to calculate AccurateRip ids.
  */
 
-#include <iostream>
+#include <cstdlib>           // for EXIT_FAILURE
+#include <iostream>          // for operator<<, basic_ostream, endl, cerr
 
 #ifndef __ARCSTOOLS_APPARID_HPP__
-#include "app-id.hpp"
+#include "app-id.hpp"        // for ARIdApplication
 #endif
 
 /**
