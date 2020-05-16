@@ -58,13 +58,13 @@ std::tuple<bool, std::string> CLIParser::consume_valued_option(
 
 		if (itr != tokens_.end())
 		{
-			std::string opt_value = std::string(*itr);
+			auto option = std::make_tuple(true, std::string(*itr));
 
+			auto option_itr = itr - 1;
+			tokens_.erase(option_itr); // erase option
 			tokens_.erase(itr); // erase value
-			--itr;
-			tokens_.erase(itr); // erase option
 
-			return std::make_tuple(true, opt_value);
+			return option;
 		}
 
 		// Valued option without value
