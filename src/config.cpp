@@ -26,20 +26,44 @@ using arcstk::Logging;
 using arcstk::Log;
 using arcstk::LOGLEVEL;
 
-#include <iostream> // TODO remove this
 
+/**
+ * \brief Parse the command line options relevant for logging
+ */
 class LogSettingsParser
 {
 public:
 
+	/**
+	 * \brief Return the default log level.
+	 *
+	 * \return The default log level for the application
+	 */
 	LOGLEVEL default_loglevel();
 
+	/**
+	 * \brief Deduce the log level from the cli input.
+	 *
+	 * \param[in] cli The CLI input line
+	 *
+	 * \return The deduced log level
+	 */
 	LOGLEVEL get_loglevel(CLIParser &cli);
 
+	/**
+	 * \brief Deduce the log file name from the cli input (maybe empty).
+	 *
+	 * \param[in] cli The CLI input line
+	 *
+	 * \return The deduced logfile name
+	 */
 	std::string get_logfile(CLIParser &cli);
 
 private:
 
+	/**
+	 * \brief Default log level.
+	 */
 	const LOGLEVEL default_loglevel_ = LOGLEVEL::WARNING;
 };
 
@@ -259,7 +283,7 @@ std::tuple<std::string, std::string> Configurator::configure_logappender()
 
 void Configurator::do_configure_logging()
 {
-	auto level = this->configure_loglevel();
+	this->configure_loglevel(); // discard return value
 
 	auto appender = this->configure_logappender();
 
@@ -291,13 +315,11 @@ std::unique_ptr<Options> Configurator::configure_options()
 
 	if (cli_.tokens_left())
 	{
-		auto tokens = cli_.get_unconsumed_tokens();
-
 		std::stringstream ss;
 
 		ss << "Unrecognized command line tokens: ";
 
-		for (const auto& token : tokens)
+		for (const auto& token : cli_.get_unconsumed_tokens())
 		{
 			ss << "'" << token << "' ";
 		}
