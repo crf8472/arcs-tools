@@ -39,7 +39,7 @@
 #ifndef __ARCSTOOLS_FORMAT_HPP__
 #include "format.hpp"               // for operator<<
 #endif
-#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
+#ifndef __ARCSTOOLS_PRINTERS_HPP__
 #include "outputformats.hpp"
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__

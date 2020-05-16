@@ -26,7 +26,7 @@
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"       // for ARApplication
 #endif
-#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
+#ifndef __ARCSTOOLS_PRINTERS_HPP__
 #include "outputformats.hpp"     // for ARResponse, Checksums, Match
 #endif
 

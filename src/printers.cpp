@@ -1,4 +1,4 @@
-#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
+#ifndef __ARCSTOOLS_PRINTERS_HPP__
 #include "outputformats.hpp"
 #endif
 
