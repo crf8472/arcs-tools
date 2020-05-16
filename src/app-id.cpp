@@ -62,18 +62,6 @@ std::unique_ptr<Options> ARIdConfigurator::do_configure_options(
 		return std::make_unique<Options>();
 	}
 
-	// Default function is URL
-
-	/*
-	if (    not options->is_set(ARIdOptions::CDDBID )
-		and not options->is_set(ARIdOptions::URL    )
-		and not options->is_set(ARIdOptions::DBID   )
-		and not options->is_set(ARIdOptions::PROFILE))
-	{
-		options->set(ARIdOptions::URL);
-	}
-	*/
-
 	// Infile specified?
 
 	std::string infilename(options->get_argument(0));
@@ -94,18 +82,19 @@ std::unique_ptr<Options> ARIdConfigurator::parse_options(CLIParser &cli)
 
 	this->check_for_option("--cddb_id", ARIdOptions::CDDBID,
 			cli, *options);
-	this->check_for_option("--url", ARIdOptions::URL,
-			cli, *options);
 	this->check_for_option("--db_id", ARIdOptions::DBID,
+			cli, *options);
+	this->check_for_option("--filename", ARIdOptions::DBID,
+			cli, *options);
+	this->check_for_option("--url", ARIdOptions::URL,
 			cli, *options);
 	this->check_for_option("--profile", ARIdOptions::PROFILE,
 			cli, *options);
-
+	this->check_for_option_with_argument("--url_prefix", ARIdOptions::PRE,
+			cli, *options);
 	this->check_for_option_with_argument("-a", ARIdOptions::AUDIOFILE,
 			cli, *options);
 	this->check_for_option_with_argument("-o", ARIdOptions::OUT,
-			cli, *options);
-	this->check_for_option_with_argument("--url_prefix", ARIdOptions::PRE,
 			cli, *options);
 
 	// Input Metadata Filename
@@ -203,6 +192,7 @@ void ARIdApplication::do_print_usage() const
 	std::cout << "--cddb_id       print the CDDB id\n\n";
 	std::cout << "--url           print the AccurateRip URL\n\n";
 	std::cout << "--db_id         print the AccurateRip DB ID (filename)\n\n";
+	std::cout << "--filename      print the AccurateRip DB ID (filename)\n\n";
 	std::cout << "--profile       print all available meta information\n\n";
 	std::cout << "--url_prefix    use the given prefix instead of the default\n";
 	std::cout << "                'http://accuraterip.com/accuraterip/'\n\n";
