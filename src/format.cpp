@@ -683,7 +683,8 @@ StringTableLayout::StringTableLayout(const int rows, const int cols)
 }
 
 
-StringTableLayout::~StringTableLayout() = default;
+StringTableLayout::~StringTableLayout() noexcept
+= default;
 
 
 std::size_t StringTableLayout::do_rows() const

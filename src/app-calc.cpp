@@ -86,7 +86,8 @@ ARCalcConfigurator::ARCalcConfigurator(int argc, char** argv)
 }
 
 
-ARCalcConfigurator::~ARCalcConfigurator() = default;
+ARCalcConfigurator::~ARCalcConfigurator() noexcept
+= default;
 
 
 std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(

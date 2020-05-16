@@ -68,7 +68,7 @@ std::string derive_filename(const std::string &filename,
 
 	// Check file existence for the given suffices
 
-	for (const std::string suffix : suffices)
+	for (const std::string &suffix : suffices)
 	{
 		ss << '.' << suffix;
 

@@ -53,7 +53,8 @@ ARParserContentPrintHandler::ARParserContentPrintHandler(
 }
 
 
-ARParserContentPrintHandler::~ARParserContentPrintHandler() = default;
+ARParserContentPrintHandler::~ARParserContentPrintHandler() noexcept
+= default;
 
 
 void ARParserContentPrintHandler::set_arid_format(

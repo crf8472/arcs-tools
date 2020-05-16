@@ -380,7 +380,8 @@ AlbumChecksumsTableFormat::AlbumChecksumsTableFormat(const int rows,
 }
 
 
-AlbumChecksumsTableFormat::~AlbumChecksumsTableFormat() = default;
+AlbumChecksumsTableFormat::~AlbumChecksumsTableFormat() noexcept
+= default;
 
 
 void AlbumChecksumsTableFormat::init(const int /* rows */, const int /* cols */)
