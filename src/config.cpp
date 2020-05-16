@@ -23,7 +23,137 @@
 
 using arcstk::Appender;
 using arcstk::Logging;
+using arcstk::Log;
 using arcstk::LOGLEVEL;
+
+#include <iostream> // TODO remove this
+
+class LogSettingsParser
+{
+public:
+
+	LOGLEVEL default_loglevel();
+
+	LOGLEVEL get_loglevel(CLIParser &cli);
+
+	std::string get_logfile(CLIParser &cli);
+
+private:
+
+	const LOGLEVEL default_loglevel_ = LOGLEVEL::WARNING;
+};
+
+
+LOGLEVEL LogSettingsParser::default_loglevel()
+{
+	return default_loglevel_;
+}
+
+
+LOGLEVEL LogSettingsParser::get_loglevel(CLIParser &cli)
+{
+	using arcstk::LOGLEVEL_MIN;
+	using arcstk::LOGLEVEL_MAX;
+
+	const auto& [ v_found, loglevel_arg ] = cli.consume_valued_option("-v");
+
+	if (not v_found)
+	{
+		return default_loglevel();
+	}
+
+	if (loglevel_arg.empty())
+	{
+		throw CallSyntaxException(
+				"Option -v was passed without argument");
+	}
+
+	int level = -1;
+
+	try {
+
+		level = std::stoi(loglevel_arg);
+
+	} catch (const std::invalid_argument &ia)
+	{
+		std::stringstream ss;
+
+		ss << "Argument of -v is '" << loglevel_arg
+			<< "' but must be a non-negative integer in the range "
+			<< LOGLEVEL_MIN << "-"
+			<< LOGLEVEL_MAX << ".";
+
+		throw std::runtime_error(ss.str());
+
+	} catch (const std::out_of_range &oor)
+	{
+		std::stringstream ss;
+
+		ss << "Argument of -v is '" << loglevel_arg
+			<< "' which is out of the valid range "
+			<< LOGLEVEL_MIN << "-"
+			<< LOGLEVEL_MAX << "";
+
+		throw std::runtime_error(ss.str());
+	}
+
+	if (level < LOGLEVEL_MIN or level > LOGLEVEL_MAX)
+	{
+		std::stringstream ss;
+
+		ss << "Argument of -v is '" << loglevel_arg
+			<< "' which does not correspond to a valid loglevel ("
+			<< LOGLEVEL_MIN << "-"
+			<< LOGLEVEL_MAX << ").";
+
+		throw std::runtime_error(ss.str());
+	}
+
+	// We could warn about -q overriding -v but we are quiet.
+
+	LOGLEVEL log_level = default_loglevel();
+
+	switch (level)
+	{
+		case 0: log_level = LOGLEVEL::NONE;    break;
+		case 1: log_level = LOGLEVEL::ERROR;   break;
+		case 2: log_level = LOGLEVEL::WARNING; break;
+		case 3: log_level = LOGLEVEL::INFO;    break;
+		case 4: log_level = LOGLEVEL::DEBUG;   break;
+		case 5: log_level = LOGLEVEL::DEBUG1;  break;
+		case 6: log_level = LOGLEVEL::DEBUG2;  break;
+		case 7: log_level = LOGLEVEL::DEBUG3;  break;
+		case 8: log_level = LOGLEVEL::DEBUG4;  break;
+		default: {
+			std::stringstream ss;
+
+			ss << "Illegal value for log_level"
+				<< LOGLEVEL_MIN << "-"
+				<< LOGLEVEL_MAX << ".";
+
+			throw std::runtime_error(ss.str());
+		}
+	}
+
+	return log_level;
+}
+
+
+std::string LogSettingsParser::get_logfile(CLIParser &cli)
+{
+	const auto& [ l_found, logfile_arg ]  = cli.consume_valued_option("-l");
+
+	if (l_found)
+	{
+		if (logfile_arg.empty())
+		{
+			throw CallSyntaxException(
+				"Option -l was passed without argument");
+		}
+	}
+
+	return logfile_arg;
+}
 
 
 // CallSyntaxException
@@ -42,7 +172,8 @@ CallSyntaxException::CallSyntaxException(const std::string &what_arg)
 Configurator::Configurator(int argc, char** argv)
 	: cli_(argc, argv)
 {
-	// empty
+	Logging::instance().set_level(LOGLEVEL::NONE);
+	Logging::instance().set_timestamps(false);
 }
 
 
@@ -83,134 +214,61 @@ void Configurator::check_for_option_with_argument(const std::string cli_option,
 }
 
 
-void Configurator::do_configure_logging()
+int Configurator::configure_loglevel()
 {
-	LOGLEVEL log_level = LOGLEVEL::WARNING; // default
+	// current level is NONE
 
-	bool is_quiet = false;
+	LogSettingsParser log_parser;
 
-	if (cli_.consume_option("-q"))
+	auto log_level = log_parser.get_loglevel(cli_);
+
+	if (not cli_.consume_option("-q"))
 	{
-		log_level = LOGLEVEL::NONE;
-
-		is_quiet = true;
+		Logging::instance().set_level(log_level);
+		Logging::instance().set_timestamps(false);
 	}
 
-	// Loglevel
-	{
-		// -q takes precedence over -v, but -v must nonetheless be parsed
-
-		const auto& [ found, loglevel_arg ] = cli_.consume_valued_option("-v");
-
-		if (found)
-		{
-			if (loglevel_arg.empty())
-			{
-				throw CallSyntaxException(
-						"Option -v was passed without argument");
-			}
-
-			const int min_log_level = 0;
-			const int max_log_level = 6;
-
-			int level = -1;
-			try {
-
-				level = std::stoi(loglevel_arg);
-
-			} catch (const std::invalid_argument &ia)
-			{
-				std::stringstream ss;
-
-				ss << "Argument of -v is '" << loglevel_arg
-					<< "' but must be a non-negative integer in the range "
-					<< min_log_level << "-"
-					<< max_log_level << ".";
-
-				throw std::runtime_error(ss.str());
-
-			} catch (const std::out_of_range &oor)
-			{
-				std::stringstream ss;
-
-				ss << "Argument of -v is '" << loglevel_arg
-					<< "' which is out of the valid range "
-					<< min_log_level << "-"
-					<< max_log_level << "";
-
-				throw std::runtime_error(ss.str());
-			}
-
-			if (level < min_log_level or level > max_log_level)
-			{
-				std::stringstream ss;
-
-				ss << "Argument of -v is '" << loglevel_arg
-					<< "' which does not correspond to a valid loglevel ("
-					<< min_log_level << "-"
-					<< max_log_level << ").";
-
-				throw std::runtime_error(ss.str());
-			}
-
-			// loglevel index validates, assign the corresponding level
-
-			if (not is_quiet)
-			{
-				switch (level)
-				{
-					case 0: log_level = LOGLEVEL::NONE; break;
-					case 1: log_level = LOGLEVEL::ERROR; break;
-					case 2: log_level = LOGLEVEL::WARNING; break;
-					case 3: log_level = LOGLEVEL::INFO; break;
-					case 4: log_level = LOGLEVEL::DEBUG; break;
-					case 5: log_level = LOGLEVEL::DEBUG1; break;
-					case 6: log_level = LOGLEVEL::DEBUG2; break;
-					default: {
-						std::stringstream ss;
-
-						ss << "Illegal value for log_level"
-							<< min_log_level << "-"
-							<< max_log_level << ".";
-
-						throw std::runtime_error(ss.str());
-					}
-				}
-			}
-			// We could warn about -q overriding -v but we are quiet.
-		}
-	} //Loglevel
-
-	// Logfile
-	{
-		std::unique_ptr<Appender> appender;
-		const auto& [ found, logfile ] = cli_.consume_valued_option("-l");
-
-		if (found)
-		{
-			if (logfile.empty())
-			{
-				throw CallSyntaxException(
-						"Option -l was passed without argument");
-			}
-
-			appender = std::make_unique<Appender>(logfile);
-
-		} else
-		{
-			appender = std::make_unique<Appender>("stdout", stdout);
-
-		}
-
-		Logging::instance().add_appender(std::move(appender));
-	} //Logfile
-
-	Logging::instance().set_level(log_level);
-	Logging::instance().set_timestamps(false);
-
-	ARCS_LOG_DEBUG << "Loglevel " <<
-		static_cast<std::underlying_type<LOGLEVEL>::type>(
+	return static_cast<std::underlying_type<LOGLEVEL>::type>(
 				Logging::instance().level());
+}
+
+
+std::tuple<std::string, std::string> Configurator::configure_logappender()
+{
+	LogSettingsParser log_parser;
+
+	auto logfile = log_parser.get_logfile(cli_);
+
+	std::unique_ptr<Appender> appender;
+
+	if (logfile.empty())
+	{
+		appender = std::make_unique<Appender>("stdout", stdout);
+	} else
+	{
+		appender = std::make_unique<Appender>(logfile);
+	}
+
+	auto appender_name = appender->name();
+
+	Logging::instance().add_appender(std::move(appender));
+
+	return std::make_tuple(appender_name, logfile);
+}
+
+
+void Configurator::do_configure_logging()
+{
+	auto level = this->configure_loglevel();
+
+	auto appender = this->configure_logappender();
+
+	ARCS_LOG_DEBUG << "Set loglevel: "
+		<< Log::to_string(Logging::instance().level())
+		<< " thereby consuming option -v";
+
+	ARCS_LOG_DEBUG << "Set first log appender thereby consuming option -l "
+		<< std::get<1>(appender);
 }
 
 

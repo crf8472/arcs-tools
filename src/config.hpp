@@ -116,6 +116,23 @@ protected:
 	void check_for_option_with_argument(const std::string cli_option,
 			const uint8_t option, CLIParser &cli, Options &options);
 
+	/**
+	 * \brief Deduce the loglevel value from command line and activate it.
+	 *
+	 * \return The current loglevel
+	 */
+	int configure_loglevel();
+
+	/**
+	 * \brief Configure the log appenders from command line.
+	 *
+	 * If stdout is the only appender, the first element of the tuple will be
+	 * 'stdout' while the second element of the tuple will be an empty string.
+	 *
+	 * \return A tuple of the name of the appender and the filename
+	 */
+	std::tuple<std::string, std::string> configure_logappender();
+
 
 private:
 

@@ -132,8 +132,8 @@ int ARIdApplication::do_run(const Options &options)
 {
 	// Compute requested values
 
-	std::string metafilename  = options.get_argument(0);
-	std::string audiofilename = options.get(ARIdOptions::AUDIOFILE);
+	const auto metafilename  = options.get_argument(0);
+	const auto audiofilename = options.get(ARIdOptions::AUDIOFILE);
 
 	std::unique_ptr<ARId> id = nullptr;
 
@@ -145,6 +145,7 @@ int ARIdApplication::do_run(const Options &options)
 	if (!id) { this->fatal_error("Could not compute AccurateRip id."); }
 
 	// Adjust format and print information
+
 	std::unique_ptr<ARIdPrinter> format;
 
 	if (options.is_set(ARIdOptions::PROFILE))
