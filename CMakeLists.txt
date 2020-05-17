@@ -191,7 +191,7 @@ set (REQUIRED_OBJECTS
 	app-id
 	app-parse
 	app-verify
-	outputformats
+	printers
 	parsehandlers
 	cliparse
 	config
@@ -224,7 +224,7 @@ if (libarcstk_INCLUDE_DIRS )
 
 	set (OBJECTS_DEPENDING_ON_LIBARCSTK
 		application
-		outputformats
+		printers
 		parsehandlers
 		tools_calc
 		config )
@@ -252,7 +252,7 @@ if (libarcsdec_INCLUDE_DIRS )
 		app-calc
 		app-id
 		app-verify
-		outputformats
+		printers
 		tools_calc )
 
 	foreach (_object IN LISTS OBJECTS_DEPENDING_ON_LIBARCSDEC )
@@ -319,7 +319,7 @@ foreach (_executable IN LISTS PROJECT_EXECUTABLES )
 	# Add common object dependencies
 
 	target_sources (${_executable}
-		PRIVATE $<TARGET_OBJECTS:outputformats>
+		PRIVATE $<TARGET_OBJECTS:printers>
 		PRIVATE $<TARGET_OBJECTS:application>
 		PRIVATE $<TARGET_OBJECTS:format>
 		PRIVATE $<TARGET_OBJECTS:cliparse>
