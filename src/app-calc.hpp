@@ -28,7 +28,7 @@
 #include "options.hpp"            // for Options, __ARCSTOOLS_OPTIONS_HPP__
 #endif
 #ifndef __ARCSTOOLS_PRINTERS_HPP__
-#include "outputformats.hpp"
+#include "printers.hpp"
 #endif
 
 class CLIParser;

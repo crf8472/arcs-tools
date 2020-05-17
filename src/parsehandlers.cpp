@@ -7,14 +7,14 @@
 #include <ostream>                // for operator<<, basic_ostream<>::__ostr...
 #include <utility>                // for move
 #include "format.hpp"             // for ARIdLayout
-#include "outputformats.hpp"      // for ARTripletFormat, ARIdTableFormat
+#include "printers.hpp"      // for ARTripletFormat, ARIdTableFormat
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
 
 #ifndef __ARCSTOOLS_PRINTERS_HPP__
-#include "outputformats.hpp"
+#include "printers.hpp"
 #endif
 
 

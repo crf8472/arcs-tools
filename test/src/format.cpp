@@ -4,7 +4,7 @@
 #include "format.hpp"
 #endif
 #ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
-#include "outputformats.hpp"
+#include "printers.hpp"
 #endif
 
 

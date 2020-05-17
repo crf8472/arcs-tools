@@ -40,7 +40,7 @@
 #include "format.hpp"               // for operator<<
 #endif
 #ifndef __ARCSTOOLS_PRINTERS_HPP__
-#include "outputformats.hpp"
+#include "printers.hpp"
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools_calc.hpp"           // for ARCSMultifileAlbumCalculator

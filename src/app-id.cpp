@@ -29,7 +29,7 @@
 #include "options.hpp"
 #endif
 #ifndef __ARCSTOOLS_PRINTERS_HPP__
-#include "outputformats.hpp"
+#include "printers.hpp"
 #endif
 
 

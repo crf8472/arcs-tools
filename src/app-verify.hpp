@@ -27,7 +27,7 @@
 #include "application.hpp"       // for ARApplication
 #endif
 #ifndef __ARCSTOOLS_PRINTERS_HPP__
-#include "outputformats.hpp"     // for ARResponse, Checksums, Match
+#include "printers.hpp"     // for ARResponse, Checksums, Match
 #endif
 
 class CLIParser;
