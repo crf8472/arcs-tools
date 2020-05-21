@@ -33,109 +33,98 @@ CLIParser::CLIParser (int argc, char **argv)
 CLIParser::~CLIParser () noexcept = default;
 
 
-const std::string CLIParser::consume_argument()
+std::tuple<bool, std::string> CLIParser::consume_option_token(
+		const std::string &token, const bool value_requested) noexcept
 {
 	if (tokens_.empty())
 	{
-		ARCS_LOG(DEBUG1) << "Argument requested, but no more tokens";
+		return std::make_tuple(false, empty_value());
+	}
 
-		return std::string();
+	auto itr = std::find(tokens_.begin(), tokens_.end(), token);
+
+	if (itr != tokens_.end()) // token found
+	{
+		if (not value_requested)
+		{
+			ARCS_LOG(DEBUG1) << "Consume token '" << token << "'";
+
+			tokens_.erase(itr);
+			return std::make_tuple(true, empty_value());
+		}
+
+		++itr;
+
+		if (itr != tokens_.end())
+		{
+			//  next token is considered option value
+
+			auto ret_val = std::make_tuple(true, std::string(*itr));
+
+			ARCS_LOG(DEBUG1) << "Consume token '" << token << "', value '"
+				<< std::get<1>(ret_val) << "'";
+
+			--itr;
+			itr = tokens_.erase(itr); // erase option switch
+			tokens_.erase(itr);       // erase value
+
+			return ret_val;
+		}
+
+		// value_requested but not present
+
+		--itr;
+		tokens_.erase(itr); // erase token
+
+		ARCS_LOG_WARNING << "Consume token '" << token << "', value missing";
+
+		return std::make_tuple(true, empty_value());
+	}
+
+	return std::make_tuple(false, empty_value());
+}
+
+
+const std::string CLIParser::consume_argument() noexcept
+{
+	if (tokens_.empty())
+	{
+		return empty_value();
 	}
 
 	auto argument = tokens_.front();
 	tokens_.pop_front();
 
-	ARCS_LOG(DEBUG1) << "Consume argument: " << argument;
+	ARCS_LOG(DEBUG1) << "Consume argument: '" << argument << "'";
 
 	return argument;
 }
 
 
-std::tuple<bool, std::string> CLIParser::consume_valued_option(
-		const std::string &option)
+bool CLIParser::token_present(const std::string &token) noexcept
 {
-	if (tokens_.empty())
-	{
-		ARCS_LOG(DEBUG1) << "Valued option requested, but no more tokens";
+	auto itr = std::find(tokens_.begin(), tokens_.end(), token);
 
-		return std::make_tuple(false, std::string());
-	}
-
-	auto itr = std::find(tokens_.begin(), tokens_.end(), option);
-
-	if (itr != tokens_.end())
-	{
-		++itr;
-
-		if (itr != tokens_.end())
-		{
-			auto opt_val = std::make_tuple(true, std::string(*itr));
-
-			auto option_itr = itr - 1;
-			tokens_.erase(option_itr); // erase option
-			tokens_.erase(itr); // erase value
-
-			ARCS_LOG(DEBUG1) << "Consume option " << option << ": "
-				<< std::get<1>(opt_val);
-
-			return opt_val;
-		} else
-		{
-			// Valued option without value
-
-			--itr;
-			tokens_.erase(itr); // erase option
-
-			ARCS_LOG(DEBUG1) << "Consume option " << option
-				<< " that unexpectedly has no value";
-
-			return std::make_tuple(true, std::string());
-		}
-	}
-
-	return std::make_tuple(false, std::string());
-}
-
-
-bool CLIParser::option_present(const std::string &option)
-{
-	auto itr = std::find(tokens_.begin(), tokens_.end(), option);
-
-	ARCS_LOG(DEBUG1) << "Recognized option: " << option;
+	ARCS_LOG(DEBUG1) << "Token '" << token << "' is present";
 
 	return itr != tokens_.end();
 }
 
 
-bool CLIParser::consume_option(const std::string &option)
-{
-	if (tokens_.empty())
-	{
-		return false;
-	}
-
-	auto itr = std::find(tokens_.begin(), tokens_.end(), option);
-
-	if (itr != tokens_.end())
-	{
-		ARCS_LOG(DEBUG1) << "Consume option switch: " << option;
-
-		tokens_.erase(itr);
-		return true;
-	}
-
-	return false;
-}
-
-
-bool CLIParser::tokens_left()
+bool CLIParser::tokens_left() noexcept
 {
 	return !tokens_.empty();
 }
 
 
-const std::vector<std::string> CLIParser::get_unconsumed_tokens()
+const std::vector<std::string> CLIParser::unconsumed_tokens() noexcept
 {
 	return std::vector<std::string>(tokens_.begin(), tokens_.end());
 }
 
+
+const std::string& CLIParser::empty_value() noexcept
+{
+	static const auto empty_string = std::string{};
+	return empty_string;
+}

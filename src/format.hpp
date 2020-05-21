@@ -868,6 +868,9 @@ public:
 	friend std::ostream& operator<< (std::ostream &o,
 			const StringTable &table);
 
+	// TODO A "set_elastic()" feature that adjusts the column width on
+	// update_cell()
+
 	/**
 	 * \brief Constructor
 	 *
@@ -929,6 +932,8 @@ public:
 	std::string operator() (const int row, const int col) const;
 
 private:
+
+	void init(const int rows, const int cols) override;
 
 	/**
 	 * \brief Implements StringTable::update_cell(const int, const int)

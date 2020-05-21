@@ -50,81 +50,53 @@ ARIdOptions::ARIdOptions() = default;
 ARIdConfigurator::ARIdConfigurator(int argc, char** argv)
 	: Configurator(argc, argv)
 {
-	// empty
-}
-
-
-std::unique_ptr<Options> ARIdConfigurator::do_configure_options(
-		std::unique_ptr<Options> options)
-{
-	if (options->empty())
+	if (supported().size() == 5) // FIXME Magic number
 	{
-		return std::make_unique<Options>();
+		this->support(
+			{      "cddb_id",  false, "FALSE", "print the CDDB id" },
+			ARIdOptions::CDDBID);
+		this->support(
+			{ 		"db_id",   false, "FALSE", "print the AccurateRip DB ID (filename)" },
+					ARIdOptions::DBID);
+		this->support(
+			{ 		"filename",   false, "FALSE", "print the AccurateRip DB ID (filename)" },
+					ARIdOptions::DBID); // alias for db_id
+		this->support(
+			{ 		"url",   false, "FALSE", "print the AccurateRip URL" },
+					ARIdOptions::URL);
+		this->support(
+			{ 		"profile",    false, "FALSE", "" },
+					ARIdOptions::PROFILE);
+		this->support(
+			{ 		"url_prefix", true, "none", "use the specified prefix"
+				"instead of the default 'http://accuraterip.com/accuraterip/'" },
+					ARIdOptions::PRE);
+		this->support(
+			{ 'a', "audiofile",   true, "none", "specify input audio file" },
+					ARIdOptions::AUDIOFILE);
 	}
-
-	// Infile specified?
-
-	std::string infilename(options->get_argument(0));
-
-	if (infilename.empty())
-	{
-		ARCS_LOG_ERROR << "No input file specified";
-		return std::make_unique<Options>();
-	}
-
-	return options;
-}
-
-
-std::unique_ptr<Options> ARIdConfigurator::parse_options(CLIParser &cli)
-{
-	auto options = std::make_unique<ARIdOptions>();
-
-	this->check_for_option("--cddb_id", ARIdOptions::CDDBID,
-			cli, *options);
-	this->check_for_option("--db_id", ARIdOptions::DBID,
-			cli, *options);
-	this->check_for_option("--filename", ARIdOptions::DBID,
-			cli, *options);
-	this->check_for_option("--url", ARIdOptions::URL,
-			cli, *options);
-	this->check_for_option("--profile", ARIdOptions::PROFILE,
-			cli, *options);
-	this->check_for_option_with_argument("--url_prefix", ARIdOptions::PRE,
-			cli, *options);
-	this->check_for_option_with_argument("-a", ARIdOptions::AUDIOFILE,
-			cli, *options);
-	this->check_for_option_with_argument("-o", ARIdOptions::OUT,
-			cli, *options);
-
-	// Input Metadata Filename
-
-	if (std::string filename { cli.consume_argument() }; filename.empty())
-	{
-		throw CallSyntaxException(
-				"Filename of a readable metadata file required");
-	} else
-	{
-		options->push_back_argument(filename);
-	}
-
-	return options;
 }
 
 
 // ARIdApplication
 
 
+std::string ARIdApplication::do_name() const
+{
+	return "id";
+}
+
+
+std::string ARIdApplication::do_call_syntax() const
+{
+	return "[OPTIONS] FILENAME";
+}
+
+
 std::unique_ptr<Configurator> ARIdApplication::create_configurator(
 		int argc, char** argv) const
 {
 	return std::make_unique<ARIdConfigurator>(argc, argv);
-}
-
-
-std::string ARIdApplication::do_name() const
-{
-	return "id";
 }
 
 
@@ -166,9 +138,10 @@ int ARIdApplication::do_run(const Options &options)
 
 	// Configure output stream
 
+	// FIXME This should be handled by output
 	std::streambuf *buf;
 	std::ofstream out_file_stream;
-	if (auto filename = options.get(ARIdOptions::OUT); filename.empty())
+	if (auto filename = options.output(); filename.empty())
 	{
 		buf = std::cout.rdbuf();
 	} else
@@ -182,26 +155,3 @@ int ARIdApplication::do_run(const Options &options)
 
 	return EXIT_SUCCESS;
 }
-
-
-void ARIdApplication::do_print_usage() const
-{
-	std::cout << this->name() << " [OPTIONS] FILENAME\n\n";
-	std::cout << "Where FILENAME is the name of some metadata file "
-		<< "(CUESheet)\n\n";
-	std::cout << "Options:\n\n";
-	std::cout << "--cddb_id       print the CDDB id\n\n";
-	std::cout << "--url           print the AccurateRip URL\n\n";
-	std::cout << "--db_id         print the AccurateRip DB ID (filename)\n\n";
-	std::cout << "--filename      print the AccurateRip DB ID (filename)\n\n";
-	std::cout << "--profile       print all available meta information\n\n";
-	std::cout << "--url_prefix    use the given prefix instead of the default\n";
-	std::cout << "                'http://accuraterip.com/accuraterip/'\n\n";
-	std::cout << "-a <filename>   specify audio file explicitly\n\n";
-	std::cout << "-q              only output parsed content, nothing else\n\n";
-	std::cout << "-v <i>          verbous output (loglevel 0-6)\n\n";
-	std::cout << "-l <filename>   specify log file for output\n\n";
-	std::cout << "--version       print version and exit\n";
-	std::cout << "                (ignoring any other options)\n";
-}
-

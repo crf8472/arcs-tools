@@ -67,78 +67,7 @@ public:
 } // namespace
 
 
-// ARParseOptions
-
-
-ARParseOptions::ARParseOptions() = default;
-
-
-// ARParseConfigurator
-
-
-ARParseConfigurator::ARParseConfigurator(int argc, char** argv)
-	: Configurator(argc, argv)
-{
-	// empty
-}
-
-
-std::unique_ptr<Options> ARParseConfigurator::do_configure_options(
-		std::unique_ptr<Options> options)
-{
-	if (options->empty())
-	{
-		return options;
-	}
-
-	// Config 1
-	//
-	// Does output file exist?
-
-	{
-		std::string outfile = options->get(ARParseOptions::OUTFILE);
-
-		if (!outfile.empty() and file::file_exists(outfile))
-		{
-			ARCS_LOG_WARNING << "Outfile " << outfile << " exists.";
-		}
-	}
-
-	return options;
-}
-
-
-std::unique_ptr<Options> ARParseConfigurator::parse_options(CLIParser& cli)
-{
-	auto options = std::make_unique<ARParseOptions>();
-
-	this->check_for_option_with_argument("-o", ARParseOptions::OUTFILE,
-			cli, *options);
-
-	// Input Filename(s)
-	// No error if absent, but binary input will then be expected from stdin
-	{
-		std::string filename(cli.consume_argument());
-
-		while (not filename.empty())
-		{
-			options->push_back_argument(filename);
-			filename = cli.consume_argument();
-		}
-	}
-
-	return options;
-}
-
-
 // ARParseApplication
-
-
-std::unique_ptr<Configurator> ARParseApplication::create_configurator(
-		int argc, char** argv) const
-{
-	return std::make_unique<ARParseConfigurator>(argc, argv);
-}
 
 
 std::string ARParseApplication::do_name() const
@@ -147,19 +76,25 @@ std::string ARParseApplication::do_name() const
 }
 
 
+std::string ARParseApplication::do_call_syntax() const
+{
+	return "[OPTIONS] <filename>";
+}
+
+
+std::unique_ptr<Configurator> ARParseApplication::create_configurator(
+		int argc, char** argv) const
+{
+	return std::make_unique<Configurator>(argc, argv);
+}
+
+
 int ARParseApplication::do_run(const Options &options)
 {
 	std::unique_ptr<ARParserContentPrintHandler> content_handler;
 
-	if (options.is_set(ARParseOptions::OUTFILE))
-	{
-		std::string outfilename = options.get(ARParseOptions::OUTFILE);
-		content_handler =
-			std::make_unique<ARParserContentPrintHandler>(outfilename);
-	} else
-	{
-		content_handler = std::make_unique<ARParserContentPrintHandler>();
-	}
+	content_handler = std::make_unique<ARParserContentPrintHandler>(
+		options.output());
 
 	auto arguments = options.get_arguments();
 
@@ -186,18 +121,3 @@ int ARParseApplication::do_run(const Options &options)
 
 	return EXIT_SUCCESS;
 }
-
-
-void ARParseApplication::do_print_usage() const
-{
-	std::cout << this->name() << " [OPTIONS] <filename>\n";
-	std::cout << "Where <filename> is the name of some dBAR-*.bin file ";
-	std::cout << "downloaded from AccurateRip.\n\n";
-
-	std::cout << "Options:\n\n";
-
-	std::cout << "-q             only output parsed content, nothing else\n\n";
-	std::cout << "-v <i>         verbous output (loglevel 0-6)\n\n";
-	std::cout << "-o <filename>  specify output file\n\n";
-}
-

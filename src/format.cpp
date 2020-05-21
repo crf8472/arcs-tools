@@ -893,6 +893,12 @@ std::string StringTable::operator() (const int row, const int col) const
 }
 
 
+void StringTable::init(const int /* row */, const int /* col */)
+{
+	// empty
+}
+
+
 void StringTable::do_update_cell(const int row, const int col,
 		const std::string &text)
 {
@@ -936,4 +942,3 @@ std::ostream& operator << (std::ostream &out, const StringTable &table)
 
 	return out;
 }
-

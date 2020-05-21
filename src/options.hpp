@@ -18,6 +18,86 @@
 
 
 /**
+ *  \brief Descriptor for a single command line option.
+ */
+class Option
+{
+public:
+
+	/**
+	 * \brief Constructor
+	 *
+	 * \param[in] shorthand
+	 * \param[in] symbol
+	 * \param[in] desc
+	 * \param[in] needs_value
+	 *
+	 */
+	Option(const char shorthand, const std::string &symbol,
+		const bool needs_value, const std::string &default_arg,
+		const std::string &desc);
+
+	Option(const std::string &symbol, const bool needs_value,
+		   const std::string &default_arg, const std::string &desc)
+		: Option ('\0', symbol, needs_value, default_arg, desc )
+	{ /* empty */ }
+
+	/**
+	 *  \brief Shorthand symbol of this option or '\0' if none.
+	 *
+	 * \return Shorthand symbol of this option or '\0' if none
+	 */
+	char shorthand_symbol() const;
+
+	/**
+	 * \brief Symbol of this option or empty string if none.
+	 *
+	 * \return Symbol of this option or empty string if none.
+	 */
+	std::string symbol() const;
+
+	/**
+	 *  \brief Returns TRUE iff the option requires a value
+	 *
+	 * \return TRUE iff the option requires a value
+	 */
+	bool needs_value() const;
+
+	/**
+	 * \brief Default value of the symbol
+	 */
+	std::string default_arg() const;
+
+	/**
+	 * \brief Description of the symbol
+	 */
+	std::string description() const;
+
+	/**
+	 * \brief Return command line tokens that trigger that option
+	 *
+	 * \return List of tokens
+	 */
+	std::vector<std::string> tokens() const;
+
+	/**
+	 * \brief Return the list of tokens as a comma separated list
+	 *
+	 * \return List of tokens
+	 */
+	std::string tokens_str() const;
+
+private:
+
+	const char shorthand_;
+	const std::string symbol_;
+	const bool needs_value_;
+	const std::string default_;
+	const std::string description_;
+};
+
+
+/**
  * \brief Base class for options and arguments. Represents the entire command
  * line input.
  */
@@ -51,6 +131,10 @@ public:
 	 * \return TRUE iff the version option is set, otherwise FALSE
 	 */
 	bool is_set_version() const;
+
+	void set_output(const std::string &output);
+
+	std::string output() const;
 
 	/**
 	 * \brief Inherited worker to implement getters for option checks.
@@ -119,7 +203,7 @@ public:
 	 *
 	 * \param[in] arg The argument to be appended to the list of arguments
 	 */
-	void push_back_argument(const std::string &arg);
+	void append(const std::string &arg);
 
 	/**
 	 * \brief Returns TRUE iff no information is contained in this Options
@@ -150,6 +234,11 @@ private:
 	 * \brief Flag to indicate presence of --version option
 	 */
 	bool version_;
+
+	/**
+	 * \brief Name of the output stream
+	 */
+	std::string output_;
 
 	/**
 	 * \brief Boolean and valued options

@@ -35,16 +35,17 @@ class ARParserContentPrintHandler : public ContentHandler
 public:
 
 	/**
-	 * \brief Constructor.
-	 */
-	ARParserContentPrintHandler();
-
-	/**
 	 * \brief Constructor for printing to a file.
 	 *
 	 * \param[in] filename Name of the out file
 	 */
 	ARParserContentPrintHandler(const std::string &filename);
+
+	/**
+	 * \brief Constructor.
+	 */
+	ARParserContentPrintHandler() : ARParserContentPrintHandler("")
+	{ /* empty */ };
 
 	/**
 	 * \brief Virtual default destructor.

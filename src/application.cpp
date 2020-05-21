@@ -23,6 +23,9 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"          // for Configurator, CallSyntaxException
 #endif
+#ifndef __ARCSTOOLS_FORMAT_HPP__
+#include "format.hpp"
+#endif
 #ifndef __ARCSTOOLS_VERSION_HPP__
 #include "version.hpp"         // for ARCSTOOLS_VERSION_INFO
 #endif
@@ -102,15 +105,63 @@ int ARApplication::run(int argc, char** argv)
 		return EXIT_SUCCESS;
 	}
 
+	if (options->empty())
+	{
+		this->print_usage();
+
+		return EXIT_SUCCESS;
+	}
+
 	return this->do_run(*options);
 }
 
 
 void ARApplication::print_usage() const
 {
-	std::cout << "Usage:\n";
+	std::cout << "Usage:" << std::endl;
+	std::cout << this->do_name() << " " << this->do_call_syntax() << std::endl;
+	std::cout << std::endl;
 
-	this->do_print_usage();
+	std::cout << "Options:" << std::endl;
+
+	auto options { this->create_configurator(0, nullptr)->supported() };
+
+	// Print the options
+
+	StringTable table { static_cast<int>(options.size()), 3 };
+
+	table.set_title(0, "Option");
+	table.set_width(0, table.title(0).length());
+	table.set_alignment(2, true);
+
+	table.set_title(1, "Default");
+	table.set_width(1, table.title(1).length());
+	table.set_alignment(2, true);
+
+	table.set_title(2, "Description");
+	table.set_width(2, table.title(2).length());
+	table.set_alignment(2, true);
+
+	int row = 0;
+	for (const auto& option : options)
+	{
+		table.update_cell(row, 0, option.tokens_str());
+		table.update_cell(row, 1, option.default_arg());
+		table.update_cell(row, 2, option.description());
+
+		for (std::size_t col = 0; col < table.columns(); ++col)
+		{
+			if (static_cast<std::size_t>(table.width(col))
+				< table(row, col).length())
+			{
+				table.set_width(col, table(row, col).length());
+			}
+		}
+
+		++row;
+	}
+
+	std::cout << table;
 }
 
 
@@ -121,7 +172,7 @@ std::unique_ptr<Options> ARApplication::setup_options(int argc, char** argv)
 
 	configurator->configure_logging();
 
-	return configurator->configure_options();
+	return configurator->provide_options();
 }
 
 
@@ -129,4 +180,3 @@ void ARApplication::fatal_error(const std::string &message) const
 {
 	throw std::runtime_error(message);
 }
-

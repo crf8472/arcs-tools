@@ -3,6 +3,7 @@
 #endif
 
 #include <cstdio>              // for stdout
+#include <iterator>            // for ostream_iterator
 #include <sstream>             // for operator<<, basic_ostream::operator<<
 #include <string>              // for char_traits, operator<<, operator+
 #include <type_traits>         // for add_const<>::type, __underlying_type_i...
@@ -19,90 +20,63 @@
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
 #include "options.hpp"         // for Options, __ARCSTOOLS_OPTIONS_HPP__
 #endif
+//#ifndef __ARCSTOOLS_TOOLS_FS_HPP__
+//#include "tools_fs.hpp"        // for file_exists
+//#endif
 
 
 using arcstk::Appender;
-using arcstk::Logging;
-using arcstk::Log;
-using arcstk::LOGLEVEL;
 
 
-/**
- * \brief Parse the command line options relevant for logging
- */
-class LogSettingsParser
+// CallSyntaxException
+
+
+CallSyntaxException::CallSyntaxException(const std::string &what_arg)
+	: std::runtime_error(what_arg)
 {
-public:
-
-	/**
-	 * \brief Return the default log level.
-	 *
-	 * \return The default log level for the application
-	 */
-	LOGLEVEL default_loglevel();
-
-	/**
-	 * \brief Deduce the log level from the cli input.
-	 *
-	 * \param[in] cli The CLI input line
-	 *
-	 * \return The deduced log level
-	 */
-	LOGLEVEL get_loglevel(CLIParser &cli);
-
-	/**
-	 * \brief Deduce the log file name from the cli input (maybe empty).
-	 *
-	 * \param[in] cli The CLI input line
-	 *
-	 * \return The deduced logfile name
-	 */
-	std::string get_logfile(CLIParser &cli);
-
-private:
-
-	/**
-	 * \brief Default log level.
-	 */
-	const LOGLEVEL default_loglevel_ = LOGLEVEL::WARNING;
-};
+	// empty
+}
 
 
-LOGLEVEL LogSettingsParser::default_loglevel()
+// LogManager
+
+
+LogManager::LogManager(const LOGLEVEL default_lvl, const LOGLEVEL quiet_lvl)
+	: default_loglevel_ { default_lvl }
+	, quiet_loglevel_   { quiet_lvl   }
+{
+	// empty
+}
+
+
+LOGLEVEL LogManager::default_loglevel() const
 {
 	return default_loglevel_;
 }
 
 
-LOGLEVEL LogSettingsParser::get_loglevel(CLIParser &cli)
+LOGLEVEL LogManager::quiet_loglevel() const
+{
+	return quiet_loglevel_;
+}
+
+
+LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 {
 	using arcstk::LOGLEVEL_MIN;
 	using arcstk::LOGLEVEL_MAX;
 
-	const auto& [ v_found, loglevel_arg ] = cli.consume_valued_option("-v");
-
-	if (not v_found)
-	{
-		return default_loglevel();
-	}
-
-	if (loglevel_arg.empty())
-	{
-		throw CallSyntaxException(
-				"Option -v was passed without argument");
-	}
-
-	int level = -1;
+	int parsed_level = -1;
 
 	try {
 
-		level = std::stoi(loglevel_arg);
+		parsed_level = std::stoi(loglevel_arg);
 
 	} catch (const std::invalid_argument &ia)
 	{
 		std::stringstream ss;
 
-		ss << "Argument of -v is '" << loglevel_arg
+		ss << "Parsed LOGLEVEL is '" << loglevel_arg
 			<< "' but must be a non-negative integer in the range "
 			<< LOGLEVEL_MIN << "-"
 			<< LOGLEVEL_MAX << ".";
@@ -113,7 +87,7 @@ LOGLEVEL LogSettingsParser::get_loglevel(CLIParser &cli)
 	{
 		std::stringstream ss;
 
-		ss << "Argument of -v is '" << loglevel_arg
+		ss << "Parsed LOGLEVEL is '" << loglevel_arg
 			<< "' which is out of the valid range "
 			<< LOGLEVEL_MIN << "-"
 			<< LOGLEVEL_MAX << "";
@@ -121,11 +95,11 @@ LOGLEVEL LogSettingsParser::get_loglevel(CLIParser &cli)
 		throw std::runtime_error(ss.str());
 	}
 
-	if (level < LOGLEVEL_MIN or level > LOGLEVEL_MAX)
+	if (parsed_level < LOGLEVEL_MIN or parsed_level > LOGLEVEL_MAX)
 	{
 		std::stringstream ss;
 
-		ss << "Argument of -v is '" << loglevel_arg
+		ss << "Parsed LOGLEVEL is '" << loglevel_arg
 			<< "' which does not correspond to a valid loglevel ("
 			<< LOGLEVEL_MIN << "-"
 			<< LOGLEVEL_MAX << ").";
@@ -135,9 +109,9 @@ LOGLEVEL LogSettingsParser::get_loglevel(CLIParser &cli)
 
 	// We could warn about -q overriding -v but we are quiet.
 
-	LOGLEVEL log_level = default_loglevel();
+	auto log_level = LOGLEVEL::NONE;
 
-	switch (level)
+	switch (parsed_level)
 	{
 		case 0: log_level = LOGLEVEL::NONE;    break;
 		case 1: log_level = LOGLEVEL::ERROR;   break;
@@ -151,9 +125,9 @@ LOGLEVEL LogSettingsParser::get_loglevel(CLIParser &cli)
 		default: {
 			std::stringstream ss;
 
-			ss << "Illegal value for log_level"
+			ss << "Illegal value for log_level (must be in range "
 				<< LOGLEVEL_MIN << "-"
-				<< LOGLEVEL_MAX << ".";
+				<< LOGLEVEL_MAX << ").";
 
 			throw std::runtime_error(ss.str());
 		}
@@ -163,40 +137,37 @@ LOGLEVEL LogSettingsParser::get_loglevel(CLIParser &cli)
 }
 
 
-std::string LogSettingsParser::get_logfile(CLIParser &cli)
-{
-	const auto& [ l_found, logfile_arg ]  = cli.consume_valued_option("-l");
-
-	if (l_found)
-	{
-		if (logfile_arg.empty())
-		{
-			throw CallSyntaxException(
-				"Option -l was passed without argument");
-		}
-	}
-
-	return logfile_arg;
-}
-
-
-// CallSyntaxException
-
-
-CallSyntaxException::CallSyntaxException(const std::string &what_arg)
-	: std::runtime_error(what_arg)
-{
-	// empty
-}
-
-
 // Configurator
 
 
-Configurator::Configurator(int argc, char** argv)
-	: cli_(argc, argv)
+std::vector<Option> Configurator::supported_options_ = {
+	{      "version",   false, "FALSE", "print version and exit,"
+	                                    "ignoring any other options" },
+	{ 'v', "verbosity", true,  "2",     "verbosity of output (loglevel 0-8)" },
+	{ 'q', "quiet",     false, "FALSE", "only output ARCSs, nothing else" },
+	{ 'l', "logfile",   true,  "none",  "specify log file for output" },
+	{ 'o', "outfile",   true,  "none",  "output results to file" }
+};
+
+
+std::vector<uint32_t> Configurator::supported_option_ids_ = { 0, 0, 0, 0, 0 };
+// The first options hardcoded in supported_options_ have no ids since they
+// never occurr in an option object
+
+
+const std::size_t Configurator::FIRST_UNPROCESSED_OPTION = 5;
+// MUST be initial size of supported_options_ // FIXME
+
+
+Configurator::Configurator(int argc, char** argv) /* magic _v_ number */
+	: logman_ { LogManager::get_loglevel(supported_options_[1].default_arg()),
+		LOGLEVEL::NONE /* quiet */ }
+	, cli_(argc, argv)
 {
-	Logging::instance().set_level(LOGLEVEL::NONE);
+	// We do not know whether the application is required to run quiet,
+	// so initial level is NOT default level but quiet level
+
+	Logging::instance().set_level(logman_.quiet_loglevel());
 	Logging::instance().set_timestamps(false);
 }
 
@@ -206,51 +177,109 @@ Configurator::~Configurator() noexcept = default;
 
 void Configurator::configure_logging()
 {
-	this->do_configure_logging();
+	auto level    = this->configure_loglevel();
+	auto appender = this->configure_logappender();
+
+	// All supported options regarding logging are now consumed and won't
+	// occurr in the result of parse_options()
+
+	const int VERBOSITY = 1; // FIXME Magic number
+	ARCS_LOG(DEBUG1) << "Set loglevel to "
+		<< Log::to_string(Logging::instance().level())
+		<< " (=" << level << ") thereby consuming option "
+		<< supported_options_[VERBOSITY].tokens_str();
 }
 
 
-void Configurator::check_for_option(const std::string cli_option,
-		const uint8_t option, CLIParser &cli, Options &options) const
+std::unique_ptr<Options> Configurator::provide_options()
 {
-	if (cli.consume_option(cli_option))
-	{
-		options.set(option);
-	}
+	auto options = this->parse_input(cli_);
+
+	ARCS_LOG_DEBUG << "Command line input successfully parsed";
+
+	return this->do_configure_options(std::move(options));
 }
 
 
-void Configurator::check_for_option_with_argument(const std::string cli_option,
-		const uint8_t option, CLIParser &cli, Options &options)
+const std::vector<Option>& Configurator::supported()
 {
-	if (const auto& [ found, value ] =
-			cli.consume_valued_option(cli_option); found)
+	return Configurator::supported_options_;
+}
+
+
+void Configurator::support(const Option &option, const uint32_t id)
+{
+	supported_options_.push_back(option);
+	supported_option_ids_.push_back(id);
+}
+
+
+std::pair<bool, std::string> Configurator::option(CLIParser &cli,
+		const Option &option) const
+{
+	for (const auto& token : option.tokens())
 	{
-		if (value.empty())
+		if (const auto& [ found, value ] =
+			cli.consume_option_token(token, option.needs_value()); found)
 		{
-			throw CallSyntaxException(
-					"Option " + cli_option + " was passed without argument");
-		}
+			if (option.needs_value() and value.empty())
+			{
+				throw CallSyntaxException(
+						"Option " + token + " was passed without argument");
+			}
 
-		options.set(option);
-		options.put(option, value);
+			return std::make_pair(found, value);
+		}
 	}
+
+	return std::make_pair(false, cli.empty_value());
+}
+
+
+std::string Configurator::argument(CLIParser &cli) const
+{
+	return cli.consume_argument();
+}
+
+
+std::vector<std::string> Configurator::arguments(CLIParser &cli) const
+{
+	auto arguments = std::vector<std::string> {};
+
+	while (cli.tokens_left())
+	{
+		arguments.push_back(this->argument(cli));
+	}
+
+	return arguments;
 }
 
 
 int Configurator::configure_loglevel()
 {
-	// current level is NONE
+	// current loglevel is NONE (since QUIET could have been requested)
 
-	LogSettingsParser log_parser;
+	const int QUIET     = 2;
+	const auto& [ is_quiet, noval ] =
+		this->option(cli_, supported_options_[QUIET]);
 
-	auto log_level = log_parser.get_loglevel(cli_);
+	const int VERBOSITY = 1;
+	const auto& [ verbosity_defined, parsed_level ] =
+		this->option(cli_, supported_options_[VERBOSITY]);
+	// quiet overrides verbosity, but verbosity must be consumed, however
 
-	if (not cli_.consume_option("-q"))
+	if (is_quiet)
 	{
-		Logging::instance().set_level(log_level);
-		Logging::instance().set_timestamps(false);
+		Logging::instance().set_level(logman_.quiet_loglevel());
+	} else if (verbosity_defined)
+	{
+		Logging::instance().set_level(logman_.get_loglevel(parsed_level));
+	} else
+	{
+		Logging::instance().set_level(logman_.default_loglevel());
 	}
+
+	Logging::instance().set_timestamps(false);
 
 	return static_cast<std::underlying_type<LOGLEVEL>::type>(
 				Logging::instance().level());
@@ -259,14 +288,15 @@ int Configurator::configure_loglevel()
 
 std::tuple<std::string, std::string> Configurator::configure_logappender()
 {
-	LogSettingsParser log_parser;
-
-	auto logfile = log_parser.get_logfile(cli_);
+	const int LOGFILE = 3; // FIXME Magic number
+	const auto& [ found, logfile ] =
+		this->option(cli_, supported_options_[LOGFILE]);
 
 	std::unique_ptr<Appender> appender;
 
 	if (logfile.empty())
 	{
+		// This defines the default!
 		appender = std::make_unique<Appender>("stdout", stdout);
 	} else
 	{
@@ -277,31 +307,22 @@ std::tuple<std::string, std::string> Configurator::configure_logappender()
 
 	Logging::instance().add_appender(std::move(appender));
 
+	ARCS_LOG(DEBUG1) << "Set log appender to " << appender_name
+			<< " thereby consuming option "
+			<<  supported_options_[LOGFILE].tokens_str();
+
 	return std::make_tuple(appender_name, logfile);
 }
 
 
-void Configurator::do_configure_logging()
-{
-	this->configure_loglevel(); // discard return value
-
-	auto appender = this->configure_logappender();
-
-	ARCS_LOG_DEBUG << "Set loglevel: "
-		<< Log::to_string(Logging::instance().level())
-		<< " thereby consuming option -v";
-
-	ARCS_LOG_DEBUG << "Set first log appender thereby consuming option -l "
-		<< std::get<1>(appender);
-}
-
-
-std::unique_ptr<Options> Configurator::configure_options()
+std::unique_ptr<Options> Configurator::parse_options(CLIParser& cli)
 {
 	// The --version flag is magic, the parsing can be stopped because it is
 	// known at this point what the application has to do.
 
-	if (cli_.consume_option("--version"))
+	const int VERSION = 0; // FIXME Magic number
+	if (const auto& [ found, value ] = this->option(cli,
+			supported_options_[VERSION]); found)
 	{
 		Options options;
 		options.set_version(true);
@@ -309,17 +330,95 @@ std::unique_ptr<Options> Configurator::configure_options()
 		return std::make_unique<Options>(options);
 	}
 
-	auto options = this->parse_options(cli_);
+	std::unique_ptr<Options> parsed_options = std::make_unique<Options>();
+
+	// Consume any supported option
+
+	for (std::size_t i = FIRST_UNPROCESSED_OPTION;
+		 i < supported_options_.size(); ++i)
+	{
+		auto& option = supported_options_[i];
+		auto& id     = supported_option_ids_[i];
+
+		if (Logging::instance().has_level(LOGLEVEL::DEBUG2))
+		{
+			ARCS_LOG(DEBUG2) << "Check for option: " << option.tokens_str();
+		}
+
+		// Try to consume supported options und assign their ids
+
+		if (const auto& [ found, value ] = this->option(cli, option); found)
+		{
+			parsed_options->set(id);
+
+			if (option.needs_value())
+			{
+				parsed_options->put(id, value);
+			}
+		}
+
+		if (Logging::instance().has_level(LOGLEVEL::DEBUG))
+		{
+			auto cli_fragment = std::ostringstream { };
+
+			if (auto tokens = cli.unconsumed_tokens(); not tokens.empty())
+			{
+				std::copy (tokens.begin(), tokens.end() - 1,
+					std::ostream_iterator<std::string>(cli_fragment, ",")
+				);
+				cli_fragment << tokens.back();
+			} // XXX This trick is duplicated in options.cpp/Options::token_str
+
+			ARCS_LOG(DEBUG2) << "Tokens left: " << cli_fragment.str();
+		}
+	}
+
+	// Add builtin option: outfile
+
+	const int OUTFILE = 4; // FIXME Magic number
+	if (const auto& [ found, outfile ] = this->option(cli,
+			supported_options_[OUTFILE]); found)
+	{
+		if (outfile.empty())
+		{
+			throw CallSyntaxException("Option " +
+				supported_options_[OUTFILE].tokens_str() +
+				" requires the name of an outfile");
+		}
+
+		//if (file::file_exists(outfile))
+		//{
+		//	ARCS_LOG_WARNING << "File " << outfile << " will be overwritten.";
+		//}
+
+		parsed_options->set_output(outfile);
+	}
+
+	return parsed_options;
+}
+
+
+int Configurator::parse_arguments(CLIParser& cli, Options &options) const
+{
+	return this->do_parse_arguments(cli, options);
+}
+
+
+std::unique_ptr<Options> Configurator::parse_input(CLIParser& cli)
+{
+	auto options = this->parse_options(cli);
+
+	this->parse_arguments(cli, *options);
 
 	// Finish Processing of the Command Line Input
 
-	if (cli_.tokens_left())
+	if (cli.tokens_left())
 	{
 		std::stringstream ss;
 
 		ss << "Unrecognized command line tokens: ";
 
-		for (const auto& token : cli_.get_unconsumed_tokens())
+		for (const auto& token : cli.unconsumed_tokens())
 		{
 			ss << "'" << token << "' ";
 		}
@@ -327,6 +426,31 @@ std::unique_ptr<Options> Configurator::configure_options()
 		throw CallSyntaxException(ss.str());
 	}
 
-	return this->do_configure_options(std::move(options));
+	return options;
 }
 
+
+int Configurator::do_parse_arguments(CLIParser& cli, Options &options) const
+{
+	// allow only single argument
+
+	auto arg = this->argument(cli);
+
+	if (arg.empty())
+	{
+		throw CallSyntaxException("Argument expected");
+	}
+
+	options.append(arg);
+
+	return 1;
+}
+
+
+std::unique_ptr<Options> Configurator::do_configure_options(
+		std::unique_ptr<Options> options)
+{
+	// default implementation does nothing
+
+	return options;
+}

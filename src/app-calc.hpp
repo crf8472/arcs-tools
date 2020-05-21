@@ -38,64 +38,52 @@ class CLIParser;
  */
 class ARCalcOptions : public Options
 {
-
 public:
 
+	/**
+	 * \brief Do not output V1 ARCS
+	 */
+	static constexpr uint8_t NOV1 = 1;
 
 	/**
-	 * \brief Output V1 ARCS
+	 * \brief Do not output V2 ARCS
 	 */
-	static constexpr uint8_t V1 = 1;
-
-	/**
-	 * \brief Output V2 ARCS
-	 */
-	static constexpr uint8_t V2 = 2;
-
-	/**
-	 * \brief A metadata file is specified
-	 */
-	static constexpr uint8_t METAFILE = 4;
-
-	/**
-	 * \brief Output format is specified
-	 */
-	static constexpr uint8_t FMT = 8;
-
-	/**
-	 * \brief Output file is specified
-	 */
-	static constexpr uint8_t OUT = 16;
+	static constexpr uint8_t NOV2 = 2;
 
 	/**
 	 * \brief Skip front and back samples of the sample stream
 	 */
-	static constexpr uint8_t ALBUM = 32;
+	static constexpr uint8_t ALBUM = 4;
 
 	/**
 	 * \brief Skip front samples of first track
 	 */
-	static constexpr uint8_t FIRST = 64;
+	static constexpr uint8_t FIRST = 8;
 
 	/**
 	 * \brief Skip back samples of last track
 	 */
-	static constexpr uint8_t LAST = 128;
+	static constexpr uint8_t LAST = 16;
 
 	/**
-	 * \brief Metadata file path
+	 * \brief A metadata file is specified
 	 */
-	static constexpr uint16_t METAFILEPATH = 256;
+	static constexpr uint8_t METAFILE = 32;
 
 	/**
 	 * \brief List compiled TOC formats
 	 */
-	static constexpr uint16_t LIST_TOC_FORMATS = 512;
+	static constexpr uint16_t LIST_TOC_FORMATS = 128;
 
 	/**
 	 * \brief List compiled audio formats (codec/container)
 	 */
-	static constexpr uint16_t LIST_AUDIO_FORMATS = 1024;
+	static constexpr uint16_t LIST_AUDIO_FORMATS = 256;
+
+	/**
+	 * \brief Metadata file path
+	 */
+	static constexpr uint16_t METAFILEPATH = 512;
 };
 
 
@@ -120,14 +108,9 @@ public:
 	 */
 	~ARCalcConfigurator() noexcept override;
 
-
-protected:
-
-	std::unique_ptr<Options> parse_options(CLIParser& cli) override;
-	// private in Configurator
-
-
 private:
+
+	int do_parse_arguments(CLIParser& cli, Options &options) const override;
 
 	std::unique_ptr<Options> do_configure_options(
 			std::unique_ptr<Options> options) override;
@@ -150,8 +133,16 @@ public:
 	static std::tuple<Checksums, ARId, std::unique_ptr<TOC>> calculate(
 			const Options &options);
 
-
 private:
+
+	std::string do_name() const override;
+
+	std::string do_call_syntax() const override;
+
+	std::unique_ptr<Configurator> create_configurator(int argc, char** argv)
+		const override;
+
+	int do_run(const Options &options) override;
 
 	/**
 	 * \brief Create the printing format according to the options
@@ -181,16 +172,6 @@ private:
 	 * \return Application return code
 	 */
 	int run_calculation(const Options &options);
-
-	std::unique_ptr<Configurator> create_configurator(int argc, char** argv)
-		const override;
-
-	std::string do_name() const override;
-
-	int do_run(const Options &options) override;
-
-	void do_print_usage() const override;
 };
 
 #endif
-

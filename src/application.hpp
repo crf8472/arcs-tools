@@ -47,7 +47,7 @@ template <typename T>
 inline auto output(const T &object, const std::string &filename = "")
 	-> decltype( std::cout << object, void() )
 {
-	if (filename.empty())
+	if (filename.empty()) // THIS defines the default behaviour!
 	{
 		std::cout << object;
 	} else
@@ -159,6 +159,20 @@ protected:
 private:
 
 	/**
+	 * \brief Implements name().
+	 *
+	 * \return Name of this ARApplication
+	 */
+	virtual std::string do_name() const
+	= 0;
+
+	/**
+	 * \brief Used in print_usage().
+	 */
+	virtual std::string do_call_syntax() const
+	= 0;
+
+	/**
 	 * \brief Create a Configurator for this instance.
 	 *
 	 * \param[in] argc Number of command line input arguments
@@ -171,14 +185,6 @@ private:
 	= 0;
 
 	/**
-	 * \brief Implements name().
-	 *
-	 * \return Name of this ARApplication
-	 */
-	virtual std::string do_name() const
-	= 0;
-
-	/**
 	 * \brief Implements run().
 	 *
 	 * \param[in] options The options for this application
@@ -187,13 +193,6 @@ private:
 	 */
 	virtual int do_run(const Options &options)
 	= 0;
-
-	/**
-	 * \brief Implements print_usage().
-	 */
-	virtual void do_print_usage() const
-	= 0;
 };
 
 #endif
-

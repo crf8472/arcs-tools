@@ -74,14 +74,6 @@ public:
 	 * \param[in] argv Command line arguments
 	 */
 	ARVerifyConfigurator(int argc, char** argv);
-
-
-private:
-
-	std::unique_ptr<Options> parse_options(CLIParser& cli) override;
-
-	std::unique_ptr<Options> do_configure_options(
-			std::unique_ptr<Options> options) override;
 };
 
 
@@ -90,11 +82,23 @@ private:
  */
 class ARVerifyApplication final : public ARApplication
 {
+	std::string do_name() const override;
+
+	std::string do_call_syntax() const override;
+
+	std::unique_ptr<Configurator> create_configurator(
+			int argc, char** argv) const override;
+
+	int do_run(const Options &options) override;
+
 	/**
 	 * \brief Parse the input for an ARResponse
 	 */
 	ARResponse parse_response(const Options &options) const;
 
+	/**
+	 * \brief Configure an output format for the result
+	 */
 	std::unique_ptr<MatchResultPrinter> configure_format(const Options &options,
 		const bool with_filenames) const;
 
@@ -109,16 +113,6 @@ class ARVerifyApplication final : public ARApplication
 	void log_matching_files(const Checksums &checksums,
 		const Match &match, const uint32_t block,
 		const bool version = true) const;
-
-
-	std::unique_ptr<Configurator> create_configurator(
-			int argc, char** argv) const override;
-
-	std::string do_name() const override;
-
-	int do_run(const Options &options) override;
-
-	void do_print_usage() const override;
 };
 
 #endif

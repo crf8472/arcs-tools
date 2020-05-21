@@ -64,11 +64,6 @@ public:
 	static constexpr uint8_t PRE = 32;
 
 	/**
-	 * \brief Name of optional outfile
-	 */
-	static constexpr uint8_t OUT = 64;
-
-	/**
 	 * \brief Default constructor.
 	 */
 	ARIdOptions();
@@ -80,7 +75,6 @@ public:
  */
 class ARIdConfigurator final : public Configurator
 {
-
 public:
 
 	/**
@@ -90,14 +84,6 @@ public:
 	 * \param[in] argv Command line arguments
 	 */
 	ARIdConfigurator(int argc, char** argv);
-
-
-private:
-
-	std::unique_ptr<Options> parse_options(CLIParser& cli) override;
-
-	std::unique_ptr<Options> do_configure_options(
-			std::unique_ptr<Options> options) override;
 };
 
 
@@ -106,15 +92,14 @@ private:
  */
 class ARIdApplication final : public ARApplication
 {
+	std::string do_name() const override;
+
+	std::string do_call_syntax() const override;
+
 	std::unique_ptr<Configurator> create_configurator(int argc, char** argv)
 		const override;
 
-	std::string do_name() const override;
-
 	int do_run(const Options &options) override;
-
-	void do_print_usage() const override;
 };
 
 #endif
-

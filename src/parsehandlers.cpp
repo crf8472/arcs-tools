@@ -26,19 +26,6 @@ using arcstk::ContentHandler;
 // ARParserContentPrintHandler
 
 
-ARParserContentPrintHandler::ARParserContentPrintHandler()
-	: block_counter_(0)
-	, track_(0)
-	, arid_format_(std::make_unique<ARIdTableFormat>(
-				false, false, false, false, false, false))
-	, triplet_format_(std::make_unique<ARTripletFormat>())
-	, out_file_stream_()
-	, out_stream_(std::cout.rdbuf())
-{
-	// empty
-}
-
-
 ARParserContentPrintHandler::ARParserContentPrintHandler(
 		const std::string &filename)
 	: block_counter_(0)
@@ -47,7 +34,7 @@ ARParserContentPrintHandler::ARParserContentPrintHandler(
 				false, false, false, false, false, false))
 	, triplet_format_(std::make_unique<ARTripletFormat>())
 	, out_file_stream_(filename)
-	, out_stream_(out_file_stream_.rdbuf())
+	, out_stream_(filename.empty() ? std::cout.rdbuf() : out_file_stream_.rdbuf())
 {
 	// empty
 }

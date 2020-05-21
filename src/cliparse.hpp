@@ -22,14 +22,13 @@
  * arguments.
  *
  * It is not necessary to define the legal options. Just try to consume
- * everything legal and if this succeeds without errors, call tokens_left()
- * thereafter. If it returns true, the command line call was not wellformed.
- * Thus, with the API of this class, complete syntax check of the CLI input is
- * possible.
+ * everything legal and if this succeeds without errors, tokens_left() must be
+ * FALSE thereafter. If it returns TRUE instead, the command line call was not
+ * syntactically wellformed. Thus, with the API of this class, complete syntax
+ * check of the CLI input is possible.
  */
 class CLIParser
 {
-
 public:
 
 	/**
@@ -49,48 +48,46 @@ public:
 	virtual ~CLIParser() noexcept;
 
 	/**
+	 * \brief Consume the option passed and return its parameter if it is
+	 * available.
+	 *
+	 * The option token will be deleted from the token set, if present.
+	 *
+	 * The first element of the result tuple is TRUE iff the token was
+	 * successfully consumed/found. The second element will contain the value
+	 * of the option, if a value is required by the option and present on the
+	 * command line, otherwise an empty string.
+	 *
+	 * It is in the responsibility of the caller to check for syntactic
+	 * correctness, i.e. whether a valued option indeed has a non-empty value.
+	 *
+	 * The function will not throw;
+	 *
+	 * \param[in] token           The option token to consume
+	 * \param[in] value_requested Indicate whether a value should be parsed
+	 *
+	 * \return The value for the option passed or an empty string
+	 */
+	std::tuple<bool, std::string> consume_option_token(
+			const std::string &token, const bool value_requested) noexcept;
+
+	/**
 	 * \brief Consume the argument if it is available and return its value.
 	 *
 	 * \return The argument if any
 	 */
-	const std::string consume_argument();
-
-	/**
-	 * \brief Consume the option passed and return its parameter if it is
-	 * available.
-	 *
-	 * The option will be deleted from the token set, if present.
-	 *
-	 * If the option is not present, the default value will be returned.
-	 *
-	 * \param[in] option The option to consume
-	 *
-	 * \return The value for the option passed or an empty string
-	 */
-	std::tuple<bool, std::string> consume_valued_option(
-			const std::string &option);
+	const std::string consume_argument() noexcept;
 
 	/**
 	 * \brief Test whether a certain option is present.
 	 *
 	 * Does not alter the token set.
 	 *
-	 * \param[in] option The option to test for
+	 * \param[in] token The option to test for
 	 *
 	 * \return TRUE iff the option string is present in the token set
 	 */
-	bool option_present(const std::string &option);
-
-	/**
-	 * \brief Consume the boolean option and return its value.
-	 *
-	 * If the option is not present, the default value will be returned.
-	 *
-	 * \param[in] option The option to consume
-	 *
-	 * \return The value for the option passed
-	 */
-	bool consume_option(const std::string &option);
+	bool token_present(const std::string &token) noexcept;
 
 	/**
 	 * \brief Returns true if there are any CLI tokens left that were not
@@ -98,15 +95,21 @@ public:
 	 *
 	 * \return TRUE iff there are any tokens not consumed
 	 */
-	bool tokens_left();
+	bool tokens_left() noexcept;
 
 	/**
 	 * \brief Returns all tokens not yet consumed to stdout.
 	 *
 	 * \return The tokens not consumed so far
 	 */
-	const std::vector<std::string> get_unconsumed_tokens();
+	const std::vector<std::string> unconsumed_tokens() noexcept;
 
+	/**
+	 * \brief Returns an empty option value.
+	 *
+	 * \return An empty option value
+	 */
+	const std::string& empty_value() noexcept;
 
 private:
 
@@ -117,4 +120,3 @@ private:
 };
 
 #endif
-

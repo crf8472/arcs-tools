@@ -76,64 +76,13 @@ constexpr uint16_t ARVerifyOptions::RESPONSEFILE;
 ARVerifyConfigurator::ARVerifyConfigurator(int argc, char** argv)
 	: ARCalcConfigurator(argc, argv)
 {
-	// empty
-}
-
-
-std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
-		std::unique_ptr<Options> options)
-{
-	if (options->empty())
+	auto size = supported().size();
+	if (size <= 13) // FIXME Magic number
 	{
-		throw CallSyntaxException("No options or arguments");
+		this->support(
+			{ 'r', "response", true, "none", "specify response file to match against" },
+				ARVerifyOptions::RESPONSEFILE);
 	}
-
-	// Does output file exist?
-
-	{
-		std::string outfile = options->get(ARVerifyOptions::OUT);
-
-		if (not outfile.empty() and file::file_exists(outfile))
-		{
-			ARCS_LOG_WARNING << "Outfile " << outfile << " exists.";
-		}
-	}
-
-	return options;
-}
-
-
-std::unique_ptr<Options> ARVerifyConfigurator::parse_options(CLIParser& cli)
-{
-	// A hack to reuse ARCalcConfigurator for the common subset of options:
-	// parse_options() empties the cli and whatever options are not recognized
-	// by ARCalcConfigurator will occur as arguments. To prevent this, we must
-	// consume every legal option that is specific for the verify application,
-	// BEFORE calling parse_options. Only thereafter we add the consumed options
-	// to the Options object.
-
-	// Response Filename
-
-	const auto& [ found, response_file ] = cli.consume_valued_option("-r");
-
-	if (found and response_file.empty())
-	{
-		throw CallSyntaxException("Option -r is passed without argument");
-	}
-
-	// Parse calc application options and arguments
-
-	auto options = ARCalcConfigurator::parse_options(cli);
-
-	// Add postponed options from the verify application
-
-	if (not response_file.empty())
-	{
-		options->set(ARVerifyOptions::RESPONSEFILE);
-		options->put(ARVerifyOptions::RESPONSEFILE, response_file);
-	}
-
-	return options;
 }
 
 
@@ -223,16 +172,22 @@ void ARVerifyApplication::log_matching_files(const Checksums &checksums,
 }
 
 
+std::string ARVerifyApplication::do_name() const
+{
+	return "verify";
+}
+
+
+std::string ARVerifyApplication::do_call_syntax() const
+{
+	return "[OPTIONS] <filename1> [ <filename2> ... ]";
+}
+
+
 std::unique_ptr<Configurator> ARVerifyApplication::create_configurator(
 		int argc, char** argv) const
 {
 	return std::make_unique<ARVerifyConfigurator>(argc, argv);
-}
-
-
-std::string ARVerifyApplication::do_name() const
-{
-	return "verfiy";
 }
 
 
@@ -312,9 +267,10 @@ int ARVerifyApplication::do_run(const Options &options)
 
 	// Configure output stream
 
+	// FIXME This should be handled by output()
 	std::streambuf *buf;
 	std::ofstream out_file_stream;
-	if (auto filename = options.get(ARCalcOptions::OUT); filename.empty())
+	if (auto filename = options.output(); filename.empty())
 	{
 		buf = std::cout.rdbuf();
 	} else
@@ -338,30 +294,3 @@ int ARVerifyApplication::do_run(const Options &options)
 
 	return EXIT_SUCCESS;
 }
-
-
-void ARVerifyApplication::do_print_usage() const
-{
-	std::cout << this->name();
-	std::cout << " [OPTIONS] <filename1> [ <filename2> ... ]\n\n";
-
-	std::cout << "Options:\n\n";
-
-	std::cout << "-q            only output result, nothing else\n\n";
-	std::cout << "-v <i>        verbous output (loglevel 0-6)\n\n";
-	std::cout << "-l <filename> specify log file for output\n\n";
-	std::cout << "-m <filename> specify metadata file (CUE) to use\n\n";
-	std::cout << "-o <filename> specify output file\n\n";
-	std::cout << "-r <filename> specify response file to match against\n\n";
-	std::cout << "--v1          only compare ARCS v1\n\n";
-	std::cout << "--v2          only compare ARCS v2\n\n";
-	std::cout << "--first       treat first audio file as first track\n";
-	std::cout << "              (implied if -m is specified)\n\n";
-	std::cout << "--last        treat last audio file as last track\n";
-	std::cout << "              (implied if -m is specified)\n\n";
-	std::cout << "--album       short for --first --last\n";
-	std::cout << "              (implied if -m is specified)\n\n";
-	std::cout << "--version     print version and exit\n";
-	std::cout << "              (ignoring any other options)\n\n";
-}
-

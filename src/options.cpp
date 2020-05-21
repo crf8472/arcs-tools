@@ -4,20 +4,109 @@
 
 #include <cstdint>  // for uint16_t
 #include <cmath>    // for pow
+#include <iterator> // for ostream_iterator
 #include <map>      // for map, operator!=, _Rb_tree_const_iterator, _Rb_tre...
+#include <sstream>  // for ostringstream
 #include <string>   // for string, basic_string
 #include <utility>  // for pair, make_pair
 #include <vector>   // for vector
+
+
+// Option
+
+
+Option::Option(const char shorthand, const std::string &symbol,
+		const bool needs_value, const std::string &default_arg,
+		const std::string &desc)
+	: shorthand_   { shorthand }
+	, symbol_      { symbol }
+	, needs_value_ { needs_value }
+	, default_     { default_arg }
+	, description_ { desc }
+{
+	// empty
+}
+
+
+char Option::shorthand_symbol() const
+{
+	return shorthand_;
+}
+
+
+std::string Option::symbol() const
+{
+	return symbol_;
+}
+
+
+bool Option::needs_value() const
+{
+	return needs_value_;
+}
+
+
+std::string Option::default_arg() const
+{
+	return default_;
+}
+
+
+std::string Option::description() const
+{
+	return description_;
+}
+
+
+std::vector<std::string> Option::tokens() const
+{
+	std::vector<std::string> tokens;
+	tokens.reserve(2);
+
+	auto symbol = this->symbol();
+	if (not symbol.empty())
+	{
+		symbol.insert(0, "--");
+		tokens.push_back(symbol);
+	}
+
+	if (auto shorthand_sym = this->shorthand_symbol(); shorthand_sym != '\0')
+	{
+		auto shorthand = std::string(1, shorthand_sym);
+		shorthand.insert(0, "-");
+		tokens.push_back(shorthand);
+	}
+
+	return tokens;
+}
+
+
+std::string Option::tokens_str() const
+{
+	std::ostringstream oss;
+	auto tokens = this->tokens();
+
+	if (!tokens.empty())
+	{
+		std::copy(tokens.begin(), tokens.end() - 1,
+			std::ostream_iterator<std::string>(oss, ","));
+
+		oss << tokens.back();
+	}
+
+	return oss.str();
+}
 
 
 // Options
 
 
 Options::Options()
-	: version_(false)
-	, config_(0)
-	, option_map_()
-	, arguments_()
+	: version_ { false }
+	, output_  {}
+	, config_  { 0 }
+	, option_map_ {}
+	, arguments_ {}
 {
 	// empty
 }
@@ -35,6 +124,18 @@ void Options::set_version(const bool &version)
 bool Options::is_set_version() const
 {
 	return version_;
+}
+
+
+void Options::set_output(const std::string &output)
+{
+	output_ = output;
+}
+
+
+std::string Options::output() const
+{
+	return output_;
 }
 
 
@@ -86,7 +187,7 @@ std::string const Options::get_argument(const uint16_t &index) const
 }
 
 
-void Options::push_back_argument(const std::string &arg)
+void Options::append(const std::string &arg)
 {
 	arguments_.push_back(arg);
 }
@@ -121,4 +222,3 @@ uint16_t Options::rightmost_flag() const
 {
 	return config_ & (~config_ + 1);
 }
-
