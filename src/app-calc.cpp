@@ -142,11 +142,6 @@ int ARCalcConfigurator::do_parse_arguments(CLIParser& cli, Options &options)
 std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 		std::unique_ptr<Options> options)
 {
-	if (options->empty())
-	{
-		throw CallSyntaxException("No options or arguments");
-	}
-
 	// TODO A hack: we know that all flags left of LIST_TOC_FORMATS are
 	// info-do-nothing flags. Hence, if the leftmost (set) flag is bigger (== to
 	// the left) of this flag, there are info flags. If, furthermore, the
