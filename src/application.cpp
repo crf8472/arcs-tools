@@ -132,11 +132,11 @@ void ARApplication::print_usage() const
 
 	table.set_title(0, "Option");
 	table.set_width(0, table.title(0).length());
-	table.set_alignment(2, true);
+	table.set_alignment(0, true);
 
 	table.set_title(1, "Default");
 	table.set_width(1, table.title(1).length());
-	table.set_alignment(2, true);
+	table.set_alignment(1, true);
 
 	table.set_title(2, "Description");
 	table.set_width(2, table.title(2).length());
