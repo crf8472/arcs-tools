@@ -265,32 +265,19 @@ int ARVerifyApplication::do_run(const Options &options)
 			<< " in response, having difference " << diff->best_difference();
 	}
 
-	// Configure output stream
-
-	// FIXME This should be handled by output()
-	std::streambuf *buf;
-	std::ofstream out_file_stream;
-	if (auto filename = options.output(); filename.empty())
-	{
-		buf = std::cout.rdbuf();
-	} else
-	{
-		out_file_stream.open(filename);
-		buf = out_file_stream.rdbuf();
-	}
-	std::ostream out_stream(buf);
-
 	// Print results
 
 	auto filenames = toc
 		? arcstk::toc::get_filenames(toc)
 		: options.get_arguments();
-	const TOC *tocptr = toc ? toc.get() : nullptr;
+	Match *match = const_cast<Match*>(diff->match()); // FIXME catastrophic
 
 	auto format = configure_format(options, with_filenames);
 
-	format->out(out_stream, checksums, filenames, response, *diff->match(),
-				diff->best_match(), diff->matches_v2(), tocptr, arid);
+	format->use(&checksums, std::move(filenames), std::move(response),
+		std::move(match), diff->best_match(), diff->matches_v2(),
+		toc.get(), std::move(arid));
+	output(*format);
 
 	return EXIT_SUCCESS;
 }

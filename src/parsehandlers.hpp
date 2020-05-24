@@ -87,7 +87,6 @@ public:
 	 */
 	void set_outfile(const std::string &filename);
 
-
 protected:
 
 	/**
@@ -103,7 +102,6 @@ protected:
 	 * \return The print format used
 	 */
 	ARTripletFormat* triplet_format();
-
 
 private:
 
@@ -163,4 +161,3 @@ private:
 };
 
 #endif
-

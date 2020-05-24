@@ -98,16 +98,16 @@ int ARApplication::run(int argc, char** argv)
 		throw e;
 	}
 
-	if (options->is_set_version())
+	if (options->empty())
 	{
-		std::cout << this->name() << " " << ARCSTOOLS_VERSION_INFO << std::endl;
+		this->print_usage();
 
 		return EXIT_SUCCESS;
 	}
 
-	if (options->empty())
+	if (options->is_set_version())
 	{
-		this->print_usage();
+		std::cout << this->name() << " " << ARCSTOOLS_VERSION_INFO << std::endl;
 
 		return EXIT_SUCCESS;
 	}

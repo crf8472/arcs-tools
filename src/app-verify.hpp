@@ -38,6 +38,7 @@ class Options;
 using arcstk::Checksums;
 using arcstk::Match;
 
+using MatchResultPrinter = Print<Checksums*, std::vector<std::string>, ARResponse, Match*, int, bool, TOC*, ARId>;
 
 /**
  * \brief Configuration options for ARVerifyApplications.

@@ -367,88 +367,88 @@ std::string HexLayout::do_format(const uint32_t &number, const int width) const
 // TableLayout
 
 
-TableLayout::~TableLayout() noexcept = default;
+TableStructure::~TableStructure() noexcept = default;
 
 
-std::size_t TableLayout::rows() const
+std::size_t TableStructure::rows() const
 {
 	return this->do_rows();
 }
 
 
-std::size_t TableLayout::columns() const
+std::size_t TableStructure::columns() const
 {
 	return this->do_columns();
 }
 
 
-void TableLayout::set_width(const int col, const int width)
+void TableStructure::set_width(const int col, const int width)
 {
 	this->do_set_width(col, width);
 }
 
 
-int TableLayout::width(const int col) const
+int TableStructure::width(const int col) const
 {
 	return this->do_width(col);
 }
 
 
-void TableLayout::set_alignment(const int col, const bool align)
+void TableStructure::set_alignment(const int col, const bool align)
 {
 	this->do_set_alignment(col, align);
 }
 
 
-bool TableLayout::alignment(const int col) const
+bool TableStructure::alignment(const int col) const
 {
 	return this->do_alignment(col);
 }
 
 
-void TableLayout::set_title(const int col, const std::string &title)
+void TableStructure::set_title(const int col, const std::string &title)
 {
 	this->do_set_title(col, title);
 }
 
 
-std::string TableLayout::title(const int col) const
+std::string TableStructure::title(const int col) const
 {
 	return this->do_title(col);
 }
 
 
-void TableLayout::set_type(const int col, const int type)
+void TableStructure::set_type(const int col, const int type)
 {
 	this->do_set_type(col, type);
 }
 
 
-int TableLayout::type(const int col) const
+int TableStructure::type(const int col) const
 {
 	return this->do_type(col);
 }
 
 
-void TableLayout::set_column_delimiter(const std::string &delim)
+void TableStructure::set_column_delimiter(const std::string &delim)
 {
 	this->do_set_column_delimiter(delim);
 }
 
 
-std::string TableLayout::column_delimiter() const
+std::string TableStructure::column_delimiter() const
 {
 	return this->do_column_delimiter();
 }
 
 
-void TableLayout::resize(const int rows, const int cols)
+void TableStructure::resize(const int rows, const int cols)
 {
 	this->do_resize(rows, cols);
 }
 
 
-void TableLayout::bounds_check(const int row, const int col) const
+void TableStructure::bounds_check(const int row, const int col) const
 {
 	this->do_bounds_check(row, col);
 }
@@ -457,7 +457,7 @@ void TableLayout::bounds_check(const int row, const int col) const
 /**
  * \brief Private implementation of a StringTableLayout
  */
-class StringTableLayout::Impl final
+class StringTableStructure::Impl final
 {
 public:
 
@@ -538,7 +538,7 @@ private:
 };
 
 
-StringTableLayout::Impl::Impl(const int rows, const int cols)
+StringTableStructure::Impl::Impl(const int rows, const int cols)
 	: widths_       (cols)
 	, alignments_   (cols)
 	, titles_       (cols)
@@ -551,83 +551,83 @@ StringTableLayout::Impl::Impl(const int rows, const int cols)
 }
 
 
-StringTableLayout::Impl::~Impl() noexcept = default;
+StringTableStructure::Impl::~Impl() noexcept = default;
 
 
-int StringTableLayout::Impl::rows() const
+int StringTableStructure::Impl::rows() const
 {
 	return rows_;
 }
 
 
-int StringTableLayout::Impl::columns() const
+int StringTableStructure::Impl::columns() const
 {
 	return cols_;
 }
 
 
-void StringTableLayout::Impl::set_width(const int col, const int width)
+void StringTableStructure::Impl::set_width(const int col, const int width)
 {
 	widths_[col] = width;
 }
 
 
-int StringTableLayout::Impl::width(const int col)
+int StringTableStructure::Impl::width(const int col)
 {
 	return widths_[col];
 }
 
 
-void StringTableLayout::Impl::set_alignment(const int col, const bool align)
+void StringTableStructure::Impl::set_alignment(const int col, const bool align)
 {
 	alignments_[col] = align;
 }
 
 
-bool StringTableLayout::Impl::alignment(const int col)
+bool StringTableStructure::Impl::alignment(const int col)
 {
 	return alignments_[col];
 }
 
 
-void StringTableLayout::Impl::set_title(const int col,
+void StringTableStructure::Impl::set_title(const int col,
 		const std::string &title)
 {
 	titles_[col] = title;
 }
 
 
-std::string StringTableLayout::Impl::title(const int col) const
+std::string StringTableStructure::Impl::title(const int col) const
 {
 	return titles_[col];
 }
 
 
-void StringTableLayout::Impl::set_type(const int col, const int type)
+void StringTableStructure::Impl::set_type(const int col, const int type)
 {
 	types_[col] = type;
 }
 
 
-int StringTableLayout::Impl::type(const int col) const
+int StringTableStructure::Impl::type(const int col) const
 {
 	return types_[col];
 }
 
 
-void StringTableLayout::Impl::set_col_delim(const std::string &delim)
+void StringTableStructure::Impl::set_col_delim(const std::string &delim)
 {
 	column_delim_ = delim;
 }
 
 
-std::string StringTableLayout::Impl::col_delim() const
+std::string StringTableStructure::Impl::col_delim() const
 {
 	return column_delim_;
 }
 
 
-void StringTableLayout::Impl::resize(const int rows, const int cols)
+void StringTableStructure::Impl::resize(const int rows, const int cols)
 {
 	rows_ = rows;
 	cols_ = cols;
@@ -639,7 +639,7 @@ void StringTableLayout::Impl::resize(const int rows, const int cols)
 }
 
 
-void StringTableLayout::Impl::bounds_check(const int row, const int col) const
+void StringTableStructure::Impl::bounds_check(const int row, const int col) const
 {
 	if (not legal_row(row))
 	{
@@ -655,19 +655,19 @@ void StringTableLayout::Impl::bounds_check(const int row, const int col) const
 }
 
 
-bool StringTableLayout::Impl::legal_row(const int row) const
+bool StringTableStructure::Impl::legal_row(const int row) const
 {
 	return row >= 0 && row < rows();
 }
 
 
-bool StringTableLayout::Impl::legal_col(const int col) const
+bool StringTableStructure::Impl::legal_col(const int col) const
 {
 	return col >= 0 && col < columns();
 }
 
 
-bool StringTableLayout::Impl::legal_width(const int width) const
+bool StringTableStructure::Impl::legal_width(const int width) const
 {
 	return width > 0 && width < 32; // defines maximum width
 }
@@ -676,96 +676,96 @@ bool StringTableLayout::Impl::legal_width(const int width) const
 // StringTableLayout
 
 
-StringTableLayout::StringTableLayout(const int rows, const int cols)
+StringTableStructure::StringTableStructure(const int rows, const int cols)
 	: impl_ { std::make_unique<Impl>(rows, cols) }
 {
 	// empty
 }
 
 
-StringTableLayout::~StringTableLayout() noexcept
+StringTableStructure::~StringTableStructure() noexcept
 = default;
 
 
-std::size_t StringTableLayout::do_rows() const
+std::size_t StringTableStructure::do_rows() const
 {
 	return impl_->rows();
 }
 
 
-std::size_t StringTableLayout::do_columns() const
+std::size_t StringTableStructure::do_columns() const
 {
 	return impl_->columns();
 }
 
 
-void StringTableLayout::do_resize(const int rows, const int cols)
+void StringTableStructure::do_resize(const int rows, const int cols)
 {
 	impl_->resize(rows, cols);
 }
 
 
-void StringTableLayout::do_set_width(const int col, const int width)
+void StringTableStructure::do_set_width(const int col, const int width)
 {
 	impl_->set_width(col, width);
 }
 
 
-int StringTableLayout::do_width(const int col) const
+int StringTableStructure::do_width(const int col) const
 {
 	return impl_->width(col);
 }
 
 
-void StringTableLayout::do_set_alignment(const int col, const bool align)
+void StringTableStructure::do_set_alignment(const int col, const bool align)
 {
 	impl_->set_alignment(col, align);
 }
 
 
-bool StringTableLayout::do_alignment(const int col) const
+bool StringTableStructure::do_alignment(const int col) const
 {
 	return impl_->alignment(col);
 }
 
 
-void StringTableLayout::do_set_title(const int col, const std::string &title)
+void StringTableStructure::do_set_title(const int col, const std::string &title)
 {
 	impl_->set_title(col, title);
 }
 
 
-std::string StringTableLayout::do_title(const int col) const
+std::string StringTableStructure::do_title(const int col) const
 {
 	return impl_->title(col);
 }
 
 
-void StringTableLayout::do_set_type(const int col, const int type)
+void StringTableStructure::do_set_type(const int col, const int type)
 {
 	impl_->set_type(col, type);
 }
 
 
-int StringTableLayout::do_type(const int col) const
+int StringTableStructure::do_type(const int col) const
 {
 	return impl_->type(col);
 }
 
 
-void StringTableLayout::do_set_column_delimiter(const std::string &delim)
+void StringTableStructure::do_set_column_delimiter(const std::string &delim)
 {
 	impl_->set_col_delim(delim);
 }
 
 
-std::string StringTableLayout::do_column_delimiter() const
+std::string StringTableStructure::do_column_delimiter() const
 {
 	return impl_->col_delim();
 }
 
 
-void StringTableLayout::do_bounds_check(const int row, const int col) const
+void StringTableStructure::do_bounds_check(const int row, const int col) const
 {
 	impl_->bounds_check(row, col);
 }
@@ -789,7 +789,7 @@ public:
 
 	void update_cell(const int row, const int col, const std::string &text);
 
-	StringTableLayout& layout();
+	StringTableStructure& layout();
 
 private:
 
@@ -853,7 +853,7 @@ int StringTable::Impl::index(const int row, const int col) const
 
 
 StringTable::StringTable(const int rows, const int columns)
-	: StringTableLayout(rows, columns)
+	: StringTableStructure(rows, columns)
 	, impl_(std::make_unique<StringTable::Impl>(rows, columns))
 {
 	// empty

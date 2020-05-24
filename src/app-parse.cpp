@@ -91,9 +91,7 @@ std::unique_ptr<Configurator> ARParseApplication::create_configurator(
 
 int ARParseApplication::do_run(const Options &options)
 {
-	std::unique_ptr<ARParserContentPrintHandler> content_handler;
-
-	content_handler = std::make_unique<ARParserContentPrintHandler>(
+	auto content_handler = std::make_unique<ARParserContentPrintHandler>(
 		options.output());
 
 	auto arguments = options.get_arguments();

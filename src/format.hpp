@@ -45,7 +45,7 @@ inline int optimal_width(Container&& list)
 {
 	std::size_t width = 0;
 
-	for (const auto& entry : list)   // TODO Do this with STL!
+	for (const auto& entry : list)   // TODO Do this with STL, e.g. std::max!
 	{
 		if (entry.length() > width)
 		{
@@ -519,14 +519,14 @@ private:
 /**
  * \brief A table with formatted columns
  */
-class TableLayout
+class TableStructure
 {
 public:
 
 	/**
 	 * \brief Virtual destructor.
 	 */
-	virtual ~TableLayout() noexcept;
+	virtual ~TableStructure() noexcept;
 
 	/**
 	 * \brief Returns the number of rows (without header)
@@ -793,8 +793,11 @@ private:
  * \brief Base class for a table of strings layout.
  *
  * Implement function \c init() in a subclass to get a concrete layout.
+ * The default implementation of init() is empty in StringTable.
+ *
+ * \see StringTable
  */
-class StringTableLayout : public TableLayout
+class StringTableStructure : public TableStructure
 {
 public:
 
@@ -804,20 +807,26 @@ public:
 	 * \param[in] rows    Number of rows (including header, if any)
 	 * \param[in] columns Number of columns (including label column, if any)
 	 */
-	StringTableLayout(const int rows, const int cols);
+	StringTableStructure(const int rows, const int cols);
 
 	/**
 	 * \brief Default constructor constructs a table with dimensions 0,0
 	 */
-	StringTableLayout() : StringTableLayout(0, 0) { /* empty */ }
+	StringTableStructure() : StringTableStructure(0, 0) { /* empty */ }
 
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	virtual ~StringTableLayout() noexcept;
+	virtual ~StringTableStructure() noexcept;
 
 private:
 
+	/**
+	 * \brief Initialize the instance with the specified dimensions
+	 *
+	 * \param[in] rows Number of rows to init
+	 * \param[in] cols Number of columns to init
+	 */
 	virtual void init(const int rows, const int cols)
 	= 0;
 
@@ -861,7 +870,7 @@ std::ostream& operator << (std::ostream &o, const StringTable &table);
  *
  * Implement function \c init() in a subclass to get a concrete table.
  */
-class StringTable : public StringTableLayout
+class StringTable : public StringTableStructure
 {
 public:
 
@@ -969,4 +978,3 @@ private:
 };
 
 #endif
-

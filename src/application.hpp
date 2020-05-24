@@ -44,7 +44,7 @@ using arcsdec::FileReaderDescriptor;
  * \return void iff object overloads operator << for std::ostream
  */
 template <typename T>
-inline auto output(const T &object, const std::string &filename = "")
+inline auto output(T &object, const std::string &filename = "")
 	-> decltype( std::cout << object, void() )
 {
 	if (filename.empty()) // THIS defines the default behaviour!

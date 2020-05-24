@@ -360,21 +360,6 @@ int ARCalcApplication::run_calculation(const Options &options)
 		this->fatal_error("Calculation returned no checksums");
 	}
 
-	// Configure output stream
-
-	// FIXME This should be handled by output()
-	std::streambuf *buf;
-	std::ofstream out_file_stream;
-	if (auto filename = options.output(); filename.empty())
-	{
-		buf = std::cout.rdbuf();
-	} else
-	{
-		out_file_stream.open(filename);
-		buf = out_file_stream.rdbuf();
-	}
-	std::ostream out_stream(buf);
-
 	// Print formatted results to output stream
 
 	auto format = configure_format(options);
@@ -383,7 +368,8 @@ int ARCalcApplication::run_calculation(const Options &options)
 		? arcstk::toc::get_filenames(toc)
 		: options.get_arguments();
 
-	format->out(out_stream, checksums, filenames, toc.get(), arid);
+	format->use(&checksums, std::move(filenames), toc.get(), std::move(arid));
+	output(*format);
 
 	return EXIT_SUCCESS;
 }

@@ -118,15 +118,18 @@ int ARIdApplication::do_run(const Options &options)
 
 	// Adjust format and print information
 
+	using ARIdPrinter = Print<ARId, std::string>;
 	std::unique_ptr<ARIdPrinter> format;
 
 	if (options.is_set(ARIdOptions::PROFILE))
 	{
-		format = std::make_unique<ARIdTableFormat>(
-				true, true, true, true, true, true);
+		format = std::make_unique<ARIdTableFormat>(*id,
+			options.get(ARIdOptions::PRE),
+			true, true, true, true, true, true);
 	} else
 	{
-		format = std::make_unique<ARIdTableFormat>(
+		format = std::make_unique<ARIdTableFormat>(*id,
+			options.get(ARIdOptions::PRE),
 			options.is_set(ARIdOptions::URL),
 			options.is_set(ARIdOptions::DBID),
 			false /* no track count */,
@@ -136,22 +139,8 @@ int ARIdApplication::do_run(const Options &options)
 		);
 	}
 
-	// Configure output stream
-
-	// FIXME This should be handled by output
-	std::streambuf *buf;
-	std::ofstream out_file_stream;
-	if (auto filename = options.output(); filename.empty())
-	{
-		buf = std::cout.rdbuf();
-	} else
-	{
-		out_file_stream.open(filename);
-		buf = out_file_stream.rdbuf();
-	}
-	std::ostream out_stream(buf);
-
-	format->out(out_stream, *id, options.get(ARIdOptions::PRE));
+	//format->use(*id, options.get(ARIdOptions::PRE));
+	output(*format);
 
 	return EXIT_SUCCESS;
 }

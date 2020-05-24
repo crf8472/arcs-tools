@@ -104,7 +104,7 @@ void ARParserContentPrintHandler::do_id(const uint8_t track_count,
 {
 	ARId id(track_count, disc_id1, disc_id2, cddb_id);
 
-	out_stream_ << arid_layout()->format(id, "") << std::endl;
+	out_stream_ << arid_layout()->format(id, std::string()) << std::endl;
 }
 
 
@@ -114,7 +114,8 @@ void ARParserContentPrintHandler::do_triplet(const uint32_t arcs,
 	++track_;
 	ARTriplet triplet(arcs, confidence, frame450_arcs);
 
-	triplet_format()->out(out_stream_, track_, triplet);
+	triplet_format()->use(track_, std::move(triplet));
+	triplet_format()->out(out_stream_);
 }
 
 
@@ -127,7 +128,8 @@ void ARParserContentPrintHandler::do_triplet(const uint32_t arcs,
 	ARTriplet triplet(arcs, confidence, frame450_arcs, arcs_valid,
 			confidence_valid, frame450_arcs_valid);
 
-	triplet_format()->out(out_stream_, track_, triplet);
+	triplet_format()->use(track_, std::move(triplet));
+	triplet_format()->out(out_stream_);
 }
 
 
@@ -144,4 +146,3 @@ void ARParserContentPrintHandler::do_end_input()
 		std::dec << block_counter_ << std::endl;
 	out_stream_.flags(prev_settings);
 }
-

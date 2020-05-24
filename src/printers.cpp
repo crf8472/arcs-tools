@@ -24,75 +24,11 @@ using arcstk::Checksum;
 using arcstk::TOC;
 
 
-// ARIdPrinter
-
-
-void ARIdPrinter::out(std::ostream &out, const ARId &arid,
-		const std::string &prefix)
-{
-	const auto flags = out.flags();
-	this->do_out(out, arid, prefix);
-	out.flags(flags);
-}
-
-
-// ARTripletPrinter
-
-
-void ARTripletPrinter::out(std::ostream &out, const int track,
-		const ARTriplet &triplet)
-{
-	const auto flags = out.flags();
-	this->do_out(out, track, triplet);
-	out.flags(flags);
-}
-
-
-// ARBlockPrinter
-
-
-void ARBlockPrinter::out(std::ostream &out, const ARBlock &block)
-{
-	const auto flags = out.flags();
-	this->do_out(out, block);
-	out.flags(flags);
-}
-
-
-// ChecksumsResultPrinter
-
-
-void ChecksumsResultPrinter::out(std::ostream &out, const Checksums &checksums,
-		const std::vector<std::string> &filenames,
-		const TOC *toc, const ARId &arid)
-{
-	const auto flags = out.flags();
-	this->do_out(out, checksums, filenames, toc, arid);
-	out.flags(flags);
-}
-
-
-// MatchResultPrinter
-
-
-void MatchResultPrinter::out(std::ostream &out, const Checksums &checksums,
-			const std::vector<std::string> &filenames,
-			const ARResponse &response,
-			const Match &match, const int block, const bool version,
-			const TOC *toc, const ARId &arid)
-{
-	const auto flags = out.flags();
-	this->do_out(out, checksums, filenames, response, match, block, version,
-			toc, arid);
-	out.flags(flags);
-}
-
-
 // AlbumTableBase
 
 
 AlbumTableBase::AlbumTableBase(const int rows, const int columns)
-	: StringTableLayout(rows, columns)
+	: StringTableStructure(rows, columns)
 	, WithMetadataFlagMethods(true, true, true, true)
 {
 	// empty
@@ -102,7 +38,7 @@ AlbumTableBase::AlbumTableBase(const int rows, const int columns)
 AlbumTableBase::AlbumTableBase(const int rows, const int columns,
 			const bool show_track, const bool show_offset,
 			const bool show_length, const bool show_filename)
-	: StringTableLayout(rows, columns)
+	: StringTableStructure(rows, columns)
 	, WithMetadataFlagMethods(
 			show_track, show_offset, show_length, show_filename)
 {
@@ -255,17 +191,79 @@ void AlbumTableBase::print_column_titles(std::ostream &out) const
 }
 
 
+// ARTripletFormat
+
+
+ARTripletFormat::ARTripletFormat()
+	: Print<int, ARTriplet> { 0, ARTriplet() }
+{
+	// empty
+}
+
+
+void ARTripletFormat::do_out(std::ostream &out,
+		const std::tuple<int, ARTriplet> &t)
+{
+	auto track   = std::get<0>(t);
+	auto triplet = std::get<1>(t);
+
+	HexLayout hex;
+	hex.set_show_base(false);
+	hex.set_uppercase(true);
+
+	const int width_arcs = 8;
+	const int width_conf = 2;
+
+	out << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
+
+	if (triplet.arcs_valid())
+	{
+		out << std::setw(width_arcs)
+			<< hex.format(triplet.arcs(), width_arcs);
+	} else
+	{
+		out << std::setw(width_arcs) << "????????";
+	}
+
+	out << " ";
+
+	out << "(";
+	if (triplet.confidence_valid())
+	{
+		out << std::setw(width_conf) << std::setfill('0')
+			<< static_cast<unsigned int>(triplet.confidence());
+	} else
+	{
+		out << "??";
+	}
+	out << ") ";
+
+	if (triplet.frame450_arcs_valid())
+	{
+		out << std::setw(width_arcs)
+			<< hex.format(triplet.frame450_arcs(), width_arcs);
+	} else
+	{
+		out << std::setw(width_arcs) << "????????";
+	}
+
+	out << std::endl;
+}
+
+
 // ARIdTableFormat
 
 
-ARIdTableFormat::ARIdTableFormat(const bool &url, const bool &filename,
+ARIdTableFormat::ARIdTableFormat(const ARId &id, const std::string &alt_prefix,
+		const bool &url, const bool &filename,
 		const bool &track_count, const bool &disc_id_1, const bool &disc_id_2,
 		const bool &cddb_id)
 	: ARIdLayout(url, filename, track_count, disc_id_1, disc_id_2, cddb_id)
-	, StringTableLayout(
+	, StringTableStructure(
 			url + filename + track_count + disc_id_1 + disc_id_2 + cddb_id,
 			only_one_flag() ? 1 : 2 // one or two columns
 		)
+	, Print<ARId, std::string>(ARId(id), std::string(alt_prefix)) // FIXME Copies to remove constness
 	, row_labels_ { "URL", "Filename", "Tracks", "ID1", "ID2", "CDDB ID" }
 	, show_flags_ { ARID_FLAG::URL, ARID_FLAG::FILENAME, ARID_FLAG::TRACKS,
 		ARID_FLAG::ID1, ARID_FLAG::ID2, ARID_FLAG::CDDBID }
@@ -352,10 +350,10 @@ std::string ARIdTableFormat::do_format(const ARId &id,
 }
 
 
-void ARIdTableFormat::do_out(std::ostream &out, const ARId &id,
-		const std::string &alt_prefix)
+void ARIdTableFormat::do_out(std::ostream &o,
+		const std::tuple<ARId, std::string> &t)
 {
-	out << format(id, alt_prefix) << std::endl;
+	o << format(std::get<0>(t), std::get<1>(t)) << std::endl;
 }
 
 
@@ -374,6 +372,7 @@ AlbumChecksumsTableFormat::AlbumChecksumsTableFormat(const int rows,
 		const bool show_length, const bool show_filename)
 	: AlbumTableBase(rows, columns,
 			show_track, show_offset, show_length, show_filename)
+	, Print<Checksums*, std::vector<std::string>, TOC*, ARId>(nullptr, std::vector<std::string>{}, nullptr, ARId{0,0,0,0})
 	, hexlayout_()
 {
 	this->init(rows, columns);
@@ -412,13 +411,15 @@ int AlbumChecksumsTableFormat::columns_apply_cs_settings(
 
 
 void AlbumChecksumsTableFormat::do_out(std::ostream &out,
-		const Checksums &checksums,
-		const std::vector<std::string> &filenames,
-		const TOC *toc, const ARId &/*arid*/)
+		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
 {
-	auto types_to_print = typelist(checksums);
+	auto checksums = std::get<0>(t);
+	auto filenames = std::get<1>(t);
+	auto toc = std::get<2>(t);
 
-	resize(1/*titles*/ + checksums.size(),
+	auto types_to_print = typelist(*checksums);
+
+	resize(1/*titles*/ + checksums->size(),
 			total_metadata_columns() + types_to_print.size());
 
 	// Apply column settings
@@ -460,13 +461,13 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 
 				case COL_TYPE::LENGTH   :
 					if (length())
-						{ cell = std::to_string(checksums[row].length()); }
+						{ cell = std::to_string((*checksums)[row].length()); }
 					break;
 
 				case COL_TYPE::CHECKSUM :
 					cstype = types_to_print[col - md_offset];
 					cell = hexlayout_.format(
-							checksums[row].get(cstype).value(),
+							(*checksums)[row].get(cstype).value(),
 							width(col));
 					break;
 
@@ -494,6 +495,8 @@ AlbumMatchTableFormat::AlbumMatchTableFormat(const int rows,
 	: AlbumTableBase(rows,
 			(show_track + show_offset + show_length + show_filename + 2),
 			show_track, show_offset, show_length, show_filename)
+	, Print<Checksums*, std::vector<std::string>, ARResponse, Match*, int, bool, TOC*, ARId>(
+			nullptr, std::vector<std::string>{}, ARResponse{}, nullptr, 0, false, nullptr, ARId{0,0,0,0})
 	, hexlayout_()
 {
 	this->init(rows, this->columns());
@@ -541,12 +544,18 @@ int AlbumMatchTableFormat::columns_apply_cs_settings(
 
 
 void AlbumMatchTableFormat::do_out(std::ostream &out,
-			const Checksums &checksums,
-			const std::vector<std::string> &filenames,
-			const ARResponse &response,
-			const Match &match, const int best, const bool version,
-			const TOC *toc, const ARId &/*arid*/)
+		const std::tuple<Checksums*, std::vector<std::string>, ARResponse,
+				Match*, int, bool, TOC*, ARId> &t)
 {
+	auto checksums = *std::get<0>(t);
+	auto filenames = std::get<1>(t);
+	auto response = std::get<2>(t);
+	auto match = std::get<3>(t);
+	auto best = std::get<4>(t);
+	auto version = std::get<5>(t);
+	auto toc = std::get<6>(t);
+	//auto arid = std::get<7>(t);
+
 	using TYPE = arcstk::checksum::type;
 
 	std::vector<TYPE> types_to_print = { version ? TYPE::ARCS2 : TYPE::ARCS1 };
@@ -612,7 +621,7 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 				case COL_TYPE::MATCH    :
 					cstype = types_to_print[col - md_offset - m_columns];
 					++ m_columns;
-					if (match.track(best, row, version))
+					if (match->track(best, row, version))
 					{
 						cell = "   ==   ";
 					} else
@@ -632,56 +641,6 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 		out << std::endl;
 		m_columns = 0;
 	}
-}
-
-
-// ARTripletFormat
-
-
-void ARTripletFormat::do_out(std::ostream &out, const int track,
-		const ARTriplet &triplet)
-{
-	HexLayout hex;
-	hex.set_show_base(false);
-	hex.set_uppercase(true);
-
-	const int width_arcs = 8;
-	const int width_conf = 2;
-
-	out << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
-
-	if (triplet.arcs_valid())
-	{
-		out << std::setw(width_arcs)
-			<< hex.format(triplet.arcs(), width_arcs);
-	} else
-	{
-		out << std::setw(width_arcs) << "????????";
-	}
-
-	out << " ";
-
-	out << "(";
-	if (triplet.confidence_valid())
-	{
-		out << std::setw(width_conf) << std::setfill('0')
-			<< static_cast<unsigned int>(triplet.confidence());
-	} else
-	{
-		out << "??";
-	}
-	out << ") ";
-
-	if (triplet.frame450_arcs_valid())
-	{
-		out << std::setw(width_arcs)
-			<< hex.format(triplet.frame450_arcs(), width_arcs);
-	} else
-	{
-		out << std::setw(width_arcs) << "????????";
-	}
-
-	out << std::endl;
 }
 
 
@@ -732,4 +691,3 @@ void FormatList::append_line(const std::string &fmt_name,
 
 	++curr_row_;
 }
-

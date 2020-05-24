@@ -46,7 +46,7 @@ using arcstk::TOC;
  */
 class AlbumTableBase	: public WithMetadataFlagMethods
 						, virtual public WithARId
-						, virtual public StringTableLayout
+						, virtual public StringTableStructure
 {
 public:
 
@@ -176,151 +176,80 @@ private:
 /**
  * \brief Common base class for printers
  */
-class Printer
-{
-public:
-
-	virtual ~Printer() = default;
-};
-
-
-/**
- * \brief Print an ARId
- */
-class ARIdPrinter : public Printer
+template <typename... Args>
+class Print
 {
 public:
 
 	/**
-	 * \brief Print the results to the specified stream
-	 *
-	 * Ignores the filenames of TOC.
-	 *
-	 * \param[in] out    Output stream
-	 * \param[in] arid   ARId
-	 * \param[in] prefix URL prefix
+	 * \brief Constructor
 	 */
-	void out(std::ostream &out, const ARId &arid, const std::string &prefix);
+	Print(Args&&... args)
+		: objects_ { std::forward<Args>(args)... }
+	{
+		// empty
+	}
+
+	/**
+	 * \brief Virtual default destructor
+	 */
+	virtual ~Print() = default;
+
+	/**
+	 * \brief Add the objects to print
+	 */
+	void use(Args&&... args)
+	{
+		objects_ = std::make_tuple(std::forward<Args>(args)...);
+	}
+
+	/**
+	 * \brief Called by overloaded operator <<.
+	 *
+	 * \param[in] out Stream to print to
+	 */
+	void out(std::ostream &outstream)
+	{
+		this->do_out(outstream, this->objects_);
+	}
 
 private:
 
-	virtual void do_out(std::ostream &out, const ARId &arid,
-			const std::string &prefix)
+	std::tuple<Args...> objects_;
+
+	virtual void do_out(std::ostream &o, const std::tuple<Args...> &t)
 	= 0;
 };
 
 
 /**
- * \brief Print an ARTriplet
+ * \brief Overload << to make each concrete Printer be usable with a stream.
  */
-class ARTripletPrinter : public Printer
+template <typename... Args>
+std::ostream& operator << (std::ostream &stream, Print<Args...> &p)
 {
-public:
-
-	/**
-	 * \brief Print the results to the specified stream
-	 *
-	 * Ignores the filenames of TOC.
-	 *
-	 * \param[in] out     Output stream
-	 * \param[in] track   The track represented by \c triplet
-	 * \param[in] triplet Triplet to print
-	 */
-	void out(std::ostream &out, const int track, const ARTriplet &triplet);
-
-private:
-
-	virtual void do_out(std::ostream &out, const int track,
-			const ARTriplet &triplet)
-	= 0;
-};
+	p.out(stream);
+	return stream;
+}
 
 
 /**
- * \brief Print an ARBlock
+ * \brief Abstract base class for output formats of ARTriplet.
  */
-class ARBlockPrinter : public Printer
+class ARTripletFormat final : virtual protected WithInternalFlags
+							, public Print<int, ARTriplet>
 {
 public:
 
 	/**
-	 * \brief Print the results to the specifiec stream
-	 *
-	 * \param[in] out   Output stream
-	 * \param[in] block Block to print
+	 * \brief Constructor.
 	 */
-	void out(std::ostream &out, const ARBlock &block);
+	ARTripletFormat();
 
 private:
 
-	virtual void do_out(std::ostream &out, const ARBlock &block)
-	= 0;
-};
-
-
-/**
- * \brief Print the results of a Checksums calculation
- */
-class ChecksumsResultPrinter : public Printer
-{
-public:
-
-	/**
-	 * \brief Print the results to the specified stream
-	 *
-	 * Ignores the filenames of TOC.
-	 *
-	 * \param[in] checksums checksums
-	 * \param[in] filenames filenames
-	 * \param[in] toc       TOC
-	 * \param[in] arid      ARId
-	 */
-	void out(std::ostream &out, const Checksums &checksums,
-			const std::vector<std::string> &filenames,
-			const TOC *toc, const ARId &arid);
-
-private:
-
-	virtual void do_out(std::ostream &out, const Checksums &checksums,
-			const std::vector<std::string> &filenames,
-			const TOC *toc, const ARId &arid)
-	= 0;
-};
-
-
-/**
- * \brief Print the results of a Verification
- */
-class MatchResultPrinter : public Printer
-{
-public:
-
-	/**
-	 * \brief Print the results to the specified stream
-	 *
-	 * \param[in] out       Output stream
-	 * \param[in] checksums Checksums
-	 * \param[in] filenames Filenames
-	 * \param[in] response  Response
-	 * \param[in] match     Match to print
-	 * \param[in] version   Version
-	 * \param[in] toc       TOC (whose filenames are ignored)
-	 * \param[in] arid      ARId
-	 */
-	void out(std::ostream &out, const Checksums &checksums,
-			const std::vector<std::string> &filenames,
-			const ARResponse &response,
-			const Match &match, const int block, const bool version,
-			const TOC *toc, const ARId &arid);
-
-private:
-
-	virtual void do_out(std::ostream &out, const Checksums &checksums,
-			const std::vector<std::string> &filenames,
-			const ARResponse &response,
-			const Match &match, const int block, const bool version,
-			const TOC *toc, const ARId &arid)
-	= 0;
+	void do_out(std::ostream &out, const std::tuple<int, ARTriplet> &t)
+	override;
 };
 
 
@@ -328,8 +257,8 @@ private:
  * \brief Simple table format for ARId.
  */
 class ARIdTableFormat final : public ARIdLayout
-							, public StringTableLayout
-							, public ARIdPrinter
+							, public StringTableStructure
+							, public Print<ARId, std::string>
 {
 public:
 
@@ -343,16 +272,24 @@ public:
 	 * \param[in] disc_id_2   Set to TRUE for printing the disc id2
 	 * \param[in] cddb_id     Set to TRUE for printing the cddb id
 	 */
-	ARIdTableFormat(const bool &url, const bool &filename,
+	ARIdTableFormat(const ARId &id, const std::string &alt_prefix,
+			const bool &url, const bool &filename,
 			const bool &track_count, const bool &disc_id_1,
 			const bool &disc_id_2, const bool &cddb_id);
+
+	ARIdTableFormat(const bool &url, const bool &filename,
+			const bool &track_count, const bool &disc_id_1,
+			const bool &disc_id_2, const bool &cddb_id) :
+		ARIdTableFormat (arcstk::EmptyARId, std::string(), url, filename,
+			track_count, disc_id_1, disc_id_2, cddb_id ) { /* empty */ };
 
 	/**
 	 * \brief Default constructor.
 	 *
 	 * Sets all formatting flags to TRUE
 	 */
-	ARIdTableFormat() : ARIdTableFormat(true, true, false, false, false, false)
+	ARIdTableFormat() : ARIdTableFormat(arcstk::EmptyARId, std::string(),
+			true, true, false, false, false, false)
 	{ /* empty */ };
 
 	/**
@@ -364,8 +301,8 @@ private:
 
 	void init(const int rows, const int cols) override;
 
-	void do_out(std::ostream &out, const ARId &arid,
-			const std::string &prefix) override;
+	void do_out(std::ostream &o, const std::tuple<ARId, std::string> &t)
+		override;
 
 	std::string do_format(const ARId &id, const std::string &alt_prefix) const
 		override;
@@ -388,7 +325,7 @@ private:
  * \brief Simple table format for album-based Checksums.
  */
 class AlbumChecksumsTableFormat final   : public AlbumTableBase
-										, public ChecksumsResultPrinter
+										, public Print<Checksums*, std::vector<std::string>, TOC*, ARId>
 {
 public:
 
@@ -418,9 +355,9 @@ private:
 	int columns_apply_cs_settings(
 			const std::vector<arcstk::checksum::type> &types) override;
 
-	void do_out(std::ostream &out, const Checksums &checksums,
-			const std::vector<std::string> &filenames,
-			const TOC *toc, const ARId &arid) override;
+	void do_out(std::ostream &o,
+		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
+		override;
 
 	/**
 	 * \brief Hexadecimal layout used for Checksums columns
@@ -433,7 +370,7 @@ private:
  * \brief Simple table format for album-based @link Match Matches @endlink.
  */
 class AlbumMatchTableFormat final   : public AlbumTableBase
-									, public MatchResultPrinter
+									, public Print<Checksums*, std::vector<std::string>, ARResponse, Match*, int, bool, TOC*, ARId>
 {
 public:
 
@@ -461,36 +398,14 @@ private:
 	int columns_apply_cs_settings(
 			const std::vector<arcstk::checksum::type> &types) override;
 
-	void do_out(std::ostream &out, const Checksums &checksums,
-			const std::vector<std::string> &filenames,
-			const ARResponse &response,
-			const Match &match, const int block, const bool version,
-			const TOC *toc, const ARId &arid) override;
+	void do_out(std::ostream &out,
+			const std::tuple<Checksums*, std::vector<std::string>, ARResponse,
+			Match*, int, bool, TOC*, ARId> &t) override;
 
 	/**
 	 * \brief Hexadecimal layout used for Checksums columns
 	 */
 	HexLayout hexlayout_;
-};
-
-
-/**
- * \brief Abstract base class for output formats of ARTriplet.
- */
-class ARTripletFormat final : virtual protected WithInternalFlags
-							, public ARTripletPrinter
-{
-private:
-
-	/**
-	 * \brief Implements out().
-	 *
-	 * \param[in] out     The stream to print
-	 * \param[in] track   The track represented by \c triplet
-	 * \param[in] triplet The ARTriplet to be formatted
-	 */
-	void do_out(std::ostream &out, const int track, const ARTriplet &triplet)
-		override;
 };
 
 
