@@ -25,8 +25,6 @@
 
 class CLIParser;
 
-using MatchResultPrinter =
-
 /**
  * \brief Configuration options for ARIdApplications.
  */

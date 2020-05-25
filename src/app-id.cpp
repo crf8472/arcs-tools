@@ -118,7 +118,6 @@ int ARIdApplication::do_run(const Options &options)
 
 	// Adjust format and print information
 
-	using ARIdPrinter = Print<ARId, std::string>;
 	std::unique_ptr<ARIdPrinter> format;
 
 	if (options.is_set(ARIdOptions::PROFILE))

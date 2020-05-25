@@ -31,8 +31,6 @@
 #include "printers.hpp"
 #endif
 
-using ChecksumsResultPrinter = Print<Checksums*, std::vector<std::string>, TOC*, ARId>;
-
 class CLIParser;
 
 /**

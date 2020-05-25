@@ -121,12 +121,15 @@ private:
 };
 
 
+using ARIdPrinter = Print<ARId, std::string>;
+
+
 /**
  * \brief Simple table format for ARId.
  */
 class ARIdTableFormat final : public ARIdLayout
 							, public StringTableStructure
-							, public Print<ARId, std::string>
+							, public ARIdPrinter
 {
 public:
 
@@ -189,11 +192,15 @@ private:
 };
 
 
+using ChecksumsResultPrinter =
+	Print<Checksums*, std::vector<std::string>, TOC*, ARId>;
+
+
 /**
  * \brief Simple table format for album-based Checksums.
  */
 class AlbumChecksumsTableFormat final   : public AlbumTableBase
-										, public Print<Checksums*, std::vector<std::string>, TOC*, ARId>
+										, public ChecksumsResultPrinter
 {
 public:
 
@@ -234,11 +241,16 @@ private:
 };
 
 
+using MatchResultPrinter =
+	Print<Checksums*, std::vector<std::string>, ARResponse, Match*, int, bool,
+		TOC*, ARId>;
+
+
 /**
  * \brief Simple table format for album-based @link Match Matches @endlink.
  */
 class AlbumMatchTableFormat final   : public AlbumTableBase
-									, public Print<Checksums*, std::vector<std::string>, ARResponse, Match*, int, bool, TOC*, ARId>
+									, public MatchResultPrinter
 {
 public:
 
