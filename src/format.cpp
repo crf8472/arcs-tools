@@ -8,6 +8,7 @@
 #include "format.hpp"
 #endif
 
+#include <algorithm>           // for copy_if
 #include <iomanip>             // for operator<<, setw, setfill
 #include <stdexcept>           // for out_of_range
 #include <utility>             // for move
@@ -1102,4 +1103,171 @@ std::ostream& operator << (std::ostream &out, const StringTable &table)
 	}
 
 	return out;
+}
+
+
+// AlbumTableBase
+
+
+AlbumTableBase::AlbumTableBase(const int rows, const int columns)
+	: StringTableStructure(rows, columns)
+	, WithMetadataFlagMethods(true, true, true, true)
+{
+	// empty
+}
+
+
+AlbumTableBase::AlbumTableBase(const int rows, const int columns,
+			const bool show_track, const bool show_offset,
+			const bool show_length, const bool show_filename)
+	: StringTableStructure(rows, columns)
+	, WithMetadataFlagMethods(
+			show_track, show_offset, show_length, show_filename)
+{
+	// empty
+}
+
+
+int AlbumTableBase::total_metadata_columns() const
+{
+	int md_cols = 0;
+
+	if (this->track())    { ++md_cols; }
+	if (this->filename()) { ++md_cols; }
+	if (this->offset())   { ++md_cols; }
+	if (this->length())   { ++md_cols; }
+
+	return md_cols;
+}
+
+
+void AlbumTableBase::assign_type(const int col,
+		const AlbumTableBase::COL_TYPE type)
+{
+	set_type(col, convert_from(type));
+}
+
+
+AlbumTableBase::COL_TYPE AlbumTableBase::type_of(const int col) const
+{
+	return convert_to(type(col));
+}
+
+
+int AlbumTableBase::default_width(const COL_TYPE type) const
+{
+	const int default_w = default_title(type).length();
+	int min_w = 0;
+
+	switch (type)
+	{
+		case COL_TYPE::TRACK    : min_w =  2; break;
+		case COL_TYPE::FILENAME : min_w = 12; break;
+		case COL_TYPE::OFFSET   :
+		case COL_TYPE::LENGTH   : min_w =  7; break;
+		case COL_TYPE::MATCH    :
+		case COL_TYPE::CHECKSUM : min_w =  8; break;
+	}
+
+	return std::max(min_w, default_w);
+}
+
+
+std::string AlbumTableBase::default_title(const COL_TYPE type) const
+{
+	std::string title = "";
+
+	switch (type)
+	{
+		case COL_TYPE::TRACK    : title = "Track";    break;
+		case COL_TYPE::FILENAME : title = "Filename"; break;
+		case COL_TYPE::OFFSET   : title = "Offset";   break;
+		case COL_TYPE::LENGTH   : title = "Length";   break;
+		case COL_TYPE::MATCH    : title = "Theirs";   break;
+		case COL_TYPE::CHECKSUM : title = "Mine";     break;
+	}
+
+	return title;
+}
+
+
+void AlbumTableBase::set_widths(const COL_TYPE type, const int width)
+{
+	for (std::size_t col = 0; col < columns(); ++col)
+	{
+		if (type_of(col) == type) { set_width(col, width); }
+	}
+}
+
+
+int AlbumTableBase::columns_apply_settings()
+{
+	std::size_t md_cols = 0;
+
+	if (track())    { assign_type(md_cols, COL_TYPE::TRACK);    ++md_cols; }
+	if (filename()) { assign_type(md_cols, COL_TYPE::FILENAME); ++md_cols; }
+	if (offset())   { assign_type(md_cols, COL_TYPE::OFFSET);   ++md_cols; }
+	if (length())   { assign_type(md_cols, COL_TYPE::LENGTH);   ++md_cols; }
+
+	COL_TYPE type = COL_TYPE::TRACK;
+	for (std::size_t c = 0; c < md_cols; ++c)
+	{
+		type = type_of(c);
+
+		set_title(c, default_title(type));
+		set_width(c, default_width(type));
+	}
+
+	return md_cols;
+}
+
+
+int AlbumTableBase::convert_from(const AlbumTableBase::COL_TYPE type) const
+{
+	return to_underlying(type);
+}
+
+
+AlbumTableBase::COL_TYPE AlbumTableBase::convert_to(const int type) const
+{
+	return static_cast<COL_TYPE>(type);
+}
+
+
+std::vector<arcstk::checksum::type> AlbumTableBase::typelist(
+		const Checksums &checksums) const
+{
+
+	// Assume identical type sets in each track
+	const auto& used_types = checksums[0].types();
+	const auto absent { used_types.end() };
+
+	// Construct a list of all used types in the order they
+	// appear in arcstk::checksum::types
+
+	const auto& defined_types = arcstk::checksum::types;
+
+	std::vector<arcstk::checksum::type> types_to_print{};
+	types_to_print.reserve(defined_types.size());
+
+	std::copy_if(defined_types.begin(), defined_types.end(),
+			std::back_inserter(types_to_print),
+			[used_types, absent](const arcstk::checksum::type& t)
+			{
+				return used_types.find(t) != absent;
+			});
+
+	return types_to_print;
+}
+
+
+void AlbumTableBase::print_column_titles(std::ostream &out) const
+{
+	for (std::size_t col = 0; col < columns(); ++col)
+	{
+		out << std::setw(width(col)) << std::left << title(col)
+			<< column_delimiter();
+	}
+
+	out << std::endl;
 }

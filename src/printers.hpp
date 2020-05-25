@@ -17,14 +17,14 @@
 #include <string>                 // for string
 #include <vector>                 // for vector
 
-#ifndef __LIBARCSTK_PARSE_HPP__
-#include <arcstk/parse.hpp>
-#endif
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>
 #endif
 #ifndef __LIBARCSTK_MATCH_HPP__
 #include <arcstk/match.hpp>
+#endif
+#ifndef __LIBARCSTK_PARSE_HPP__
+#include <arcstk/parse.hpp>
 #endif
 
 #ifndef __ARCSTOOLS_FORMAT_HPP__
@@ -39,138 +39,6 @@ using arcstk::ARResponse;
 using arcstk::Checksums;
 using arcstk::Match;
 using arcstk::TOC;
-
-
-/**
- * \brief A table based format for album data
- */
-class AlbumTableBase	: public WithMetadataFlagMethods
-						, virtual public WithARId
-						, virtual public StringTableStructure
-{
-public:
-
-	/**
-	 * \brief Column type
-	 */
-	enum class COL_TYPE : int
-	{
-		TRACK    = 1,
-		FILENAME = 2,
-		OFFSET   = 3,
-		LENGTH   = 4,
-		CHECKSUM = 5,
-		MATCH    = 6
-	};
-
-	/**
-	 * \brief Constructor.
-	 *
-	 * \param[in] rows    Number of rows
-	 * \param[in] columns Number of columns
-	 */
-	AlbumTableBase(const int rows, const int columns);
-
-	/**
-	 * \brief Constructor.
-	 *
-	 * \param[in] rows     Number of rows
-	 * \param[in] columns  Number of columns
-	 * \param[in] track    Set to TRUE for printing track number (if any)
-	 * \param[in] offset   Set to TRUE for printing offset (if any)
-	 * \param[in] length   Set to TRUE for printing length (if any)
-	 * \param[in] filename Set to TRUE for printing filename (if any)
-	 */
-	AlbumTableBase(const int rows, const int columns,
-			const bool track, const bool offset, const bool length,
-			const bool filename);
-
-	/**
-	 * \brief Return number of declared metadata columns.
-	 *
-	 * \return Number of declared metadata columns.
-	 */
-	int total_metadata_columns() const;
-
-	/**
-	 * \brief Set column type for specified column
-	 */
-	void assign_type(const int col, const COL_TYPE type);
-
-	/**
-	 * \brief Return type of specified column
-	 *
-	 * \param[in] col
-	 *
-	 * \return Type of specified column
-	 */
-	COL_TYPE type_of(const int col) const;
-
-	/**
-	 * \brief Return current default width for columns of the given type
-	 */
-	int default_width(const COL_TYPE type) const;
-
-	/**
-	 * \brief Return current default title for columns of the given type
-	 */
-	std::string default_title(const COL_TYPE type) const;
-
-	/**
-	 * \brief Set widths of all columns with given type
-	 */
-	void set_widths(const COL_TYPE type, const int width);
-
-protected:
-
-	/**
-	 * \brief Apply types and standard settings to columns
-	 */
-	int columns_apply_settings();
-
-	/**
-	 * \brief Create ordered list of types to print columns for
-	 */
-	std::vector<arcstk::checksum::type> typelist(const Checksums &checksums)
-		const;
-
-	/**
-	 * \brief Print column titles
-	 */
-	void print_column_titles(std::ostream &out) const;
-
-	/**
-	 * \brief Convert from COL_TYPE to int
-	 */
-	int convert_from(const COL_TYPE type) const;
-
-	/**
-	 * \brief Convert to COL_TYPE from int
-	 */
-	COL_TYPE convert_to(const int type) const;
-
-	/**
-	 * \brief Returns the track lengths of \c checksums in track order
-	 *
-	 * \param[in] checksums Checksums to get the track lengths from
-	 *
-	 * \return The track lengths of \c checksums
-	 */
-	std::vector<int32_t> get_lengths(const Checksums &checksums) const;
-
-private:
-
-	/**
-	 * \brief Called by columns_apply_settings after the metadata columns are
-	 * initialized
-	 *
-	 * It is expected that this function initializes the columns that are
-	 * typed CHECKSUM and MATCH.
-	 */
-	virtual int columns_apply_cs_settings(
-			const std::vector<arcstk::checksum::type> &types)
-	= 0;
-};
 
 
 /**
