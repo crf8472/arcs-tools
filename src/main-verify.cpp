@@ -22,7 +22,7 @@
  */
 int main(int argc, char** argv)
 {
-	ARVerifyApplication application;
+	arcsapp::ARVerifyApplication application;
 
 	try
 	{

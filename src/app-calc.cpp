@@ -49,6 +49,9 @@
 #include "tools_fs.hpp"             // for path
 #endif
 
+namespace arcsapp
+{
+
 class Options;
 
 using arcstk::ARId;
@@ -273,7 +276,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 		const auto audiofilenames = options.get_arguments();
 		auto metafilepath         = options.get(ARCalcOptions::METAFILEPATH);
 
-		ARCSMultifileAlbumCalculator c;
+		calc::ARCSMultifileAlbumCalculator c;
 
 		// TODO Resolve the audiofilenames HERE instead to do this within
 		// the calculator class. Because the existence and validity
@@ -402,3 +405,6 @@ int ARCalcApplication::do_run(const Options &options)
 
 	return this->run_calculation(options);
 }
+
+} // namespace arcsapp
+

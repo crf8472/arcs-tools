@@ -32,6 +32,8 @@
 #include "printers.hpp"
 #endif
 
+namespace arcsapp
+{
 
 using arcstk::ARId;
 
@@ -143,3 +145,6 @@ int ARIdApplication::do_run(const Options &options)
 
 	return EXIT_SUCCESS;
 }
+
+} // namespace arcsapp
+

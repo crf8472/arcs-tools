@@ -32,6 +32,9 @@
 #include "version.hpp"         // for ARCSTOOLS_VERSION_INFO
 #endif
 
+namespace arcsapp
+{
+
 class Options;
 
 using arcsdec::FileFormat;
@@ -231,3 +234,6 @@ void ARApplication::fatal_error(const std::string &message) const
 {
 	throw std::runtime_error(message);
 }
+
+} //namespace arcsapp
+

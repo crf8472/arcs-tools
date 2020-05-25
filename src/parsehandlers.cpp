@@ -17,6 +17,8 @@
 #include "printers.hpp"
 #endif
 
+namespace arcsapp
+{
 
 using arcstk::ARId;
 using arcstk::ARTriplet;
@@ -146,3 +148,6 @@ void ARParserContentPrintHandler::do_end_input()
 		std::dec << block_counter_ << std::endl;
 	out_stream_.flags(prev_settings);
 }
+
+} // namespace arcsapp
+

@@ -31,6 +31,8 @@
 #include "format.hpp"
 #endif
 
+namespace arcsapp
+{
 
 using arcstk::ARId;
 using arcstk::ARTriplet;
@@ -288,4 +290,7 @@ private:
 	HexLayout hexlayout_;
 };
 
+} // namespace arcsapp
+
 #endif
+

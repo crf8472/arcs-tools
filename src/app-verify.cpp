@@ -47,6 +47,8 @@
 #include "tools_fs.hpp"             // for file_exists
 #endif
 
+namespace arcsapp
+{
 
 using arcstk::ARStreamParser;
 using arcstk::ARFileParser;
@@ -230,7 +232,8 @@ int ARVerifyApplication::do_run(const Options &options)
 
 		// Verify pairwise distinct audio files
 
-		const auto& [ single_audio_file, pw_distinct ] = audiofile_layout(*toc);
+		const auto& [ single_audio_file, pw_distinct ] =
+			calc::audiofile_layout(*toc);
 
 		if (not single_audio_file and not pw_distinct)
 		{
@@ -281,3 +284,6 @@ int ARVerifyApplication::do_run(const Options &options)
 
 	return EXIT_SUCCESS;
 }
+
+} // namespace arcsapp
+

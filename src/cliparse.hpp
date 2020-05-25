@@ -17,6 +17,9 @@
 #include <vector>
 #include <deque>
 
+namespace arcsapp
+{
+
 /**
  * \brief Parses command line input as boolean options, valued options and
  * arguments.
@@ -119,4 +122,7 @@ private:
 	std::deque<std::string> tokens_;
 };
 
+} // namespace arcsapp
+
 #endif
+

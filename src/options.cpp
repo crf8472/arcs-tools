@@ -11,6 +11,8 @@
 #include <utility>  // for pair, make_pair
 #include <vector>   // for vector
 
+namespace arcsapp
+{
 
 // Option
 
@@ -222,3 +224,6 @@ uint16_t Options::rightmost_flag() const
 {
 	return config_ & (~config_ + 1);
 }
+
+} // namespace arcsapp
+

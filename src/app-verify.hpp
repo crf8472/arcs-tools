@@ -30,6 +30,9 @@
 #include "printers.hpp"     // for ARResponse, Checksums, Match
 #endif
 
+namespace arcsapp
+{
+
 class CLIParser;
 class Configurator;
 class Options;
@@ -113,6 +116,8 @@ class ARVerifyApplication final : public ARApplication
 		const Match &match, const uint32_t block,
 		const bool version = true) const;
 };
+
+} // namespace arcsapp
 
 #endif
 

@@ -29,6 +29,10 @@
 #include <arcsdec/calculators.hpp>
 #endif
 
+namespace arcsapp
+{
+namespace calc
+{
 
 using arcstk::make_empty_arid;
 
@@ -257,6 +261,6 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 	return impl_->calculate(metafilename, searchpath);
 }
 
-
-// calculate
+} // namespace calc
+} // namespace arcsapp
 

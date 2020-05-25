@@ -22,7 +22,7 @@
  */
 int main(int argc, char** argv)
 {
-	ARParseApplication application;
+	arcsapp::ARParseApplication application;
 
 	try
 	{

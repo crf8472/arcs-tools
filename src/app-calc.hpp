@@ -31,6 +31,9 @@
 #include "printers.hpp"
 #endif
 
+namespace arcsapp
+{
+
 class CLIParser;
 
 /**
@@ -174,4 +177,7 @@ private:
 	int run_calculation(const Options &options);
 };
 
+} // namespace arcsapp
+
 #endif
+

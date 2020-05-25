@@ -6,6 +6,9 @@
 
 #include <string>
 
+namespace arcsapp
+{
+
 /**
  * Major version number.
  */
@@ -40,6 +43,8 @@ constexpr auto ARCSTOOLS_VERSION_INFO = "@PROJECT_VERSION_STRING@";
  * Textual version info as std::string.
  */
 const std::string ARCSTOOLS_VERSION_INFO_STRING ( ARCSTOOLS_VERSION_INFO );
+
+} // namespace arcsapp
 
 #endif
 

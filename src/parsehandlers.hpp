@@ -18,6 +18,9 @@
 #include <arcstk/parse.hpp>
 #endif
 
+namespace arcsapp
+{
+
 class ARIdLayout;
 class ARTripletFormat;
 
@@ -160,4 +163,7 @@ private:
 	std::ostream out_stream_;
 };
 
+} // namespace arcsapp
+
 #endif
+

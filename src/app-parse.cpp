@@ -36,6 +36,9 @@
 #include "tools_fs.hpp"
 #endif
 
+namespace arcsapp
+{
+
 class Options;
 
 using arcstk::ARFileParser;
@@ -119,3 +122,6 @@ int ARParseApplication::do_run(const Options &options)
 
 	return EXIT_SUCCESS;
 }
+
+} // namespace arcsapp
+

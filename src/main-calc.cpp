@@ -21,7 +21,7 @@
  */
 int main(int argc, char** argv)
 {
-	ARCalcApplication application;
+	arcsapp::ARCalcApplication application;
 
 	try
 	{

@@ -29,6 +29,9 @@
 #include "options.hpp"
 #endif
 
+namespace arcsapp
+{
+
 class Configurator;
 
 using arcsdec::FileReaderDescriptor;
@@ -211,4 +214,7 @@ private:
 	= 0;
 };
 
+} // namespace arcsapp
+
 #endif
+

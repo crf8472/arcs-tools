@@ -26,6 +26,8 @@
 #include <arcstk/identifier.hpp>
 #endif
 
+namespace arcsapp
+{
 
 using arcstk::ARId;
 using arcstk::Checksums;
@@ -1151,4 +1153,7 @@ private:
 	= 0;
 };
 
+} // namespace arcsapp
+
 #endif
+

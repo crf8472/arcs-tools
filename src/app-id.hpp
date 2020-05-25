@@ -23,6 +23,9 @@
 #include "options.hpp"      // for Options, __ARCSTOOLS_OPTIONS_HPP__
 #endif
 
+namespace arcsapp
+{
+
 class CLIParser;
 
 /**
@@ -102,4 +105,7 @@ class ARIdApplication final : public ARApplication
 	int do_run(const Options &options) override;
 };
 
+} // namespace arcsapp
+
 #endif
+

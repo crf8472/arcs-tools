@@ -20,10 +20,9 @@
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
 #include "options.hpp"         // for Options, __ARCSTOOLS_OPTIONS_HPP__
 #endif
-//#ifndef __ARCSTOOLS_TOOLS_FS_HPP__
-//#include "tools_fs.hpp"        // for file_exists
-//#endif
 
+namespace arcsapp
+{
 
 using arcstk::Appender;
 
@@ -454,3 +453,6 @@ std::unique_ptr<Options> Configurator::do_configure_options(
 
 	return options;
 }
+
+} // namespace arcsapp
+

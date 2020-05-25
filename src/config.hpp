@@ -30,6 +30,8 @@
 #include "options.hpp"            // for Options, __ARCSTOOLS_OPTIONS_HPP__
 #endif
 
+namespace arcsapp
+{
 
 class Option;
 class Options;
@@ -325,6 +327,8 @@ private:
 	 */
 	const static std::size_t FIRST_UNPROCESSED_OPTION;
 };
+
+} // namespace arcsapp
 
 #endif
 

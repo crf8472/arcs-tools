@@ -18,6 +18,8 @@
 #include "format.hpp"
 #endif
 
+namespace arcsapp
+{
 
 using arcstk::ARId;
 using arcstk::Checksum;
@@ -475,3 +477,6 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 		m_columns = 0;
 	}
 }
+
+} // namespace arcsapp
+

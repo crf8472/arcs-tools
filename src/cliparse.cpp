@@ -11,6 +11,8 @@
 #include <arcstk/logging.hpp>
 #endif
 
+namespace arcsapp
+{
 
 // CLIParser
 
@@ -128,3 +130,6 @@ const std::string& CLIParser::empty_value() noexcept
 	static const auto empty_string = std::string{};
 	return empty_string;
 }
+
+} // namespace arcsapp
+

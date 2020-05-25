@@ -21,7 +21,7 @@
  */
 int main(int argc, char** argv)
 {
-	ARIdApplication application;
+	arcsapp::ARIdApplication application;
 
 	try
 	{

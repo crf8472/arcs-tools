@@ -20,6 +20,10 @@
 #include <arcstk/calculate.hpp>
 #endif
 
+namespace arcsapp
+{
+namespace calc
+{
 
 using arcstk::ARId;
 using arcstk::TOC;
@@ -58,7 +62,6 @@ std::pair<bool,bool> audiofile_layout(const TOC &toc);
  */
 class ARCSMultifileAlbumCalculator final
 {
-
 public:
 
 	/**
@@ -103,7 +106,6 @@ public:
 			const std::string &metafilename, const std::string &searchpath)
 			const;
 
-
 private:
 
 	// Forward declaration for private implementation.
@@ -114,6 +116,9 @@ private:
 	 */
 	std::unique_ptr<Impl> impl_;
 };
+
+} // namespace calc
+} // namespace arcsapp
 
 #endif
 

@@ -25,8 +25,11 @@
 #endif
 
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
-#include "application.hpp"  // for ARApplication
+#include "application.hpp"     // for ARApplication
 #endif
+
+namespace arcsapp
+{
 
 class CLIParser;
 class Configurator;
@@ -47,4 +50,7 @@ class ARParseApplication final : public ARApplication
 	int do_run(const Options &options) override;
 };
 
+} // namespace arcsapp
+
 #endif
+

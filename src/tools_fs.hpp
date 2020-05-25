@@ -10,7 +10,8 @@
 #include <string>
 #include <vector>
 
-
+namespace arcsapp
+{
 namespace file
 {
 
@@ -52,6 +53,7 @@ std::string derive_filename(const std::string &filename,
 		const std::vector<std::string> &suffices);
 
 } // namespace file
+} // namespace arcsapp
 
 #endif
 

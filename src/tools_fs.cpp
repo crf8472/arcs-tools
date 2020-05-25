@@ -11,7 +11,8 @@ extern "C" {
 #include <arcstk/logging.hpp>  // for ARCS_LOG_DEBUG
 #endif
 
-
+namespace arcsapp
+{
 namespace file
 {
 
@@ -86,5 +87,6 @@ std::string derive_filename(const std::string &filename,
 	return std::string();
 }
 
-} //namespace file
+} // namespace file
+} // namespace arcsapp
 

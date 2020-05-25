@@ -16,6 +16,8 @@
 #include <string>    // for string
 #include <vector>    // for vector
 
+namespace arcsapp
+{
 
 /**
  *  \brief Descriptor for a single command line option.
@@ -256,6 +258,8 @@ private:
 	std::vector<std::string> arguments_;
 
 };
+
+} // namespace arcsapp
 
 #endif
 

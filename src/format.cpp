@@ -14,6 +14,8 @@
 #include <utility>             // for move
 #include <vector>              // for vector, vector<>::reference, _Bit_refe...
 
+namespace arcsapp
+{
 
 // WithInternalFlags
 
@@ -1271,3 +1273,6 @@ void AlbumTableBase::print_column_titles(std::ostream &out) const
 
 	out << std::endl;
 }
+
+} // namespace arcsapp
+
