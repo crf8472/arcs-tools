@@ -24,7 +24,7 @@
 #include "config.hpp"          // for Configurator, CallSyntaxException
 #endif
 #ifndef __ARCSTOOLS_FORMAT_HPP__
-#include "format.hpp"
+#include "format.hpp"          // for StringTable
 #endif
 #ifndef __ARCSTOOLS_VERSION_HPP__
 #include "version.hpp"         // for ARCSTOOLS_VERSION_INFO
@@ -119,14 +119,17 @@ int ARApplication::run(int argc, char** argv)
 void ARApplication::print_usage() const
 {
 	std::cout << "Usage:" << std::endl;
+
+	// Print call syntax
+
 	std::cout << this->do_name() << " " << this->do_call_syntax() << std::endl;
 	std::cout << std::endl;
 
-	std::cout << "Options:" << std::endl;
-
-	auto options { this->create_configurator(0, nullptr)->supported() };
-
 	// Print the options
+
+	std::cout << "OPTIONS:" << std::endl;
+
+	const auto& options { Configurator::supported() };
 
 	StringTable table { static_cast<int>(options.size()), 3 };
 
@@ -145,10 +148,12 @@ void ARApplication::print_usage() const
 	int row = 0;
 	for (const auto& option : options)
 	{
+		// Add row
 		table.update_cell(row, 0, option.tokens_str());
 		table.update_cell(row, 1, option.default_arg());
 		table.update_cell(row, 2, option.description());
 
+		// Adjust col width to optimal width after each row
 		for (std::size_t col = 0; col < table.columns(); ++col)
 		{
 			if (static_cast<std::size_t>(table.width(col))

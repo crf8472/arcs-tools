@@ -32,35 +32,6 @@ using arcsdec::FileReaderDescriptor;
 
 
 /**
- * \brief Output an object that overloads operator << for std::ostream
- *
- * If a filename is specified, the output is directed to the file with the
- * specified name. The default value for filename is "" which means that
- * the output goes to std::cout.
- *
- * \param[in] object   The object to print
- * \param[in] filename Optional filename, default is ""
- *
- * \return void iff object overloads operator << for std::ostream
- */
-template <typename T>
-inline auto output(T &object, const std::string &filename = "")
-	-> decltype( std::cout << object, void() )
-{
-	if (filename.empty()) // THIS defines the default behaviour!
-	{
-		std::cout << object;
-	} else
-	{
-		std::ofstream out_file_stream;
-		out_file_stream.open(filename);
-
-		out_file_stream << object;
-	}
-}
-
-
-/**
  * \brief Collect descriptor infos
  */
 class FormatCollector
@@ -90,17 +61,17 @@ private:
 
 
 /**
- * \brief Abstract base class for AR tools command line applications.
+ * \brief Abstract base class for command line applications.
  *
- * Implements parsing of the command line input, configuration of logging and
- * creation of Options.
+ * Defines an interface to create a delegate that creates the configuration
+ * object and run the application.
  *
- * Defines an interface to create a configurator, run the application or
- * print a usage message.
+ * Implements parsing of the command line input to a configuration object,
+ * configuration of logging and the core \c run() function. Provides workers
+ * for fatal_error() and output() as well as printing the usage info.
  */
 class ARApplication
 {
-
 public:
 
 	/**
@@ -131,7 +102,7 @@ public:
 	int run(int argc, char** argv);
 
 	/**
-	 * \brief Print usage information.
+	 * \brief Print usage information to std::cout.
 	 */
 	void print_usage() const;
 
@@ -155,6 +126,42 @@ protected:
 	 * \param[in] message The error message
 	 */
 	void fatal_error(const std::string &message) const;
+
+	/**
+	* \brief Worker: output a result object
+	*
+	* The object musst overload operator << for std::ostream or a compile error
+	* will occurr.
+	*
+	* If a filename is specified, the output is directed to the file with the
+	* specified name. The default value for \c filename is an empty string which
+	* means that the output goes to std::cout.
+	*
+	* If an existing file is specified, the file be reopened and appended to.
+	*
+	* This function is intended to be used in \c do_run() implementations for
+	* results. It is not suited to output errors.
+	*
+	* \param[in] object   The object to output
+	* \param[in] filename Optional filename, default is ""
+	*
+	* \return Type void iff object overloads operator << for std::ostream
+	*/
+	template <typename T>
+	auto output(T &object, const std::string &filename = std::string{})
+		-> decltype( std::cout << object, void() )
+	{
+		if (filename.empty()) // THIS defines the default behaviour!
+		{
+			std::cout << object;
+		} else
+		{
+			std::ofstream out_file_stream;
+			out_file_stream.open(filename);
+
+			out_file_stream << object;
+		}
+	}
 
 private:
 
