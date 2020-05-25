@@ -22,17 +22,10 @@
  */
 int main(int argc, char** argv)
 {
-	arcsapp::ARParseApplication application;
+	using arcsapp::Application;
+	using Parse = arcsapp::ARParseApplication;
 
-	try
-	{
-		return application.run(argc, argv);
-
-	} catch (const std::exception &e)
-	{
-		std::cerr << "ERROR: " << e.what() << std::endl;
-
-		return EXIT_FAILURE;
-	}
+	Application<Parse> application;
+	return application.run(argc, argv);
 }
 

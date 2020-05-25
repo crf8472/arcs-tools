@@ -11,12 +11,12 @@
  */
 
 #include <array>                    // for array
-#include <iostream>                 // for cout
+#include <cstdlib>                  // for EXIT_FAILURE
+#include <iostream>                 // for cout, basic_ostream, endl, cerr
 #include <fstream>                  // for ofstream
 #include <memory>                   // for unique_ptr, allocator
 #include <string>                   // for string
 #include <vector>                   // for vector
-#include "options.hpp"              // for __ARCSTOOLS_OPTIONS_HPP__
 
 #ifndef __LIBARCSDEC_DESCRIPTORS_HPP__
 #include <arcsdec/descriptors.hpp>  // for FileReaderDescriptor
@@ -212,6 +212,31 @@ private:
 	 */
 	virtual int do_run(const Options &options)
 	= 0;
+};
+
+/**
+ * \brief Provides the stereotypical content of main()
+ */
+template <class APPLICATIONTYPE>
+class Application
+{
+public:
+
+	int run(int argc, char** argv)
+	{
+		APPLICATIONTYPE application;
+
+		try
+		{
+			return application.run(argc, argv);
+
+		} catch (const std::exception &e)
+		{
+			std::cerr << "ERROR: " << e.what() << std::endl;
+
+			return EXIT_FAILURE;
+		}
+	}
 };
 
 } // namespace arcsapp

@@ -21,17 +21,10 @@
  */
 int main(int argc, char** argv)
 {
-	arcsapp::ARCalcApplication application;
+	using arcsapp::Application;
+	using Calculate = arcsapp::ARCalcApplication;
 
-	try
-	{
-		return application.run(argc, argv);
-
-	} catch (const std::exception &e)
-	{
-		std::cerr << "ERROR: " << e.what() << std::endl;
-
-		return EXIT_FAILURE;
-	}
+	Application<Calculate> application;
+	return application.run(argc, argv);
 }
 

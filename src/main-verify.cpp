@@ -22,17 +22,10 @@
  */
 int main(int argc, char** argv)
 {
-	arcsapp::ARVerifyApplication application;
+	using arcsapp::Application;
+	using Verify = arcsapp::ARVerifyApplication ;
 
-	try
-	{
-		return application.run(argc, argv);
-
-	} catch (const std::exception &e)
-	{
-		std::cerr << "ERROR: " << e.what() << std::endl;
-
-		return EXIT_FAILURE;
-	}
+	Application<Verify> application;
+	return application.run(argc, argv);
 }
 

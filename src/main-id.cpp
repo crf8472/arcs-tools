@@ -21,17 +21,10 @@
  */
 int main(int argc, char** argv)
 {
-	arcsapp::ARIdApplication application;
+	using arcsapp::Application;
+	using Id = arcsapp::ARIdApplication;
 
-	try
-	{
-		return application.run(argc, argv);
-
-	} catch (const std::exception &e)
-	{
-		std::cerr << "ERROR: " << e.what() << std::endl;
-
-		return EXIT_FAILURE;
-	}
+	Application<Id> application;
+	return application.run(argc, argv);
 }
 
