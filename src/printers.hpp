@@ -408,35 +408,4 @@ private:
 	HexLayout hexlayout_;
 };
 
-
-/**
- * \brief Print supported formats.
- */
-class FormatList : public StringTable
-{
-public:
-
-	/**
-	 * \brief Constructor
-	 */
-	FormatList(std::size_t rows);
-
-	/**
-	 * \brief Format the metadata/audio format info.
-	 *
-	 * \param[in] fmt_name Name of the format
-	 * \param[in] lib_name Name of the lib
-	 * \param[in] desc     Short description
-	 * \param[in] version  Version
-	 */
-	void append_line(const std::string &fmt_name, const std::string &lib_name,
-			const std::string &desc, const std::string &version);
-
-private:
-
-	void init(const int rows, const int cols) override;
-
-	int curr_row_;
-};
-
 #endif

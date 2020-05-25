@@ -339,13 +339,7 @@ int ARCalcApplication::run_info(const Options &options)
 		c.selection().traverse_descriptors(apply_func);
 	}
 
-	FormatList list(collector.info().size());
-	for (const auto& entry : collector.info())
-	{
-		list.append_line(entry[0], entry[1], entry[2], entry[3]);
-	}
-
-	output(list, options.output());
+	output(collector.info(), options.output());
 
 	return EXIT_SUCCESS;
 }

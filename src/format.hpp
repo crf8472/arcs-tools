@@ -819,6 +819,25 @@ public:
 	 */
 	virtual ~StringTableStructure() noexcept;
 
+protected:
+
+	/**
+	 * \brief Derived classes may call the copy constructor
+	 *
+	 * \param[in] rhs The structure to copy
+	 */
+	StringTableStructure(const StringTableStructure &rhs);
+
+	void resize_layout(const int rows, const int cols) const;
+
+	bool legal_row(const int row) const;
+
+	bool legal_col(const int col) const;
+
+	void bounds_check_row(const int row) const;
+
+	void bounds_check_col(const int col) const;
+
 private:
 
 	/**
@@ -893,6 +912,8 @@ public:
 	 */
 	StringTable() : StringTable(0, 0) { /* empty */ }
 
+	StringTable(const StringTable &rhs);
+
 	/**
 	 * \brief Non-virtual default destructor
 	 */
@@ -940,6 +961,16 @@ public:
 	 */
 	std::string operator() (const int row, const int col) const;
 
+	/**
+	 * \brief Row index of the first row that is not filled
+	 */
+	int current_row() const;
+
+	/**
+	 * \brief Return maximum number of rows
+	 */
+	int max_rows() const;
+
 private:
 
 	void init(const int rows, const int cols) override;
@@ -967,6 +998,13 @@ private:
 	 * \return Content of cell(row, col)
 	 */
 	virtual std::string do_cell(const int row, const int col) const;
+
+	void do_resize(const int rows, const int cols) override;
+
+	/**
+	 * \brief If TRUE, update_cell with a row > rows() will resize the table
+	 */
+	bool allow_grow_rows_ = true; // FIXME do this with a flag
 
 	// forward declaration
 	class Impl;

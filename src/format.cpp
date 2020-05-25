@@ -463,6 +463,10 @@ public:
 
 	Impl(const int rows, const int columns);
 
+	Impl(const Impl &rhs);
+
+	Impl(Impl &&rhs) noexcept;
+
 	~Impl() noexcept;
 
 	int rows() const;
@@ -493,13 +497,19 @@ public:
 	 */
 	void bounds_check(const int row, const int col) const;
 
-private:
+	void bounds_check_row(const int row) const;
+
+	void bounds_check_col(const int col) const;
 
 	bool legal_row(const int row) const;
 
 	bool legal_col(const int col) const;
 
 	bool legal_width(const int width) const;
+
+	void swap(Impl rhs);
+
+private:
 
 	/**
 	 * \brief The column widths.
@@ -549,6 +559,12 @@ StringTableStructure::Impl::Impl(const int rows, const int cols)
 {
 	// empty
 }
+
+
+StringTableStructure::Impl::Impl(const Impl &rhs) = default;
+
+
+StringTableStructure::Impl::Impl(Impl &&rhs) noexcept = default;
 
 
 StringTableStructure::Impl::~Impl() noexcept = default;
@@ -639,19 +655,45 @@ void StringTableStructure::Impl::resize(const int rows, const int cols)
 }
 
 
-void StringTableStructure::Impl::bounds_check(const int row, const int col) const
+void StringTableStructure::Impl::bounds_check(const int row, const int col)
+	const
+{
+	this->bounds_check_col(col);
+	this->bounds_check_row(row);
+}
+
+
+void StringTableStructure::Impl::bounds_check_row(const int row) const
 {
 	if (not legal_row(row))
 	{
 		throw std::out_of_range("Row index " + std::to_string(row) +
 				" illegal");
 	}
+}
 
+
+void StringTableStructure::Impl::bounds_check_col(const int col) const
+{
 	if (not legal_col(col))
 	{
 		throw std::out_of_range("Column index " + std::to_string(col) +
 				"illegal");
 	}
+}
+
+
+void StringTableStructure::Impl::swap(StringTableStructure::Impl rhs)
+{
+	using std::swap;
+
+	swap(widths_, rhs.widths_);
+	swap(alignments_, rhs.alignments_);
+	swap(titles_, rhs.titles_);
+	swap(types_, rhs.types_);
+	swap(rows_, rhs.rows_);
+	swap(cols_, rhs.cols_);
+	swap(column_delim_, rhs.column_delim_);
 }
 
 
@@ -683,8 +725,45 @@ StringTableStructure::StringTableStructure(const int rows, const int cols)
 }
 
 
+StringTableStructure::StringTableStructure(const StringTableStructure &rhs)
+	: impl_ { std::make_unique<Impl>(*rhs.impl_) }
+{
+	// empty
+}
+
+
 StringTableStructure::~StringTableStructure() noexcept
 = default;
+
+
+void StringTableStructure::resize_layout(const int rows, const int cols) const
+{
+	impl_->resize(rows, cols);
+}
+
+
+bool StringTableStructure::legal_row(const int row) const
+{
+	return impl_->legal_row(row);
+}
+
+
+bool StringTableStructure::legal_col(const int col) const
+{
+	return impl_->legal_col(col);
+}
+
+
+void StringTableStructure::bounds_check_row(const int row) const
+{
+	return impl_->bounds_check_row(row);
+}
+
+
+void StringTableStructure::bounds_check_col(const int col) const
+{
+	return impl_->bounds_check_col(col);
+}
 
 
 std::size_t StringTableStructure::do_rows() const
@@ -701,7 +780,7 @@ std::size_t StringTableStructure::do_columns() const
 
 void StringTableStructure::do_resize(const int rows, const int cols)
 {
-	impl_->resize(rows, cols);
+	resize_layout(rows, cols);
 }
 
 
@@ -780,6 +859,10 @@ public:
 
 	Impl(const int rows, const int columns);
 
+	Impl(const Impl &rhs);
+
+	Impl(Impl &&rhs) noexcept;
+
 	/**
 	 * \brief Resize to new dimensions
 	 */
@@ -789,7 +872,9 @@ public:
 
 	void update_cell(const int row, const int col, const std::string &text);
 
-	StringTableStructure& layout();
+	int current_row() const;
+
+	void swap(Impl rhs);
 
 private:
 
@@ -809,6 +894,11 @@ private:
 	std::vector<std::string> cells_;
 
 	/**
+	 * \brief The first row that is not filled
+	 */
+	int current_row_;
+
+	/**
 	 * \brief Number of columns.
 	 */
 	int cols_; // TODO Redundant value, also in StringTableLayout
@@ -817,10 +907,17 @@ private:
 
 StringTable::Impl::Impl(const int rows, const int cols)
 	: cells_ (rows * cols)
+	, current_row_ (0)
 	, cols_ (cols)
 {
 	// empty
 }
+
+
+StringTable::Impl::	Impl(const Impl &rhs) = default;
+
+
+StringTable::Impl::	Impl(Impl &&rhs) noexcept = default;
 
 
 void StringTable::Impl::resize(const int rows, const int cols)
@@ -840,6 +937,25 @@ void StringTable::Impl::update_cell(const int row, const int col,
 		const std::string &text)
 {
 	cells_[index(row, col)] = text;
+	if (row >= current_row_)
+	{
+		current_row_ = row + 1;
+	}
+}
+
+
+int StringTable::Impl::current_row() const
+{
+	return current_row_;
+}
+
+
+void StringTable::Impl::swap(Impl rhs)
+{
+	using std::swap;
+
+	swap(cells_, rhs.cells_);
+	swap(cols_, rhs.cols_);
 }
 
 
@@ -860,13 +976,39 @@ StringTable::StringTable(const int rows, const int columns)
 }
 
 
+StringTable::StringTable(const StringTable &rhs)
+	: StringTableStructure(rhs)
+	, impl_ { std::make_unique<StringTable::Impl>(*rhs.impl_) }
+{
+	// empty
+}
+
+
 StringTable::~StringTable() noexcept = default;
 
 
 void StringTable::update_cell(const int row, const int col,
 		const std::string &text)
 {
-	this->bounds_check(row, col);
+	bounds_check_col(col);
+
+	if (allow_grow_rows_)
+	{
+		if (not legal_row(row))
+		{
+			if (row > max_rows())
+			{
+				bounds_check_row(row); // just do what normally would happen
+			} else
+			{
+				resize(row + 1, columns());
+			}
+		}
+	} else
+	{
+		bounds_check_row(row);
+	}
+
 	this->do_update_cell(row, col, text);
 }
 
@@ -893,6 +1035,18 @@ std::string StringTable::operator() (const int row, const int col) const
 }
 
 
+int StringTable::current_row() const
+{
+	return impl_->current_row();
+}
+
+
+int StringTable::max_rows() const
+{
+	return 73; // FIXME Creepy, isn't it?
+}
+
+
 void StringTable::init(const int /* row */, const int /* col */)
 {
 	// empty
@@ -911,6 +1065,13 @@ std::string StringTable::do_cell(const int row, const int col) const
 {
 	this->bounds_check(row, col);
 	return impl_->cell(row, col);
+}
+
+
+void StringTable::do_resize(const int rows, const int cols)
+{
+	resize_layout(rows, cols); // resize StrinTableStructure
+	impl_->resize(rows, cols);
 }
 
 

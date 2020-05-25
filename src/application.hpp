@@ -22,6 +22,9 @@
 #include <arcsdec/descriptors.hpp>  // for FileReaderDescriptor
 #endif
 
+#ifndef __ARCSTOOLS_FORMAT_HPP__
+#include "format.hpp"          // for StringTable
+#endif
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
 #include "options.hpp"
 #endif
@@ -38,6 +41,9 @@ class FormatCollector
 {
 public:
 
+	/**
+	 * \brief Constructor
+	 */
 	FormatCollector();
 
 	/**
@@ -52,11 +58,14 @@ public:
 	 *
 	 * \return Information collected
 	 */
-	std::vector<std::array<std::string, 4>> info() const;
+	StringTable info() const;
 
 private:
 
-	std::vector<std::array<std::string, 4>> info_;
+	/**
+	 * \brief The collected information
+	 */
+	StringTable table_;
 };
 
 
@@ -148,7 +157,7 @@ protected:
 	* \return Type void iff object overloads operator << for std::ostream
 	*/
 	template <typename T>
-	auto output(T &object, const std::string &filename = std::string{})
+	auto output(T&& object, const std::string &filename = std::string{})
 		-> decltype( std::cout << object, void() )
 	{
 		if (filename.empty()) // THIS defines the default behaviour!
