@@ -43,13 +43,28 @@ using arcstk::Match;
 using arcstk::TOC;
 
 
+template <typename ...Args>
+class Print;
+
+/**
+ * \brief Overload << to make each concrete Printer be usable with a stream.
+ */
+template <typename... Args>
+std::ostream& operator << (std::ostream &stream, Print<Args...> &p)
+{
+	p.out(stream);
+	return stream;
+}
+
 /**
  * \brief Common base class for printers
  */
-template <typename... Args>
+template <typename ...Args>
 class Print
 {
 public:
+
+	friend std::ostream& operator << <> (std::ostream &s, Print<Args...> &p);
 
 	/**
 	 * \brief Constructor
@@ -93,17 +108,6 @@ private:
 
 
 /**
- * \brief Overload << to make each concrete Printer be usable with a stream.
- */
-template <typename... Args>
-std::ostream& operator << (std::ostream &stream, Print<Args...> &p)
-{
-	p.out(stream);
-	return stream;
-}
-
-
-/**
  * \brief Abstract base class for output formats of ARTriplet.
  */
 class ARTripletFormat final : virtual protected WithInternalFlags
@@ -119,7 +123,7 @@ public:
 private:
 
 	void do_out(std::ostream &out, const std::tuple<int, ARTriplet> &t)
-	override;
+		override;
 };
 
 
