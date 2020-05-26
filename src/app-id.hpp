@@ -87,6 +87,11 @@ public:
 	 * \param[in] argv Command line arguments
 	 */
 	ARIdConfigurator(int argc, char** argv);
+
+private:
+
+	const std::vector<std::pair<Option, uint32_t>>&
+		do_supported_options() const override;
 };
 
 

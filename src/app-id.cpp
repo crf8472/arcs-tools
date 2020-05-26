@@ -52,31 +52,38 @@ ARIdOptions::ARIdOptions() = default;
 ARIdConfigurator::ARIdConfigurator(int argc, char** argv)
 	: Configurator(argc, argv)
 {
-	if (supported().size() == 5) // FIXME Magic number
-	{
-		this->support(
-			{      "cddb_id",  false, "FALSE", "print the CDDB id" },
-			ARIdOptions::CDDBID);
-		this->support(
-			{ 		"db_id",   false, "FALSE", "print the AccurateRip DB ID (filename)" },
-					ARIdOptions::DBID);
-		this->support(
-			{ 		"filename",   false, "FALSE", "print the AccurateRip DB ID (filename)" },
-					ARIdOptions::DBID); // alias for db_id
-		this->support(
-			{ 		"url",   false, "FALSE", "print the AccurateRip URL" },
-					ARIdOptions::URL);
-		this->support(
-			{ 		"profile",    false, "FALSE", "" },
-					ARIdOptions::PROFILE);
-		this->support(
-			{ 		"url_prefix", true, "none", "use the specified prefix"
-				"instead of the default 'http://accuraterip.com/accuraterip/'" },
-					ARIdOptions::PRE);
-		this->support(
-			{ 'a', "audiofile",   true, "none", "specify input audio file" },
-					ARIdOptions::AUDIOFILE);
-	}
+	// empty
+}
+
+const std::vector<std::pair<Option, uint32_t>>&
+	ARIdConfigurator::do_supported_options() const
+{
+	const static std::vector<std::pair<Option, uint32_t>> local_options = {
+			{{      "cddb_id",  false,
+					"FALSE", "print the CDDB id" },
+					ARIdOptions::CDDBID },
+			{{ 		"db_id",   false, "FALSE",
+					"print the AccurateRip DB ID (filename)" },
+					ARIdOptions::DBID },
+			{{ 		"filename",   false, "FALSE",
+					"print the AccurateRip DB ID (filename)" },
+					ARIdOptions::DBID }, // alias for db_id
+			{{ 		"url",   false, "FALSE",
+					"print the AccurateRip URL" },
+					ARIdOptions::URL },
+			{{ 		"profile",    false, "FALSE", "" },
+					ARIdOptions::PROFILE },
+			{{ 		"url_prefix", true, "none",
+					"use the specified prefix"
+						"instead of the default "
+						"'http://accuraterip.com/accuraterip/'" },
+					ARIdOptions::PRE },
+			{{ 'a', "audiofile",   true, "none",
+					"specify input audio file" },
+					ARIdOptions::AUDIOFILE }
+	};
+
+	return local_options;
 }
 
 

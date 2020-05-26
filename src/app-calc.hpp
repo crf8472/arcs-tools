@@ -94,8 +94,7 @@ public:
  * \brief Configurator for ARCSApplications.
  */
 class ARCalcConfigurator : public Configurator
-{
-
+{ // XXX Should be 'final' but ARVerifyConfigurator is a subclass!
 public:
 
 	/**
@@ -113,10 +112,14 @@ public:
 
 private:
 
+	const std::vector<std::pair<Option, uint32_t>>& do_supported_options() const
+		override;
+
 	int do_parse_arguments(CLIParser& cli, Options &options) const override;
 
 	std::unique_ptr<Options> do_configure_options(
 			std::unique_ptr<Options> options) override;
+
 };
 
 
@@ -125,7 +128,6 @@ private:
  */
 class ARCalcApplication final : public ARApplication
 {
-
 public:
 
 	/**

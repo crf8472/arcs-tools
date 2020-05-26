@@ -42,7 +42,7 @@ using arcstk::LOGLEVEL;
 
 
 /**
- * \brief Reports an error on parsing the application call.
+ * \brief Reports a syntax error on parsing the application call.
  */
 class CallSyntaxException : public std::runtime_error
 {
@@ -60,6 +60,8 @@ public:
 
 /**
  * \brief Transform the cli values for logging to options.
+ *
+ * Delegate for the implementation of Configurator::configure_loglevel().
  */
 class LogManager
 {
@@ -113,14 +115,25 @@ private:
 /**
  * \brief Abstract base class for Configurators.
  *
- * A Configurator parses the
- * command line input to an Options instance, thereby checking the input
- * for its syntactic wellformedness and its semantic validity. It applies
- * default values iff necessary.
+ * A Configurator parses the command line input to an Options instance, thereby
+ * checking the input * for its syntactic wellformedness and its semantic
+ * validity. It applies default values iff necessary.
+ *
+ * The following is the responsibility of the Configurator:
+ * - Consume the command line tokens completely
+ * - Decide about syntactic wellformedness or signal an error
+ * - Verfiy that mandatory input is present
+ * - Apply default values
+ * - Manage side effects between options
+ *
+ * The following properties are considered globally equal and are therefore
+ * implemented in the base class: version info, logging, result output.
  *
  * To have logging fully configured at hand while parsing the command line
- * input, the global Logging is configured separately and the logging setup is
- * not part of the Options.
+ * input, the global Logging is configured in the base class to have a common
+ * implementation for all Configurator instances. The logging setup properties
+ * - as there are verbosity level and logging output stream - is therefore
+ * not part of the resulting Options.
  */
 class Configurator
 {
@@ -161,25 +174,24 @@ public:
 	 *
 	 * \return List of supported options.
 	 */
-	static const std::vector<Option>& supported();
+	static const std::vector<Option>& global_options();
+
+	/**
+	 * \brief Return the list of supported options.
+	 *
+	 * \return List of supported options.
+	 */
+	const std::vector<std::pair<Option, uint32_t>>& supported_options() const;
 
 protected:
 
 	/**
-	 * \brief Declare an option as supported.
-	 *
-	 * \param[in] option The option to support
-	 * \param[in] id     ID for the option
-	 */
-	void support(const Option &option, const uint32_t id);
-
-	/**
 	 * \brief Worker: consume an option from the command line if present.
 	 *
-	 * \param[in] cli        The command line input to inspect for options
-	 * \param[in] option     The option to parse
+	 * \param[in] cli    The command line input to inspect for options
+	 * \param[in] option The option to parse
 	 *
-	 * \return TRUE and the value if the option could be consumed
+	 * \return TRUE and the option value if the option was successfully consumed
 	 *
 	 * \throws CallSyntaxException On valued options with empty value
 	 */
@@ -187,35 +199,44 @@ protected:
 		const;
 
 	/**
-	 * \brief Worker: consume a command line argument if present.
+	 * \brief Service: consume a single command line argument if present.
 	 *
 	 * Intended as default implementation of do_parse_arguments() for subclasses
 	 * that wish to support a single argument.
 	 *
+	 * If no argument was present, an empty string will be returned.
+	 *
+	 * This function can be called multiple times and each call will try to
+	 * consume an argument.
+	 *
 	 * \param[in] cli The command line input to inspect for an argument
 	 *
-	 * \return TRUE if an argument could be consumed
+	 * \return Argument string iff an argument could be consumed, otherwise
+	 * empty string
 	 */
 	std::string argument(CLIParser &cli) const;
 
 	/**
-	 * \brief Worker: consume all command line arguments.
+	 * \brief Service: consume all command line arguments.
 	 *
 	 * Intended as default implementation of do_parse_arguments() for subclasses
 	 * that wish to support multiple arguments.
 	 *
 	 * Warning: this consumes every present token as part of an argument list.
-	 * Thereafter, tokens_left() will be FALSE. Use this only as last parsing
-	 * step.
+	 * After this function has been called, tokens_left() will be FALSE. Use
+	 * this only as last parsing operation.
 	 *
 	 * \param[in] cli The command line input to inspect for arguments
 	 *
-	 * \return Number of arguments parsed
+	 * \return List of arguments consumed
 	 */
 	std::vector<std::string> arguments(CLIParser &cli) const;
 
 	/**
-	 * \brief Deduce the loglevel value from command line and activate it.
+	 * \brief Worker: deduce the loglevel value from command line and activate
+	 * it.
+	 *
+	 * This function implements the effect of the VERBOSITY option.
 	 *
 	 * \return The current loglevel
 	 */
@@ -224,10 +245,14 @@ protected:
 	/**
 	 * \brief Configure the log appenders from command line.
 	 *
+	 * This function implements the effect of the LOGFILE option.
+	 *
 	 * If stdout is the only appender, the first element of the tuple will be
 	 * 'stdout' while the second element of the tuple will be an empty string.
+	 * (Giving the default Appender a name would disqualify this name as
+	 * potential name of a concrete logfile.)
 	 *
-	 * \return A tuple of the name of the appender and the filename
+	 * \return A tuple of the name of the appender name and the filename
 	 */
 	std::tuple<std::string, std::string> configure_logappender();
 
@@ -241,24 +266,28 @@ protected:
 	std::unique_ptr<Options> parse_options(CLIParser& cli);
 
 	/**
-	 * \brief Worker: called by parse_input() to parse the arguments
+	 * \brief Worker: called by parse_input() to parse the arguments.
 	 *
-	 * The CLIParser holds the state after parse_options() has been executed,
-	 * so whatever is left is not a supported option.
+	 * The CLIParser passed has the state immediately after parse_options() has
+	 * been finished. Hence, whatever is left unparsed is not a supported
+	 * option.
 	 *
 	 * The arguments parsed by this function can be append()ed to the
 	 * options object passed.
 	 *
 	 * Directly after this method was called, it is checked whether the
-	 * command line has been completely consumed. Iff tokens were left, a
-	 * CallSyntaxException will fly.
+	 * command line has been completely consumed. If tokens were left, after
+	 * parse_arguments() has been finished, a CallSyntaxException will be
+	 * thrown.
 	 *
 	 * Overriding this method can define whether the application supports
-	 * no arguments, a single argument or multiple arguments.
+	 * no arguments, a single argument or multiple arguments. It also defines
+	 * whether those arguments are optional or mandatory.
 	 *
 	 * The default implementation consumes exactly one argument.
 	 *
-	 * \param[in] cli The command line input to inspect for arguments
+	 * \param[in] cli     The command line input to inspect for arguments
+	 * \param[in] options The Options to append the arguments to
 	 *
 	 * \return Number of arguments that have been parsed
 	 *
@@ -276,26 +305,82 @@ protected:
 	 * If <tt>parse_options()</tt> leaves unconsumed tokens from the command
 	 * line input, this will result in a subsequent <tt>std::runtime_error</tt>.
 	 *
+	 * \param[in] cli The command line input
+	 *
 	 * \return Options parsed from the command line input
 	 *
 	 * \throw CallSyntaxException if the call command cannot be parsed
 	 */
 	std::unique_ptr<Options> parse_input(CLIParser& cli);
 
+	/**
+	 * \brief Globally managed options
+	 *
+	 * The order MUST match the order in supported_options_.
+	 */
+	enum class CONFIG : int
+	{
+		VERSION   = 0,
+		VERBOSITY = 1,
+		QUIET     = 2,
+		LOGFILE   = 3,
+		OUTFILE   = 4
+	};
+
+	/**
+	 * \brief Access a supported option by its index.
+	 *
+	 * Equivalent to supported()[index].
+	 *
+	 * \param[in] conf Configuration item to get the option for
+	 *
+	 * \return The Option for \c conf
+	 */
+	static const Option& global(const CONFIG conf);
+
 private:
 
 	/**
-	 * \copydoc parse_arguments(CLIParser&, Options&) const
+	 * \brief List of options supported by any ARApplication.
+	 */
+	static const std::vector<Option> global_options_;
+
+	/**
+	 * \brief Start index for processing in parse_input().
+	 *
+	 * Every index < FIRST_UNPROCESSED_OPTION is a global option that will not
+	 * make it into the Options object and can therefore just be skipped.
+	 */
+	//static const std::size_t FIRST_UNPROCESSED_OPTION;
+
+	virtual const std::vector<std::pair<Option, uint32_t>>&
+		do_supported_options() const
+	= 0;
+
+	/**
+	 * \brief Implements parse_arguments(CLIParser&, Options&) const
+	 *
+	 * Consumes exactly one argument.
+	 *
+	 * \param[in] cli     The command line input to inspect for arguments
+	 * \param[in] options The Options to append the arguments to
+	 *
+	 * \return Number of arguments that have been parsed
+	 *
+	 * \throws CallSyntaxException Iff the arguments are not syntactically ok
 	 */
 	virtual int do_parse_arguments(CLIParser& cli, Options &options) const;
 
 	/**
-	 * \brief Implements configure_options().
+	 * \brief Called by parse_input() after .
 	 *
-	 * The Options hold the options hat have been returned by parse_input().
-	 * This means, they already have been intercepted by parse_arguments().
+	 * The Options contain everything returned by parse_input(). This means,
+	 * they already have been intercepted by parse_options() as
+	 * well as parse_arguments().
 	 *
 	 * The default implementation just returns the input.
+	 *
+	 * \param[in] options The Options to configure
 	 *
 	 * \return The Options instance derived from the command line input
 	 */
@@ -304,6 +389,8 @@ private:
 
 	/**
 	 * \brief The loglevel manager.
+	 *
+	 * Acts as a delegate to assisst the implementation of configure_loglevel().
 	 */
 	LogManager logman_;
 
@@ -311,21 +398,24 @@ private:
 	 * \brief Internal representation of the CLIParser.
 	 */
 	CLIParser cli_;
+};
 
-	/**
-	 * \brief List of options supported by any ARApplication.
-	 */
-	static std::vector<Option> supported_options_;
 
-	/**
-	 * \brief List of ids
-	 */
-	static std::vector<uint32_t> supported_option_ids_;
+/**
+ * \brief Default Configurator to parse a single argument without any options.
+ */
+class DefaultConfigurator : public Configurator
+{
+public:
 
-	/**
-	 * \brief Start index for processing in parse_input().
-	 */
-	const static std::size_t FIRST_UNPROCESSED_OPTION;
+	DefaultConfigurator(int argc, char** argv)
+		: Configurator(argc, argv)
+	{ /* empty */ }
+
+private:
+
+	const std::vector<std::pair<Option, uint32_t>>&
+		do_supported_options() const override;
 };
 
 } // namespace arcsapp

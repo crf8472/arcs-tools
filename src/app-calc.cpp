@@ -83,41 +83,7 @@ constexpr uint16_t ARCalcOptions::METAFILEPATH;
 ARCalcConfigurator::ARCalcConfigurator(int argc, char** argv)
 	: Configurator(argc, argv)
 {
-	if (supported().size() == 5) // FIXME Magic number
-	{
-		this->support(
-			{      "no-v1",    false, "FALSE",
-				"do not provide ARCSv1" },
-				ARCalcOptions::NOV1);
-		this->support(
-			{      "no-v2",    false, "FALSE",
-				"do not provide ARCSv2" },
-				ARCalcOptions::NOV2);
-		this->support(
-			{      "album",    false, "~",
-				"abbreviates --first --last" },
-				ARCalcOptions::ALBUM);
-		this->support(
-			{      "first",    false, "~",
-				"treat first audio file as first track" },
-				ARCalcOptions::FIRST);
-		this->support(
-			{      "last",     false, "~",
-				"treat last audio file as last track" },
-				ARCalcOptions::LAST);
-		this->support(
-			{ 'm', "metafile", true, "none",
-				"specify metadata file (CUE) to use" },
-				ARCalcOptions::METAFILE);
-		this->support(
-			{      "list-toc-formats",  false,   "FALSE",
-				"list all supported file formats for TOC metadata" },
-				ARCalcOptions::LIST_TOC_FORMATS);
-		this->support(
-			{      "list-audio-formats",  false, "FALSE",
-				"list all supported audio codec/container formats" },
-				ARCalcOptions::LIST_AUDIO_FORMATS);
-	}
+	// empty
 }
 
 
@@ -125,20 +91,56 @@ ARCalcConfigurator::~ARCalcConfigurator() noexcept
 = default;
 
 
+const std::vector<std::pair<Option, uint32_t>>&
+	ARCalcConfigurator::do_supported_options() const
+{
+	const static std::vector<std::pair<Option, uint32_t>> local_options = {
+		{{      "no-v1",    false, "FALSE",
+			"do not provide ARCSv1" },
+			ARCalcOptions::NOV1 },
+		{{      "no-v2",    false, "FALSE",
+			"do not provide ARCSv2" },
+			ARCalcOptions::NOV2 },
+		{{      "album",    false, "~",
+			"abbreviates --first --last" },
+			ARCalcOptions::ALBUM },
+		{{      "first",    false, "~",
+			"treat first audio file as first track" },
+			ARCalcOptions::FIRST },
+		{{      "last",     false, "~",
+			"treat last audio file as last track" },
+			ARCalcOptions::LAST },
+		{{ 'm', "metafile", true, "none",
+			"specify metadata file (CUE) to use" },
+			ARCalcOptions::METAFILE },
+		{{      "list-toc-formats",  false,   "FALSE",
+			"list all supported file formats for TOC metadata" },
+			ARCalcOptions::LIST_TOC_FORMATS },
+		{{      "list-audio-formats",  false, "FALSE",
+			"list all supported audio codec/container formats" },
+			ARCalcOptions::LIST_AUDIO_FORMATS }
+	};
+
+	return local_options;
+}
+
+
 int ARCalcConfigurator::do_parse_arguments(CLIParser& cli, Options &options)
 		const
 {
 	// Respect multiple arguments
 
-	auto args = this->arguments(cli);
-	auto total_args = args.size();
-
-	for (const auto& arg : args)
+	if (auto args = this->arguments(cli); !args.empty())
 	{
-		options.append(arg);
+		for (const auto& arg : args)
+		{
+			options.append(arg);
+		}
+
+		return static_cast<int>(args.size());
 	}
 
-	return static_cast<int>(total_args);
+	return 0;
 }
 
 

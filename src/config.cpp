@@ -139,28 +139,22 @@ LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 // Configurator
 
 
-std::vector<Option> Configurator::supported_options_ = {
-	{      "version",   false, "FALSE", "print version and exit,"
-	                                    "ignoring any other options" },
-	{ 'v', "verbosity", true,  "2",     "verbosity of output (loglevel 0-8)" },
-	{ 'q', "quiet",     false, "FALSE", "only output ARCSs, nothing else" },
-	{ 'l', "logfile",   true,  "none",  "specify log file for output" },
-	{ 'o', "outfile",   true,  "none",  "output results to file" }
+const std::vector<Option> Configurator::global_options_ = {
+	{      "version",   false, "FALSE", "Print version and exit,"
+	                                    " ignoring any other options." },
+	{ 'v', "verbosity", true,  "2",     "Verbosity of output (loglevel 0-8)" },
+	{ 'q', "quiet",     false, "FALSE", "Only output results, nothing else." },
+	{ 'l', "logfile",   true,  "none",  "File for logging output" },
+	{ 'o', "outfile",   true,  "none",  "File for result output" }
 };
 
 
-std::vector<uint32_t> Configurator::supported_option_ids_ = { 0, 0, 0, 0, 0 };
-// The first options hardcoded in supported_options_ have no ids since they
-// never occurr in an option object
+Configurator::Configurator(int argc, char** argv)
+	: logman_ {
+		LogManager::get_loglevel(global(CONFIG::VERBOSITY).default_arg()),
+		LOGLEVEL::NONE /* quiet */
 
-
-const std::size_t Configurator::FIRST_UNPROCESSED_OPTION = 5;
-// MUST be initial size of supported_options_ // FIXME
-
-
-Configurator::Configurator(int argc, char** argv) /* magic _v_ number */
-	: logman_ { LogManager::get_loglevel(supported_options_[1].default_arg()),
-		LOGLEVEL::NONE /* quiet */ }
+	}
 	, cli_(argc, argv)
 {
 	// We do not know whether the application is required to run quiet,
@@ -182,11 +176,10 @@ void Configurator::configure_logging()
 	// All supported options regarding logging are now consumed and won't
 	// occurr in the result of parse_options()
 
-	const int VERBOSITY = 1; // FIXME Magic number
 	ARCS_LOG(DEBUG1) << "Set loglevel to "
 		<< Log::to_string(Logging::instance().level())
 		<< " (=" << level << ") thereby consuming option "
-		<< supported_options_[VERBOSITY].tokens_str();
+		<< global(CONFIG::VERBOSITY).tokens_str();
 }
 
 
@@ -200,16 +193,16 @@ std::unique_ptr<Options> Configurator::provide_options()
 }
 
 
-const std::vector<Option>& Configurator::supported()
+const std::vector<Option>& Configurator::global_options()
 {
-	return Configurator::supported_options_;
+	return Configurator::global_options_;
 }
 
 
-void Configurator::support(const Option &option, const uint32_t id)
+const std::vector<std::pair<Option, uint32_t>>&
+	Configurator::supported_options() const
 {
-	supported_options_.push_back(option);
-	supported_option_ids_.push_back(id);
+	return this->do_supported_options();
 }
 
 
@@ -244,6 +237,7 @@ std::string Configurator::argument(CLIParser &cli) const
 std::vector<std::string> Configurator::arguments(CLIParser &cli) const
 {
 	auto arguments = std::vector<std::string> {};
+	arguments.reserve(cli.unconsumed_tokens().size());
 
 	while (cli.tokens_left())
 	{
@@ -258,13 +252,10 @@ int Configurator::configure_loglevel()
 {
 	// current loglevel is NONE (since QUIET could have been requested)
 
-	const int QUIET     = 2;
-	const auto& [ is_quiet, noval ] =
-		this->option(cli_, supported_options_[QUIET]);
+	const auto& [ is_quiet, noval ] = this->option(cli_, global(CONFIG::QUIET));
 
-	const int VERBOSITY = 1;
 	const auto& [ verbosity_defined, parsed_level ] =
-		this->option(cli_, supported_options_[VERBOSITY]);
+		this->option(cli_, global(CONFIG::VERBOSITY));
 	// quiet overrides verbosity, but verbosity must be consumed, however
 
 	if (is_quiet)
@@ -287,9 +278,7 @@ int Configurator::configure_loglevel()
 
 std::tuple<std::string, std::string> Configurator::configure_logappender()
 {
-	const int LOGFILE = 3; // FIXME Magic number
-	const auto& [ found, logfile ] =
-		this->option(cli_, supported_options_[LOGFILE]);
+	const auto& [ found, logfile ] = this->option(cli_, global(CONFIG::LOGFILE));
 
 	std::unique_ptr<Appender> appender;
 
@@ -308,7 +297,7 @@ std::tuple<std::string, std::string> Configurator::configure_logappender()
 
 	ARCS_LOG(DEBUG1) << "Set log appender to " << appender_name
 			<< " thereby consuming option "
-			<<  supported_options_[LOGFILE].tokens_str();
+			<<  global(CONFIG::LOGFILE).tokens_str();
 
 	return std::make_tuple(appender_name, logfile);
 }
@@ -319,9 +308,8 @@ std::unique_ptr<Options> Configurator::parse_options(CLIParser& cli)
 	// The --version flag is magic, the parsing can be stopped because it is
 	// known at this point what the application has to do.
 
-	const int VERSION = 0; // FIXME Magic number
-	if (const auto& [ found, value ] = this->option(cli,
-			supported_options_[VERSION]); found)
+	if (const auto& [ found, value ] = this->option(cli, global(CONFIG::VERSION));
+		found)
 	{
 		Options options;
 		options.set_version(true);
@@ -333,11 +321,15 @@ std::unique_ptr<Options> Configurator::parse_options(CLIParser& cli)
 
 	// Consume any supported option
 
-	for (std::size_t i = FIRST_UNPROCESSED_OPTION;
-		 i < supported_options_.size(); ++i)
+	//for (std::size_t i = FIRST_UNPROCESSED_OPTION;
+	//	 i < global_options_.size(); ++i)
+	//{
+	//	auto& option = global_options_[i];
+	//	auto& id     = global_option_ids_[i];
+	for (const auto& entry : supported_options())
 	{
-		auto& option = supported_options_[i];
-		auto& id     = supported_option_ids_[i];
+		auto& option = std::get<0>(entry);
+		auto& id     = std::get<1>(entry);
 
 		if (Logging::instance().has_level(LOGLEVEL::DEBUG2))
 		{
@@ -374,21 +366,15 @@ std::unique_ptr<Options> Configurator::parse_options(CLIParser& cli)
 
 	// Add builtin option: outfile
 
-	const int OUTFILE = 4; // FIXME Magic number
-	if (const auto& [ found, outfile ] = this->option(cli,
-			supported_options_[OUTFILE]); found)
+	if (const auto& [ found, outfile ] =
+		this->option(cli, global(CONFIG::OUTFILE)); found)
 	{
 		if (outfile.empty())
 		{
-			throw CallSyntaxException("Option " +
-				supported_options_[OUTFILE].tokens_str() +
+			throw CallSyntaxException("Option "
+				+ global(CONFIG::OUTFILE).tokens_str() +
 				" requires the name of an outfile");
 		}
-
-		//if (file::file_exists(outfile))
-		//{
-		//	ARCS_LOG_WARNING << "File " << outfile << " will be overwritten.";
-		//}
 
 		parsed_options->set_output(outfile);
 	}
@@ -429,6 +415,13 @@ std::unique_ptr<Options> Configurator::parse_input(CLIParser& cli)
 }
 
 
+const Option& Configurator::global(const CONFIG c)
+{
+	return Configurator::global_options_[std::underlying_type_t<CONFIG>(c)];
+}
+
+
+
 int Configurator::do_parse_arguments(CLIParser& cli, Options &options) const
 {
 	// allow only single argument
@@ -452,6 +445,17 @@ std::unique_ptr<Options> Configurator::do_configure_options(
 	// default implementation does nothing
 
 	return options;
+}
+
+
+// DefaultConfigurator
+
+
+const std::vector<std::pair<Option, uint32_t>>&
+	DefaultConfigurator::do_supported_options() const
+{
+	const static std::vector<std::pair<Option, uint32_t>> empty = {};
+	return empty;
 }
 
 } // namespace arcsapp

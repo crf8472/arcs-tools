@@ -46,7 +46,6 @@ using arcstk::Match;
  */
 class ARVerifyOptions : public ARCalcOptions
 {
-
 public:
 
 	// ... 1 - 256 are from ARCalcOptions
@@ -65,8 +64,7 @@ public:
  * ARCalcConfigurator.
  */
 class ARVerifyConfigurator final : public ARCalcConfigurator
-{
-
+{ // XXX Non-leaf class ARCalcConfigurator is not abstract
 public:
 
 	/**
@@ -76,6 +74,11 @@ public:
 	 * \param[in] argv Command line arguments
 	 */
 	ARVerifyConfigurator(int argc, char** argv);
+
+private:
+
+	const std::vector<std::pair<Option, uint32_t>>& do_supported_options() const
+		override;
 };
 
 

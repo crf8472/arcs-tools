@@ -127,6 +127,9 @@ private:
 };
 
 
+/**
+ * \brief Aliases for classes printing an ARId.
+ */
 using ARIdPrinter = Print<ARId, std::string>;
 
 
@@ -198,6 +201,9 @@ private:
 };
 
 
+/**
+ * \brief Alias for classes printing checksum calculation results.
+ */
 using ChecksumsResultPrinter =
 	Print<Checksums*, std::vector<std::string>, TOC*, ARId>;
 
@@ -247,6 +253,9 @@ private:
 };
 
 
+/**
+ * \brief Alias for classes printing match results.
+ */
 using MatchResultPrinter =
 	Print<Checksums*, std::vector<std::string>, ARResponse, Match*, int, bool,
 		TOC*, ARId>;

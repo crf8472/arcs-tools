@@ -6,6 +6,7 @@
 #include <fstream>                  // for basic_ofstream<>::__filebuf_type
 #include <iostream>                 // for operator<<, ostream, cout, basic_...
 #include <memory>                   // for unique_ptr, make_unique, allocator
+#include <stdexcept>                // for runtime_error
 #include <string>                   // for char_traits, operator<<, string
 #include <tuple>                    // for tuple_element<>::type
 #include <type_traits>              // for add_const<>::type
@@ -78,13 +79,44 @@ constexpr uint16_t ARVerifyOptions::RESPONSEFILE;
 ARVerifyConfigurator::ARVerifyConfigurator(int argc, char** argv)
 	: ARCalcConfigurator(argc, argv)
 {
-	auto size = supported().size();
-	if (size <= 13) // FIXME Magic number
-	{
-		this->support(
-			{ 'r', "response", true, "none", "specify response file to match against" },
-				ARVerifyOptions::RESPONSEFILE);
-	}
+	// empty
+}
+
+
+const std::vector<std::pair<Option, uint32_t>>&
+	ARVerifyConfigurator::do_supported_options() const
+{
+	const static std::vector<std::pair<Option, uint32_t>> local_options = {
+		{{      "no-v1",    false, "FALSE",
+			"do not verify ARCSv1" },
+			ARVerifyOptions::NOV1 },
+		{{      "no-v2",    false, "FALSE",
+			"do not verify ARCSv2" },
+			ARVerifyOptions::NOV2 },
+		{{      "album",    false, "~",
+			"abbreviates --first --last" },
+			ARVerifyOptions::ALBUM },
+		{{      "first",    false, "~",
+			"treat first audio file as first track" },
+			ARVerifyOptions::FIRST },
+		{{      "last",     false, "~",
+			"treat last audio file as last track" },
+			ARVerifyOptions::LAST },
+		{{ 'm', "metafile", true, "none",
+			"specify metadata file (CUE) to use" },
+			ARVerifyOptions::METAFILE },
+		{{ 'r', "response", true, "none",
+			"specify AccurateRip response file" },
+			ARVerifyOptions::RESPONSEFILE },
+		{{      "list-toc-formats",  false,   "FALSE",
+			"list all supported file formats for TOC metadata" },
+			ARVerifyOptions::LIST_TOC_FORMATS },
+		{{      "list-audio-formats",  false, "FALSE",
+			"list all supported audio codec/container formats" },
+			ARVerifyOptions::LIST_AUDIO_FORMATS }
+	};
+
+	return local_options;
 }
 
 
@@ -237,7 +269,8 @@ int ARVerifyApplication::do_run(const Options &options)
 
 		if (not single_audio_file and not pw_distinct)
 		{
-			// TODO Throw! This is currently unsupported
+			throw std::runtime_error("Images with audio files that contain"
+				" some but not all tracks are currently unsupported");
 		}
 
 		with_filenames = not single_audio_file;

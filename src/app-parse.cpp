@@ -88,7 +88,7 @@ std::string ARParseApplication::do_call_syntax() const
 std::unique_ptr<Configurator> ARParseApplication::create_configurator(
 		int argc, char** argv) const
 {
-	return std::make_unique<Configurator>(argc, argv);
+	return std::make_unique<DefaultConfigurator>(argc, argv);
 }
 
 
