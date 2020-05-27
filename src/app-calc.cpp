@@ -30,8 +30,8 @@
 #include <arcsdec/metaparser.hpp>   // for MetadataParserSelection
 #endif
 
-#ifndef __ARCSTOOLS_CLIPARSE_HPP__
-#include "cliparse.hpp"             // for CLITokens, __ARCSTOOLS_CLIPARSE_H...
+#ifndef __ARCSTOOLS_CLITOKENS_HPP__
+#include "clitokens.hpp"             // for CLITokens, __ARCSTOOLS_CLITOKENS_H...
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"

@@ -19,8 +19,8 @@
 #include <arcsdec/calculators.hpp>
 #endif
 
-#ifndef __ARCSTOOLS_CLIPARSE_HPP__
-#include "cliparse.hpp"
+#ifndef __ARCSTOOLS_CLITOKENS_HPP__
+#include "clitokens.hpp"
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"

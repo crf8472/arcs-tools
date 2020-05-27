@@ -19,8 +19,8 @@
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"
 #endif
-#ifndef __ARCSTOOLS_CLIPARSE_HPP__
-#include "cliparse.hpp"        // for __ARCSTOOLS_CLIPARSE_HPP__
+#ifndef __ARCSTOOLS_CLITOKENS_HPP__
+#include "clitokens.hpp"        // for __ARCSTOOLS_CLITOKENS_HPP__
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"          // for Configurator, CallSyntaxException

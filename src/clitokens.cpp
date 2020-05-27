@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_CLIPARSE_HPP__
-#include "cliparse.hpp"
+#ifndef __ARCSTOOLS_CLITOKENS_HPP__
+#include "clitokens.hpp"
 #endif
 
 #include <algorithm>  // for find

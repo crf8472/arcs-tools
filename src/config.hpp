@@ -23,8 +23,8 @@
 #include <arcstk/logging.hpp>
 #endif
 
-#ifndef __ARCSTOOLS_CLIPARSE_HPP__
-#include "cliparse.hpp"           // for CLITokens
+#ifndef __ARCSTOOLS_CLITOKENS_HPP__
+#include "clitokens.hpp"           // for CLITokens
 #endif
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
 #include "options.hpp"            // for Options, __ARCSTOOLS_OPTIONS_HPP__

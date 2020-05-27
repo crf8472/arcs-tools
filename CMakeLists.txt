@@ -221,7 +221,7 @@ set (REQUIRED_OBJECTS
 	app-verify
 	printers
 	parsehandlers
-	cliparse
+	clitokens
 	config
 	format
 	options
@@ -350,7 +350,7 @@ foreach (_executable IN LISTS PROJECT_EXECUTABLES )
 		PRIVATE $<TARGET_OBJECTS:printers>
 		PRIVATE $<TARGET_OBJECTS:application>
 		PRIVATE $<TARGET_OBJECTS:format>
-		PRIVATE $<TARGET_OBJECTS:cliparse>
+		PRIVATE $<TARGET_OBJECTS:clitokens>
 		PRIVATE $<TARGET_OBJECTS:config>
 		PRIVATE $<TARGET_OBJECTS:options>
 		PRIVATE $<TARGET_OBJECTS:tools_fs>
