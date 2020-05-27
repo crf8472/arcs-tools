@@ -25,8 +25,7 @@ toolkit supports the following tasks for working with AccurateRip checksums:
 - No ripping of CDs
 - Does not send any requests to AccurateRip. Has no network facilities and is
   not supposed to get any. The actual HTTP request for fetching the reference
-  values is better performed by the HTTP client of your choice. (Examples are
-  provided [in the corresponding README section](../../README.md).)
+  values is better performed by the HTTP client of your choice.
 
 
 
