@@ -179,10 +179,10 @@ void ARApplication::print_usage() const
 	std::cout << "OPTIONS:" << std::endl;
 
 	const auto& goptions { Configurator::global_options() };
-	const auto& loptions {
+	const auto& soptions {
 		this->create_configurator(0, nullptr)->supported_options() };
 
-	StringTable table { static_cast<int>(goptions.size() + loptions.size()),
+	StringTable table { static_cast<int>(goptions.size() + soptions.size()),
 		3 };
 
 	table.set_title(0, "Option");
@@ -207,21 +207,11 @@ void ARApplication::print_usage() const
 		table.update_cell(row, 1, option.default_arg());
 		table.update_cell(row, 2, option.description());
 
-		// Adjust col width to optimal width after each row
-		for (std::size_t col = 0; col < table.columns(); ++col)
-		{
-			if (static_cast<std::size_t>(table.width(col))
-				< table(row, col).length())
-			{
-				table.set_width(col, table(row, col).length());
-			}
-		}
-
 		++row;
 	}
 
 	// Print app specific options
-	for (const auto& entry : loptions)
+	for (const auto& entry : soptions)
 	{
 		auto& option = std::get<0>(entry);
 
@@ -229,16 +219,6 @@ void ARApplication::print_usage() const
 		table.update_cell(row, 0, option.tokens_str());
 		table.update_cell(row, 1, option.default_arg());
 		table.update_cell(row, 2, option.description());
-
-		// Adjust col width to optimal width after each row
-		for (std::size_t col = 0; col < table.columns(); ++col)
-		{
-			if (static_cast<std::size_t>(table.width(col))
-				< table(row, col).length())
-			{
-				table.set_width(col, table(row, col).length());
-			}
-		}
 
 		++row;
 	}

@@ -910,8 +910,8 @@ private:
 
 StringTable::Impl::Impl(const int rows, const int cols)
 	: cells_ (rows * cols)
-	, current_row_ (0)
-	, cols_ (cols)
+	, current_row_ { 0 }
+	, cols_ { cols }
 {
 	// empty
 }
@@ -971,8 +971,10 @@ int StringTable::Impl::index(const int row, const int col) const
 // StringTable
 
 
-StringTable::StringTable(const int rows, const int columns)
+StringTable::StringTable(const int rows, const int columns,
+			const bool dyn_col_widths)
 	: StringTableStructure(rows, columns)
+	, dyn_col_widths_ { dyn_col_widths }
 	, impl_(std::make_unique<StringTable::Impl>(rows, columns))
 {
 	// empty
@@ -981,6 +983,8 @@ StringTable::StringTable(const int rows, const int columns)
 
 StringTable::StringTable(const StringTable &rhs)
 	: StringTableStructure(rhs)
+	, allow_grow_rows_ { rhs.allow_grow_rows_ }
+	, dyn_col_widths_  { rhs.dyn_col_widths_ }
 	, impl_ { std::make_unique<StringTable::Impl>(*rhs.impl_) }
 {
 	// empty
@@ -995,6 +999,7 @@ void StringTable::update_cell(const int row, const int col,
 {
 	bounds_check_col(col);
 
+	// Handle growth
 	if (allow_grow_rows_)
 	{
 		if (not legal_row(row))
@@ -1012,6 +1017,13 @@ void StringTable::update_cell(const int row, const int col,
 		bounds_check_row(row);
 	}
 
+	// Handle dynamic column width
+	if (auto curr_width = static_cast<std::size_t>(width(col));
+		dyn_col_widths_ && text.length() > curr_width)
+	{
+		set_width(col, text.length());
+	}
+
 	this->do_update_cell(row, col, text);
 }
 
@@ -1022,10 +1034,11 @@ std::string StringTable::cell(const int row, const int col) const
 
 	auto text = impl_->cell(row, col);
 
-	if (auto w1dth = static_cast<std::size_t>(width(col));
-			text.length() > w1dth)
+	// Truncate cell content on column width
+	if (auto curr_width = static_cast<std::size_t>(width(col));
+			text.length() > curr_width)
 	{
-		return text.substr(0, w1dth - 1) + "~";
+		return text.substr(0, curr_width - 1) + "~";
 	}
 
 	return text;
@@ -1059,7 +1072,7 @@ void StringTable::init(const int /* row */, const int /* col */)
 void StringTable::do_update_cell(const int row, const int col,
 		const std::string &text)
 {
-	this->bounds_check(row, col);
+	// bounds checking is done in update_cell()
 	impl_->update_cell(row, col, text);
 }
 

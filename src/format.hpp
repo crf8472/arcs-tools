@@ -910,8 +910,20 @@ public:
 	 *
 	 * \param[in] rows    Number of rows (including header, if any)
 	 * \param[in] columns Number of columns (including label column, if any)
+	 * \param[in] dyn_column_width If 'FALSE' cells are truncated on width
 	 */
-	StringTable(const int rows, const int columns);
+	StringTable(const int rows, const int columns, const bool dyn_column_width);
+
+	/**
+	 * \brief Constructor
+	 *
+	 * Sets dynamic table width.
+	 *
+	 * \param[in] rows    Number of rows (including header, if any)
+	 * \param[in] columns Number of columns (including label column, if any)
+	 */
+	StringTable(const int rows, const int columns)
+		: StringTable(rows, columns, true) { /* empty */ };
 
 	/**
 	 * \brief Default constructor constructs a table with dimensions 0,0
@@ -1011,6 +1023,11 @@ private:
 	 * \brief If TRUE, update_cell with a row > rows() will resize the table
 	 */
 	bool allow_grow_rows_ = true; // FIXME do this with a flag
+
+	/**
+	 * \brief Switch for dynamic column widths
+	 */
+	bool dyn_col_widths_ = true; // FIXME do this with a flag
 
 	// forward declaration
 	class Impl;
