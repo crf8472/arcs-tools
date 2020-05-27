@@ -26,7 +26,7 @@
 namespace arcsapp
 {
 
-class CLIParser;
+class CLITokens;
 
 /**
  * \brief Configuration options for ARIdApplications.

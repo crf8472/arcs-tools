@@ -27,7 +27,7 @@
 #endif
 
 #ifndef __ARCSTOOLS_CLIPARSE_HPP__
-#include "cliparse.hpp"             // for CLIParser, __ARCSTOOLS_CLIPARSE_H...
+#include "cliparse.hpp"             // for CLITokens, __ARCSTOOLS_CLIPARSE_H...
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"               // for CallSyntaxException, Configurator

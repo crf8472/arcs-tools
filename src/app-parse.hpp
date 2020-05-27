@@ -31,7 +31,7 @@
 namespace arcsapp
 {
 
-class CLIParser;
+class CLITokens;
 class Configurator;
 class Options;
 

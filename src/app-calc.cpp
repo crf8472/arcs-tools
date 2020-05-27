@@ -31,7 +31,7 @@
 #endif
 
 #ifndef __ARCSTOOLS_CLIPARSE_HPP__
-#include "cliparse.hpp"             // for CLIParser, __ARCSTOOLS_CLIPARSE_H...
+#include "cliparse.hpp"             // for CLITokens, __ARCSTOOLS_CLIPARSE_H...
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
@@ -125,7 +125,7 @@ const std::vector<std::pair<Option, uint32_t>>&
 }
 
 
-int ARCalcConfigurator::do_parse_arguments(CLIParser& cli, Options &options)
+int ARCalcConfigurator::do_parse_arguments(CLITokens& cli, Options &options)
 		const
 {
 	// Respect multiple arguments

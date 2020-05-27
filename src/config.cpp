@@ -206,7 +206,7 @@ const std::vector<std::pair<Option, uint32_t>>&
 }
 
 
-std::pair<bool, std::string> Configurator::option(CLIParser &cli,
+std::pair<bool, std::string> Configurator::option(CLITokens &cli,
 		const Option &option) const
 {
 	for (const auto& token : option.tokens())
@@ -228,13 +228,13 @@ std::pair<bool, std::string> Configurator::option(CLIParser &cli,
 }
 
 
-std::string Configurator::argument(CLIParser &cli) const
+std::string Configurator::argument(CLITokens &cli) const
 {
 	return cli.consume_argument();
 }
 
 
-std::vector<std::string> Configurator::arguments(CLIParser &cli) const
+std::vector<std::string> Configurator::arguments(CLITokens &cli) const
 {
 	auto arguments = std::vector<std::string> {};
 	arguments.reserve(cli.unconsumed_tokens().size());
@@ -303,7 +303,7 @@ std::tuple<std::string, std::string> Configurator::configure_logappender()
 }
 
 
-std::unique_ptr<Options> Configurator::parse_options(CLIParser& cli)
+std::unique_ptr<Options> Configurator::parse_options(CLITokens& cli)
 {
 	// The --version flag is magic, the parsing can be stopped because it is
 	// known at this point what the application has to do.
@@ -383,13 +383,13 @@ std::unique_ptr<Options> Configurator::parse_options(CLIParser& cli)
 }
 
 
-int Configurator::parse_arguments(CLIParser& cli, Options &options) const
+int Configurator::parse_arguments(CLITokens& cli, Options &options) const
 {
 	return this->do_parse_arguments(cli, options);
 }
 
 
-std::unique_ptr<Options> Configurator::parse_input(CLIParser& cli)
+std::unique_ptr<Options> Configurator::parse_input(CLITokens& cli)
 {
 	auto options = this->parse_options(cli);
 
@@ -422,7 +422,7 @@ const Option& Configurator::global(const CONFIG c)
 
 
 
-int Configurator::do_parse_arguments(CLIParser& cli, Options &options) const
+int Configurator::do_parse_arguments(CLITokens& cli, Options &options) const
 {
 	// allow only single argument
 

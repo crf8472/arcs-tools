@@ -14,10 +14,10 @@
 namespace arcsapp
 {
 
-// CLIParser
+// CLITokens
 
 
-CLIParser::CLIParser (int argc, char **argv)
+CLITokens::CLITokens (int argc, char **argv)
 	: tokens_ {}
 {
 	if (!argv or !*argv)
@@ -32,10 +32,10 @@ CLIParser::CLIParser (int argc, char **argv)
 }
 
 
-CLIParser::~CLIParser () noexcept = default;
+CLITokens::~CLITokens () noexcept = default;
 
 
-std::tuple<bool, std::string> CLIParser::consume_option_token(
+std::tuple<bool, std::string> CLITokens::consume_option_token(
 		const std::string &token, const bool value_requested) noexcept
 {
 	if (tokens_.empty())
@@ -87,7 +87,7 @@ std::tuple<bool, std::string> CLIParser::consume_option_token(
 }
 
 
-const std::string CLIParser::consume_argument() noexcept
+const std::string CLITokens::consume_argument() noexcept
 {
 	if (tokens_.empty())
 	{
@@ -103,7 +103,7 @@ const std::string CLIParser::consume_argument() noexcept
 }
 
 
-bool CLIParser::token_present(const std::string &token) noexcept
+bool CLITokens::token_present(const std::string &token) noexcept
 {
 	auto itr = std::find(tokens_.begin(), tokens_.end(), token);
 
@@ -113,19 +113,19 @@ bool CLIParser::token_present(const std::string &token) noexcept
 }
 
 
-bool CLIParser::tokens_left() noexcept
+bool CLITokens::tokens_left() noexcept
 {
 	return !tokens_.empty();
 }
 
 
-const std::vector<std::string> CLIParser::unconsumed_tokens() noexcept
+const std::vector<std::string> CLITokens::unconsumed_tokens() noexcept
 {
 	return std::vector<std::string>(tokens_.begin(), tokens_.end());
 }
 
 
-const std::string& CLIParser::empty_value() noexcept
+const std::string& CLITokens::empty_value() noexcept
 {
 	static const auto empty_string = std::string{};
 	return empty_string;

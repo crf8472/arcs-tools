@@ -24,7 +24,7 @@
 #endif
 
 #ifndef __ARCSTOOLS_CLIPARSE_HPP__
-#include "cliparse.hpp"           // for CLIParser
+#include "cliparse.hpp"           // for CLITokens
 #endif
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
 #include "options.hpp"            // for Options, __ARCSTOOLS_OPTIONS_HPP__
@@ -195,7 +195,7 @@ protected:
 	 *
 	 * \throws CallSyntaxException On valued options with empty value
 	 */
-	std::pair<bool, std::string> option(CLIParser &cli, const Option &option)
+	std::pair<bool, std::string> option(CLITokens &cli, const Option &option)
 		const;
 
 	/**
@@ -214,7 +214,7 @@ protected:
 	 * \return Argument string iff an argument could be consumed, otherwise
 	 * empty string
 	 */
-	std::string argument(CLIParser &cli) const;
+	std::string argument(CLITokens &cli) const;
 
 	/**
 	 * \brief Service: consume all command line arguments.
@@ -230,7 +230,7 @@ protected:
 	 *
 	 * \return List of arguments consumed
 	 */
-	std::vector<std::string> arguments(CLIParser &cli) const;
+	std::vector<std::string> arguments(CLITokens &cli) const;
 
 	/**
 	 * \brief Worker: deduce the loglevel value from command line and activate
@@ -263,12 +263,12 @@ protected:
 	 *
 	 * \throw CallSyntaxException Iff the options cannot be parsed
 	 */
-	std::unique_ptr<Options> parse_options(CLIParser& cli);
+	std::unique_ptr<Options> parse_options(CLITokens& cli);
 
 	/**
 	 * \brief Worker: called by parse_input() to parse the arguments.
 	 *
-	 * The CLIParser passed has the state immediately after parse_options() has
+	 * The CLITokens passed has the state immediately after parse_options() has
 	 * been finished. Hence, whatever is left unparsed is not a supported
 	 * option.
 	 *
@@ -293,7 +293,7 @@ protected:
 	 *
 	 * \throws CallSyntaxException Iff the arguments are not syntactically ok
 	 */
-	int parse_arguments(CLIParser& cli, Options &options) const;
+	int parse_arguments(CLITokens& cli, Options &options) const;
 
 	/**
 	 * \brief Worker: parse the command line input to an object representation.
@@ -311,7 +311,7 @@ protected:
 	 *
 	 * \throw CallSyntaxException if the call command cannot be parsed
 	 */
-	std::unique_ptr<Options> parse_input(CLIParser& cli);
+	std::unique_ptr<Options> parse_input(CLITokens& cli);
 
 	/**
 	 * \brief Globally managed options
@@ -358,7 +358,7 @@ private:
 	= 0;
 
 	/**
-	 * \brief Implements parse_arguments(CLIParser&, Options&) const
+	 * \brief Implements parse_arguments(CLITokens&, Options&) const
 	 *
 	 * Consumes exactly one argument.
 	 *
@@ -369,7 +369,7 @@ private:
 	 *
 	 * \throws CallSyntaxException Iff the arguments are not syntactically ok
 	 */
-	virtual int do_parse_arguments(CLIParser& cli, Options &options) const;
+	virtual int do_parse_arguments(CLITokens& cli, Options &options) const;
 
 	/**
 	 * \brief Called by parse_input() after .
@@ -395,9 +395,9 @@ private:
 	LogManager logman_;
 
 	/**
-	 * \brief Internal representation of the CLIParser.
+	 * \brief Internal representation of the CLITokens.
 	 */
-	CLIParser cli_;
+	CLITokens cli_;
 };
 
 

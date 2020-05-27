@@ -8,7 +8,7 @@
  *
  * The Options class represents the complete command line input to an
  * application. Options are produced by a Configurator internally using a
- * CLIParser.
+ * CLITokens.
  */
 
 #include <cstdint>   // for uint16_t

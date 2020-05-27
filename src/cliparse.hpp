@@ -30,7 +30,7 @@ namespace arcsapp
  * syntactically wellformed. Thus, with the API of this class, complete syntax
  * check of the CLI input is possible.
  */
-class CLIParser
+class CLITokens
 {
 public:
 
@@ -43,12 +43,12 @@ public:
 	 * \param[in] argc Number of command line arguments
 	 * \param[in] argv Command line arguments
 	 */
-	CLIParser(int argc, char **argv);
+	CLITokens(int argc, char **argv);
 
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	virtual ~CLIParser() noexcept;
+	virtual ~CLITokens() noexcept;
 
 	/**
 	 * \brief Consume the option passed and return its parameter if it is
