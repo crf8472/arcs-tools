@@ -171,6 +171,34 @@ else()
 endif()
 
 
+
+## --- Optional: Add include-what-you-use support (default: OFF)
+
+option (IWYU "Don't compile, check headers with include-what-you-use" OFF )
+if (IWYU)
+
+	message (STATUS "Program include-what-you-use requested" )
+	find_program (IWYU_BINARY NAMES include-what-you-use iwyu )
+
+	if (IWYU_BINARY )
+
+		## Set for all subsequent targets
+		set (CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${IWYU_BINARY} )
+
+		## Commented out: Set for specific targets only
+		#set_property(TARGET ${TARGET_NAME}
+		#	PROPERTY CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${IWYU_PATH})
+
+		message (STATUS "Program include-what-you-use found: ${IWYU_BINARY}" )
+
+	else (IWYU_BINARY )
+
+		message (FATAL_ERROR "Program include-what-you-use not found" )
+
+	endif (IWYU_BINARY )
+endif (IWYU)
+
+
 ## --- Mandatory dependencies
 
 ## Commented out: coming with 3.14.5 ?
