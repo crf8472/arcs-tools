@@ -327,7 +327,7 @@ public:
 	/**
 	 * \brief Set the format to use for formatting the ARId.
 	 *
-	 * \param[in] format The ARIdLayout to set
+	 * \param[in] arid_layout The ARIdLayout to set
 	 */
 	void set_arid_layout(std::unique_ptr<ARIdLayout> arid_layout);
 
@@ -810,8 +810,8 @@ public:
 	/**
 	 * \brief Constructor
 	 *
-	 * \param[in] rows    Number of rows (including header, if any)
-	 * \param[in] columns Number of columns (including label column, if any)
+	 * \param[in] rows Number of rows (including header, if any)
+	 * \param[in] cols Number of columns (including label column, if any)
 	 */
 	StringTableStructure(const int rows, const int cols);
 

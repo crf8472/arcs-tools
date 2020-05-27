@@ -29,10 +29,11 @@ public:
 	/**
 	 * \brief Constructor
 	 *
-	 * \param[in] shorthand
-	 * \param[in] symbol
-	 * \param[in] desc
-	 * \param[in] needs_value
+	 * \param[in] shorthand   The shorthand symbol for the option
+	 * \param[in] symbol      The outwritten symbol for the option
+	 * \param[in] needs_value Indicate whether the option requires a value
+	 * \param[in] default_arg Default argument as a string
+	 * \param[in] desc        Option description
 	 *
 	 */
 	Option(const char shorthand, const std::string &symbol,

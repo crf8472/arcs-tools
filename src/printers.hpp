@@ -91,7 +91,7 @@ public:
 	/**
 	 * \brief Called by overloaded operator <<.
 	 *
-	 * \param[in] out Stream to print to
+	 * \param[in] outstream Stream to print to
 	 */
 	void out(std::ostream &outstream)
 	{
@@ -145,6 +145,8 @@ public:
 	/**
 	 * \brief Constructor setting all flags.
 	 *
+	 * \param[in] id          ARId to print
+	 * \param[in] alt_prefix  Alternative URL prefix
 	 * \param[in] url         Set to TRUE for printing the URL
 	 * \param[in] filename    Set to TRUE for printing the filename
 	 * \param[in] track_count Set to TRUE for printing the track_count
@@ -262,7 +264,7 @@ using MatchResultPrinter =
 
 
 /**
- * \brief Simple table format for album-based @link Match Matches @endlink.
+ * \brief Simple table format for album-based matches.
  */
 class AlbumMatchTableFormat final   : public AlbumTableBase
 									, public MatchResultPrinter
