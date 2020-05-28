@@ -45,7 +45,7 @@ foreach (_testcase ${TEST_SETS} )
 		Catch2::Catch2
 		libarcstk::libarcstk
 		libarcsdec::libarcsdec
-		${REQUIRED_OBJECTS} )  ## project objects
+		$<TARGET_OBJECTS:${PROJECT_NAME}-objects> )
 
 
 	## Compile tests as C++17

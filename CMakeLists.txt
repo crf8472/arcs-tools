@@ -11,7 +11,7 @@ cmake_policy (SET CMP0048 NEW )
 cmake_policy (SET CMP0057 NEW )
 
 
-project (arcs-tools VERSION 0.1.0 LANGUAGES CXX )
+project (arcstk VERSION 0.1.0 LANGUAGES CXX )
 
 set (PROJECT_BRIEF_DESC "Example Toolkit for libarcstk" )
 
@@ -93,27 +93,10 @@ set (INSTALL_MAN_DIR    "${CMAKE_INSTALL_PREFIX}/man"
 	CACHE PATH "Installation directory for man pages" )
 
 
-## Tool informations
-
-## Names
-set (TOOL_NAME_CALC   arcstk-calc )
-set (TOOL_NAME_ID     arcstk-id )
-set (TOOL_NAME_PARSE  arcstk-parse )
-set (TOOL_NAME_VERIFY arcstk-verify )
-
-set (TOOL_NAMES ) ## Iterable tool names, used for manpage generation
-list (APPEND TOOL_NAMES
-	${TOOL_NAME_CALC}
-	${TOOL_NAME_ID}
-	${TOOL_NAME_PARSE}
-	${TOOL_NAME_VERIFY} )
-
-
-## Modules
+## --- CMake Modules
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules" )
 message (STATUS "Changed CMAKE_MODULE_PATH to: ${CMAKE_MODULE_PATH}" )
-
 
 
 ## --- Source files configured by CMake
@@ -122,7 +105,6 @@ configure_file (
   "${PROJECT_SOURCE_DIR}/version.hpp.in"
   "${PROJECT_BUILD_SOURCE_DIR}/version.hpp"
 )
-
 
 
 ## --- Create Log directory
@@ -209,161 +191,51 @@ find_package (libarcstk 0.1.0 REQUIRED )
 find_package (libarcsdec 0.1.0 REQUIRED )
 
 
-## --- Create objects
 
-## -- Targets for All Objects
+## --- Build
 
-set (REQUIRED_OBJECTS
-	application
-	app-calc
-	app-id
-	app-parse
-	app-verify
-	printers
-	parsehandlers
-	clitokens
-	config
-	format
-	options
-	tools_calc
-	tools_fs )
-
-foreach (_object IN LISTS REQUIRED_OBJECTS )
-
-	add_library (${_object} OBJECT ${PROJECT_SOURCE_DIR}/${_object}.cpp )
-endforeach()
-
-
-## -- Add binary tree to find cmake-generated files like version.hpp
-
-target_include_directories (application PRIVATE ${PROJECT_BUILD_SOURCE_DIR} )
+## All objects without name, used as dependency in tests
+add_library ( ${PROJECT_NAME}-objects OBJECT
+	${PROJECT_SOURCE_DIR}/app-calc.cpp
+	${PROJECT_SOURCE_DIR}/app-id.cpp
+	${PROJECT_SOURCE_DIR}/app-parse.cpp
+	${PROJECT_SOURCE_DIR}/app-verify.cpp
+	${PROJECT_SOURCE_DIR}/application.cpp
+	${PROJECT_SOURCE_DIR}/apps.cpp
+	${PROJECT_SOURCE_DIR}/clitokens.cpp
+	${PROJECT_SOURCE_DIR}/config.cpp
+	${PROJECT_SOURCE_DIR}/format.cpp
+	${PROJECT_SOURCE_DIR}/options.cpp
+	${PROJECT_SOURCE_DIR}/parsehandlers.cpp
+	${PROJECT_SOURCE_DIR}/printers.cpp
+	${PROJECT_SOURCE_DIR}/tools_calc.cpp
+	${PROJECT_SOURCE_DIR}/tools_fs.cpp
+)
+target_include_directories (${PROJECT_NAME}-objects
+	PUBLIC ${PROJECT_BUILD_SOURCE_DIR} )
 
 
-## -- Objects dependent on libarcstk (all app-objects depend on libarcstk)
+## The MAIN target
 
-## Compatibility: set libarcstk_INCLUDE_DIRS from imported target if possible
+add_executable ( ${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/main.cpp )
+target_link_libraries (${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-objects )
+
+## MAIN: add libarcstk and libarcsdec
+
 if (TARGET libarcstk::libarcstk )
 
 	get_target_property (libarcstk_INCLUDE_DIRS libarcstk::libarcstk
 		INTERFACE_INCLUDE_DIRECTORIES )
 endif ()
 
-if (libarcstk_INCLUDE_DIRS )
-
-	set (OBJECTS_DEPENDING_ON_LIBARCSTK
-		application
-		printers
-		parsehandlers
-		tools_calc
-		config )
-
-	foreach (_object IN LISTS OBJECTS_DEPENDING_ON_LIBARCSTK )
-
-		target_include_directories (${_object}
-			PRIVATE ${libarcstk_INCLUDE_DIRS} ) ## used from imported target
-	endforeach()
-endif()
-
-
-## -- Objects dependent on libarcsdec (not a dependency of non-apps)
-
-## Compatibility: set libarcsdec_INCLUDE_DIRS from imported target if possible
 if (TARGET libarcsdec::libarcsdec )
 
 	get_target_property (libarcsdec_INCLUDE_DIRS libarcsdec::libarcsdec
 		INTERFACE_INCLUDE_DIRECTORIES )
 endif ()
 
-if (libarcsdec_INCLUDE_DIRS )
-
-	set (OBJECTS_DEPENDING_ON_LIBARCSDEC
-		app-calc
-		app-id
-		app-verify
-		printers
-		tools_calc )
-
-	foreach (_object IN LISTS OBJECTS_DEPENDING_ON_LIBARCSDEC )
-
-		target_include_directories (${_object}
-			PRIVATE ${libarcsdec_INCLUDE_DIRS} ) ## used from imported target
-	endforeach()
-endif()
-
-
-## -- Add executables to this list
-
-set (PROJECT_EXECUTABLES )
-
-
-## calc-tool with specific dependencies
-
-add_executable (${TOOL_NAME_CALC}
-	${PROJECT_SOURCE_DIR}/main-calc.cpp
-	$<TARGET_OBJECTS:tools_calc>
-	$<TARGET_OBJECTS:app-calc> )
-
-target_link_libraries (${TOOL_NAME_CALC} PRIVATE libarcsdec::libarcsdec )
-list (APPEND PROJECT_EXECUTABLES ${TOOL_NAME_CALC} )
-
-
-## id-tool with specific dependencies
-
-add_executable (${TOOL_NAME_ID}
-	${PROJECT_SOURCE_DIR}/main-id.cpp
-	$<TARGET_OBJECTS:app-id> )
-
-target_link_libraries (${TOOL_NAME_ID} PRIVATE libarcsdec::libarcsdec )
-list (APPEND PROJECT_EXECUTABLES ${TOOL_NAME_ID} )
-
-
-## parse-tool with specific dependencies
-
-add_executable (${TOOL_NAME_PARSE}
-	${PROJECT_SOURCE_DIR}/main-parse.cpp
-	$<TARGET_OBJECTS:parsehandlers>
-	$<TARGET_OBJECTS:app-parse> )
-
-target_link_libraries (${TOOL_NAME_PARSE} PRIVATE libarcsdec::libarcsdec )
-list (APPEND PROJECT_EXECUTABLES ${TOOL_NAME_PARSE} )
-
-
-## verify-tool with specific dependencies
-
-add_executable (${TOOL_NAME_VERIFY}
-	${PROJECT_SOURCE_DIR}/main-verify.cpp
-	$<TARGET_OBJECTS:tools_calc>
-	$<TARGET_OBJECTS:app-calc>
-	$<TARGET_OBJECTS:app-verify> )
-
-target_link_libraries (${TOOL_NAME_VERIFY} PRIVATE libarcsdec::libarcsdec )
-list (APPEND PROJECT_EXECUTABLES ${TOOL_NAME_VERIFY} )
-
-
-## -- Configure executables with the settings common to all
-
-foreach (_executable IN LISTS PROJECT_EXECUTABLES )
-
-	# Add common object dependencies
-
-	target_sources (${_executable}
-		PRIVATE $<TARGET_OBJECTS:printers>
-		PRIVATE $<TARGET_OBJECTS:application>
-		PRIVATE $<TARGET_OBJECTS:format>
-		PRIVATE $<TARGET_OBJECTS:clitokens>
-		PRIVATE $<TARGET_OBJECTS:config>
-		PRIVATE $<TARGET_OBJECTS:options>
-		PRIVATE $<TARGET_OBJECTS:tools_fs>
-	)
-
-	# Add the binary tree to the search path for include files
-	# for each target, so that we will find version.hpp
-
-	target_include_directories (${_executable} PRIVATE ${PROJECT_BINARY_DIR} )
-
-	target_link_libraries (${_executable} PRIVATE libarcstk::libarcstk )
-
-endforeach()
+target_link_libraries (${PROJECT_NAME} PRIVATE libarcstk::libarcstk )
+target_link_libraries (${PROJECT_NAME} PRIVATE libarcsdec::libarcsdec )
 
 
 
@@ -390,6 +262,23 @@ endif (WITH_TESTS)
 
 
 
+## --- Tool informations (for manpages and installing symlinks)
+
+## Names
+set (TOOL_NAME_ID     ${PROJECT_NAME}-id )
+set (TOOL_NAME_CALC   ${PROJECT_NAME}-calc )
+set (TOOL_NAME_PARSE  ${PROJECT_NAME}-parse )
+set (TOOL_NAME_VERIFY ${PROJECT_NAME}-verify )
+
+set (TOOL_NAMES ) ## Iterable tool names, used for manpage generation
+list (APPEND TOOL_NAMES
+	${TOOL_NAME_CALC}
+	${TOOL_NAME_ID}
+	${TOOL_NAME_PARSE}
+	${TOOL_NAME_VERIFY} )
+
+
+
 ## --- If on *nix, prepare man pages
 
 if (UNIX )
@@ -410,8 +299,22 @@ add_subdirectory (doc )
 
 if (NOT SKIP_INSTALL_ALL )
 
-	install (TARGETS ${PROJECT_EXECUTABLES}
+	install (TARGETS ${PROJECT_NAME}
 		RUNTIME DESTINATION "${INSTALL_BINARY_DIR}" )
+
+	if (UNIX )
+
+		# Install symlinks
+
+		foreach (LINK IN LISTS TOOL_NAMES)
+			message (STATUS "Create symlink ${LINK} in ${INSTALL_BINARY_DIR}" )
+			install (CODE "execute_process( \
+				COMMAND ${CMAKE_COMMAND} -E create_symlink \
+					${INSTALL_BINARY_DIR}/${PROJECT_NAME}  \
+					${INSTALL_BINARY_DIR}/${LINK})" )
+		endforeach()
+
+	endif(UNIX )
 
 endif()
 

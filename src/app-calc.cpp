@@ -30,8 +30,11 @@
 #include <arcsdec/metaparser.hpp>   // for MetadataParserSelection
 #endif
 
+#ifndef __ARCSTOOLS_APPS_HPP__
+#include "apps.hpp"                 // for RegisterApplicationType
+#endif
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp"             // for CLITokens, __ARCSTOOLS_CLITOKENS_H...
+#include "clitokens.hpp"            // for CLITokens, __ARCSTOOLS_CLITOKENS_H...
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
@@ -52,6 +55,11 @@
 namespace arcsapp
 {
 
+namespace registered
+{
+const auto calc = RegisterApplicationType<ARCalcApplication>("calc");
+}
+
 class Options;
 
 using arcstk::ARId;
@@ -61,6 +69,8 @@ using arcstk::make_empty_arid;
 
 using arcsdec::ARCSCalculator;
 using arcsdec::TOCParser;
+
+
 
 
 // ARCalcOptions

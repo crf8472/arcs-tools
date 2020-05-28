@@ -26,8 +26,11 @@
 #include <arcsdec/calculators.hpp>
 #endif
 
+#ifndef __ARCSTOOLS_APPS_HPP__
+#include "apps.hpp"                 // for RegisterApplicationType
+#endif
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp"             // for CLITokens, __ARCSTOOLS_CLITOKENS_H...
+#include "clitokens.hpp"            // for CLITokens, __ARCSTOOLS_CLITOKENS_H...
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"               // for CallSyntaxException, Configurator
@@ -50,6 +53,11 @@
 
 namespace arcsapp
 {
+
+namespace registered
+{
+const auto verify = RegisterApplicationType<ARVerifyApplication>("verify");
+}
 
 using arcstk::ARStreamParser;
 using arcstk::ARFileParser;

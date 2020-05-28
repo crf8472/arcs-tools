@@ -44,6 +44,11 @@ constexpr auto ARCSTOOLS_VERSION_INFO = "@PROJECT_VERSION_STRING@";
  */
 const std::string ARCSTOOLS_VERSION_INFO_STRING ( ARCSTOOLS_VERSION_INFO );
 
+/**
+ * \brief Name of the binary
+ */
+constexpr auto ARCSTOOLS_BINARY_NAME = "@PROJECT_NAME@";
+
 } // namespace arcsapp
 
 #endif

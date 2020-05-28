@@ -23,6 +23,9 @@
 #include <arcstk/logging.hpp>
 #endif
 
+#ifndef __ARCSTOOLS_APPS_HPP__
+#include "apps.hpp"
+#endif
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
 #include "clitokens.hpp"
 #endif
@@ -38,6 +41,11 @@
 
 namespace arcsapp
 {
+
+namespace registered
+{
+const auto parse = RegisterApplicationType<ARParseApplication>("parse");
+}
 
 class Options;
 
