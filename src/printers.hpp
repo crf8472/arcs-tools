@@ -47,7 +47,7 @@ template <typename ...Args>
 class Print;
 
 /**
- * \brief Overload << to make each concrete Printer be usable with a stream.
+ * \brief Overload << to make each concrete Print<>er be usable with an ostream.
  */
 template <typename... Args>
 std::ostream& operator << (std::ostream &stream, Print<Args...> &p)
@@ -57,7 +57,7 @@ std::ostream& operator << (std::ostream &stream, Print<Args...> &p)
 }
 
 /**
- * \brief Common base class for printers
+ * \brief Print an object that has an overload for operator << and ostream.
  */
 template <typename ...Args>
 class Print

@@ -4,7 +4,7 @@
 /**
  * \file
  *
- * \brief Base interface for command line applications.
+ * \brief Interface and abstract base for command line applications.
  *
  * Provides an interface for named, configurable applications with access to
  * command line input.

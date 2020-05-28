@@ -7,8 +7,9 @@
  * \brief Options for runtime configuration.
  *
  * The Options class represents the complete command line input to an
- * application. Options are produced by a Configurator internally using a
- * CLITokens.
+ * application. Options are produced by a Configurator.
+ *
+ * A single Option instance represents a supported command line option.
  */
 
 #include <cstdint>   // for uint16_t
@@ -20,7 +21,11 @@ namespace arcsapp
 {
 
 /**
- *  \brief Descriptor for a single command line option.
+ * \brief Descriptor for a single command line option.
+ *
+ * An Option has a symbol and may or may not have a shorthand symbol. It may
+ * or may not expect a value and most options have some default. An option also
+ * has a short description.
  */
 class Option
 {
@@ -34,12 +39,19 @@ public:
 	 * \param[in] needs_value Indicate whether the option requires a value
 	 * \param[in] default_arg Default argument as a string
 	 * \param[in] desc        Option description
-	 *
 	 */
 	Option(const char shorthand, const std::string &symbol,
 		const bool needs_value, const std::string &default_arg,
 		const std::string &desc);
 
+	/**
+	 * \brief Constructor
+	 *
+	 * \param[in] symbol      The outwritten symbol for the option
+	 * \param[in] needs_value Indicate whether the option requires a value
+	 * \param[in] default_arg Default argument as a string
+	 * \param[in] desc        Option description
+	 */
 	Option(const std::string &symbol, const bool needs_value,
 		   const std::string &default_arg, const std::string &desc)
 		: Option ('\0', symbol, needs_value, default_arg, desc )
@@ -53,7 +65,9 @@ public:
 	char shorthand_symbol() const;
 
 	/**
-	 * \brief Symbol of this option or empty string if none.
+	 * \brief Symbol of this option.
+	 *
+	 * A symbol may never be empty.
 	 *
 	 * \return Symbol of this option or empty string if none.
 	 */
@@ -62,12 +76,14 @@ public:
 	/**
 	 *  \brief Returns TRUE iff the option requires a value
 	 *
-	 * \return TRUE iff the option requires a value
+	 * \return TRUE iff the option requires a value, otherwise FALSE
 	 */
 	bool needs_value() const;
 
 	/**
-	 * \brief Default value of the symbol
+	 * \brief Default value of the option
+	 *
+	 * \return Default value of the option
 	 */
 	std::string default_arg() const;
 
@@ -77,7 +93,7 @@ public:
 	std::string description() const;
 
 	/**
-	 * \brief Return command line tokens that trigger that option
+	 * \brief Return command line tokens that represent that option
 	 *
 	 * \return List of tokens
 	 */
@@ -101,12 +117,13 @@ private:
 
 
 /**
- * \brief Base class for options and arguments. Represents the entire command
- * line input.
+ * \brief Base class for configuration options.
+ *
+ * An Options object contains the complete configuration information for an
+ * ARApplication.
  */
 class Options
 {
-
 public:
 
 	/**
@@ -122,7 +139,7 @@ public:
 	/**
 	 * \brief Set or unset the version flag.
 	 *
-	 * The version flag indicates whether the option --version was passed.
+	 * The version flag indicates whether the option VERSION was passed.
 	 *
 	 * \param[in] version The flag to set or unset
 	 */
@@ -135,8 +152,18 @@ public:
 	 */
 	bool is_set_version() const;
 
+	/**
+	 * \brief Set the name of the output file.
+	 *
+	 * \param[in] output Name of the output file
+	 */
 	void set_output(const std::string &output);
 
+	/**
+	 * \brief Return the name of the output file.
+	 *
+	 * \return Name of the output file
+	 */
 	std::string output() const;
 
 	/**
@@ -229,7 +256,6 @@ public:
 	 * \return Position of the rightmost flag that is set.
 	 */
 	uint16_t rightmost_flag() const;
-
 
 private:
 

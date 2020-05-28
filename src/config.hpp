@@ -4,13 +4,11 @@
 /**
  * \file
  *
- * \brief Turn command line arguments to a Options object.
+ * \brief Process command line arguments to a configuration object.
  *
  * Provides class Configurator, the abstract base class for configurators. A
- * Configurator parses the command line input to an Options instance if
- * (and only if) they are syntactically wellformed and semantically valid.
- * The Options object represents the runtime configuration for an ARApplication
- * class.
+ * Configurator pull-parses the command line input to an Options instance if
+ * (and only if) the input is syntactically wellformed and semantically valid.
  */
 
 #include <stdint.h>      // for uint8_t
@@ -27,7 +25,7 @@
 #include "clitokens.hpp"           // for CLITokens
 #endif
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
-#include "options.hpp"            // for Options, __ARCSTOOLS_OPTIONS_HPP__
+#include "options.hpp"             // for Options, __ARCSTOOLS_OPTIONS_HPP__
 #endif
 
 namespace arcsapp
@@ -42,11 +40,10 @@ using arcstk::LOGLEVEL;
 
 
 /**
- * \brief Reports a syntax error on parsing the application call.
+ * \brief Reports a syntax error on parsing the command line input.
  */
 class CallSyntaxException : public std::runtime_error
 {
-
 public:
 
 	/**
@@ -59,7 +56,7 @@ public:
 
 
 /**
- * \brief Transform the cli values for logging to options.
+ * \brief Transform the cli tokens concerning logging to options.
  *
  * Delegate for the implementation of Configurator::configure_loglevel().
  */
@@ -68,7 +65,10 @@ class LogManager
 public:
 
 	/**
-	 * \brief Constructor
+	 * \brief Constructor.
+	 *
+	 * Specify the level to choose by default and the level to choose for
+	 * quietness.
 	 *
 	 * \param[in] default_level The default level to use
 	 * \param[in] quiet_level   The level for quietness to use
@@ -115,9 +115,8 @@ private:
 /**
  * \brief Abstract base class for Configurators.
  *
- * A Configurator parses the command line input to an Options instance, thereby
- * checking the input * for its syntactic wellformedness and its semantic
- * validity. It applies default values iff necessary.
+ * A Configurator carries out every step that is necessary to provide the
+ * configuration object.
  *
  * The following is the responsibility of the Configurator:
  * - Consume the command line tokens completely
@@ -125,15 +124,26 @@ private:
  * - Verfiy that mandatory input is present
  * - Apply default values
  * - Manage side effects between options
+ * - Decide whether input is to be ignored
+ * - Compose an Options object for configuration
+ * .
  *
- * The following properties are considered globally equal and are therefore
- * implemented in the base class: version info, logging, result output.
+ * Any subclass is responsible to report the options it supports specifically,
+ * to parse the expected arguments (zero, one or many) and to configure the
+ * parsed options to configuration settings.
+ *
+ * The following properties are considered equal for any of the applications
+ * and are therefore implemented in the base class: version info, logging,
+ * result output.
  *
  * To have logging fully configured at hand while parsing the command line
  * input, the global Logging is configured in the base class to have a common
  * implementation for all Configurator instances. The logging setup properties
- * - as there are verbosity level and logging output stream - is therefore
- * not part of the resulting Options.
+ * as there are verbosity level and logging output stream is therefore not part
+ * of the resulting Options.
+ *
+ * A subclass DefaultConfigurator is provided that consumes a single command
+ * line argument and adds no application specific options.
  */
 class Configurator
 {
