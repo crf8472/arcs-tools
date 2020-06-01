@@ -35,8 +35,8 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"               // for CallSyntaxException, Configurator
 #endif
-#ifndef __ARCSTOOLS_FORMAT_HPP__
-#include "format.hpp"               // for ARId
+#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"               // for ARId
 #endif
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
 #include "options.hpp"              // for Options, __ARCSTOOLS_OPTIONS_HPP__

@@ -204,7 +204,7 @@ add_library ( ${PROJECT_NAME}-objects OBJECT
 	${PROJECT_SOURCE_DIR}/apps.cpp
 	${PROJECT_SOURCE_DIR}/clitokens.cpp
 	${PROJECT_SOURCE_DIR}/config.cpp
-	${PROJECT_SOURCE_DIR}/format.cpp
+	${PROJECT_SOURCE_DIR}/layouts.cpp
 	${PROJECT_SOURCE_DIR}/options.cpp
 	${PROJECT_SOURCE_DIR}/parsehandlers.cpp
 	${PROJECT_SOURCE_DIR}/printers.cpp

@@ -1,7 +1,7 @@
 #include "catch2/catch.hpp"
 
-#ifndef __ARCSTOOLS_FORMAT_HPP__
-#include "format.hpp"
+#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"
 #endif
 #ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
 #include "printers.hpp"

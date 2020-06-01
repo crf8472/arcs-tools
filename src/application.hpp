@@ -22,8 +22,8 @@
 #include <arcsdec/descriptors.hpp>  // for FileReaderDescriptor
 #endif
 
-#ifndef __ARCSTOOLS_FORMAT_HPP__
-#include "format.hpp"          // for StringTable
+#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"          // for StringTable
 #endif
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
 #include "options.hpp"

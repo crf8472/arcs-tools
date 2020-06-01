@@ -25,8 +25,8 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"          // for Configurator, CallSyntaxException
 #endif
-#ifndef __ARCSTOOLS_FORMAT_HPP__
-#include "format.hpp"          // for StringTable
+#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"          // for StringTable
 #endif
 #ifndef __ARCSTOOLS_VERSION_HPP__
 #include "version.hpp"         // for ARCSTOOLS_VERSION_INFO

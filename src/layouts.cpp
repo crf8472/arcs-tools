@@ -4,8 +4,8 @@
  * \brief Formatting interfaces and classes
  */
 
-#ifndef __ARCSTOOLS_FORMAT_HPP__
-#include "format.hpp"
+#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"
 #endif
 
 #include <algorithm>           // for copy_if

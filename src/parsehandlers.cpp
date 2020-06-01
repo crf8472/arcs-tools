@@ -6,7 +6,7 @@
 #include <iostream>               // for cout
 #include <ostream>                // for operator<<, basic_ostream<>::__ostr...
 #include <utility>                // for move
-#include "format.hpp"             // for ARIdLayout
+#include "layouts.hpp"             // for ARIdLayout
 #include "printers.hpp"      // for ARTripletFormat, ARIdTableFormat
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__

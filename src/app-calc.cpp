@@ -39,8 +39,8 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
 #endif
-#ifndef __ARCSTOOLS_FORMAT_HPP__
-#include "format.hpp"               // for operator<<
+#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"               // for operator<<
 #endif
 #ifndef __ARCSTOOLS_PRINTERS_HPP__
 #include "printers.hpp"
