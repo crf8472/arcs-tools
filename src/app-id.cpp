@@ -19,8 +19,8 @@
 #include <arcsdec/calculators.hpp>
 #endif
 
-#ifndef __ARCSTOOLS_APPS_HPP__
-#include "apps.hpp"
+#ifndef __ARCSTOOLS_APPREGISTRY_HPP__
+#include "appregistry.hpp"
 #endif
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
 #include "clitokens.hpp"

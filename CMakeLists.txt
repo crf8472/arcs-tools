@@ -201,7 +201,7 @@ add_library ( ${PROJECT_NAME}-objects OBJECT
 	${PROJECT_SOURCE_DIR}/app-parse.cpp
 	${PROJECT_SOURCE_DIR}/app-verify.cpp
 	${PROJECT_SOURCE_DIR}/application.cpp
-	${PROJECT_SOURCE_DIR}/apps.cpp
+	${PROJECT_SOURCE_DIR}/appregistry.cpp
 	${PROJECT_SOURCE_DIR}/clitokens.cpp
 	${PROJECT_SOURCE_DIR}/config.cpp
 	${PROJECT_SOURCE_DIR}/layouts.cpp
@@ -265,8 +265,8 @@ endif (WITH_TESTS)
 ## --- Tool informations (for manpages and installing symlinks)
 
 ## Names
-set (TOOL_NAME_ID     ${PROJECT_NAME}-id )
 set (TOOL_NAME_CALC   ${PROJECT_NAME}-calc )
+set (TOOL_NAME_ID     ${PROJECT_NAME}-id )
 set (TOOL_NAME_PARSE  ${PROJECT_NAME}-parse )
 set (TOOL_NAME_VERIFY ${PROJECT_NAME}-verify )
 

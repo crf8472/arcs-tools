@@ -30,8 +30,8 @@
 #include <arcsdec/metaparser.hpp>   // for MetadataParserSelection
 #endif
 
-#ifndef __ARCSTOOLS_APPS_HPP__
-#include "apps.hpp"                 // for RegisterApplicationType
+#ifndef __ARCSTOOLS_APPREGISTRY_HPP__
+#include "appregistry.hpp"                 // for RegisterApplicationType
 #endif
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
 #include "clitokens.hpp"            // for CLITokens, __ARCSTOOLS_CLITOKENS_H...

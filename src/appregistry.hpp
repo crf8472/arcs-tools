@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_APPS_HPP__
-#define __ARCSTOOLS_APPS_HPP__
+#ifndef __ARCSTOOLS_APPREGISTRY_HPP__
+#define __ARCSTOOLS_APPREGISTRY_HPP__
 
 /**
  * \file

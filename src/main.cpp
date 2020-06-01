@@ -14,8 +14,8 @@
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"
 #endif
-#ifndef __ARCSTOOLS_APPS_HPP__
-#include "apps.hpp"
+#ifndef __ARCSTOOLS_APPREGISTRY_HPP__
+#include "appregistry.hpp"
 #endif
 #ifndef __ARCSTOOLS_VERSION_HPP__
 #include "version.hpp"
