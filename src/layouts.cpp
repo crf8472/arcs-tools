@@ -1255,21 +1255,19 @@ std::vector<arcstk::checksum::type> AlbumTableBase::typelist(
 
 	// Assume identical type sets in each track
 	const auto& used_types = checksums[0].types();
-	const auto absent { used_types.end() };
+	const auto& defined_types = arcstk::checksum::types;
 
 	// Construct a list of all used types in the order they
 	// appear in arcstk::checksum::types
 
-	const auto& defined_types = arcstk::checksum::types;
-
-	std::vector<arcstk::checksum::type> types_to_print{};
+	std::vector<arcstk::checksum::type> types_to_print { };
 	types_to_print.reserve(defined_types.size());
 
 	std::copy_if(defined_types.begin(), defined_types.end(),
 			std::back_inserter(types_to_print),
-			[used_types, absent](const arcstk::checksum::type& t)
+			[used_types](const arcstk::checksum::type& t)
 			{
-				return used_types.find(t) != absent;
+				return used_types.find(t) != used_types.end();
 			});
 
 	return types_to_print;

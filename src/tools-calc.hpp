@@ -65,9 +65,19 @@ class ARCSMultifileAlbumCalculator final
 public:
 
 	/**
-	 * \brief Constructor.
+	 * \brief Default Constructor
+	 *
+	 * \param[in] type The default type to request
 	 */
-	ARCSMultifileAlbumCalculator();
+	ARCSMultifileAlbumCalculator(const arcstk::checksum::type type);
+
+	/**
+	 * \brief Constructor.
+	 *
+	 * Uses ARCS2 as the default type to request.
+	 */
+	ARCSMultifileAlbumCalculator() : ARCSMultifileAlbumCalculator(
+			arcstk::checksum::type::ARCS2) { /* empty */ };
 
 	/**
 	 * \brief Virtual default destructor.
@@ -105,6 +115,10 @@ public:
 	std::tuple<Checksums, ARId, std::unique_ptr<TOC>> calculate(
 			const std::string &metafilename, const std::string &searchpath)
 			const;
+
+	void set_type(const arcstk::checksum::type &type);
+
+	arcstk::checksum::type type() const;
 
 private:
 

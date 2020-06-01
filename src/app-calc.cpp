@@ -157,10 +157,12 @@ int ARCalcConfigurator::do_parse_arguments(CLITokens& cli, Options &options)
 std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 		std::unique_ptr<Options> options)
 {
-	// TODO A hack: we know that all flags left of LIST_TOC_FORMATS are
-	// info-do-nothing flags. Hence, if the leftmost (set) flag is bigger (== to
-	// the left) of this flag, there are info flags. If, furthermore, the
-	// rightmost (set) flag is bigger than that, there are _only_ info flags.
+	// TODO A hack: we leverage implementation knowledge from ARCalcOptions!
+	// All flags "left" (bigger) of LIST_TOC_FORMATS are info-do-nothing flags.
+	// Hence, if the leftmost (set) flag has a bigger index (== to the left)
+	// than this flag, there are info flags.
+	// If, furthermore, the rightmost (set) flag is bigger than that, there are
+	// _only_ info flags and no other do-something flags.
 
 	// If there are info flags
 	if (options->leftmost_flag() >= ARCalcOptions::LIST_TOC_FORMATS)
@@ -265,12 +267,18 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 	std::vector<std::string> audiofilenames = options.get_arguments();
 	std::string metafilename = options.get(ARCalcOptions::METAFILE);
 
+	arcstk::checksum::type type = arcstk::checksum::type::ARCS2;
+	if (options.is_set(ARCalcOptions::NOV2))
+	{
+		type = arcstk::checksum::type::ARCS1;
+	}
+
 	if (metafilename.empty())
 	{
 		// No Offsets => No ARId => No TOC
 		// => No Album information, but may be requested as album by options
 
-		ARCSCalculator c;
+		ARCSCalculator c { type };
 
 		// Checksums for a list of files (no tracks known)
 		auto checksums = c.calculate(audiofilenames,
@@ -288,7 +296,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 		const auto audiofilenames = options.get_arguments();
 		auto metafilepath         = options.get(ARCalcOptions::METAFILEPATH);
 
-		calc::ARCSMultifileAlbumCalculator c;
+		calc::ARCSMultifileAlbumCalculator c { type };
 
 		// TODO Resolve the audiofilenames HERE instead to do this within
 		// the calculator class. Because the existence and validity

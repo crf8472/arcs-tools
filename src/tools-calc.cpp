@@ -80,6 +80,14 @@ public:
 	std::tuple<Checksums, ARId, std::unique_ptr<TOC>> calculate(
 			const std::string &metafilename,
 			const std::string &searchpath) const;
+
+	void set_type(const arcstk::checksum::type &type);
+
+	arcstk::checksum::type type() const;
+
+private:
+
+	arcstk::checksum::type type_;
 };
 
 
@@ -127,7 +135,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 		throw std::logic_error(msg);
 	}
 
-	ARCSCalculator c;
+	ARCSCalculator c { type() };
 
 	if (1 == filecount) // delegate to case: single-file album
 	{
@@ -185,7 +193,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 
 	// Calculate ARCSs
 
-	ARCSCalculator calculator;
+	ARCSCalculator calculator { type() };
 
 	if (single_audio_file)
 	{
@@ -231,13 +239,27 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 }
 
 
+void ARCSMultifileAlbumCalculator::Impl::set_type(
+		const arcstk::checksum::type &type)
+{
+	type_ = type;
+}
+
+
+arcstk::checksum::type ARCSMultifileAlbumCalculator::Impl::type() const
+{
+	return type_;
+}
+
+
 // ARCSMultifileAlbumCalculator
 
 
-ARCSMultifileAlbumCalculator::ARCSMultifileAlbumCalculator()
+ARCSMultifileAlbumCalculator::ARCSMultifileAlbumCalculator(
+		const arcstk::checksum::type type)
 	: impl_(std::make_unique<ARCSMultifileAlbumCalculator::Impl>())
 {
-	// empty
+	impl_->set_type(type);
 }
 
 
@@ -259,6 +281,18 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 		const std::string &metafilename, const std::string &searchpath) const
 {
 	return impl_->calculate(metafilename, searchpath);
+}
+
+
+void ARCSMultifileAlbumCalculator::set_type(const arcstk::checksum::type &type)
+{
+	impl_->set_type(type);
+}
+
+
+arcstk::checksum::type ARCSMultifileAlbumCalculator::type() const
+{
+	return impl_->type();
 }
 
 } // namespace calc
