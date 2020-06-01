@@ -46,10 +46,10 @@
 #include "printers.hpp"
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
-#include "tools_calc.hpp"           // for ARCSMultifileAlbumCalculator
+#include "tools-calc.hpp"           // for ARCSMultifileAlbumCalculator
 #endif
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
-#include "tools_fs.hpp"             // for path
+#include "tools-fs.hpp"             // for path
 #endif
 
 namespace arcsapp

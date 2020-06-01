@@ -1,5 +1,5 @@
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
-#include "tools_fs.hpp"
+#include "tools-fs.hpp"
 #endif
 
 extern "C" {

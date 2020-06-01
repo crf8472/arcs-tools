@@ -42,13 +42,13 @@
 #include "options.hpp"              // for Options, __ARCSTOOLS_OPTIONS_HPP__
 #endif
 #ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
-#include "tools_parse.hpp"        // for ContentHandler
+#include "tools-parse.hpp"        // for ContentHandler
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
-#include "tools_calc.hpp"           // for audiofile_layout
+#include "tools-calc.hpp"           // for audiofile_layout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
-#include "tools_fs.hpp"             // for file_exists
+#include "tools-fs.hpp"             // for file_exists
 #endif
 
 namespace arcsapp

@@ -3,7 +3,7 @@
  */
 
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
-#include "tools_calc.hpp"
+#include "tools-calc.hpp"
 #endif
 
 #include <memory>                   // for unique_ptr, make_unique

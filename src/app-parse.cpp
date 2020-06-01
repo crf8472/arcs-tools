@@ -33,10 +33,10 @@
 #include "config.hpp"
 #endif
 #ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
-#include "tools_parse.hpp"
+#include "tools-parse.hpp"
 #endif
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
-#include "tools_fs.hpp"
+#include "tools-fs.hpp"
 #endif
 
 namespace arcsapp
