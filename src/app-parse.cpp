@@ -32,8 +32,8 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
 #endif
-#ifndef __ARCSTOOLS_PARSEHANDLERS_HPP__
-#include "parsehandlers.hpp"
+#ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
+#include "tools_parse.hpp"
 #endif
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
 #include "tools_fs.hpp"

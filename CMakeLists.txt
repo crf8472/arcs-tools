@@ -206,10 +206,10 @@ add_library ( ${PROJECT_NAME}-objects OBJECT
 	${PROJECT_SOURCE_DIR}/config.cpp
 	${PROJECT_SOURCE_DIR}/layouts.cpp
 	${PROJECT_SOURCE_DIR}/options.cpp
-	${PROJECT_SOURCE_DIR}/parsehandlers.cpp
 	${PROJECT_SOURCE_DIR}/printers.cpp
 	${PROJECT_SOURCE_DIR}/tools_calc.cpp
 	${PROJECT_SOURCE_DIR}/tools_fs.cpp
+	${PROJECT_SOURCE_DIR}/tools_parse.cpp
 )
 target_include_directories (${PROJECT_NAME}-objects
 	PUBLIC ${PROJECT_BUILD_SOURCE_DIR} )

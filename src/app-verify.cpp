@@ -41,8 +41,8 @@
 #ifndef __ARCSTOOLS_OPTIONS_HPP__
 #include "options.hpp"              // for Options, __ARCSTOOLS_OPTIONS_HPP__
 #endif
-#ifndef __ARCSTOOLS_PARSEHANDLERS_HPP__
-#include "parsehandlers.hpp"        // for ContentHandler
+#ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
+#include "tools_parse.hpp"        // for ContentHandler
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools_calc.hpp"           // for audiofile_layout
