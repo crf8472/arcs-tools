@@ -95,12 +95,12 @@ const std::vector<std::pair<Option, uint32_t>>&
 	ARVerifyConfigurator::do_supported_options() const
 {
 	const static std::vector<std::pair<Option, uint32_t>> local_options = {
-		{{      "no-v1",    false, "FALSE",
-			"do not verify ARCSv1" },
-			ARVerifyOptions::NOV1 },
-		{{      "no-v2",    false, "FALSE",
-			"do not verify ARCSv2" },
-			ARVerifyOptions::NOV2 },
+		//{{      "no-v1",    false, "FALSE",   // TODO Really to support?
+		//	"do not verify ARCSv1" },
+		//	ARVerifyOptions::NOV1 },
+		//{{      "no-v2",    false, "FALSE",   // TODO Really to support?
+		//	"do not verify ARCSv2" },
+		//	ARVerifyOptions::NOV2 },
 		{{      "album",    false, "~",
 			"abbreviates --first --last" },
 			ARVerifyOptions::ALBUM },
@@ -237,7 +237,8 @@ int ARVerifyApplication::do_run(const Options &options)
 {
 	// Calculate the actual ARCSs from input files
 
-	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(options);
+	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(options,
+			{ arcstk::checksum::type::ARCS2 });
 
 	if (checksums.size() == 0)
 	{

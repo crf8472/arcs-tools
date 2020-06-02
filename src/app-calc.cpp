@@ -104,6 +104,15 @@ ARCalcConfigurator::~ARCalcConfigurator() noexcept
 const std::vector<std::pair<Option, uint32_t>>&
 	ARCalcConfigurator::do_supported_options() const
 {
+	// TODO --no-track-nos: Do not print the track numbers (DEFAULT off)
+	// TODO --no-offsets:   Do not print the offsets (DEFAULT off)
+	// TODO --no-lengths:   Do not print the lengths (DEFAULT off)
+	// TODO --no-col-headers: Do not print the column headers (DEFAULT off)
+	// TODO --print-sums-only: Just list the sums, no table header etc (DEFAULT off)
+	// TODO --tracks-are-cols Print format with tracks as columns (DEFAULT off)
+	// TODO --print-id:     Print the ARId (DEFAULT off)
+	// TODO --print-url:    Print AccurateRip URL (DEFAULT off)
+	// TODO --col-delim:    Specify Column delimiter (DEFAULT: blank)
 	const static std::vector<std::pair<Option, uint32_t>> local_options = {
 		{{      "no-v1",    false, "FALSE",
 			"do not provide ARCSv1" },
@@ -262,24 +271,24 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 
 
 std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
-		const Options &options)
+		const Options &options, const std::set<arcstk::checksum::type> &types)
 {
+	using ChecksumType = arcstk::checksum::type;
+
+	// XXX Determine whether to request ARCS2+1 or ARCS1-only
+	ChecksumType checksum_type = types.find(ChecksumType::ARCS2) != types.end()
+		? ChecksumType::ARCS2
+		: ChecksumType::ARCS1;
+
 	std::vector<std::string> audiofilenames = options.get_arguments();
 	std::string metafilename = options.get(ARCalcOptions::METAFILE);
-
-	// Select the checksum::type to request
-	arcstk::checksum::type type = arcstk::checksum::type::ARCS2;
-	if (options.is_set(ARCalcOptions::NOV2))
-	{
-		type = arcstk::checksum::type::ARCS1;
-	}
 
 	if (metafilename.empty())
 	{
 		// No Offsets => No ARId => No TOC
 		// => No Album information, but may be requested as album by options
 
-		ARCSCalculator c { type };
+		ARCSCalculator c { checksum_type };
 
 		// Checksums for a list of files (no tracks known)
 		auto checksums = c.calculate(audiofilenames,
@@ -297,7 +306,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 		const auto audiofilenames = options.get_arguments();
 		auto metafilepath         = options.get(ARCalcOptions::METAFILEPATH);
 
-		calc::ARCSMultifileAlbumCalculator c { type };
+		calc::ARCSMultifileAlbumCalculator c { checksum_type };
 
 		// TODO Resolve the audiofilenames HERE instead to do this within
 		// the calculator class. Because the existence and validity
@@ -407,14 +416,15 @@ int ARCalcApplication::run_calculation(const Options &options)
 	// a byproduct of ARCS2 and the type-to-calculate ARCS2 hence represents
 	// both the types-requested ARCS1 as well as ARCS2).
 
-	auto [ checksums, arid, toc ] = this->calculate(options);
+	auto [ checksums, arid, toc ] = this->calculate(options, requested_types);
 
 	if (checksums.size() == 0)
 	{
 		this->fatal_error("Calculation returned no checksums");
 	}
 
-	// A hack: for printing, remove all types not explicitly requested
+	// A hack: for printing, remove all types from the result that not
+	// have been requested explicitly (implements e.g. --no-v1)
 
 	for (auto& track : checksums)
 	{

@@ -42,20 +42,20 @@ passed to be the first track of the album or the last audio file to be the last
 track.
 
 
-\page inc_logfileopt
-
-\par -l,--logfile=LOGFILE
-Log messages will go to this file instead of stdlog. Errors will be logged but
-will additionally printed on stderr. If LOGFILE exists, it will be overwritten
-without warning. If no logfile is specified, all log messages will go to stderr.
-
-
 \page inc_outfileopt
 
 \par -o,--outfile=OUTFILE
 Result output (checksums) will go to this file instead of stdout. The outfile
 will not contain log messages and no error messages. If OUTFILE exists, it will
 be overwritten. If no output file is specified, output will go to stdout.
+
+
+\page inc_logfileopt
+
+\par -l,--logfile=LOGFILE
+Log messages will go to this file instead of stdlog. Errors will be logged but
+will additionally printed on stderr. If LOGFILE exists, it will be overwritten
+without warning. If no logfile is specified, all log messages will go to stderr.
 
 
 \page inc_logoptions
@@ -86,14 +86,16 @@ other command line options will be evaluated.
 
 \par --list-toc-formats
 Print a list of supported TOC file formats. Files specified by the \b -m
-option may have any of those formats.
+option may have any of those formats. This switch is ignored if input files are
+specified.
 
 \par --list-audio-formats
 Print a list of supported audio readers. Each reader will specify the list of
 any supported audio codecs and any supported container file formats. Each
 reader supports any combination of a supported audio codec and a supported
 container file format. Note that arcs-tools only supports lossless audio
-codecs or the lossless settings of codecs that support lossless encoding.
+codecs or the lossless settings of codecs that support lossless encoding. This
+switch is ignored if input files are specified.
 
 
 \page inc_calcoutoptions

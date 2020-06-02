@@ -53,7 +53,7 @@ be a single file or one file per track.
 
 You want: The ARCSs of each track.
 
-$ @TOOL_NAME_CALC@ -m foo/foo.cue
+$ @TOOL_NAME_CALC@ -m myalbum/toc.cue
 
 
 \subsection ALBUMTOCF 2. Album + TOC, overriding the files in the TOC, if any
@@ -65,9 +65,7 @@ You have: An album ripped to a single audio file, say fLaC, and the TOC as
 CUESheet. The CUESheet specifies audio files, but you want to override them with
 \c foo/foo.flac instead.
 
-You want: The ARCSs of each track.
-
-$ @TOOL_NAME_CALC@ -m foo/foo.cue foo/foo.flac
+$ @TOOL_NAME_CALC@ -m myalbum/toc.cue myalbum/album_rip.flac
 
 
 \par b) One audio file per track
@@ -76,9 +74,7 @@ You have: An album ripped one-file-per-track to a set of fLaC files, and the TOC
 as a CUESheet. The CUESheet is stored elsewhere or references WAV files, so you
 want to override its file references.
 
-You want: The ARCSs of each track/file.
-
-$ @TOOL_NAME_CALC@ -m foo/foo.cue foo/\*.flac
+$ @TOOL_NAME_CALC@ -m myalbum/toc.cue myalbum/track_1.flac myalbum/track_2.flac ...
 
 
 \subsection ALBUMFILES 3. Audiofiles forming an album, but no TOC
@@ -87,13 +83,7 @@ You have: A set of audio files that you know to form an album, but there is no
 TOC information. The filenames are such that the first filename is also the
 first track and the last filename is the last track of the album.
 
-You want: The ARCSs of each track/file.
-
-$ @TOOL_NAME_CALC@ --album foo/\*.flac
-
-Of course you can specifiy the order of the filenames explicitly:
-
-$ @TOOL_NAME_CALC@ --album foo/f1.flac foo/f2.flac ...
+$ @TOOL_NAME_CALC@ --album myalbum/track_1.flac myalbum/track_2.flac ...
 
 
 \subsection FILES 4. Some audiofiles but no TOC
@@ -101,17 +91,36 @@ $ @TOOL_NAME_CALC@ --album foo/f1.flac foo/f2.flac ...
 You have: A set of audiofiles that do not form an album. (Either the album is
 missing the first or last track or the tracks are completely unrelated.)
 
-You want: The ARCSs of each file.
 
-$ @TOOL_NAME_CALC@ foo/\*.flac
+\par a) Unrelated intermediate tracks or nothing known
+
+The following just applies the AccurateRip algorithm for \e intermediate tracks
+(i.e. that are neither first nor last track) to any input file:
+
+$ @TOOL_NAME_CALC@ myalbum/\*.flac
 
 Of course you can specifiy the order of the filenames explicitly:
 
-$ @TOOL_NAME_CALC@ foo/f1.flac foo/f2.flac ...
+$ @TOOL_NAME_CALC@ myalbum/f1.flac myalbum/f2.flac ...
 
-If you know that \c f1.flac is the first track, declare it accordingly:
 
-$ @TOOL_NAME_CALC@ --first foo/f1.flac foo/f2.flac ...
+\par a) First or last track known but album incomplete
+
+For each call you may or may not specifiy exactly one first and one last track.
+These correspond with the first and last of the audio filenames you pass, but
+only if the switches \b --first or \b --last explicitly declare that either
+first or last position in the audio filename list should be treated
+specifically.
+
+If you know that \c f1.flac is the first track, pass the file as first of
+the audio files and declare it accordingly:
+
+$ @TOOL_NAME_CALC@ --first myalbum/f1.flac myalbum/f2.flac ...
+
+If you know that \c f17.flac is the last track, pass the file as last of the
+audio files and declare it accordingly:
+
+$ @TOOL_NAME_CALC@ --last myalbum/f1.flac myalbum/f12.flac ... myalbum/f17.flac
 
 
 \section BUGS

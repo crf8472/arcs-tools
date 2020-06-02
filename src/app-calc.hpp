@@ -134,10 +134,17 @@ public:
 	/**
 	 * \brief Do calculation based on the options passed.
 	 *
+	 * Implementation can use any of the \c options, but should not alter
+	 * the set of requested types.
+	 *
 	 * \param[in] options The options to use
+	 * \param[in] types   The checksum types requested
+	 *
+	 * \return Calculation result
 	 */
 	static std::tuple<Checksums, ARId, std::unique_ptr<TOC>> calculate(
-			const Options &options);
+			const Options &options,
+			const std::set<arcstk::checksum::type> &types);
 
 private:
 

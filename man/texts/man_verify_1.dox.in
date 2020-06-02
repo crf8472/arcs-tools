@@ -37,11 +37,11 @@ not be accepted.
 
 \subsection OUTPUT Options for output
 
-\copydoc inc_calcoutoptions
-
-\copydoc inc_logfileopt
+\copydoc inc_calcinfooptions
 
 \copydoc inc_outfileopt
+
+\copydoc inc_logfileopt
 
 \copydoc inc_logoptions
 
