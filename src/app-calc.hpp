@@ -11,6 +11,7 @@
 
 #include <cstdint>                // for uint8_t, uint16_t
 #include <memory>                 // for unique_ptr
+#include <set>                    // for set
 #include <string>                 // for string
 #include <tuple>                  // for tuple
 
@@ -159,6 +160,16 @@ private:
 	 */
 	std::unique_ptr<ChecksumsResultPrinter> configure_format(
 			const Options &options) const;
+
+	/**
+	 * \brief Determine the requested checksum types for calculation.
+	 *
+	 * \param[in] options   The options parsed from command line
+	 *
+	 * \return Checksum types to calculate.
+	 */
+	std::set<arcstk::checksum::type> requested_types(const Options &options)
+		const;
 
 	/**
 	 * \brief Worker method for run(): handles info requests.

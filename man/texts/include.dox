@@ -6,10 +6,14 @@
 \page inc_license
 
 License is MIT. See full license text:
-https://codeberg.org/tristero/arcstk/src/branch/master/LICENSE
+https://codeberg.org/tristero/arcs-tools/src/branch/master/LICENSE
 
 
 \page inc_calcdesc
+
+Accepted input formats for metadata files are the ones listed by \b
+--list-toc-formats. Accepted input formats for audio files are the ones listed
+by \b --list-audio-formats.
 
 If a metadata file with the TOC is passed audio files may or may not be passed
 additionally.
@@ -30,15 +34,17 @@ have to override them by a single audiofile holding all tracks or you have to
 specify exactly one distinct audiofile for each known track.
 
 If audiofiles are passed without a metadata file, the audiofiles are processed
-in the order their names are passed. The audio input is not supposed to form an
-album, but can be declared to do so by using \b --album or the switches \b
---first and \b --last to declare the first audio file in the list passed to be
-the first track of the album and the last audio file to be the last track.
+in the order their names are passed. (In case of wildcards this may be specific
+to your command line processor.) The audio input is not supposed to form an
+album, but can be declared to do so by using \b --album or a combination of the
+switches \b --first and \b --last to declare the first audio file in the list
+passed to be the first track of the album or the last audio file to be the last
+track.
 
 
 \page inc_logfileopt
 
-\par -l, --logfile=LOGFILE
+\par -l,--logfile=LOGFILE
 Log messages will go to this file instead of stdlog. Errors will be logged but
 will additionally printed on stderr. If LOGFILE exists, it will be overwritten
 without warning. If no logfile is specified, all log messages will go to stderr.
@@ -46,7 +52,7 @@ without warning. If no logfile is specified, all log messages will go to stderr.
 
 \page inc_outfileopt
 
-\par -o, --outfile=OUTFILE
+\par -o,--outfile=OUTFILE
 Result output (checksums) will go to this file instead of stdout. The outfile
 will not contain log messages and no error messages. If OUTFILE exists, it will
 be overwritten. If no output file is specified, output will go to stdout.
@@ -54,18 +60,19 @@ be overwritten. If no output file is specified, output will go to stdout.
 
 \page inc_logoptions
 
-\par -q, --quiet
+\par -q,--quiet
 Suppress any informational message on stdout, just print the result. A failure
 during program run may result in no information. Takes precedence over any
-potentially present \b -v.
+potentially present \b -v. Takes any effect off of \b -l.
 
-\par -v [n]
+\par -v,--verbosity [n]
 Activate loglevel n. Default loglevel (without any \b -v option) is \b n == 2
-and prints warnings and above. Option \b -v0 is equivalent to \b -q and prints
+and prints warnings and above. Option \b -v 0 is equivalent to \b -q and prints
 no log messages at all. 1 == errors, 2(default) == warnings, 3 == info, 4 ==
-debug, 5 == trace. For any \b n > 5, loglevel 5 will be set. Log messages will
-be printed to stdlog by default. Alternatively, a logfile can be specified with
-\b --l. If \b -q is present, any loglevel options will be ignored.
+debug, 5 - 8 == levels of tracing. For any \b n > 8, loglevel 8 will be set.
+Log messages will be printed to stdlog by default. Alternatively, a logfile can
+be specified by option \b --l. If \b -q is present, any loglevel options will be
+ignored.
 
 
 \page inc_versionopt
@@ -75,35 +82,57 @@ Print version information and exit. If \b --version is passed, neither of the
 other command line options will be evaluated.
 
 
+\page inc_calcinfooptions
+
+\par --list-toc-formats
+Print a list of supported TOC file formats. Files specified by the \b -m
+option may have any of those formats.
+
+\par --list-audio-formats
+Print a list of supported audio readers. Each reader will specify the list of
+any supported audio codecs and any supported container file formats. Each
+reader supports any combination of a supported audio codec and a supported
+container file format. Note that arcs-tools only supports lossless audio
+codecs or the lossless settings of codecs that support lossless encoding.
+
+
 \page inc_calcoutoptions
 
-\par --v1
-Calculate (only) ARCSs v1. Default is \b --v1 \b --v2 which calculates ARCSs v1
-as well as v2. By specifiying \b --v1 the calculation of ARCSv2 can be
-suppressed.
+\par --no-v1
+Do not output ARCSs v1. Default is OFF which prints ARCSs v1 as well as ARCSs
+v2. Since, however, the ARCSv1 checksum is effectively a subtotal of the ARCSv2
+checksum, ARCSv1 will effectively have to be calculated. Therefore, this switch
+will not result in making the calculation consume less time. Combining this
+switch with --no-v2 will result in doing nothing.
 
-\par --v2
-Calculate (only) ARCSs v2. Default is \b --v1 \b --v2 which calculates ARCSs v1
-as well as v2. By specifiying \b --v2 the calculation of ARCSv1 can be
-suppressed.
+\par --no-v2
+Do not calculate and output ARCSs v2. Default is OFF which calculates and
+output ARCSs v1 as well as v2. By specifiying \b --no-v2 the calculation of
+ARCSv2 is suppressed. Combining this switch with \b --no-v1 will result in doing
+nothing.
 
 
 \page inc_calcinoptions
 
 \par --first
 Process the first of the audiofiles as first track of an album. This option is
-implied in \b -m.
+implied in \b -m. This switch is intended for cases in which all tracks of an
+album are represented as single files but no TOC metadata is present.
+See also \b --last and \b --album.
 
 \par --last
 Process the last of the audiofiles as last track of an album. This option is
-implied in \b -m.
+implied in \b -m. This switch is intended for cases in which all tracks of an
+album are represented as single files but no TOC metadata is present.
+See also \b --first and \b --album.
 
 \par --album
-Abbreviates \b --first \b --last: Process the first of the audiofiles as first
-track and the last one as the last track of the album. This option is
-implied in \b -m.
+Abbreviates \b --first \b --last to process the first of the audiofiles as first
+track and the last one as the last track of an album. This option is
+implied in \b -m. This switch is intended for cases in which all tracks of an
+album are represented as single files but no TOC metadata is present.
 
-\par -m, --metadata=TOCFILE
+\par -m,--metadata=TOCFILE
 Specify the file with the TOC data of the original medium. Accepted input
 formats are the ones listed by \b --list-toc-formats. The specified file is
 expected to provide the track offsets. It may as well optionally provide the
@@ -111,5 +140,12 @@ total number of samples and the name(s) of the audio file(s). If names of \b
 AUDIOFILE(s) are passed, they will override any names of audio files potentially
 occurring in \b TOCFILE. If TOCFILE is not readable, run stops with an error
 code.
+
+
+\page inc_buginfo
+
+For the list of issues see https://codeberg.org/tristero/arcs-tools/issues
+
+Please file any bug on https://codeberg.org/tristero/arcs-tools
 
 */

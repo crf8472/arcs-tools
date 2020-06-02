@@ -267,6 +267,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 	std::vector<std::string> audiofilenames = options.get_arguments();
 	std::string metafilename = options.get(ARCalcOptions::METAFILE);
 
+	// Select the checksum::type to request
 	arcstk::checksum::type type = arcstk::checksum::type::ARCS2;
 	if (options.is_set(ARCalcOptions::NOV2))
 	{
@@ -344,6 +345,26 @@ std::unique_ptr<ChecksumsResultPrinter> ARCalcApplication::configure_format(
 }
 
 
+std::set<arcstk::checksum::type> ARCalcApplication::requested_types(
+		const Options &options) const
+{
+	// Select the checksum::type(s) to print
+
+	std::set<arcstk::checksum::type> types = {};
+
+	if (not options.is_set(ARCalcOptions::NOV1))
+	{
+		types.insert(arcstk::checksum::type::ARCS1);
+	}
+	if (not options.is_set(ARCalcOptions::NOV2))
+	{
+		types.insert(arcstk::checksum::type::ARCS2);
+	}
+
+	return types;
+}
+
+
 int ARCalcApplication::run_info(const Options &options)
 {
 	FormatCollector collector;
@@ -370,11 +391,40 @@ int ARCalcApplication::run_info(const Options &options)
 
 int ARCalcApplication::run_calculation(const Options &options)
 {
+	// Determine the explicitly requested types
+
+	auto requested_types = this->requested_types(options);
+
+	if (requested_types.empty()) // No types requested? No calculation required!
+	{
+		ARCS_LOG_WARNING << "No checksum types requested. Done.";
+
+		return EXIT_SUCCESS;
+	}
+
+	// Let calculate() determine the types to _calculate_, which are allowed
+	// to differ from the explicitly requested types (since e.g. ARCS1 is
+	// a byproduct of ARCS2 and the type-to-calculate ARCS2 hence represents
+	// both the types-requested ARCS1 as well as ARCS2).
+
 	auto [ checksums, arid, toc ] = this->calculate(options);
 
 	if (checksums.size() == 0)
 	{
 		this->fatal_error("Calculation returned no checksums");
+	}
+
+	// A hack: for printing, remove all types not explicitly requested
+
+	for (auto& track : checksums)
+	{
+		for (const auto& type : track.types())
+		{
+			if (requested_types.find(type) == requested_types.end())
+			{
+				track.erase(type);
+			}
+		}
 	}
 
 	// Print formatted results to output stream

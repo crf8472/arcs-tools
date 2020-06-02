@@ -32,9 +32,11 @@ TOC information.
 
 \copydoc inc_calcoutoptions
 
-\copydoc inc_logfileopt
+\copydoc inc_calcinfooptions
 
 \copydoc inc_outfileopt
+
+\copydoc inc_logfileopt
 
 \copydoc inc_logoptions
 
@@ -113,6 +115,8 @@ $ @TOOL_NAME_CALC@ --first foo/f1.flac foo/f2.flac ...
 
 
 \section BUGS
+
+\copydoc inc_buginfo
 
 
 \section COPYRIGHT
