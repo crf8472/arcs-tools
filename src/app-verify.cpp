@@ -94,7 +94,11 @@ ARVerifyConfigurator::ARVerifyConfigurator(int argc, char** argv)
 const std::vector<std::pair<Option, uint32_t>>&
 	ARVerifyConfigurator::do_supported_options() const
 {
-	const static std::vector<std::pair<Option, uint32_t>> local_options = {
+	// Output options
+	// TODO --print-all-matches: Print all block matches, regardless of result
+	// TODO -n,--no-print: Return diff count of best match
+	const static std::vector<std::pair<Option, uint32_t>> local_options =
+	{
 		//{{      "no-v1",    false, "FALSE",   // TODO Really to support?
 		//	"do not verify ARCSv1" },
 		//	ARVerifyOptions::NOV1 },

@@ -28,14 +28,22 @@ binary file (some dBAR-*.bin file) using \b -r or can be piped in via stdin.
 
 \subsection INPUT Options for processing input
 
-\copydoc inc_calcinoptions
-
-\par -r, --response=RESPONSEFILE
+\par -r,--response=RESPONSEFILE
 Specify the binary file with the AccurateRip response. Parsed text files will
-not be accepted.
+not be accepted. If \b -r is absent, references are expected on stdin.
+
+\copydoc inc_calcinoptions
 
 
 \subsection OUTPUT Options for output
+
+\par -n,--no-print
+(NOT YET IMPLEMENTED) Do not print any result. Return the diff count of the best
+match. This entails that 0 indicates a successful verification and some value
+bigger than 0 indicates that some tracks could not be verified.
+
+\par --print-all
+(NOT YET IMPLEMENTED) Print each block match, sorted from best to worst.
 
 \copydoc inc_calcinfooptions
 
@@ -55,15 +63,10 @@ not be accepted.
 You have: An album ripped to a single audio file, say fLaC, or a set of files
 and the TOC (as CUESheet). The CUESheet specifies the actual audiofiles, may it
 be a single file or one file per track. You saved the checksums from AccurateRip
-in a local dBAR file.
+in a local dBAR file (see man 1 arcstk-parse).
 
-You want: To verify the ARCSs of each track.
+$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin -m myalbum/toc.cue
 
-$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin -m foo/foo.cue
-
-or
-
-$ @TOOL_NAME_VERIFY@ -m foo/foo.cue < dBAR-some_id.bin
 
 
 \subsection ALBUMTOCF 2. Album + TOC, overriding the files in the TOC, if any
@@ -73,16 +76,10 @@ $ @TOOL_NAME_VERIFY@ -m foo/foo.cue < dBAR-some_id.bin
 
 You have: An album ripped to a single audio file, say fLaC, and the TOC as
 CUESheet. The CUESheet specifies audio files, but you want to override them with
-\c foo/foo.flac instead. You saved the checksums from AccurateRip in a local
-dBAR file.
+\c myalbum/album_rip.flac instead. You saved the checksums from AccurateRip in a
+local dBAR file (see man 1 arcstk-parse).
 
-You want: To verify the ARCSs of each track.
-
-$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin -m foo/foo.cue foo/foo.flac
-
-or
-
-$ @TOOL_NAME_VERIFY@ -m foo/foo.cue foo/foo.flac < dBAR-some_id.bin
+$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin -m myalbum/toc.cue myalbum/album_rip.flac
 
 
 \par b) One audio file per track
@@ -90,11 +87,10 @@ $ @TOOL_NAME_VERIFY@ -m foo/foo.cue foo/foo.flac < dBAR-some_id.bin
 You have: An album ripped one-file-per-track to a set of fLaC files, and the TOC
 as a CUESheet. The CUESheet is stored elsewhere or references WAV files, so you
 want to override its file references. You saved the checksums from AccurateRip
-in a local dBAR file.
+in a local dBAR file (see man 1 arcstk-parse).
 
-You want: To verify the ARCSs of each track/file.
+$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin -m myalbum/toc.cue myalbum/track_1.flac myalbum/track_2.flac ...
 
-$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin -m foo/foo.cue foo/\*.flac
 
 
 \subsection ALBUMFILES 3. Audiofiles forming an album, but no TOC
@@ -102,40 +98,35 @@ $ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin -m foo/foo.cue foo/\*.flac
 You have: A set of audio files that you know to form an album, but there is no
 TOC information. The filenames are such that the first filename is also the
 first track and the last filename is the last track of the album. You saved the
-checksums from AccurateRip in a local dBAR file.
+checksums from AccurateRip in a local dBAR file (see man 1 arcstk-parse).
 
-You want: To verify the ARCSs of each track/file.
-
-$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin --album foo/\*.flac
-
-Of course you can specifiy the order of the filenames explicitly:
-
-$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin --album foo/f1.flac foo/f2.flac ...
+$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin --album myalbum/f1.flac myalbum/f2.flac ...
 
 
 \subsection FILES 4. Some audiofiles but no TOC
 
 You have: A set of audiofiles that do not form an album in the passed order,
 e.g. the mapping from files to tracks is not known. You saved the checksums of
-some possibly matching album from AccurateRip in a local dBAR file.
+some possibly matching album from AccurateRip in a local dBAR file
+(see man 1 arcstk-parse).
 
-You want: To verify the ARCSs of each file.
+$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin myalbum/track_1.flac myalbum/track_2.flac ...
 
-$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin foo/\*.flac
+If you know that \c track_1.flac is the first track, declare it accordingly:
 
-Of course you can specifiy the order of the filenames explicitly:
+$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin --first myalbum/track_1.flac myalbum/track_2.flac ...
 
-$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin foo/f1.flac foo/f2.flac ...
+If you know that \c track_15.flac is the last track, declare it accordingly:
 
-If you know that \c f1.flac is the first track, declare it accordingly:
-
-$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin --first foo/f1.flac foo/f2.flac ...
+$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin --last myalbum/track_1.flac ... myalbum/track_15.flac
 
 \b NOTE The number of audiofiles passed must be equal to the track count of the
 album.
 
 
 \section BUGS
+
+\copydoc inc_buginfo
 
 
 \section COPYRIGHT

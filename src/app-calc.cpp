@@ -104,39 +104,43 @@ ARCalcConfigurator::~ARCalcConfigurator() noexcept
 const std::vector<std::pair<Option, uint32_t>>&
 	ARCalcConfigurator::do_supported_options() const
 {
+	// The following output options would be nice for calc + verify:
 	// TODO --no-track-nos: Do not print the track numbers (DEFAULT off)
 	// TODO --no-offsets:   Do not print the offsets (DEFAULT off)
 	// TODO --no-lengths:   Do not print the lengths (DEFAULT off)
 	// TODO --no-col-headers: Do not print the column headers (DEFAULT off)
-	// TODO --print-sums-only: Just list the sums, no table header etc (DEFAULT off)
-	// TODO --tracks-are-cols Print format with tracks as columns (DEFAULT off)
+	// TODO --print-sums-only: Abbreviates
+	//						--no-[offsets,lengths,track-nos,col-headers]
+	//						Just list the sums, no table header etc (DEFAULT off)
+	// TODO --tracks-as-cols Print format with tracks as columns (DEFAULT off)
+	// TODO --col-delim:    Specify Column delimiter (DEFAULT: blank)
 	// TODO --print-id:     Print the ARId (DEFAULT off)
 	// TODO --print-url:    Print AccurateRip URL (DEFAULT off)
-	// TODO --col-delim:    Specify Column delimiter (DEFAULT: blank)
-	const static std::vector<std::pair<Option, uint32_t>> local_options = {
+	const static std::vector<std::pair<Option, uint32_t>> local_options =
+	{
 		{{      "no-v1",    false, "FALSE",
-			"do not provide ARCSv1" },
+			"Do not provide ARCSv1" },
 			ARCalcOptions::NOV1 },
 		{{      "no-v2",    false, "FALSE",
-			"do not provide ARCSv2" },
+			"Do not provide ARCSv2" },
 			ARCalcOptions::NOV2 },
 		{{      "album",    false, "~",
-			"abbreviates --first --last" },
+			"Abbreviates --first --last" },
 			ARCalcOptions::ALBUM },
 		{{      "first",    false, "~",
-			"treat first audio file as first track" },
+			"Treat first audio file as first track" },
 			ARCalcOptions::FIRST },
 		{{      "last",     false, "~",
-			"treat last audio file as last track" },
+			"Treat last audio file as last track" },
 			ARCalcOptions::LAST },
 		{{ 'm', "metafile", true, "none",
-			"specify metadata file (CUE) to use" },
+			"Specify metadata file (CUE) to use" },
 			ARCalcOptions::METAFILE },
 		{{      "list-toc-formats",  false,   "FALSE",
-			"list all supported file formats for TOC metadata" },
+			"List all supported file formats for TOC metadata" },
 			ARCalcOptions::LIST_TOC_FORMATS },
 		{{      "list-audio-formats",  false, "FALSE",
-			"list all supported audio codec/container formats" },
+			"List all supported audio codec/container formats" },
 			ARCalcOptions::LIST_AUDIO_FORMATS }
 	};
 

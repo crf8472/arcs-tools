@@ -30,7 +30,18 @@ TOC information.
 
 \subsection OUTPUT Options for output
 
-\copydoc inc_calcoutoptions
+\par --no-v1
+Do not output ARCSs v1. Default is OFF which prints ARCSs v1 as well as ARCSs
+v2. Since, however, the ARCSv1 checksum is effectively a subtotal of the ARCSv2
+checksum, ARCSv1 will effectively have to be calculated. Therefore, this switch
+will not result in making the calculation consume less time. Combining this
+switch with --no-v2 will result in doing nothing.
+
+\par --no-v2
+Do not calculate and output ARCSs v2. Default is OFF which calculates and
+output ARCSs v1 as well as v2. By specifiying \b --no-v2 the calculation of
+ARCSv2 is suppressed. Combining this switch with \b --no-v1 will result in doing
+nothing.
 
 \copydoc inc_calcinfooptions
 
