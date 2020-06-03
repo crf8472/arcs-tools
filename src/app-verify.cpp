@@ -140,6 +140,9 @@ const std::vector<std::pair<Option, OptionValue>>&
 		{{      "no-lengths",    false, "FALSE",
 			"Do not print track lengths" },
 			ARVerifyOptions::NOLENGTHS},
+		{{      "no-filenames",    false, "FALSE",
+			"Do not print the filenames" },
+			ARVerifyOptions::NOFILENAMES},
 		{{      "no-col-headers",    false, "FALSE",
 			"Do not print column headers" },
 			ARVerifyOptions::NOCOLHEADERS},
@@ -243,11 +246,29 @@ std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
 {
 	const bool with_toc = !options.get(ARCalcOptions::METAFILE).empty();
 
+	// Print track number if they are not forbidden and a TOC is present
+	const bool prints_tracks = options.is_set(ARVerifyOptions::NOTRACKS)
+		? false
+		: with_toc;
+
+	// Print offsets if they are not forbidden and a TOC is present
+	const bool prints_offsets = options.is_set(ARVerifyOptions::NOOFFSETS)
+		? false
+		: with_toc;
+
+	// Print lengths if they are not forbidden
+	const bool prints_lengths = not options.is_set(ARVerifyOptions::NOLENGTHS);
+
+	// Print filenames if they are not forbidden and explicitly requested
+	const bool prints_filenames = options.is_set(ARVerifyOptions::NOFILENAMES)
+		? false
+		: with_filenames;
+
 	// show track + offset only when toc is requested
 	// show filenames otherwise
 	// show length in every case
-	return std::make_unique<AlbumMatchTableFormat>(
-				0, with_toc, with_toc, true, with_filenames);
+	return std::make_unique<AlbumMatchTableFormat>(0,
+			prints_tracks, prints_offsets, prints_lengths, prints_filenames);
 }
 
 

@@ -60,18 +60,19 @@ public:
 	static constexpr OptionValue NOTRACKS     =    64;
 	static constexpr OptionValue NOOFFSETS    =   128;
 	static constexpr OptionValue NOLENGTHS    =   256;
-	static constexpr OptionValue NOCOLHEADERS =   512;
-	static constexpr OptionValue SUMSONLY     =  1024;
-	static constexpr OptionValue TRACKSASCOLS =  2048;
-	static constexpr OptionValue COLDELIM     =  4096;
-	static constexpr OptionValue PRINTID      =  8192;
-	static constexpr OptionValue PRINTURL     = 16384;
+	static constexpr OptionValue NOFILENAMES  =   512;
+	static constexpr OptionValue NOCOLHEADERS =  1024;
+	static constexpr OptionValue SUMSONLY     =  2048;
+	static constexpr OptionValue TRACKSASCOLS =  4096;
+	static constexpr OptionValue COLDELIM     =  8192;
+	static constexpr OptionValue PRINTID      = 16384;
+	static constexpr OptionValue PRINTURL     = 32768;
 
 
 	// No-calculation output options
 
-	static constexpr OptionValue LIST_TOC_FORMATS   = 32768;
-	static constexpr OptionValue LIST_AUDIO_FORMATS = 65536;
+	static constexpr OptionValue LIST_TOC_FORMATS   =  65536;
+	static constexpr OptionValue LIST_AUDIO_FORMATS = 131072;
 
 
 	// Internal options
@@ -82,7 +83,7 @@ public:
 	 *
 	 * Extracted from METAFILE.
 	 */
-	static constexpr OptionValue METAFILEPATH = 131072;
+	static constexpr OptionValue METAFILEPATH = 262144;
 
 
 protected:
