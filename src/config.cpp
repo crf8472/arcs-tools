@@ -321,11 +321,6 @@ std::unique_ptr<Options> Configurator::parse_options(CLITokens& cli)
 
 	// Consume any supported option
 
-	//for (std::size_t i = FIRST_UNPROCESSED_OPTION;
-	//	 i < global_options_.size(); ++i)
-	//{
-	//	auto& option = global_options_[i];
-	//	auto& id     = global_option_ids_[i];
 	for (const auto& entry : supported_options())
 	{
 		auto& option = std::get<0>(entry);
