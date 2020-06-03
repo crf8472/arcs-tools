@@ -104,38 +104,61 @@ ARCalcConfigurator::~ARCalcConfigurator() noexcept
 const std::vector<std::pair<Option, OptionValue>>&
 	ARCalcConfigurator::do_supported_options() const
 {
-	// The following output options would be nice for calc + verify:
-	// TODO --no-track-nos: Do not print the track numbers (DEFAULT off)
-	// TODO --no-offsets:   Do not print the offsets (DEFAULT off)
-	// TODO --no-lengths:   Do not print the lengths (DEFAULT off)
-	// TODO --no-col-headers: Do not print the column headers (DEFAULT off)
-	// TODO --print-sums-only: Abbreviates
-	//						--no-[offsets,lengths,track-nos,col-headers]
-	//						Just list the sums, no table header etc (DEFAULT off)
-	// TODO --tracks-as-cols Print format with tracks as columns (DEFAULT off)
-	// TODO --col-delim:    Specify Column delimiter (DEFAULT: blank)
-	// TODO --print-id:     Print the ARId (DEFAULT off)
-	// TODO --print-url:    Print AccurateRip URL (DEFAULT off)
 	const static std::vector<std::pair<Option, OptionValue>> local_options =
 	{
-		{{      "no-v1",    false, "FALSE",
-			"Do not provide ARCSv1" },
-			ARCalcOptions::NOV1 },
-		{{      "no-v2",    false, "FALSE",
-			"Do not provide ARCSv2" },
-			ARCalcOptions::NOV2 },
-		{{      "album",    false, "~",
-			"Abbreviates --first --last" },
-			ARCalcOptions::ALBUM },
+		// calculation input options
+
 		{{      "first",    false, "~",
 			"Treat first audio file as first track" },
 			ARCalcOptions::FIRST },
 		{{      "last",     false, "~",
 			"Treat last audio file as last track" },
 			ARCalcOptions::LAST },
+		{{      "album",    false, "~",
+			"Abbreviates --first --last" },
+			ARCalcOptions::ALBUM },
 		{{ 'm', "metafile", true, "none",
 			"Specify metadata file (CUE) to use" },
 			ARCalcOptions::METAFILE },
+
+		// calculation output options
+
+		{{      "no-v1",    false, "FALSE",
+			"Do not provide ARCSv1" },
+			ARCalcOptions::NOV1 },
+		{{      "no-v2",    false, "FALSE",
+			"Do not provide ARCSv2" },
+			ARCalcOptions::NOV2 },
+		{{      "no-track-nos",  false, "FALSE",
+			"Do not print track numbers" },
+			ARCalcOptions::NOTRACKS},
+		{{      "no-offsets",    false, "FALSE",
+			"Do not print track offsets" },
+			ARCalcOptions::NOOFFSETS},
+		{{      "no-lengths",    false, "FALSE",
+			"Do not print track lengths" },
+			ARCalcOptions::NOLENGTHS},
+		{{      "no-col-headers",    false, "FALSE",
+			"Do not print column headers" },
+			ARCalcOptions::NOCOLHEADERS},
+		{{      "print-sums-only",    false, "FALSE",
+			"Print only the checksums" },
+			ARCalcOptions::SUMSONLY},
+		{{      "tracks-as-cols",    false, "FALSE",
+			"Print result with tracks as columns" },
+			ARCalcOptions::TRACKSASCOLS},
+		{{      "col-delim",    true, " ",
+			"Specify column delimiter" },
+			ARCalcOptions::COLDELIM},
+		{{      "print-id",    false, "FALSE",
+			"Print the AccurateRip Id of the album" },
+			ARCalcOptions::PRINTID},
+		{{      "print-url",   false, "FALSE",
+			"Print the AccurateRip URL of the album" },
+			ARCalcOptions::PRINTURL},
+
+		// info output options
+
 		{{      "list-toc-formats",  false,   "FALSE",
 			"List all supported file formats for TOC metadata" },
 			ARCalcOptions::LIST_TOC_FORMATS },
@@ -177,10 +200,10 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 	// If, furthermore, the rightmost (set) flag is bigger than that, there are
 	// _only_ info flags and no other do-something flags.
 
-	// If there are info flags
+	// If there are info flags (or internal flags)
 	if (options->leftmost_flag() >= ARCalcOptions::LIST_TOC_FORMATS)
 	{
-		// If there are no calculation flags
+		// If there are no calculation-related flags
 		if (options->rightmost_flag() >= ARCalcOptions::LIST_TOC_FORMATS)
 		{
 			return options;

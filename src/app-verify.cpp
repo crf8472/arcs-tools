@@ -80,7 +80,7 @@ using arcsdec::ARCSCalculator;
 
 constexpr OptionValue ARVerifyOptions::RESPONSEFILE;
 constexpr OptionValue ARVerifyOptions::REFVALUES;
-constexpr OptionValue ARVerifyOptions::NOPRINT;
+constexpr OptionValue ARVerifyOptions::BOOLEAN;
 constexpr OptionValue ARVerifyOptions::PRINTALL;
 
 
@@ -97,38 +97,81 @@ ARVerifyConfigurator::ARVerifyConfigurator(int argc, char** argv)
 const std::vector<std::pair<Option, OptionValue>>&
 	ARVerifyConfigurator::do_supported_options() const
 {
-	// Output options
-	// TODO --print-all-matches: Print all block matches, regardless of result
-	// TODO -n,--no-print: Return diff count of best match
-	// TODO --values: List of hex values as references
 	const static std::vector<std::pair<Option, OptionValue>> local_options =
 	{
-		//{{      "no-v1",    false, "FALSE",   // TODO Really to support?
-		//	"do not verify ARCSv1" },
-		//	ARVerifyOptions::NOV1 },
-		//{{      "no-v2",    false, "FALSE",   // TODO Really to support?
-		//	"do not verify ARCSv2" },
-		//	ARVerifyOptions::NOV2 },
-		{{      "album",    false, "~",
-			"abbreviates --first --last" },
-			ARVerifyOptions::ALBUM },
+		// calculation input options
+
 		{{      "first",    false, "~",
-			"treat first audio file as first track" },
+			"Treat first audio file as first track" },
 			ARVerifyOptions::FIRST },
 		{{      "last",     false, "~",
-			"treat last audio file as last track" },
+			"Treat last audio file as last track" },
 			ARVerifyOptions::LAST },
+		{{      "album",    false, "~",
+			"Abbreviates --first --last" },
+			ARVerifyOptions::ALBUM },
 		{{ 'm', "metafile", true, "none",
-			"specify metadata file (CUE) to use" },
+			"Specify metadata file (TOC) to use" },
 			ARVerifyOptions::METAFILE },
 		{{ 'r', "response", true, "none",
-			"specify AccurateRip response file" },
+			"Specify AccurateRip response file" },
 			ARVerifyOptions::RESPONSEFILE },
+		{{      "refvalues", true, "none",
+			"Specify AccurateRip reference values (as hex value list)" },
+			ARVerifyOptions::REFVALUES},
+
+		// calculation output options
+
+		{{      "no-v1",    false, "FALSE",
+			"Do not provide ARCSv1" },
+			ARVerifyOptions::NOV1 },
+		{{      "no-v2",    false, "FALSE",
+			"Do not provide ARCSv2" },
+			ARVerifyOptions::NOV2 },
+		{{      "no-track-nos",  false, "FALSE",
+			"Do not print track numbers" },
+			ARVerifyOptions::NOTRACKS},
+		{{      "no-offsets",    false, "FALSE",
+			"Do not print track offsets" },
+			ARVerifyOptions::NOOFFSETS},
+		{{      "no-lengths",    false, "FALSE",
+			"Do not print track lengths" },
+			ARVerifyOptions::NOLENGTHS},
+		{{      "no-col-headers",    false, "FALSE",
+			"Do not print column headers" },
+			ARVerifyOptions::NOCOLHEADERS},
+		{{      "print-sums-only",    false, "FALSE",
+			"Print only the checksums" },
+			ARVerifyOptions::SUMSONLY},
+		{{      "tracks-as-cols",    false, "FALSE",
+			"Print result with tracks as columns" },
+			ARVerifyOptions::TRACKSASCOLS},
+		{{      "col-delim",    true, " ",
+			"Specify column delimiter" },
+			ARVerifyOptions::COLDELIM},
+		{{      "print-id",    false, "FALSE",
+			"Print the AccurateRip Id of the album" },
+			ARVerifyOptions::PRINTID},
+		{{      "print-url",   false, "FALSE",
+			"Print the AccurateRip URL of the album" },
+			ARVerifyOptions::PRINTURL},
+		{{      "print-all-matches",   false, "FALSE",
+			"Print verification results for all blocks" },
+			ARVerifyOptions::PRINTALL},
+		{{ 'b', "boolean",   false, "FALSE",
+			"Return number of differing tracks in best match" },
+			ARVerifyOptions::BOOLEAN},
+		{{ 'n', "no-output", false, "FALSE",
+			"Do not print the result (implies --boolean)" },
+			ARVerifyOptions::NOOUTPUT},
+
+		// info output options
+
 		{{      "list-toc-formats",  false,   "FALSE",
-			"list all supported file formats for TOC metadata" },
+			"List all supported file formats for TOC metadata" },
 			ARVerifyOptions::LIST_TOC_FORMATS },
 		{{      "list-audio-formats",  false, "FALSE",
-			"list all supported audio codec/container formats" },
+			"List all supported audio codec/container formats" },
 			ARVerifyOptions::LIST_AUDIO_FORMATS }
 	};
 

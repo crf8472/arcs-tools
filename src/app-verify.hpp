@@ -53,22 +53,27 @@ public:
 	/**
 	 * \brief Response data to parse for verification
 	 */
-	static constexpr OptionValue RESPONSEFILE = MAX_VALUE * 2^1;
+	static constexpr OptionValue RESPONSEFILE = MAX_CONSTANT * 2^1;
 
 	/**
 	 * \brief Reference values data to parse for verification
 	 */
-	static constexpr OptionValue REFVALUES    = MAX_VALUE * 2^2;
+	static constexpr OptionValue REFVALUES    = MAX_CONSTANT * 2^2;
 
 	/**
 	 * \brief Do not print anything, just return YES or NO
 	 */
-	static constexpr OptionValue NOPRINT      = MAX_VALUE * 2^3;
+	static constexpr OptionValue BOOLEAN      = MAX_CONSTANT * 2^3;
+
+	/**
+	 * \brief Do not print the result and use BOOLEAN
+	 */
+	static constexpr OptionValue NOOUTPUT     = MAX_CONSTANT * 2^4;
 
 	/**
 	 * \brief Print every match
 	 */
-	static constexpr OptionValue PRINTALL     = MAX_VALUE * 2^4;
+	static constexpr OptionValue PRINTALL     = MAX_CONSTANT * 2^5;
 };
 
 

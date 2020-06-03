@@ -44,55 +44,53 @@ class ARCalcOptions : public Options
 {
 public:
 
-	/**
-	 * \brief Do not output V1 ARCS
-	 */
-	static constexpr OptionValue NOV1 = 1;
+
+	// Calculation input options
+
+	static constexpr OptionValue FIRST    = 1;
+	static constexpr OptionValue LAST     = 2;
+	static constexpr OptionValue ALBUM    = 4;
+	static constexpr OptionValue METAFILE = 8;
+
+
+	// Calculation output options
+
+	static constexpr OptionValue NOV1         =    16;
+	static constexpr OptionValue NOV2         =    32;
+	static constexpr OptionValue NOTRACKS     =    64;
+	static constexpr OptionValue NOOFFSETS    =   128;
+	static constexpr OptionValue NOLENGTHS    =   256;
+	static constexpr OptionValue NOCOLHEADERS =   512;
+	static constexpr OptionValue SUMSONLY     =  1024;
+	static constexpr OptionValue TRACKSASCOLS =  2048;
+	static constexpr OptionValue COLDELIM     =  4096;
+	static constexpr OptionValue PRINTID      =  8192;
+	static constexpr OptionValue PRINTURL     = 16384;
+
+
+	// No-calculation output options
+
+	static constexpr OptionValue LIST_TOC_FORMATS   = 32768;
+	static constexpr OptionValue LIST_AUDIO_FORMATS = 65536;
+
+
+	// Internal options
+
 
 	/**
-	 * \brief Do not output V2 ARCS
+	 * \brief Metadata file path.
+	 *
+	 * Extracted from METAFILE.
 	 */
-	static constexpr OptionValue NOV2 = 2;
-
-	/**
-	 * \brief Skip front and back samples of the sample stream
-	 */
-	static constexpr OptionValue ALBUM = 4;
-
-	/**
-	 * \brief Skip front samples of first track
-	 */
-	static constexpr OptionValue FIRST = 8;
-
-	/**
-	 * \brief Skip back samples of last track
-	 */
-	static constexpr OptionValue LAST = 16;
-
-	/**
-	 * \brief A metadata file is specified
-	 */
-	static constexpr OptionValue METAFILE = 32;
-
-	/**
-	 * \brief List compiled TOC formats
-	 */
-	static constexpr OptionValue LIST_TOC_FORMATS = 128;
-
-	/**
-	 * \brief List compiled audio formats (codec/container)
-	 */
-	static constexpr OptionValue LIST_AUDIO_FORMATS = 256;
-
-	/**
-	 * \brief Metadata file path
-	 */
-	static constexpr OptionValue METAFILEPATH = 512;
+	static constexpr OptionValue METAFILEPATH = 131072;
 
 
 protected:
 
-	static constexpr OptionValue MAX_VALUE = 512;
+	/**
+	 * \brief Max constant occurring in ARCalcOptions
+	 */
+	static constexpr OptionValue MAX_CONSTANT = METAFILEPATH;
 };
 
 
