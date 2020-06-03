@@ -244,7 +244,7 @@ ARResponse ARVerifyApplication::parse_response(const Options &options) const
 std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
 		const Options &options, const bool with_filenames) const
 {
-	const bool with_toc = !options.get(ARCalcOptions::METAFILE).empty();
+	const bool with_toc = !options.get(ARVerifyOptions::METAFILE).empty();
 
 	// Print track number if they are not forbidden and a TOC is present
 	const bool prints_tracks = options.is_set(ARVerifyOptions::NOTRACKS)
@@ -267,8 +267,15 @@ std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
 	// show track + offset only when toc is requested
 	// show filenames otherwise
 	// show length in every case
-	return std::make_unique<AlbumMatchTableFormat>(0,
+	auto format = std::make_unique<AlbumMatchTableFormat>(0,
 			prints_tracks, prints_offsets, prints_lengths, prints_filenames);
+
+	if (options.is_set(ARCalcOptions::COLDELIM))
+	{
+		format->set_column_delimiter(options.get(ARCalcOptions::COLDELIM));
+	}
+
+	return format;
 }
 
 

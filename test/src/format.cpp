@@ -103,7 +103,7 @@ TEST_CASE ( "StringTable", "[stringtable]" )
 {
 	using arcsapp::StringTable;
 
-	StringTable table(2, 4, false); // no dynamic widths
+	StringTable table(2, 4, false, true); // no dynamic widths
 
 	REQUIRE ( table.rows()    == 2 );
 	REQUIRE ( table.columns() == 4 );

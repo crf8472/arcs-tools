@@ -43,7 +43,8 @@ using arcstk::Match;
 using arcstk::TOC;
 
 
-template <typename ...Args>
+// forward declare Print<>
+template <typename... Args>
 class Print;
 
 /**
@@ -59,7 +60,7 @@ std::ostream& operator << (std::ostream &stream, Print<Args...> &p)
 /**
  * \brief Print an object that has an overload for operator << and ostream.
  */
-template <typename ...Args>
+template <typename... Args>
 class Print
 {
 public:
@@ -100,8 +101,17 @@ public:
 
 private:
 
+	/**
+	 * \brief Store data objects to print them
+	 */
 	std::tuple<Args...> objects_;
 
+	/**
+	 * \brief Implements out()
+	 *
+	 * \param[in] o Stream to print to
+	 * \param[in] t Data tuple to print
+	 */
 	virtual void do_out(std::ostream &o, const std::tuple<Args...> &t)
 	= 0;
 };
@@ -213,7 +223,7 @@ using ChecksumsResultPrinter =
 /**
  * \brief Simple table format for album-based Checksums.
  */
-class AlbumChecksumsTableFormat final   : public AlbumTableBase
+class AlbumChecksumsTableFormat final   : public TypedColsTableBase
 										, public ChecksumsResultPrinter
 {
 public:
@@ -266,7 +276,7 @@ using MatchResultPrinter =
 /**
  * \brief Simple table format for album-based matches.
  */
-class AlbumMatchTableFormat final   : public AlbumTableBase
+class AlbumMatchTableFormat final   : public TypedColsTableBase
 									, public MatchResultPrinter
 {
 public:

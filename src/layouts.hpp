@@ -895,7 +895,7 @@ std::ostream& operator << (std::ostream &o, const StringTable &table);
 /**
  * \brief A table of strings.
  *
- * Implement function \c init() in a subclass to get a concrete table.
+ * The columns are by default configured to have always optimal width.
  */
 class StringTable : public StringTableStructure
 {
@@ -909,34 +909,52 @@ public:
 	 *
 	 * \param[in] rows    Number of rows (including header, if any)
 	 * \param[in] columns Number of columns (including label column, if any)
-	 * \param[in] dyn_column_width If 'FALSE' cells are truncated on col width
+	 * \param[in] dyn_column_width  If 'FALSE' cells are truncated on col width
+	 * \param[in] allow_append_rows If 'FALSE' appending rows is forbidden
 	 */
-	StringTable(const int rows, const int columns, const bool dyn_column_width);
+	StringTable(const int rows, const int columns, const bool dyn_column_width,
+			const bool allow_append_rows);
 
 	/**
 	 * \brief Constructor
 	 *
-	 * Sets dynamic table width.
+	 * Activates dynamic optimal table width and appending of rows.
 	 *
 	 * \param[in] rows    Number of rows (including header, if any)
 	 * \param[in] columns Number of columns (including label column, if any)
 	 */
 	StringTable(const int rows, const int columns)
-		: StringTable(rows, columns, true) { /* empty */ };
+		: StringTable(rows, columns, true, true) { /* empty */ };
 
 	/**
-	 * \brief Default constructor constructs a table with dimensions 0,0
+	 * \brief Default constructor
+	 *
+	 * Constructs a table with dimensions 0,0, activates appending rows and
+	 * dynamic column widths.
 	 */
 	StringTable() : StringTable(0, 0) { /* empty */ }
+
 
 	StringTable(const StringTable &rhs);
 
 	StringTable(StringTable &&rhs) noexcept;
 
+	virtual ~StringTable() noexcept;
+
+
 	/**
-	 * \brief Non-virtual default destructor
+	 * \brief TRUE if the table has dynamic column widths activated.
+	 *
+	 * \return TRUE if dynamic column widths are activated, otherwise FALSE
 	 */
-	~StringTable() noexcept;
+	bool has_dynamic_widths() const;
+
+	/**
+	 * \brief TRUE if the table has row appending activated.
+	 *
+	 * \return TRUE if row appending is activated, otherwise FALSE.
+	 */
+	bool has_appending_rows() const;
 
 	/**
 	 * \brief Updates an existing cell with specified text.
@@ -1005,6 +1023,8 @@ private:
 
 	void init(const int rows, const int cols) override;
 
+	void do_resize(const int rows, const int cols) override;
+
 	/**
 	 * \brief Implements StringTable::update_cell(const int, const int)
 	 *
@@ -1029,17 +1049,20 @@ private:
 	 */
 	virtual std::string do_cell(const int row, const int col) const;
 
-	void do_resize(const int rows, const int cols) override;
+	/**
+	 * \brief Holds the configuration flags.
+	 */
+	std::vector<bool> flags_;
 
 	/**
 	 * \brief If TRUE, update_cell with a row > rows() will resize the table
 	 */
-	bool allow_grow_rows_ = true; // FIXME do this with a flag
+	//bool allow_append_rows_ = true; // FIXME do this with a flag
 
 	/**
 	 * \brief Switch for dynamic column widths
 	 */
-	bool dyn_col_widths_ = true; // FIXME do this with a flag
+	//bool dyn_col_widths_ = true; // FIXME do this with a flag
 
 	// forward declaration
 	class Impl;
@@ -1053,10 +1076,12 @@ private:
 
 /**
  * \brief A table based format for album data
+ *
+ * The tracks are rows and the columns are TOC data or checksums.
  */
-class AlbumTableBase	: public WithMetadataFlagMethods
-						, virtual public WithARId
-						, virtual public StringTableStructure
+class TypedColsTableBase	: public WithMetadataFlagMethods
+							, virtual public WithARId
+							, virtual public StringTableStructure
 {
 public:
 
@@ -1079,7 +1104,7 @@ public:
 	 * \param[in] rows    Number of rows
 	 * \param[in] columns Number of columns
 	 */
-	AlbumTableBase(const int rows, const int columns);
+	TypedColsTableBase(const int rows, const int columns);
 
 	/**
 	 * \brief Constructor.
@@ -1091,19 +1116,15 @@ public:
 	 * \param[in] length   Set to TRUE for printing length (if any)
 	 * \param[in] filename Set to TRUE for printing filename (if any)
 	 */
-	AlbumTableBase(const int rows, const int columns,
+	TypedColsTableBase(const int rows, const int columns,
 			const bool track, const bool offset, const bool length,
 			const bool filename);
 
 	/**
-	 * \brief Return number of declared metadata columns.
-	 *
-	 * \return Number of declared metadata columns.
-	 */
-	int total_metadata_columns() const;
-
-	/**
 	 * \brief Set column type for specified column
+	 *
+	 * \param[in] col  The column to set the type for
+	 * \param[in] type The type to set
 	 */
 	void assign_type(const int col, const COL_TYPE type);
 
@@ -1118,64 +1139,86 @@ public:
 
 	/**
 	 * \brief Return current default width for columns of the given type
+	 *
+	 * \param[in] type The type to get the default width for
+	 *
+	 * \return Default width for columns of this \c type
 	 */
 	int default_width(const COL_TYPE type) const;
 
 	/**
 	 * \brief Return current default title for columns of the given type
+	 *
+	 * \param[in] type The type to get the default title for
+	 *
+	 * \return Default title for columns of this \c type
 	 */
 	std::string default_title(const COL_TYPE type) const;
 
 	/**
 	 * \brief Set widths of all columns with given type
+	 *
+	 * \param[in] type  The type to get the default title for
+	 * \param[in] width The width to set for columns of this \c type
 	 */
 	void set_widths(const COL_TYPE type, const int width);
 
 protected:
 
 	/**
-	 * \brief Apply types and standard settings to columns
-	 */
-	int columns_apply_settings();
-
-	/**
-	 * \brief Create ordered list of types to print columns for
-	 */
-	std::vector<arcstk::checksum::type> typelist(const Checksums &checksums)
-		const;
-
-	/**
 	 * \brief Print column titles
+	 *
+	 * \param[in] out Stream to print titles to
 	 */
-	void print_column_titles(std::ostream &out) const;
+	void print_column_titles(std::ostream &out) const; // 1: Formatted tables
 
 	/**
 	 * \brief Convert from COL_TYPE to int
+	 *
+	 * \param[in] type Type to convert
+	 *
+	 * \return Integer representing this type
 	 */
-	int convert_from(const COL_TYPE type) const;
+	int convert_from(const COL_TYPE type) const; // 2: Album tables
 
 	/**
 	 * \brief Convert to COL_TYPE from int
+	 *
+	 * \param[in] type Integer representing the type
+	 *
+	 * \return Column type
 	 */
-	COL_TYPE convert_to(const int type) const;
+	COL_TYPE convert_to(const int type) const; // 2: Album tables
 
 	/**
-	 * \brief Returns the track lengths of \c checksums in track order
+	 * \brief Return number of declared metadata columns.
 	 *
-	 * \param[in] checksums Checksums to get the track lengths from
-	 *
-	 * \return The track lengths of \c checksums
+	 * \return Number of declared metadata columns.
 	 */
-	std::vector<int32_t> get_lengths(const Checksums &checksums) const;
+	int total_metadata_columns() const; // 2: Album tables
+
+	/**
+	 * \brief Apply types and standard settings to metadata columns.
+	 *
+	 * The metadata columns are: 'Tracks', 'Filenames', 'Offsets' and 'Lengths'.
+	 * Those are equal for many types of tables.
+	 *
+	 * \return Number of metadata columns
+	 */
+	int columns_apply_md_settings(); // 2: Album tables
 
 private:
 
 	/**
-	 * \brief Called by columns_apply_settings after the metadata columns are
-	 * initialized
+	 * \brief Apply default settings to the CHECKSUM and MATCH columns
+	 *
+	 * To be called after the metadata columns are initialized, i.e. after
+	 * columns_apply_settings() has been called.
 	 *
 	 * It is expected that this function initializes the columns that are
 	 * typed CHECKSUM and MATCH.
+	 *
+	 * \param[in] types List of types
 	 */
 	virtual int columns_apply_cs_settings(
 			const std::vector<arcstk::checksum::type> &types)

@@ -195,6 +195,18 @@ std::unique_ptr<Options> ARCalcConfigurator::configure_calc_options(
 		}
 	}
 
+	// Printing options
+
+	if (options->is_set(ARCalcOptions::SUMSONLY))
+	{
+		options->set(ARCalcOptions::NOTRACKS);
+		options->set(ARCalcOptions::NOOFFSETS);
+		options->set(ARCalcOptions::NOLENGTHS);
+		options->set(ARCalcOptions::NOFILENAMES);
+
+		//options->set(ARCalcOptions::NOCOLHEADERS); // Multiple Checksum types?
+	}
+
 	return options;
 }
 
@@ -361,27 +373,38 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 std::unique_ptr<ChecksumsResultPrinter> ARCalcApplication::configure_format(
 		const Options &options) const
 {
-	bool show_tracks    = false;
-	bool show_offsets   = false;
-	bool show_lengths   = true;
-	bool show_filenames = false;
+	const bool with_toc = !options.get(ARCalcOptions::METAFILE).empty();
 
-	if (options.get(ARCalcOptions::METAFILE).empty())
-	{
-		// Without Offsets, ARId and TOC
-		show_filenames = true;
-	} else
-	{
-		// With Offsets, ARId and TOC
-		show_tracks  = true;
-		show_offsets = true;
-	}
+	// Print track number if they are not forbidden and a TOC is present
+	const bool prints_tracks = options.is_set(ARCalcOptions::NOTRACKS)
+		? false
+		: with_toc;
+
+	// Print offsets if they are not forbidden and a TOC is present
+	const bool prints_offsets = options.is_set(ARCalcOptions::NOOFFSETS)
+		? false
+		: with_toc;
+
+	// Print lengths if they are not forbidden
+	const bool prints_lengths = not options.is_set(ARCalcOptions::NOLENGTHS);
+
+	// Print filenames if they are not forbidden and explicitly requested
+	const bool prints_filenames = options.is_set(ARCalcOptions::NOFILENAMES)
+		? false
+		: not with_toc;
 
 	// Configure which implementation + which columns to show.
 	// All other details are hidden.
 
-	return std::make_unique<AlbumChecksumsTableFormat>(0, 0,
-				show_tracks, show_offsets, show_lengths, show_filenames);
+	auto format = std::make_unique<AlbumChecksumsTableFormat>(0, 0,
+			prints_tracks, prints_offsets, prints_lengths, prints_filenames);
+
+	if (options.is_set(ARCalcOptions::COLDELIM))
+	{
+		format->set_column_delimiter(options.get(ARCalcOptions::COLDELIM));
+	}
+
+	return format;
 }
 
 

@@ -874,9 +874,6 @@ public:
 
 	Impl(Impl &&rhs) noexcept;
 
-	/**
-	 * \brief Resize to new dimensions
-	 */
 	void resize(const int rows, const int cols);
 
 	std::string cell(const int row, const int col) const;
@@ -980,9 +977,9 @@ int StringTable::Impl::index(const int row, const int col) const
 
 
 StringTable::StringTable(const int rows, const int columns,
-			const bool dyn_col_widths)
+			const bool dyn_col_widths, const bool allow_append_rows)
 	: StringTableStructure(rows, columns)
-	, dyn_col_widths_ { dyn_col_widths }
+	, flags_ { dyn_col_widths, allow_append_rows }
 	, impl_(std::make_unique<StringTable::Impl>(rows, columns))
 {
 	// empty
@@ -991,9 +988,8 @@ StringTable::StringTable(const int rows, const int columns,
 
 StringTable::StringTable(const StringTable &rhs)
 	: StringTableStructure(rhs)
-	, allow_grow_rows_ { rhs.allow_grow_rows_ }
-	, dyn_col_widths_  { rhs.dyn_col_widths_ }
-	, impl_ { std::make_unique<StringTable::Impl>(*rhs.impl_) }
+	, flags_ { rhs.flags_ }
+	, impl_  { std::make_unique<StringTable::Impl>(*rhs.impl_) }
 {
 	// empty
 }
@@ -1001,9 +997,8 @@ StringTable::StringTable(const StringTable &rhs)
 
 StringTable::StringTable(StringTable &&rhs) noexcept
 	: StringTableStructure(std::move(rhs))
-	, allow_grow_rows_ { rhs.allow_grow_rows_ }
-	, dyn_col_widths_  { rhs.dyn_col_widths_ }
-	, impl_ { std::move(rhs.impl_) }
+	, flags_ { std::move(rhs.flags_) }
+	, impl_  { std::move(rhs.impl_)  }
 {
 	// empty
 }
@@ -1012,13 +1007,25 @@ StringTable::StringTable(StringTable &&rhs) noexcept
 StringTable::~StringTable() noexcept = default;
 
 
+bool StringTable::has_dynamic_widths() const
+{
+	return flags_[0];
+}
+
+
+bool StringTable::has_appending_rows() const
+{
+	return flags_[1];
+}
+
+
 void StringTable::update_cell(const int row, const int col,
 		const std::string &text)
 {
 	bounds_check_col(col);
 
 	// Handle growth
-	if (allow_grow_rows_)
+	if (has_appending_rows())
 	{
 		if (not legal_row(row))
 		{
@@ -1037,7 +1044,7 @@ void StringTable::update_cell(const int row, const int col,
 
 	// Handle dynamic column width
 	if (auto curr_width = static_cast<std::size_t>(width(col));
-		dyn_col_widths_ && text.length() > curr_width)
+		has_dynamic_widths() && text.length() > curr_width)
 	{
 		set_width(col, text.length());
 	}
@@ -1145,10 +1152,10 @@ std::ostream& operator << (std::ostream &out, const StringTable &table)
 }
 
 
-// AlbumTableBase
+// TypedColsTableBase
 
 
-AlbumTableBase::AlbumTableBase(const int rows, const int columns)
+TypedColsTableBase::TypedColsTableBase(const int rows, const int columns)
 	: StringTableStructure(rows, columns)
 	, WithMetadataFlagMethods(true, true, true, true)
 {
@@ -1156,7 +1163,7 @@ AlbumTableBase::AlbumTableBase(const int rows, const int columns)
 }
 
 
-AlbumTableBase::AlbumTableBase(const int rows, const int columns,
+TypedColsTableBase::TypedColsTableBase(const int rows, const int columns,
 			const bool show_track, const bool show_offset,
 			const bool show_length, const bool show_filename)
 	: StringTableStructure(rows, columns)
@@ -1167,33 +1174,20 @@ AlbumTableBase::AlbumTableBase(const int rows, const int columns,
 }
 
 
-int AlbumTableBase::total_metadata_columns() const
-{
-	int md_cols = 0;
-
-	if (this->track())    { ++md_cols; }
-	if (this->filename()) { ++md_cols; }
-	if (this->offset())   { ++md_cols; }
-	if (this->length())   { ++md_cols; }
-
-	return md_cols;
-}
-
-
-void AlbumTableBase::assign_type(const int col,
-		const AlbumTableBase::COL_TYPE type)
+void TypedColsTableBase::assign_type(const int col,
+		const TypedColsTableBase::COL_TYPE type)
 {
 	set_type(col, convert_from(type));
 }
 
 
-AlbumTableBase::COL_TYPE AlbumTableBase::type_of(const int col) const
+TypedColsTableBase::COL_TYPE TypedColsTableBase::type_of(const int col) const
 {
 	return convert_to(type(col));
 }
 
 
-int AlbumTableBase::default_width(const COL_TYPE type) const
+int TypedColsTableBase::default_width(const COL_TYPE type) const
 {
 	const int default_w = default_title(type).length();
 	int min_w = 0;
@@ -1212,7 +1206,7 @@ int AlbumTableBase::default_width(const COL_TYPE type) const
 }
 
 
-std::string AlbumTableBase::default_title(const COL_TYPE type) const
+std::string TypedColsTableBase::default_title(const COL_TYPE type) const
 {
 	std::string title = "";
 
@@ -1230,7 +1224,7 @@ std::string AlbumTableBase::default_title(const COL_TYPE type) const
 }
 
 
-void AlbumTableBase::set_widths(const COL_TYPE type, const int width)
+void TypedColsTableBase::set_widths(const COL_TYPE type, const int width)
 {
 	for (std::size_t col = 0; col < columns(); ++col)
 	{
@@ -1239,7 +1233,50 @@ void AlbumTableBase::set_widths(const COL_TYPE type, const int width)
 }
 
 
-int AlbumTableBase::columns_apply_settings()
+void TypedColsTableBase::print_column_titles(std::ostream &out) const
+{
+	for (std::size_t col = 0; col < columns(); ++col)
+	{
+		out << std::setw(width(col)) << std::left << title(col);
+
+		if (col < columns() - 1)
+		{
+			out << column_delimiter();
+		}
+	}
+
+	out << std::endl;
+}
+
+
+int TypedColsTableBase::convert_from(const TypedColsTableBase::COL_TYPE type)
+	const
+{
+	return to_underlying(type);
+}
+
+
+TypedColsTableBase::COL_TYPE TypedColsTableBase::convert_to(const int type)
+	const
+{
+	return static_cast<COL_TYPE>(type);
+}
+
+
+int TypedColsTableBase::total_metadata_columns() const
+{
+	int md_cols = 0;
+
+	if (this->track())    { ++md_cols; }
+	if (this->filename()) { ++md_cols; }
+	if (this->offset())   { ++md_cols; }
+	if (this->length())   { ++md_cols; }
+
+	return md_cols;
+}
+
+
+int TypedColsTableBase::columns_apply_md_settings()
 {
 	std::size_t md_cols = 0;
 
@@ -1258,55 +1295,6 @@ int AlbumTableBase::columns_apply_settings()
 	}
 
 	return md_cols;
-}
-
-
-int AlbumTableBase::convert_from(const AlbumTableBase::COL_TYPE type) const
-{
-	return to_underlying(type);
-}
-
-
-AlbumTableBase::COL_TYPE AlbumTableBase::convert_to(const int type) const
-{
-	return static_cast<COL_TYPE>(type);
-}
-
-
-std::vector<arcstk::checksum::type> AlbumTableBase::typelist(
-		const Checksums &checksums) const
-{
-
-	// Assume identical type sets in each track
-	const auto& used_types = checksums[0].types();
-	const auto& defined_types = arcstk::checksum::types;
-
-	// Construct a list of all used types in the order they
-	// appear in arcstk::checksum::types
-
-	std::vector<arcstk::checksum::type> types_to_print { };
-	types_to_print.reserve(defined_types.size());
-
-	std::copy_if(defined_types.begin(), defined_types.end(),
-			std::back_inserter(types_to_print),
-			[used_types](const arcstk::checksum::type& t)
-			{
-				return used_types.find(t) != used_types.end();
-			});
-
-	return types_to_print;
-}
-
-
-void AlbumTableBase::print_column_titles(std::ostream &out) const
-{
-	for (std::size_t col = 0; col < columns(); ++col)
-	{
-		out << std::setw(width(col)) << std::left << title(col)
-			<< column_delimiter();
-	}
-
-	out << std::endl;
 }
 
 } // namespace arcsapp

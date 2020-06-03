@@ -25,6 +25,41 @@ using arcstk::ARId;
 using arcstk::Checksum;
 using arcstk::TOC;
 
+namespace
+{
+
+/**
+ * \brief Generate a list of the types used in \c checksums in the order they
+ * appear in arcstk::checksum::types.
+ *
+ * \param[in] checksums The Checksums to inspect for checksums::types
+ *
+ * \return List of occurring checksum::type in the order libarcstk defines them
+ */
+std::vector<arcstk::checksum::type> ordered_typelist(const Checksums &checksums)
+{
+	// Assume identical type sets in each track
+	const auto& used_types    = checksums[0].types();
+	const auto& defined_types = arcstk::checksum::types;
+
+	// Construct a list of all used types in the order they
+	// appear in arcstk::checksum::types
+
+	std::vector<arcstk::checksum::type> types_to_print { };
+	types_to_print.reserve(defined_types.size());
+
+	std::copy_if(defined_types.begin(), defined_types.end(),
+			std::back_inserter(types_to_print),
+			[used_types](const arcstk::checksum::type& t)
+			{
+				return used_types.find(t) != used_types.end();
+			});
+
+	return types_to_print;
+}
+
+} // namespace
+
 
 // ARTripletFormat
 
@@ -205,7 +240,7 @@ void ARIdTableFormat::print_label(std::ostream &out,
 AlbumChecksumsTableFormat::AlbumChecksumsTableFormat(const int rows,
 		const int columns, const bool show_track, const bool show_offset,
 		const bool show_length, const bool show_filename)
-	: AlbumTableBase(rows, columns,
+	: TypedColsTableBase(rows, columns,
 			show_track, show_offset, show_length, show_filename)
 	, Print<Checksums*, std::vector<std::string>, TOC*, ARId>(nullptr, std::vector<std::string>{}, nullptr, ARId{0,0,0,0})
 	, hexlayout_()
@@ -252,14 +287,14 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 	auto filenames = std::get<1>(t);
 	auto toc = std::get<2>(t);
 
-	auto types_to_print = typelist(*checksums);
+	auto types_to_print = ordered_typelist(*checksums);
 
 	resize(1/*titles*/ + checksums->size(),
 			total_metadata_columns() + types_to_print.size());
 
 	// Apply column settings
 
-	const auto md_offset = columns_apply_settings();
+	const auto md_offset = columns_apply_md_settings();
 	columns_apply_cs_settings(types_to_print);
 	set_widths(COL_TYPE::FILENAME, optimal_width(filenames));
 
@@ -311,8 +346,12 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 
 			out << std::setw(width(col))
 				<< (alignment(col) > 0 ? std::left : std::right)
-				<< cell
-				<< column_delimiter();
+				<< cell;
+
+			if (col < columns() - 1) // No delimiter on rightmost column
+			{
+				out << column_delimiter();
+			}
 		}
 		out << std::endl;
 	}
@@ -327,7 +366,7 @@ AlbumMatchTableFormat::AlbumMatchTableFormat(const int rows,
 			const bool show_offset,
 			const bool show_length,
 			const bool show_filename)
-	: AlbumTableBase(rows,
+	: TypedColsTableBase(rows,
 			(show_track + show_offset + show_length + show_filename + 2),
 			show_track, show_offset, show_length, show_filename)
 	, Print<Checksums*, std::vector<std::string>, ARResponse, Match*, int, bool, TOC*, ARId>(
@@ -404,7 +443,7 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 
 	resize(total_entries, total_metadata_columns() + types_to_print.size() * 2);
 
-	const auto md_offset = columns_apply_settings();
+	const auto md_offset = columns_apply_md_settings();
 	columns_apply_cs_settings(types_to_print);
 	set_widths(COL_TYPE::FILENAME, optimal_width(filenames));
 
@@ -414,7 +453,7 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 
 	print_column_titles(out);
 
-	using COL_TYPE = AlbumTableBase::COL_TYPE;
+	using COL_TYPE = TypedColsTableBase::COL_TYPE;
 	TYPE cstype = TYPE::ARCS2; // default
 	std::string cell{};
 	int trackno = 1;
