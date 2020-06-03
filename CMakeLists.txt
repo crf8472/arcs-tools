@@ -209,6 +209,7 @@ add_library ( ${PROJECT_NAME}-objects OBJECT
 	${PROJECT_SOURCE_DIR}/printers.cpp
 	${PROJECT_SOURCE_DIR}/tools-calc.cpp
 	${PROJECT_SOURCE_DIR}/tools-fs.cpp
+	${PROJECT_SOURCE_DIR}/tools-info.cpp
 	${PROJECT_SOURCE_DIR}/tools-parse.cpp
 )
 target_include_directories (${PROJECT_NAME}-objects

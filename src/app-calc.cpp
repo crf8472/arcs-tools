@@ -51,6 +51,9 @@
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
 #include "tools-fs.hpp"             // for path
 #endif
+#ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
+#include "tools-info.hpp"           // for SupportedFormats
+#endif
 
 namespace arcsapp
 {
@@ -401,23 +404,15 @@ std::set<arcstk::checksum::type> ARCalcApplication::requested_types(
 
 int ARCalcApplication::run_info(const Options &options)
 {
-	FormatCollector collector;
-	auto apply_func = std::bind(&FormatCollector::add, &collector,
-			std::placeholders::_1);
-
 	if (options.is_set(ARCalcOptions::LIST_TOC_FORMATS))
 	{
-		TOCParser p;
-		p.selection().traverse_descriptors(apply_func);
+		output(SupportedFormats::toc(), options.output());
 	}
 
 	if (options.is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
 	{
-		ARCSCalculator c;
-		c.selection().traverse_descriptors(apply_func);
+		output(SupportedFormats::audio(), options.output());
 	}
-
-	output(collector.info(), options.output());
 
 	return EXIT_SUCCESS;
 }

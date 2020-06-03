@@ -834,6 +834,8 @@ protected:
 	 */
 	StringTableStructure(const StringTableStructure &rhs);
 
+	StringTableStructure(StringTableStructure &&rhs) noexcept;
+
 	void resize_layout(const int rows, const int cols) const;
 
 	bool legal_row(const int row) const;
@@ -902,15 +904,12 @@ public:
 	friend std::ostream& operator<< (std::ostream &o,
 			const StringTable &table);
 
-	// TODO A "set_elastic()" feature that adjusts the column width on
-	// update_cell()
-
 	/**
 	 * \brief Constructor
 	 *
 	 * \param[in] rows    Number of rows (including header, if any)
 	 * \param[in] columns Number of columns (including label column, if any)
-	 * \param[in] dyn_column_width If 'FALSE' cells are truncated on width
+	 * \param[in] dyn_column_width If 'FALSE' cells are truncated on col width
 	 */
 	StringTable(const int rows, const int columns, const bool dyn_column_width);
 
@@ -931,6 +930,8 @@ public:
 	StringTable() : StringTable(0, 0) { /* empty */ }
 
 	StringTable(const StringTable &rhs);
+
+	StringTable(StringTable &&rhs) noexcept;
 
 	/**
 	 * \brief Non-virtual default destructor
@@ -981,13 +982,24 @@ public:
 
 	/**
 	 * \brief Row index of the first row that is not filled
+	 *
+	 * \return Current 0-based row index
 	 */
 	int current_row() const;
 
 	/**
 	 * \brief Return maximum number of rows
+	 *
+	 * \return Maximum number of rows
 	 */
 	int max_rows() const;
+
+	/**
+	 * \brief Return TRUE if the table contains no content.
+	 *
+	 * \return TRUE if the table has no content, otherwise FALSE
+	 */
+	bool empty() const;
 
 private:
 

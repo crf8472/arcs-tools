@@ -2,15 +2,10 @@
 #include "application.hpp"
 #endif
 
-#include <algorithm>           // for copy
 #include <cstdlib>             // for EXIT_SUCCESS
-#include <iterator>            // for ostream_iterator
 #include <iostream>            // for cout
 #include <memory>              // for unique_ptr
-#include <set>                 // for set
-#include <sstream>             // for ostringstream
 #include <stdexcept>           // for runtime_error
-#include <vector>              // for vector
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
@@ -36,84 +31,6 @@ namespace arcsapp
 {
 
 class Options;
-
-using arcsdec::FileFormat;
-
-
-// FormatCollector
-
-
-FormatCollector::FormatCollector()
-	: table_ { 0, 4 }
-{
-	table_.set_title(0, "Name");
-	table_.set_width(0, table_.title(0).length() + 6);
-	table_.set_alignment(0, true);
-
-	table_.set_title(1, "Short Desc.");
-	table_.set_width(1, table_.title(1).length() + 4);
-	table_.set_alignment(1, true);
-
-	table_.set_title(2, "Lib");
-	table_.set_width(2, table_.title(2).length() + 5);
-	table_.set_alignment(2, true);
-
-	table_.set_title(3, "Version");
-	table_.set_width(3, table_.title(3).length());
-	table_.set_alignment(3, true);
-}
-
-
-void FormatCollector::add(const FileReaderDescriptor &descriptor)
-{
-	// FIXME Implement this (currently a mess, just a sketch)
-
-	auto name = descriptor.name();
-
-	// Description: for now, just concatenate the format names
-	std::ostringstream desc;
-	const auto& formats = descriptor.formats();
-	if (!formats.empty())
-	{
-		std::transform(formats.begin(), formats.rbegin().base(),
-			std::ostream_iterator<std::string>(desc, ","),
-			[](const arcsdec::FileFormat &format) -> std::string
-			{
-				return arcsdec::name(format);
-			});
-		desc << arcsdec::name(*formats.rbegin());
-	}
-
-	// FIXME Get the name of the library used at runtime from libarcsdec
-
-	// FIXME Get the version of the library used at runtime from libarcsdec
-
-	int row = table_.current_row();
-
-	// Add row
-	table_.update_cell(row, 0, name);
-	table_.update_cell(row, 1, desc.str());
-	table_.update_cell(row, 2, "-");
-	table_.update_cell(row, 3, "-");
-
-	// Adjust col width to optimal width after each row
-	for (std::size_t col = 0; col < table_.columns(); ++col)
-	{
-		if (static_cast<std::size_t>(table_.width(col))
-			< table_(row, col).length())
-		{
-			table_.set_width(col, table_(row, col).length());
-		}
-	}
-
-	++row;
-}
-
-
-StringTable FormatCollector::info() const
-{
-	return table_;
-}
 
 
 // ARApplication

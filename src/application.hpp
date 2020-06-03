@@ -34,43 +34,6 @@ namespace arcsapp
 
 class Configurator;
 
-using arcsdec::FileReaderDescriptor;
-
-
-/**
- * \brief Collect descriptor infos
- */
-class FormatCollector
-{
-public:
-
-	/**
-	 * \brief Constructor
-	 */
-	FormatCollector();
-
-	/**
-	 * \brief Add information represented by a descriptor
-	 *
-	 * \param[in] descriptor Add the info from this descriptor
-	 */
-	void add(const FileReaderDescriptor &descriptor);
-
-	/**
-	 * \brief Get the collected information
-	 *
-	 * \return Information collected
-	 */
-	StringTable info() const;
-
-private:
-
-	/**
-	 * \brief The collected information
-	 */
-	StringTable table_;
-};
-
 
 /**
  * \brief Abstract base class for command line applications.

@@ -27,7 +27,7 @@
 #endif
 
 #ifndef __ARCSTOOLS_APPREGISTRY_HPP__
-#include "appregistry.hpp"                 // for RegisterApplicationType
+#include "appregistry.hpp"          // for RegisterApplicationType
 #endif
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
 #include "clitokens.hpp"            // for CLITokens, __ARCSTOOLS_CLITOKENS_H...
@@ -42,13 +42,16 @@
 #include "options.hpp"              // for Options, __ARCSTOOLS_OPTIONS_HPP__
 #endif
 #ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
-#include "tools-parse.hpp"        // for ContentHandler
+#include "tools-parse.hpp"          // for ContentHandler
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"           // for audiofile_layout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
 #include "tools-fs.hpp"             // for file_exists
+#endif
+#ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
+#include "tools-info.hpp"           // for SupportedFormats
 #endif
 
 namespace arcsapp
@@ -293,6 +296,24 @@ std::unique_ptr<Configurator> ARVerifyApplication::create_configurator(
 
 int ARVerifyApplication::do_run(const Options &options)
 {
+	// If only info options are present, handle info request
+
+	if (options.is_set(ARCalcOptions::LIST_TOC_FORMATS)
+		or options.is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
+	{
+		if (options.is_set(ARCalcOptions::LIST_TOC_FORMATS))
+		{
+			output(SupportedFormats::toc(), options.output());
+		}
+
+		if (options.is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
+		{
+			output(SupportedFormats::audio(), options.output());
+		}
+
+		return EXIT_SUCCESS;
+	}
+
 	// Calculate the actual ARCSs from input files (force ARCSv1 + ARCSv2)
 
 	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(options,

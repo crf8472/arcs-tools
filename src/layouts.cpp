@@ -735,6 +735,14 @@ StringTableStructure::StringTableStructure(const StringTableStructure &rhs)
 }
 
 
+StringTableStructure::StringTableStructure(StringTableStructure &&rhs)
+	noexcept
+	: impl_ { std::move(rhs.impl_) }
+{
+	// empty
+}
+
+
 StringTableStructure::~StringTableStructure() noexcept
 = default;
 
@@ -991,6 +999,16 @@ StringTable::StringTable(const StringTable &rhs)
 }
 
 
+StringTable::StringTable(StringTable &&rhs) noexcept
+	: StringTableStructure(std::move(rhs))
+	, allow_grow_rows_ { rhs.allow_grow_rows_ }
+	, dyn_col_widths_  { rhs.dyn_col_widths_ }
+	, impl_ { std::move(rhs.impl_) }
+{
+	// empty
+}
+
+
 StringTable::~StringTable() noexcept = default;
 
 
@@ -1060,6 +1078,12 @@ int StringTable::current_row() const
 int StringTable::max_rows() const
 {
 	return 73; // FIXME Creepy, isn't it?
+}
+
+
+bool StringTable::empty() const
+{
+	return impl_->current_row() == 0;
 }
 
 
