@@ -114,6 +114,24 @@ public:
 	 */
 	~ARCalcConfigurator() noexcept override;
 
+protected:
+
+	/**
+	 * \brief Worker: returns TRUE iff some real calculation is requested.
+	 *
+	 * This is used to determine whether the optional info options are to be
+	 * ignored in the presence of a calculation request.
+	 *
+	 * \return TRUE iff a real calculation is requested.
+	 */
+	bool calculation_requested(const Options &options) const;
+
+	/**
+	 * \brief Implement configuration of calc options for reuse in subclass
+	 */
+	std::unique_ptr<Options> configure_calc_options(
+			std::unique_ptr<Options> options) const;
+
 private:
 
 	const std::vector<std::pair<Option, OptionValue>>& do_supported_options()
@@ -123,7 +141,6 @@ private:
 
 	std::unique_ptr<Options> do_configure_options(
 			std::unique_ptr<Options> options) override;
-
 };
 
 

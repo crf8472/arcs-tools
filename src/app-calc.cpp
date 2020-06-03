@@ -101,6 +101,101 @@ ARCalcConfigurator::~ARCalcConfigurator() noexcept
 = default;
 
 
+bool ARCalcConfigurator::calculation_requested(const Options &options) const
+{
+	return options.is_set(ARCalcOptions::METAFILE)
+		or not options.no_arguments();
+}
+
+
+std::unique_ptr<Options> ARCalcConfigurator::configure_calc_options(
+		std::unique_ptr<Options> options) const
+{
+	//const auto calculation_request = bool { calculation_requested(options) };
+
+	if (not calculation_requested(*options))
+	{
+		return options; // Only no-calc options present
+	}
+
+	if (options->is_set(ARCalcOptions::LIST_TOC_FORMATS))
+	{
+		ARCS_LOG_WARNING << "Option LIST_TOC_FORMATS is ignored";
+		options->unset(ARCalcOptions::LIST_TOC_FORMATS);
+	}
+
+	if (options->is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
+	{
+		ARCS_LOG_WARNING << "Option LIST_AUDIO_FORMATS is ignored";
+		options->unset(ARCalcOptions::LIST_AUDIO_FORMATS);
+	}
+
+	// Metafile: get path + activate album mode
+
+	if (options->is_set(ARCalcOptions::METAFILE))
+	{
+		auto metafilename(options->get(ARCalcOptions::METAFILE));
+
+		if (metafilename.empty())
+		{
+			// no metadata file specified ...
+
+			 // TODO Better: check for some "ARCalcOptions::AUDIOFILES" list
+			if (options->no_arguments())
+			{
+				ARCS_LOG_ERROR << "No metafile and no audiofile specified";
+				return std::make_unique<Options>();
+			}
+		}
+
+		// Provide Path of the Metafile as Searchpath
+
+		options->put(ARCalcOptions::METAFILEPATH,
+			file::path(options->get(ARCalcOptions::METAFILE)));
+
+		// Activate album mode
+
+		if (options->is_set(ARCalcOptions::FIRST))
+		{
+			ARCS_LOG_INFO <<
+				"Option FIRST is redundant when metafile is passed";
+		} else
+		{
+			ARCS_LOG(DEBUG1) << "Activate option FIRST due to METAFILE";
+			options->set(ARCalcOptions::FIRST);
+		}
+
+		if (options->is_set(ARCalcOptions::LAST))
+		{
+			ARCS_LOG_INFO <<
+				"Option LAST is redundant when metafile is passed";
+		} else
+		{
+			ARCS_LOG(DEBUG1) << "Activate option LAST due to METAFILE";
+			options->set(ARCalcOptions::LAST);
+		}
+	}
+
+	// Album or not
+
+	if (options->is_set(ARCalcOptions::ALBUM))
+	{
+		if (options->is_set(ARCalcOptions::METAFILE))
+		{
+			ARCS_LOG_INFO << "Option ALBUM is redundant when METAFILE is passed";
+		} else
+		{
+			ARCS_LOG(DEBUG1) << "Activate album mode";
+
+			options->set(ARCalcOptions::FIRST);
+			options->set(ARCalcOptions::LAST);
+		}
+	}
+
+	return options;
+}
+
+
 const std::vector<std::pair<Option, OptionValue>>&
 	ARCalcConfigurator::do_supported_options() const
 {
@@ -193,104 +288,7 @@ int ARCalcConfigurator::do_parse_arguments(CLITokens& cli, Options &options)
 std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 		std::unique_ptr<Options> options)
 {
-	// TODO A hack: we leverage implementation knowledge from ARCalcOptions!
-	// All flags "left" (bigger) of LIST_TOC_FORMATS are info-do-nothing flags.
-	// Hence, if the leftmost (set) flag has a bigger index (== to the left)
-	// than this flag, there are info flags.
-	// If, furthermore, the rightmost (set) flag is bigger than that, there are
-	// _only_ info flags and no other do-something flags.
-
-	// If there are info flags (or internal flags)
-	if (options->leftmost_flag() >= ARCalcOptions::LIST_TOC_FORMATS)
-	{
-		// If there are no calculation-related flags
-		if (options->rightmost_flag() >= ARCalcOptions::LIST_TOC_FORMATS)
-		{
-			return options;
-		}
-		else
-		{
-			// There are info flags as well as calculation flags
-
-			if (options->is_set(ARCalcOptions::LIST_TOC_FORMATS))
-			{
-				ARCS_LOG_WARNING << "Option LIST_TOC_FORMATS is ignored";
-				options->unset(ARCalcOptions::LIST_TOC_FORMATS);
-			}
-
-			if (options->is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
-			{
-				ARCS_LOG_WARNING << "Option LIST_AUDIO_FORMATS is ignored";
-				options->unset(ARCalcOptions::LIST_AUDIO_FORMATS);
-			}
-
-			// Proceed ...
-		}
-	}
-
-	// Metafile: get path + activate album mode
-
-	if (options->is_set(ARCalcOptions::METAFILE))
-	{
-		auto metafilename(options->get(ARCalcOptions::METAFILE));
-
-		if (metafilename.empty())
-		{
-			// no metadata file specified ...
-
-			 // TODO Better ARCalcOptions::AUDIOFILES
-			if (options->get_arguments().empty())
-			{
-				ARCS_LOG_ERROR << "No metafile and no audiofile specified";
-				return std::make_unique<Options>();
-			}
-		}
-
-		// Provide Path of the Metafile as Searchpath
-
-		options->put(ARCalcOptions::METAFILEPATH,
-			file::path(options->get(ARCalcOptions::METAFILE)));
-
-		// Activate album mode
-
-		if (options->is_set(ARCalcOptions::FIRST))
-		{
-			ARCS_LOG_INFO <<
-				"Option FIRST is redundant when metafile is passed";
-		} else
-		{
-			ARCS_LOG(DEBUG1) << "Activate option FIRST due to METAFILE";
-			options->set(ARCalcOptions::FIRST);
-		}
-
-		if (options->is_set(ARCalcOptions::LAST))
-		{
-			ARCS_LOG_INFO <<
-				"Option LAST is redundant when metafile is passed";
-		} else
-		{
-			ARCS_LOG(DEBUG1) << "Activate option LAST due to METAFILE";
-			options->set(ARCalcOptions::LAST);
-		}
-	}
-
-	// Album or not
-
-	if (options->is_set(ARCalcOptions::ALBUM))
-	{
-		if (options->is_set(ARCalcOptions::METAFILE))
-		{
-			ARCS_LOG_INFO << "Option ALBUM is redundant when METAFILE is passed";
-		} else
-		{
-			ARCS_LOG(DEBUG1) << "Activate album mode";
-
-			options->set(ARCalcOptions::FIRST);
-			options->set(ARCalcOptions::LAST);
-		}
-	}
-
-	return options;
+	return this->configure_calc_options(std::move(options));
 }
 
 
@@ -502,8 +500,8 @@ int ARCalcApplication::do_run(const Options &options)
 {
 	// If only info options are present, handle info request
 
-	if (options.rightmost_flag() >= ARCalcOptions::LIST_TOC_FORMATS
-			and not options.empty())
+	if (options.is_set(ARCalcOptions::LIST_TOC_FORMATS)
+		or options.is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
 	{
 		return this->run_info(options);
 	}

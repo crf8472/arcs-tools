@@ -231,6 +231,13 @@ public:
 	std::string const get_argument(const OptionValue &i) const;
 
 	/**
+	 * \brief Returns TRUE iff no arguments are present.
+	 *
+	 * \return TRUE iff no arguments are present otherwise FALSE
+	 */
+	bool no_arguments() const;
+
+	/**
 	 * \brief Puts an argument to the end of the argument list.
 	 *
 	 * \param[in] arg The argument to be appended to the list of arguments
@@ -244,20 +251,6 @@ public:
 	 * \return TRUE if no information is contained in this Options instance
 	 */
 	bool empty() const;
-
-	/**
-	 * Position of the leftmost set flag.
-	 *
-	 * \return Position of the leftmost flag that is set.
-	 */
-	OptionValue leftmost_flag() const;
-
-	/**
-	 * Position of the rightmost set flag.
-	 *
-	 * \return Position of the rightmost flag that is set.
-	 */
-	OptionValue rightmost_flag() const;
 
 private:
 

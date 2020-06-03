@@ -99,6 +99,9 @@ private:
 
 	const std::vector<std::pair<Option, OptionValue>>& do_supported_options()
 		const override;
+
+	std::unique_ptr<Options> do_configure_options(
+			std::unique_ptr<Options> options) override;
 };
 
 

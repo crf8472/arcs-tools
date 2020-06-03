@@ -179,6 +179,13 @@ const std::vector<std::pair<Option, OptionValue>>&
 }
 
 
+std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
+		std::unique_ptr<Options> options)
+{
+	return this->configure_calc_options(std::move(options));
+}
+
+
 // ARVerifyApplication
 
 
@@ -286,7 +293,7 @@ std::unique_ptr<Configurator> ARVerifyApplication::create_configurator(
 
 int ARVerifyApplication::do_run(const Options &options)
 {
-	// Calculate the actual ARCSs from input files
+	// Calculate the actual ARCSs from input files (force ARCSv1 + ARCSv2)
 
 	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(options,
 			{ arcstk::checksum::type::ARCS2 });

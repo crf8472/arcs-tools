@@ -189,15 +189,21 @@ std::string const Options::get_argument(const OptionValue &index) const
 }
 
 
-void Options::append(const std::string &arg)
-{
-	arguments_.push_back(arg);
-}
-
-
 std::vector<std::string> const Options::get_arguments() const
 {
 	return arguments_;
+}
+
+
+bool Options::no_arguments() const
+{
+	return arguments_.empty();
+}
+
+
+void Options::append(const std::string &arg)
+{
+	arguments_.push_back(arg);
 }
 
 
@@ -207,23 +213,25 @@ bool Options::empty() const
 }
 
 
-OptionValue Options::leftmost_flag() const
-{
-	auto flags = config_;
+// Commented out but kept for reference
 
-	if (flags == 0) { return 0; }
+//OptionValue Options::leftmost_flag() const
+//{
+//	auto flags = config_;
+//
+//	if (flags == 0) { return 0; }
+//
+//	OptionValue count = 0;
+//	while (flags > 1) { count++; flags >>= 1; }
+//
+//	return std::pow(2, count);
+//}
 
-	OptionValue count = 0;
-	while (flags > 1) { count++; flags >>= 1; }
 
-	return std::pow(2, count);
-}
-
-
-OptionValue Options::rightmost_flag() const
-{
-	return config_ & (~config_ + 1);
-}
+//OptionValue Options::rightmost_flag() const
+//{
+//	return config_ & (~config_ + 1);
+//}
 
 } // namespace arcsapp
 
