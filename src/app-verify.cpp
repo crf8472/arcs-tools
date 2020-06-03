@@ -294,26 +294,24 @@ std::unique_ptr<Configurator> ARVerifyApplication::create_configurator(
 }
 
 
-int ARVerifyApplication::do_run(const Options &options)
+int ARVerifyApplication::run_info(const Options &options)
 {
-	// If only info options are present, handle info request
-
-	if (options.is_set(ARCalcOptions::LIST_TOC_FORMATS)
-		or options.is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
+	if (options.is_set(ARCalcOptions::LIST_TOC_FORMATS))
 	{
-		if (options.is_set(ARCalcOptions::LIST_TOC_FORMATS))
-		{
-			output(SupportedFormats::toc(), options.output());
-		}
-
-		if (options.is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
-		{
-			output(SupportedFormats::audio(), options.output());
-		}
-
-		return EXIT_SUCCESS;
+		output(SupportedFormats::toc(), options.output());
 	}
 
+	if (options.is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
+	{
+		output(SupportedFormats::audio(), options.output());
+	}
+
+	return EXIT_SUCCESS;
+}
+
+
+int ARVerifyApplication::run_calculation(const Options &options)
+{
 	// Calculate the actual ARCSs from input files (force ARCSv1 + ARCSv2)
 
 	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(options,
@@ -404,6 +402,20 @@ int ARVerifyApplication::do_run(const Options &options)
 	output(*format);
 
 	return EXIT_SUCCESS;
+}
+
+
+int ARVerifyApplication::do_run(const Options &options)
+{
+	// If only info options are present, handle info request
+
+	if (options.is_set(ARCalcOptions::LIST_TOC_FORMATS)
+		or options.is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
+	{
+		return this->run_info(options);
+	}
+
+	return this->run_calculation(options);
 }
 
 } // namespace arcsapp

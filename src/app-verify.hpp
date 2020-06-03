@@ -141,6 +141,24 @@ class ARVerifyApplication final : public ARApplication
 	void log_matching_files(const Checksums &checksums,
 		const Match &match, const uint32_t block,
 		const bool version = true) const;
+
+	/**
+	 * \brief Worker method for run(): handles info requests.
+	 *
+	 * \param[in] options The options to run the application
+	 *
+	 * \return Application return code
+	 */
+	int run_info(const Options &options);
+
+	/**
+	 * \brief Worker method for run(): handles calculation requests.
+	 *
+	 * \param[in] options The options to run the application
+	 *
+	 * \return Application return code
+	 */
+	int run_calculation(const Options &options);
 };
 
 } // namespace arcsapp

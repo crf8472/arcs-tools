@@ -166,17 +166,6 @@ public:
 			const Options &options,
 			const std::set<arcstk::checksum::type> &types);
 
-protected:
-
-	/**
-	 * \brief Worker method for run(): handles info requests.
-	 *
-	 * \param[in] options The options to run the application
-	 *
-	 * \return Application return code
-	 */
-	int run_info(const Options &options);
-
 private:
 
 	std::string do_name() const override;
@@ -208,6 +197,15 @@ private:
 	 */
 	std::set<arcstk::checksum::type> requested_types(const Options &options)
 		const;
+
+	/**
+	 * \brief Worker method for run(): handles info requests.
+	 *
+	 * \param[in] options The options to run the application
+	 *
+	 * \return Application return code
+	 */
+	int run_info(const Options &options);
 
 	/**
 	 * \brief Worker method for run(): handles calculation requests.
