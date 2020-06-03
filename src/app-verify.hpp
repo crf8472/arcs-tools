@@ -48,12 +48,27 @@ class ARVerifyOptions : public ARCalcOptions
 {
 public:
 
-	// ... 1 - 256 are from ARCalcOptions
+	// ... all values from ARCalcOptions
 
 	/**
 	 * \brief Response data to parse for verification
 	 */
-	static constexpr uint16_t RESPONSEFILE = 1024;
+	static constexpr OptionValue RESPONSEFILE = MAX_VALUE * 2^1;
+
+	/**
+	 * \brief Reference values data to parse for verification
+	 */
+	static constexpr OptionValue REFVALUES    = MAX_VALUE * 2^2;
+
+	/**
+	 * \brief Do not print anything, just return YES or NO
+	 */
+	static constexpr OptionValue NOPRINT      = MAX_VALUE * 2^3;
+
+	/**
+	 * \brief Print every match
+	 */
+	static constexpr OptionValue PRINTALL     = MAX_VALUE * 2^4;
 };
 
 
@@ -77,8 +92,8 @@ public:
 
 private:
 
-	const std::vector<std::pair<Option, uint32_t>>& do_supported_options() const
-		override;
+	const std::vector<std::pair<Option, OptionValue>>& do_supported_options()
+		const override;
 };
 
 

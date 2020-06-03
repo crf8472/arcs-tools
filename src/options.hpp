@@ -20,6 +20,8 @@
 namespace arcsapp
 {
 
+using OptionValue = uint64_t;
+
 /**
  * \brief Descriptor for a single command line option.
  *
@@ -108,9 +110,9 @@ public:
 
 private:
 
-	const char shorthand_;
+	const char        shorthand_;
 	const std::string symbol_;
-	const bool needs_value_;
+	const bool        needs_value_;
 	const std::string default_;
 	const std::string description_;
 };
@@ -173,7 +175,7 @@ public:
 	 *
 	 * \return TRUE iff the option is set, otherwise FALSE
 	 */
-	bool is_set(const uint16_t &option) const;
+	bool is_set(const OptionValue &option) const;
 
 	/**
 	 * \brief Set the option to TRUE.
@@ -182,7 +184,7 @@ public:
 	 *
 	 * \param[in] option The option to be set to TRUE
 	 */
-	void set(const uint16_t &option);
+	void set(const OptionValue &option);
 
 	/**
 	 * \brief Set the option to FALSE.
@@ -191,7 +193,7 @@ public:
 	 *
 	 * \param[in] option The option to be set to FALSE
 	 */
-	void unset(const uint16_t &option);
+	void unset(const OptionValue &option);
 
 	/**
 	 * \brief Get option value by key.
@@ -200,7 +202,7 @@ public:
 	 *
 	 * \return The value of the option passed
 	 */
-	std::string get(const uint16_t &option) const;
+	std::string get(const OptionValue &option) const;
 
 	/**
 	 * \brief Set option value for key.
@@ -208,7 +210,7 @@ public:
 	 * \param[in] option The option to put in
 	 * \param[in] value  The value for the option to put in
 	 */
-	void put(const uint16_t &option, const std::string &value);
+	void put(const OptionValue &option, const std::string &value);
 
 	/**
 	 * \brief Get all input arguments.
@@ -226,7 +228,7 @@ public:
 	 *
 	 * \return Argument
 	 */
-	std::string const get_argument(const uint16_t &i) const;
+	std::string const get_argument(const OptionValue &i) const;
 
 	/**
 	 * \brief Puts an argument to the end of the argument list.
@@ -248,14 +250,14 @@ public:
 	 *
 	 * \return Position of the leftmost flag that is set.
 	 */
-	uint16_t leftmost_flag() const;
+	OptionValue leftmost_flag() const;
 
 	/**
 	 * Position of the rightmost set flag.
 	 *
 	 * \return Position of the rightmost flag that is set.
 	 */
-	uint16_t rightmost_flag() const;
+	OptionValue rightmost_flag() const;
 
 private:
 
@@ -272,12 +274,12 @@ private:
 	/**
 	 * \brief Boolean and valued options
 	 */
-	uint16_t config_;
+	OptionValue config_;
 
 	/**
 	 * \brief Valued options' values
 	 */
-	std::map<uint16_t, std::string> option_map_;
+	std::map<OptionValue, std::string> option_map_;
 
 	/**
 	 * \brief Arguments (non-option values)

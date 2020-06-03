@@ -76,15 +76,15 @@ using arcsdec::TOCParser;
 // ARCalcOptions
 
 
-constexpr uint8_t  ARCalcOptions::NOV1;
-constexpr uint8_t  ARCalcOptions::NOV2;
-constexpr uint8_t  ARCalcOptions::ALBUM;
-constexpr uint8_t  ARCalcOptions::FIRST;
-constexpr uint8_t  ARCalcOptions::LAST;
-constexpr uint8_t  ARCalcOptions::METAFILE;
-constexpr uint16_t ARCalcOptions::LIST_TOC_FORMATS;
-constexpr uint16_t ARCalcOptions::LIST_AUDIO_FORMATS;
-constexpr uint16_t ARCalcOptions::METAFILEPATH;
+constexpr OptionValue ARCalcOptions::NOV1;
+constexpr OptionValue ARCalcOptions::NOV2;
+constexpr OptionValue ARCalcOptions::ALBUM;
+constexpr OptionValue ARCalcOptions::FIRST;
+constexpr OptionValue ARCalcOptions::LAST;
+constexpr OptionValue ARCalcOptions::METAFILE;
+constexpr OptionValue ARCalcOptions::LIST_TOC_FORMATS;
+constexpr OptionValue ARCalcOptions::LIST_AUDIO_FORMATS;
+constexpr OptionValue ARCalcOptions::METAFILEPATH;
 
 
 // ARCalcConfigurator
@@ -101,7 +101,7 @@ ARCalcConfigurator::~ARCalcConfigurator() noexcept
 = default;
 
 
-const std::vector<std::pair<Option, uint32_t>>&
+const std::vector<std::pair<Option, OptionValue>>&
 	ARCalcConfigurator::do_supported_options() const
 {
 	// The following output options would be nice for calc + verify:
@@ -116,7 +116,7 @@ const std::vector<std::pair<Option, uint32_t>>&
 	// TODO --col-delim:    Specify Column delimiter (DEFAULT: blank)
 	// TODO --print-id:     Print the ARId (DEFAULT off)
 	// TODO --print-url:    Print AccurateRip URL (DEFAULT off)
-	const static std::vector<std::pair<Option, uint32_t>> local_options =
+	const static std::vector<std::pair<Option, OptionValue>> local_options =
 	{
 		{{      "no-v1",    false, "FALSE",
 			"Do not provide ARCSv1" },

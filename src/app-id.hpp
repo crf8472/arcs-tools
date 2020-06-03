@@ -39,32 +39,32 @@ public:
 	/**
 	 * \brief Requested cddb id
 	 */
-	static constexpr uint8_t CDDBID = 1;
+	static constexpr OptionValue CDDBID = 1;
 
 	/**
 	 * \brief Requested url
 	 */
-	static constexpr uint8_t URL = 2;
+	static constexpr OptionValue URL = 2;
 
 	/**
 	 * \brief Requested ar db id
 	 */
-	static constexpr uint8_t DBID = 4;
+	static constexpr OptionValue DBID = 4;
 
 	/**
 	 * \brief Requested entire disc profile
 	 */
-	static constexpr uint8_t PROFILE = 8;
+	static constexpr OptionValue PROFILE = 8;
 
 	/**
 	 * \brief Specified AUDIOFILE file
 	 */
-	static constexpr uint8_t AUDIOFILE = 16;
+	static constexpr OptionValue AUDIOFILE = 16;
 
 	/**
 	 * \brief Specified alternative URL prefix
 	 */
-	static constexpr uint8_t PRE = 32;
+	static constexpr OptionValue PRE = 32;
 
 	/**
 	 * \brief Default constructor.
@@ -90,7 +90,7 @@ public:
 
 private:
 
-	const std::vector<std::pair<Option, uint32_t>>&
+	const std::vector<std::pair<Option, OptionValue>>&
 		do_supported_options() const override;
 };
 

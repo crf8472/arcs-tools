@@ -2,7 +2,7 @@
 #include "options.hpp"
 #endif
 
-#include <cstdint>  // for uint16_t
+//#include <cstdint>  // for uint64_t
 #include <cmath>    // for pow
 #include <iterator> // for ostream_iterator
 #include <map>      // for map, operator!=, _Rb_tree_const_iterator, _Rb_tre...
@@ -141,25 +141,25 @@ std::string Options::output() const
 }
 
 
-bool Options::is_set(const uint16_t &option) const
+bool Options::is_set(const OptionValue &option) const
 {
 	return config_ & option;
 }
 
 
-void Options::set(const uint16_t &option)
+void Options::set(const OptionValue &option)
 {
 	config_ |= option;
 }
 
 
-void Options::unset(const uint16_t &option)
+void Options::unset(const OptionValue &option)
 {
 	config_ &= !option;
 }
 
 
-std::string Options::get(const uint16_t &option) const
+std::string Options::get(const OptionValue &option) const
 {
 	auto it = option_map_.find(option);
 
@@ -172,13 +172,13 @@ std::string Options::get(const uint16_t &option) const
 }
 
 
-void Options::put(const uint16_t &option, const std::string &value)
+void Options::put(const OptionValue &option, const std::string &value)
 {
 	option_map_.insert(std::make_pair(option, value));
 }
 
 
-std::string const Options::get_argument(const uint16_t &index) const
+std::string const Options::get_argument(const OptionValue &index) const
 {
 	if (index > arguments_.size())
 	{
@@ -207,20 +207,20 @@ bool Options::empty() const
 }
 
 
-uint16_t Options::leftmost_flag() const
+OptionValue Options::leftmost_flag() const
 {
 	auto flags = config_;
 
 	if (flags == 0) { return 0; }
 
-	uint16_t count = 0;
+	OptionValue count = 0;
 	while (flags > 1) { count++; flags >>= 1; }
 
 	return std::pow(2, count);
 }
 
 
-uint16_t Options::rightmost_flag() const
+OptionValue Options::rightmost_flag() const
 {
 	return config_ & (~config_ + 1);
 }

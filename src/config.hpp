@@ -31,8 +31,8 @@
 namespace arcsapp
 {
 
-class Option;
-class Options;
+//class Option;
+//class Options;
 
 using arcstk::Logging;
 using arcstk::Log;
@@ -191,7 +191,8 @@ public:
 	 *
 	 * \return List of supported options.
 	 */
-	const std::vector<std::pair<Option, uint32_t>>& supported_options() const;
+	const std::vector<std::pair<Option, OptionValue>>& supported_options()
+		const;
 
 protected:
 
@@ -363,7 +364,7 @@ private:
 	 */
 	//static const std::size_t FIRST_UNPROCESSED_OPTION;
 
-	virtual const std::vector<std::pair<Option, uint32_t>>&
+	virtual const std::vector<std::pair<Option, OptionValue>>&
 		do_supported_options() const
 	= 0;
 
@@ -424,7 +425,7 @@ public:
 
 private:
 
-	const std::vector<std::pair<Option, uint32_t>>&
+	const std::vector<std::pair<Option, OptionValue>>&
 		do_supported_options() const override;
 };
 

@@ -78,7 +78,10 @@ using arcsdec::ARCSCalculator;
 // ARVerifyOptions
 
 
-constexpr uint16_t ARVerifyOptions::RESPONSEFILE;
+constexpr OptionValue ARVerifyOptions::RESPONSEFILE;
+constexpr OptionValue ARVerifyOptions::REFVALUES;
+constexpr OptionValue ARVerifyOptions::NOPRINT;
+constexpr OptionValue ARVerifyOptions::PRINTALL;
 
 
 // ARVerifyConfigurator
@@ -91,13 +94,14 @@ ARVerifyConfigurator::ARVerifyConfigurator(int argc, char** argv)
 }
 
 
-const std::vector<std::pair<Option, uint32_t>>&
+const std::vector<std::pair<Option, OptionValue>>&
 	ARVerifyConfigurator::do_supported_options() const
 {
 	// Output options
 	// TODO --print-all-matches: Print all block matches, regardless of result
 	// TODO -n,--no-print: Return diff count of best match
-	const static std::vector<std::pair<Option, uint32_t>> local_options =
+	// TODO --values: List of hex values as references
+	const static std::vector<std::pair<Option, OptionValue>> local_options =
 	{
 		//{{      "no-v1",    false, "FALSE",   // TODO Really to support?
 		//	"do not verify ARCSv1" },

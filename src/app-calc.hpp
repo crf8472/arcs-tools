@@ -47,47 +47,52 @@ public:
 	/**
 	 * \brief Do not output V1 ARCS
 	 */
-	static constexpr uint8_t NOV1 = 1;
+	static constexpr OptionValue NOV1 = 1;
 
 	/**
 	 * \brief Do not output V2 ARCS
 	 */
-	static constexpr uint8_t NOV2 = 2;
+	static constexpr OptionValue NOV2 = 2;
 
 	/**
 	 * \brief Skip front and back samples of the sample stream
 	 */
-	static constexpr uint8_t ALBUM = 4;
+	static constexpr OptionValue ALBUM = 4;
 
 	/**
 	 * \brief Skip front samples of first track
 	 */
-	static constexpr uint8_t FIRST = 8;
+	static constexpr OptionValue FIRST = 8;
 
 	/**
 	 * \brief Skip back samples of last track
 	 */
-	static constexpr uint8_t LAST = 16;
+	static constexpr OptionValue LAST = 16;
 
 	/**
 	 * \brief A metadata file is specified
 	 */
-	static constexpr uint8_t METAFILE = 32;
+	static constexpr OptionValue METAFILE = 32;
 
 	/**
 	 * \brief List compiled TOC formats
 	 */
-	static constexpr uint16_t LIST_TOC_FORMATS = 128;
+	static constexpr OptionValue LIST_TOC_FORMATS = 128;
 
 	/**
 	 * \brief List compiled audio formats (codec/container)
 	 */
-	static constexpr uint16_t LIST_AUDIO_FORMATS = 256;
+	static constexpr OptionValue LIST_AUDIO_FORMATS = 256;
 
 	/**
 	 * \brief Metadata file path
 	 */
-	static constexpr uint16_t METAFILEPATH = 512;
+	static constexpr OptionValue METAFILEPATH = 512;
+
+
+protected:
+
+	static constexpr OptionValue MAX_VALUE = 512;
 };
 
 
@@ -113,8 +118,8 @@ public:
 
 private:
 
-	const std::vector<std::pair<Option, uint32_t>>& do_supported_options() const
-		override;
+	const std::vector<std::pair<Option, OptionValue>>& do_supported_options()
+		const override;
 
 	int do_parse_arguments(CLITokens& cli, Options &options) const override;
 

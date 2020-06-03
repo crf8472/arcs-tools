@@ -63,10 +63,10 @@ ARIdConfigurator::ARIdConfigurator(int argc, char** argv)
 	// empty
 }
 
-const std::vector<std::pair<Option, uint32_t>>&
+const std::vector<std::pair<Option, OptionValue>>&
 	ARIdConfigurator::do_supported_options() const
 {
-	const static std::vector<std::pair<Option, uint32_t>> local_options = {
+	const static std::vector<std::pair<Option, OptionValue>> local_options = {
 			{{      "cddb_id",  false,
 					"FALSE", "print the CDDB id" },
 					ARIdOptions::CDDBID },
