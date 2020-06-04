@@ -357,13 +357,14 @@ public:
 	/**
 	 * \brief Constructor.
 	 *
+	 * \param[in] label    Set to TRUE for printing labels
 	 * \param[in] track    Set to TRUE for printing track number (if any)
 	 * \param[in] offset   Set to TRUE for printing offset (if any)
 	 * \param[in] length   Set to TRUE for printing length (if any)
 	 * \param[in] filename Set to TRUE for printing filename (if any)
 	 */
-	WithMetadataFlagMethods(const bool track, const bool offset,
-			const bool length, const bool filename);
+	WithMetadataFlagMethods(const bool label, const bool track,
+			const bool offset, const bool length, const bool filename);
 
 	/**
 	 * \brief Default constructor.
@@ -371,12 +372,30 @@ public:
 	 * Constructs an instance with all flags FALSE.
 	 */
 	WithMetadataFlagMethods() : WithMetadataFlagMethods(
-			false, false, false, false) {}
+			false, false, false, false, false) {}
 
 	/**
 	 * \brief Virtual default destructor
 	 */
 	virtual ~WithMetadataFlagMethods() noexcept;
+
+	/**
+	 * \brief Returns TRUE iff instance is configured to format the label.
+	 *
+	 * Intended to control the printing of column titles and row labels.
+	 *
+	 * \return Flag for printing the label
+	 */
+	bool label() const;
+
+	/**
+	 * \brief Activate or deactivate the printing of labels.
+	 *
+	 * Intended to control the printing of column titles and row labels.
+	 *
+	 * \param[in] filename Flag to set for printing the filename
+	 */
+	void set_label(const bool &label);
 
 	/**
 	 * \brief Returns TRUE iff instance is configured to format the track
@@ -474,6 +493,7 @@ private:
  * \brief Format numbers in hexadecimal representation
  */
 class HexLayout : public NumberLayout
+				, private WithInternalFlags
 {
 public:
 
@@ -514,11 +534,6 @@ private:
 
 	std::string do_format(const uint32_t &number, const int width) const
 		override;
-
-	/**
-	 * Internal layout flags
-	 */
-	uint8_t flags_;
 };
 
 
@@ -828,23 +843,63 @@ public:
 protected:
 
 	/**
-	 * \brief Derived classes may call the copy constructor
+	 * \brief Worker to print column titles.
 	 *
-	 * \param[in] rhs The structure to copy
+	 * Default implementation prints title(column) for each column
+	 * with alignment to the right side.
+	 *
+	 * \param[in] out The stream to print
 	 */
+	virtual void print_column_titles(std::ostream &out) const;
+
+	/**
+	 * \brief Resize the dimensions of the layout
+	 *
+	 * \param[in] rows
+	 * \param[in] cols
+	 */
+	void resize_layout(const int rows, const int cols) const;
+
+	/**
+	 * \brief TRUE if \c row is within the dimensions
+	 *
+	 * \param[in] row Row index to check
+	 *
+	 * \return TRUE if \c row is within the dimensions, otherwise FALSE
+	 */
+	bool legal_row(const int row) const;
+
+	/**
+	 * \brief TRUE if \c col is within the dimensions
+	 *
+	 * \param[in] col Column index to check
+	 *
+	 * \return TRUE if \c col is within the dimensions, otherwise FALSE
+	 */
+	bool legal_col(const int col) const;
+
+	/**
+	 * \brief Throws if \c legal_row(row) is FALSE
+	 *
+	 * \param[in] row Row index to check
+	 *
+	 * \throws std::out_of_range If not \c legal_row(row)
+	 */
+	void bounds_check_row(const int row) const;
+
+	/**
+	 * \brief Throws if \c legal_col(col) is FALSE
+	 *
+	 * \param[in] col Column index to check
+	 *
+	 * \thcols std::out_of_range If not \c legal_col(col)
+	 */
+	void bounds_check_col(const int col) const;
+
+
 	StringTableStructure(const StringTableStructure &rhs);
 
 	StringTableStructure(StringTableStructure &&rhs) noexcept;
-
-	void resize_layout(const int rows, const int cols) const;
-
-	bool legal_row(const int row) const;
-
-	bool legal_col(const int col) const;
-
-	void bounds_check_row(const int row) const;
-
-	void bounds_check_col(const int col) const;
 
 private:
 
@@ -888,21 +943,21 @@ private:
 };
 
 
-class StringTable;
+class StringTableBase;
 
-std::ostream& operator << (std::ostream &o, const StringTable &table);
+std::ostream& operator << (std::ostream &o, const StringTableBase &table);
 
 /**
- * \brief A table of strings.
+ * \brief Base class for tables of strings.
  *
- * The columns are by default configured to have always optimal width.
+ * This class is not intended for polymorphic use.
  */
-class StringTable : public StringTableStructure
+class StringTableBase : public StringTableStructure
 {
 public:
 
 	friend std::ostream& operator<< (std::ostream &o,
-			const StringTable &table);
+			const StringTableBase &table);
 
 	/**
 	 * \brief Constructor
@@ -912,8 +967,8 @@ public:
 	 * \param[in] dyn_column_width  If 'FALSE' cells are truncated on col width
 	 * \param[in] allow_append_rows If 'FALSE' appending rows is forbidden
 	 */
-	StringTable(const int rows, const int columns, const bool dyn_column_width,
-			const bool allow_append_rows);
+	StringTableBase(const int rows, const int columns,
+			const bool dyn_column_width, const bool allow_append_rows);
 
 	/**
 	 * \brief Constructor
@@ -923,8 +978,8 @@ public:
 	 * \param[in] rows    Number of rows (including header, if any)
 	 * \param[in] columns Number of columns (including label column, if any)
 	 */
-	StringTable(const int rows, const int columns)
-		: StringTable(rows, columns, true, true) { /* empty */ };
+	StringTableBase(const int rows, const int columns)
+		: StringTableBase(rows, columns, true, true) { /* empty */ };
 
 	/**
 	 * \brief Default constructor
@@ -932,15 +987,12 @@ public:
 	 * Constructs a table with dimensions 0,0, activates appending rows and
 	 * dynamic column widths.
 	 */
-	StringTable() : StringTable(0, 0) { /* empty */ }
+	StringTableBase() : StringTableBase(0, 0) { /* empty */ }
 
-
-	StringTable(const StringTable &rhs);
-
-	StringTable(StringTable &&rhs) noexcept;
-
-	virtual ~StringTable() noexcept;
-
+	/**
+	 * \brief Default destructor
+	 */
+	virtual ~StringTableBase() noexcept;
 
 	/**
 	 * \brief TRUE if the table has dynamic column widths activated.
@@ -1019,14 +1071,27 @@ public:
 	 */
 	bool empty() const;
 
+protected:
+
+	StringTableBase(const StringTableBase &rhs);
+
+	StringTableBase(StringTableBase &&rhs) noexcept;
+
+	// TODO copy assignment
+
+	// TODO move assignment
+
+	// TODO swap
+
+	// TODO ==
+
 private:
 
-	void init(const int rows, const int cols) override;
-
 	void do_resize(const int rows, const int cols) override;
+	// from TableStructure
 
 	/**
-	 * \brief Implements StringTable::update_cell(const int, const int)
+	 * \brief Implements StringTableBase::update_cell(const int, const int)
 	 *
 	 * \param[in] row  Row index
 	 * \param[in] col  Column index
@@ -1038,7 +1103,7 @@ private:
 			const std::string &text);
 
 	/**
-	 * \brief Implements StringTable::cell(const int, const int)
+	 * \brief Implements StringTableBase::cell(const int, const int)
 	 *
 	 * \param[in] row  Row index
 	 * \param[in] col  Column index
@@ -1054,16 +1119,6 @@ private:
 	 */
 	std::vector<bool> flags_;
 
-	/**
-	 * \brief If TRUE, update_cell with a row > rows() will resize the table
-	 */
-	//bool allow_append_rows_ = true; // FIXME do this with a flag
-
-	/**
-	 * \brief Switch for dynamic column widths
-	 */
-	//bool dyn_col_widths_ = true; // FIXME do this with a flag
-
 	// forward declaration
 	class Impl;
 
@@ -1075,28 +1130,128 @@ private:
 
 
 /**
- * \brief A table based format for album data
+ * \brief A table of strings.
  *
- * The tracks are rows and the columns are TOC data or checksums.
+ * The columns are by default configured to have always optimal width.
+ * The table is by default allowed to have rows appended.
  */
-class TypedColsTableBase	: public WithMetadataFlagMethods
+class StringTable : public StringTableBase
+{
+public:
+
+	using StringTableBase::StringTableBase;
+
+private:
+
+	void init(const int rows, const int cols) override;
+	// from StringTableStructure
+};
+
+
+/**
+ * \brief Property to set or use a layout for printing checksums.
+ */
+class WithChecksumLayout
+{
+public:
+
+	/**
+	 * \brief Default constructor
+	 *
+	 * Initializes a default HexLayout.
+	 */
+	WithChecksumLayout();
+
+	virtual ~WithChecksumLayout() noexcept;
+
+	/**
+	 * \brief Set the layout for printing the checksums
+	 *
+	 * \param[in] layout Layout for printing the checksums
+	 */
+	void set_checksum_layout(std::unique_ptr<NumberLayout> &layout);
+
+	/**
+	 * \brief Return the layout for printing the checksums
+	 *
+	 * \return Layout for printing the checksums
+	 */
+	const NumberLayout& checksum_layout() const;
+
+private:
+
+	/**
+	 * \brief Layout used for CHECKSUM columns to print the checksums
+	 */
+	std::unique_ptr<NumberLayout> checksum_layout_;
+};
+
+
+/**
+ * \brief Cell types for album information
+ */
+enum class CELL_TYPE : int
+{
+	TRACK    = 1,
+	FILENAME = 2,
+	OFFSET   = 3,
+	LENGTH   = 4,
+	CHECKSUM = 5,
+	MATCH    = 6
+};
+
+
+/**
+ * \brief Default values
+ */
+namespace defaults
+{
+
+/**
+ * \brief Return current default title for columns or rows of the given type
+ *
+ * \param[in] type The type to get the default title for
+ *
+ * \return Default title for columns of this \c type
+ */
+std::string label(const CELL_TYPE type);
+
+/**
+ * \brief Length of the longest default label
+ */
+extern const std::size_t max_label_length;
+
+} //namespace defaults
+
+
+/**
+ * \brief A table based format for album data with untyped columns.
+ *
+ * The tracks are columns and the rows are TOC data or checksums.
+ *
+ * A layout can be set to format the cells in columns holding checksums.
+ */
+class TypedRowsTableBase	: public WithMetadataFlagMethods
 							, virtual public WithARId
+							, virtual public WithChecksumLayout
 							, virtual public StringTableStructure
 {
 public:
 
 	/**
-	 * \brief Column type
+	 * \brief Constructor.
+	 *
+	 * \param[in] rows     Number of rows
+	 * \param[in] columns  Number of columns
+	 * \param[in] label    Set to TRUE for printing column titles
+	 * \param[in] track    Set to TRUE for printing track number (if any)
+	 * \param[in] offset   Set to TRUE for printing offset (if any)
+	 * \param[in] length   Set to TRUE for printing length (if any)
+	 * \param[in] filename Set to TRUE for printing filename (if any)
 	 */
-	enum class COL_TYPE : int
-	{
-		TRACK    = 1,
-		FILENAME = 2,
-		OFFSET   = 3,
-		LENGTH   = 4,
-		CHECKSUM = 5,
-		MATCH    = 6
-	};
+	TypedRowsTableBase(const int rows, const int columns,
+			const bool label, const bool track, const bool offset,
+			const bool length, const bool filename);
 
 	/**
 	 * \brief Constructor.
@@ -1104,21 +1259,53 @@ public:
 	 * \param[in] rows    Number of rows
 	 * \param[in] columns Number of columns
 	 */
-	TypedColsTableBase(const int rows, const int columns);
+	TypedRowsTableBase(const int rows, const int columns)
+		: TypedRowsTableBase(rows, columns, true, true, true, true, true)
+	{ /* empty */ };
+};
+
+
+/**
+ * \brief A table based format for album data with typed columns.
+ *
+ * The tracks are rows and the columns are TOC data or checksums.
+ *
+ * A layout can be set to format the cells in columns holding checksums.
+ *
+ * Concrete subclasses define how to preconfigure the columns for checksums or
+ * match flags.
+ */
+class TypedColsTableBase	: public WithMetadataFlagMethods
+							, virtual public WithARId
+							, virtual public WithChecksumLayout
+							, virtual public StringTableStructure
+{
+public:
 
 	/**
 	 * \brief Constructor.
 	 *
 	 * \param[in] rows     Number of rows
 	 * \param[in] columns  Number of columns
+	 * \param[in] label    Set to TRUE for printing column titles
 	 * \param[in] track    Set to TRUE for printing track number (if any)
 	 * \param[in] offset   Set to TRUE for printing offset (if any)
 	 * \param[in] length   Set to TRUE for printing length (if any)
 	 * \param[in] filename Set to TRUE for printing filename (if any)
 	 */
 	TypedColsTableBase(const int rows, const int columns,
-			const bool track, const bool offset, const bool length,
-			const bool filename);
+			const bool label, const bool track, const bool offset,
+			const bool length, const bool filename);
+
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] rows    Number of rows
+	 * \param[in] columns Number of columns
+	 */
+	TypedColsTableBase(const int rows, const int columns)
+		: TypedColsTableBase(rows, columns, true, true, true, true, true)
+	{ /* empty */ };
 
 	/**
 	 * \brief Set column type for specified column
@@ -1126,16 +1313,16 @@ public:
 	 * \param[in] col  The column to set the type for
 	 * \param[in] type The type to set
 	 */
-	void assign_type(const int col, const COL_TYPE type);
+	void assign_type(const int col, const CELL_TYPE type); // TODO protected to Base
 
 	/**
 	 * \brief Return type of specified column
 	 *
-	 * \param[in] col
+	 * \param[in] col Column index
 	 *
 	 * \return Type of specified column
 	 */
-	COL_TYPE type_of(const int col) const;
+	CELL_TYPE type_of(const int col) const; // TODO protected to Base
 
 	/**
 	 * \brief Return current default width for columns of the given type
@@ -1144,16 +1331,7 @@ public:
 	 *
 	 * \return Default width for columns of this \c type
 	 */
-	int default_width(const COL_TYPE type) const;
-
-	/**
-	 * \brief Return current default title for columns of the given type
-	 *
-	 * \param[in] type The type to get the default title for
-	 *
-	 * \return Default title for columns of this \c type
-	 */
-	std::string default_title(const COL_TYPE type) const;
+	int default_width(const CELL_TYPE type) const;
 
 	/**
 	 * \brief Set widths of all columns with given type
@@ -1161,41 +1339,34 @@ public:
 	 * \param[in] type  The type to get the default title for
 	 * \param[in] width The width to set for columns of this \c type
 	 */
-	void set_widths(const COL_TYPE type, const int width);
+	void set_widths(const CELL_TYPE type, const int width);
 
 protected:
 
 	/**
-	 * \brief Print column titles
-	 *
-	 * \param[in] out Stream to print titles to
-	 */
-	void print_column_titles(std::ostream &out) const; // 1: Formatted tables
-
-	/**
-	 * \brief Convert from COL_TYPE to int
+	 * \brief Convert from CELL_TYPE to int
 	 *
 	 * \param[in] type Type to convert
 	 *
 	 * \return Integer representing this type
 	 */
-	int convert_from(const COL_TYPE type) const; // 2: Album tables
+	int convert_from(const CELL_TYPE type) const;
 
 	/**
-	 * \brief Convert to COL_TYPE from int
+	 * \brief Convert to CELL_TYPE from int
 	 *
 	 * \param[in] type Integer representing the type
 	 *
 	 * \return Column type
 	 */
-	COL_TYPE convert_to(const int type) const; // 2: Album tables
+	CELL_TYPE convert_to(const int type) const;
 
 	/**
 	 * \brief Return number of declared metadata columns.
 	 *
 	 * \return Number of declared metadata columns.
 	 */
-	int total_metadata_columns() const; // 2: Album tables
+	int total_metadata_columns() const;
 
 	/**
 	 * \brief Apply types and standard settings to metadata columns.
@@ -1205,7 +1376,7 @@ protected:
 	 *
 	 * \return Number of metadata columns
 	 */
-	int columns_apply_md_settings(); // 2: Album tables
+	int columns_apply_md_settings();
 
 private:
 

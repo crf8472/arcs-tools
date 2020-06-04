@@ -61,7 +61,7 @@ public:
 	static constexpr OptionValue NOOFFSETS    =   128;
 	static constexpr OptionValue NOLENGTHS    =   256;
 	static constexpr OptionValue NOFILENAMES  =   512;
-	static constexpr OptionValue NOCOLHEADERS =  1024;
+	static constexpr OptionValue NOLABELS     =  1024;
 	static constexpr OptionValue SUMSONLY     =  2048;
 	static constexpr OptionValue TRACKSASCOLS =  4096;
 	static constexpr OptionValue COLDELIM     =  8192;

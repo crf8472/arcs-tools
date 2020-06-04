@@ -16,7 +16,7 @@ TEST_CASE ( "HexLayout", "[hexlayout]" )
 
 	auto foo = hex_layout->format(3456, 3);
 
-	CHECK ( foo == "d80" );
+	CHECK ( foo == "D80" );
 }
 
 
@@ -50,18 +50,20 @@ TEST_CASE ( "WithMetadataFlagMethods", "" )
 {
 	using arcsapp::WithMetadataFlagMethods;
 
-	WithMetadataFlagMethods flags(true, true, false, false);
+	WithMetadataFlagMethods flags(true, true, true, false, false);
 
-	REQUIRE ( flags.track() );
-	REQUIRE ( flags.offset() );
-	REQUIRE ( not flags.length() );
+	REQUIRE (     flags.label()    );
+	REQUIRE (     flags.track()    );
+	REQUIRE (     flags.offset()   );
+	REQUIRE ( not flags.length()   );
 	REQUIRE ( not flags.filename() );
 
-	WithMetadataFlagMethods flags2(false, false, true, false);
+	WithMetadataFlagMethods flags2(false, false, false, true, false);
 
-	REQUIRE ( not flags2.track() );
-	REQUIRE ( not flags2.offset() );
-	REQUIRE ( flags2.length() );
+	REQUIRE ( not flags2.label()    );
+	REQUIRE ( not flags2.track()    );
+	REQUIRE ( not flags2.offset()   );
+	REQUIRE (     flags2.length()   );
 	REQUIRE ( not flags2.filename() );
 	//REQUIRE ( flags2.only_one_flag() );
 }
@@ -86,12 +88,13 @@ TEST_CASE ( "ARIdTableFormat", "" )
 }
 
 
-TEST_CASE ( "AlbumTableBase", "" )
+TEST_CASE ( "TypedColsTableBase", "" )
 {
-	using arcsapp::WithMetadataFlagMethods;
+	using arcsapp::WithMetadataFlagMethods; // FIXME Tests wrong type
 
-	WithMetadataFlagMethods table(true, true, false, false);
+	WithMetadataFlagMethods table(true, true, true, false, false);
 
+	REQUIRE ( table.label() );
 	REQUIRE ( table.track() );
 	REQUIRE ( table.offset() );
 	REQUIRE ( not table.length() );
@@ -111,14 +114,14 @@ TEST_CASE ( "StringTable", "[stringtable]" )
 	// Set widths
 
 	table.set_width(0, 5);
-	table.set_width(1, 3); // smaller than text!
+	table.set_width(1, 3);
 	table.set_width(2, 4);
 	table.set_width(3, 10);
 
-	CHECK ( table.width(0) ==  5 );
-	CHECK ( table.width(1) ==  3 );
-	CHECK ( table.width(2) ==  4 );
-	CHECK ( table.width(3) == 10 );
+	REQUIRE ( table.width(0) ==  5 );
+	REQUIRE ( table.width(1) ==  3 );
+	REQUIRE ( table.width(2) ==  4 );
+	REQUIRE ( table.width(3) == 10 );
 
 	// Set contents
 
@@ -128,19 +131,48 @@ TEST_CASE ( "StringTable", "[stringtable]" )
 	table.update_cell(0, 3, "357");
 
 	table.update_cell(1, 0, "xyz");
-	table.update_cell(1, 1, "fubi");
+	table.update_cell(1, 1, "fubi"); // exceeds col width
 	table.update_cell(1, 2, "quux");
 	table.update_cell(1, 3, "855");
 
-	CHECK ( table.cell(0, 0) == "foo" );
-	CHECK ( table.cell(0, 1) == "bar" );
-	CHECK ( table.cell(0, 2) == "baz" );
-	CHECK ( table.cell(0, 3) == "357" );
+	REQUIRE ( table.cell(0, 0) == "foo" );
+	REQUIRE ( table.cell(0, 1) == "bar" );
+	REQUIRE ( table.cell(0, 2) == "baz" );
+	REQUIRE ( table.cell(0, 3) == "357" );
 
-	CHECK ( table.cell(1, 0) == "xyz" );
-	CHECK ( table.cell(1, 1) == "fu~" ); // cut off
-	CHECK ( table.cell(1, 2) == "quux" );
-	CHECK ( table.cell(1, 3) == "855" );
+	REQUIRE ( table.cell(1, 0) == "xyz" );
+	REQUIRE ( table.cell(1, 1) == "fu~" ); // cut off
+	REQUIRE ( table.cell(1, 2) == "quux" );
+	REQUIRE ( table.cell(1, 3) == "855" );
+
+	SECTION ( "Copy construct" )
+	{
+		auto table_copy { table };
+
+		CHECK ( table_copy.cell(0, 0) == "foo" );
+		CHECK ( table_copy.cell(0, 1) == "bar" );
+		CHECK ( table_copy.cell(0, 2) == "baz" );
+		CHECK ( table_copy.cell(0, 3) == "357" );
+
+		CHECK ( table_copy.cell(1, 0) == "xyz" );
+		CHECK ( table_copy.cell(1, 1) == "fu~" ); // cut off
+		CHECK ( table_copy.cell(1, 2) == "quux" );
+		CHECK ( table_copy.cell(1, 3) == "855" );
+	}
+
+	SECTION ( "Move construct" )
+	{
+		auto table_moved { std::move(table) };
+
+		CHECK ( table_moved.cell(0, 0) == "foo" );
+		CHECK ( table_moved.cell(0, 1) == "bar" );
+		CHECK ( table_moved.cell(0, 2) == "baz" );
+		CHECK ( table_moved.cell(0, 3) == "357" );
+
+		CHECK ( table_moved.cell(1, 0) == "xyz" );
+		CHECK ( table_moved.cell(1, 1) == "fu~" ); // cut off
+		CHECK ( table_moved.cell(1, 2) == "quux" );
+		CHECK ( table_moved.cell(1, 3) == "855" );
+	}
 }
-
 

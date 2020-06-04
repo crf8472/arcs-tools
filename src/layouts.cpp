@@ -17,6 +17,31 @@
 namespace arcsapp
 {
 
+namespace defaults
+{
+
+std::string label(const CELL_TYPE type)
+{
+	std::string title = "";
+
+	switch (type)
+	{
+		case CELL_TYPE::TRACK    : title = "Track";    break;
+		case CELL_TYPE::FILENAME : title = "Filename"; break;
+		case CELL_TYPE::OFFSET   : title = "Offset";   break;
+		case CELL_TYPE::LENGTH   : title = "Length";   break;
+		case CELL_TYPE::MATCH    : title = "Theirs";   break;
+		case CELL_TYPE::CHECKSUM : title = "Mine";     break;
+	}
+
+	return title;
+}
+
+const std::size_t max_label_length = 8; // TODO Magic number (FILENAME, CHECKSUM)
+
+} // namespace defaults
+
+
 // WithInternalFlags
 
 
@@ -219,16 +244,17 @@ ARIdLayout* WithARId::arid_layout()
 
 
 WithMetadataFlagMethods::WithMetadataFlagMethods(
+		const bool show_label,
 		const bool show_track,
 		const bool show_offset,
 		const bool show_length,
 		const bool show_filename)
-	: WithInternalFlags(
-			0
-			| show_track
-			| (show_offset << 1)
-			| (show_length << 2)
-			| (show_filename << 3))
+	: WithInternalFlags(0
+			|  show_label   //  0
+			| (show_track    << 1)
+			| (show_offset   << 2)
+			| (show_length   << 3)
+			| (show_filename << 4))
 {
 	// empty
 }
@@ -237,51 +263,63 @@ WithMetadataFlagMethods::WithMetadataFlagMethods(
 WithMetadataFlagMethods::~WithMetadataFlagMethods() noexcept = default;
 
 
-bool WithMetadataFlagMethods::track() const
+bool WithMetadataFlagMethods::label() const
 {
 	return this->flag(0);
 }
 
 
-void WithMetadataFlagMethods::set_track(const bool &track)
+void WithMetadataFlagMethods::set_label(const bool &label)
 {
-	this->set_flag(0, track);
+	this->set_flag(0, label);
 }
 
 
-bool WithMetadataFlagMethods::offset() const
+bool WithMetadataFlagMethods::track() const
 {
 	return this->flag(1);
 }
 
 
-void WithMetadataFlagMethods::set_offset(const bool &offset)
+void WithMetadataFlagMethods::set_track(const bool &track)
 {
-	this->set_flag(1, offset);
+	this->set_flag(1, track);
 }
 
 
-bool WithMetadataFlagMethods::length() const
+bool WithMetadataFlagMethods::offset() const
 {
 	return this->flag(2);
 }
 
 
-void WithMetadataFlagMethods::set_length(const bool &length)
+void WithMetadataFlagMethods::set_offset(const bool &offset)
 {
-	this->set_flag(2, length);
+	this->set_flag(2, offset);
 }
 
 
-bool WithMetadataFlagMethods::filename() const
+bool WithMetadataFlagMethods::length() const
 {
 	return this->flag(3);
 }
 
 
+void WithMetadataFlagMethods::set_length(const bool &length)
+{
+	this->set_flag(3, length);
+}
+
+
+bool WithMetadataFlagMethods::filename() const
+{
+	return this->flag(4);
+}
+
+
 void WithMetadataFlagMethods::set_filename(const bool &filename)
 {
-	this->set_flag(3, filename);
+	this->set_flag(4, filename);
 }
 
 
@@ -301,45 +339,33 @@ std::string NumberLayout::format(const uint32_t &number, const int width) const
 
 
 HexLayout::HexLayout()
-	: flags_{ 0 }
 {
-	// empty
+	set_show_base(false);
+	set_uppercase(true);
 }
 
 
 void HexLayout::set_show_base(const bool base)
 {
-	if (base)
-	{
-		flags_ |= 1;
-	} else
-	{
-		flags_ &= ~1;
-	}
+	set_flag(0, base);
 }
 
 
 bool HexLayout::shows_base() const
 {
-	return flags_ & 1;
+	return flag(0);
 }
 
 
 void HexLayout::set_uppercase(const bool uppercase)
 {
-	if (uppercase)
-	{
-		flags_ |= (1 << 1);
-	} else
-	{
-		flags_ &= ~(1 << 1);
-	}
+	set_flag(1, uppercase);
 }
 
 
 bool HexLayout::is_uppercase() const
 {
-	return flags_ & (1 << 1);
+	return flag(1);
 }
 
 
@@ -347,12 +373,12 @@ std::string HexLayout::do_format(const uint32_t &number, const int width) const
 {
 	std::stringstream ss;
 
-	if (this->shows_base())
+	if (shows_base())
 	{
 		ss << std::showbase;
 	}
 
-	if (this->is_uppercase())
+	if (is_uppercase())
 	{
 		ss << std::uppercase;
 	}
@@ -458,7 +484,7 @@ void TableStructure::bounds_check(const int row, const int col) const
 
 
 /**
- * \brief Private implementation of a StringTableLayout
+ * \brief Private implementation of a StringTableStructure
  */
 class StringTableStructure::Impl final
 {
@@ -718,7 +744,7 @@ bool StringTableStructure::Impl::legal_width(const int width) const
 }
 
 
-// StringTableLayout
+// StringTableStructure
 
 
 StringTableStructure::StringTableStructure(const int rows, const int cols)
@@ -861,10 +887,26 @@ void StringTableStructure::do_bounds_check(const int row, const int col) const
 }
 
 
+void StringTableStructure::print_column_titles(std::ostream &out) const
+{
+	for (std::size_t col = 0; col < columns(); ++col)
+	{
+		out << std::setw(width(col)) << std::left << title(col);
+
+		if (col < columns() - 1)
+		{
+			out << column_delimiter();
+		}
+	}
+
+	out << std::endl;
+}
+
+
 /**
  * \brief Private implementation of a StringTableBase
  */
-class StringTable::Impl final
+class StringTableBase::Impl final
 {
 public:
 
@@ -909,11 +951,11 @@ private:
 	/**
 	 * \brief Number of columns.
 	 */
-	int cols_; // TODO Redundant value, also in StringTableLayout
+	int cols_; // TODO Redundant value, also in StringTableStructure
 };
 
 
-StringTable::Impl::Impl(const int rows, const int cols)
+StringTableBase::Impl::Impl(const int rows, const int cols)
 	: cells_ (rows * cols)
 	, current_row_ { 0 }
 	, cols_ { cols }
@@ -922,26 +964,26 @@ StringTable::Impl::Impl(const int rows, const int cols)
 }
 
 
-StringTable::Impl::	Impl(const Impl &rhs) = default;
+StringTableBase::Impl::	Impl(const Impl &rhs) = default;
 
 
-StringTable::Impl::	Impl(Impl &&rhs) noexcept = default;
+StringTableBase::Impl::	Impl(Impl &&rhs) noexcept = default;
 
 
-void StringTable::Impl::resize(const int rows, const int cols)
+void StringTableBase::Impl::resize(const int rows, const int cols)
 {
 	cols_ = cols;
 	cells_.resize(rows * cols);
 }
 
 
-std::string StringTable::Impl::cell(const int row, const int col) const
+std::string StringTableBase::Impl::cell(const int row, const int col) const
 {
 	return cells_[index(row, col)];
 }
 
 
-void StringTable::Impl::update_cell(const int row, const int col,
+void StringTableBase::Impl::update_cell(const int row, const int col,
 		const std::string &text)
 {
 	cells_[index(row, col)] = text;
@@ -952,13 +994,13 @@ void StringTable::Impl::update_cell(const int row, const int col,
 }
 
 
-int StringTable::Impl::current_row() const
+int StringTableBase::Impl::current_row() const
 {
 	return current_row_;
 }
 
 
-void StringTable::Impl::swap(Impl rhs)
+void StringTableBase::Impl::swap(Impl rhs)
 {
 	using std::swap;
 
@@ -967,35 +1009,35 @@ void StringTable::Impl::swap(Impl rhs)
 }
 
 
-int StringTable::Impl::index(const int row, const int col) const
+int StringTableBase::Impl::index(const int row, const int col) const
 {
 	return row * cols_ + col;
 }
 
 
-// StringTable
+// StringTableBase
 
 
-StringTable::StringTable(const int rows, const int columns,
+StringTableBase::StringTableBase(const int rows, const int columns,
 			const bool dyn_col_widths, const bool allow_append_rows)
 	: StringTableStructure(rows, columns)
 	, flags_ { dyn_col_widths, allow_append_rows }
-	, impl_(std::make_unique<StringTable::Impl>(rows, columns))
+	, impl_(std::make_unique<StringTableBase::Impl>(rows, columns))
 {
 	// empty
 }
 
 
-StringTable::StringTable(const StringTable &rhs)
+StringTableBase::StringTableBase(const StringTableBase &rhs)
 	: StringTableStructure(rhs)
 	, flags_ { rhs.flags_ }
-	, impl_  { std::make_unique<StringTable::Impl>(*rhs.impl_) }
+	, impl_  { std::make_unique<StringTableBase::Impl>(*rhs.impl_) }
 {
 	// empty
 }
 
 
-StringTable::StringTable(StringTable &&rhs) noexcept
+StringTableBase::StringTableBase(StringTableBase &&rhs) noexcept
 	: StringTableStructure(std::move(rhs))
 	, flags_ { std::move(rhs.flags_) }
 	, impl_  { std::move(rhs.impl_)  }
@@ -1004,22 +1046,22 @@ StringTable::StringTable(StringTable &&rhs) noexcept
 }
 
 
-StringTable::~StringTable() noexcept = default;
+StringTableBase::~StringTableBase() noexcept = default;
 
 
-bool StringTable::has_dynamic_widths() const
+bool StringTableBase::has_dynamic_widths() const
 {
 	return flags_[0];
 }
 
 
-bool StringTable::has_appending_rows() const
+bool StringTableBase::has_appending_rows() const
 {
 	return flags_[1];
 }
 
 
-void StringTable::update_cell(const int row, const int col,
+void StringTableBase::update_cell(const int row, const int col,
 		const std::string &text)
 {
 	bounds_check_col(col);
@@ -1053,7 +1095,7 @@ void StringTable::update_cell(const int row, const int col,
 }
 
 
-std::string StringTable::cell(const int row, const int col) const
+std::string StringTableBase::cell(const int row, const int col) const
 {
 	this->bounds_check(row, col);
 
@@ -1070,37 +1112,31 @@ std::string StringTable::cell(const int row, const int col) const
 }
 
 
-std::string StringTable::operator() (const int row, const int col) const
+std::string StringTableBase::operator() (const int row, const int col) const
 {
 	return impl_->cell(row, col);
 }
 
 
-int StringTable::current_row() const
+int StringTableBase::current_row() const
 {
 	return impl_->current_row();
 }
 
 
-int StringTable::max_rows() const
+int StringTableBase::max_rows() const
 {
 	return 73; // FIXME Creepy, isn't it?
 }
 
 
-bool StringTable::empty() const
+bool StringTableBase::empty() const
 {
 	return impl_->current_row() == 0;
 }
 
 
-void StringTable::init(const int /* row */, const int /* col */)
-{
-	// empty
-}
-
-
-void StringTable::do_update_cell(const int row, const int col,
+void StringTableBase::do_update_cell(const int row, const int col,
 		const std::string &text)
 {
 	// bounds checking is done in update_cell()
@@ -1108,21 +1144,21 @@ void StringTable::do_update_cell(const int row, const int col,
 }
 
 
-std::string StringTable::do_cell(const int row, const int col) const
+std::string StringTableBase::do_cell(const int row, const int col) const
 {
 	this->bounds_check(row, col);
 	return impl_->cell(row, col);
 }
 
 
-void StringTable::do_resize(const int rows, const int cols)
+void StringTableBase::do_resize(const int rows, const int cols)
 {
 	resize_layout(rows, cols); // resize StrinTableStructure
 	impl_->resize(rows, cols);
 }
 
 
-std::ostream& operator << (std::ostream &out, const StringTable &table)
+std::ostream& operator << (std::ostream &out, const StringTableBase &table)
 {
 	std::size_t col = 0;
 
@@ -1152,79 +1188,108 @@ std::ostream& operator << (std::ostream &out, const StringTable &table)
 }
 
 
+// StringTable
+
+
+void StringTable::init(const int /* row */, const int /* col */)
+{
+	// empty
+}
+
+
+// WithChecksumLayout
+
+
+WithChecksumLayout::WithChecksumLayout()
+	: checksum_layout_ { std::make_unique<HexLayout>() }
+{
+	// empty
+}
+
+
+WithChecksumLayout::~WithChecksumLayout() noexcept = default;
+
+
+void WithChecksumLayout::set_checksum_layout(
+		std::unique_ptr<NumberLayout> &layout)
+{
+	checksum_layout_ = std::move(layout);
+}
+
+
+const NumberLayout& WithChecksumLayout::checksum_layout() const
+{
+	return *checksum_layout_;
+}
+
+
+// TypedRowsTableBase
+
+
+TypedRowsTableBase::TypedRowsTableBase(const int rows, const int columns,
+			const bool label, const bool track, const bool offset,
+			const bool length, const bool filename)
+	: WithARId()
+	, WithChecksumLayout()
+	, StringTableStructure(rows, columns)
+	, WithMetadataFlagMethods(label, track, offset, length, filename)
+{
+	// empty
+}
+
+
 // TypedColsTableBase
 
 
-TypedColsTableBase::TypedColsTableBase(const int rows, const int columns)
-	: StringTableStructure(rows, columns)
-	, WithMetadataFlagMethods(true, true, true, true)
-{
-	// empty
-}
-
-
-TypedColsTableBase::TypedColsTableBase(const int rows, const int columns,
-			const bool show_track, const bool show_offset,
-			const bool show_length, const bool show_filename)
-	: StringTableStructure(rows, columns)
+TypedColsTableBase::TypedColsTableBase(const int rows,
+		const int columns,
+		const bool show_label,
+		const bool show_track,
+		const bool show_offset,
+		const bool show_length,
+		const bool show_filename)
+	: WithARId()
+	, WithChecksumLayout()
+	, StringTableStructure(rows, columns)
 	, WithMetadataFlagMethods(
-			show_track, show_offset, show_length, show_filename)
+			show_label, show_track, show_offset, show_length, show_filename)
 {
 	// empty
 }
 
 
-void TypedColsTableBase::assign_type(const int col,
-		const TypedColsTableBase::COL_TYPE type)
+void TypedColsTableBase::assign_type(const int col, const CELL_TYPE type)
 {
 	set_type(col, convert_from(type));
 }
 
 
-TypedColsTableBase::COL_TYPE TypedColsTableBase::type_of(const int col) const
+CELL_TYPE TypedColsTableBase::type_of(const int col) const
 {
 	return convert_to(type(col));
 }
 
 
-int TypedColsTableBase::default_width(const COL_TYPE type) const
+int TypedColsTableBase::default_width(const CELL_TYPE type) const
 {
-	const int default_w = default_title(type).length();
+	const int default_w = defaults::label(type).length();
 	int min_w = 0;
 
 	switch (type)
 	{
-		case COL_TYPE::TRACK    : min_w =  2; break;
-		case COL_TYPE::FILENAME : min_w = 12; break;
-		case COL_TYPE::OFFSET   :
-		case COL_TYPE::LENGTH   : min_w =  7; break;
-		case COL_TYPE::MATCH    :
-		case COL_TYPE::CHECKSUM : min_w =  8; break;
+		case CELL_TYPE::TRACK    : min_w =  2; break;
+		case CELL_TYPE::FILENAME : min_w = 12; break;
+		case CELL_TYPE::OFFSET   :
+		case CELL_TYPE::LENGTH   : min_w =  7; break;
+		case CELL_TYPE::MATCH    :
+		case CELL_TYPE::CHECKSUM : min_w =  8; break;
 	}
 
 	return std::max(min_w, default_w);
 }
 
 
-std::string TypedColsTableBase::default_title(const COL_TYPE type) const
-{
-	std::string title = "";
-
-	switch (type)
-	{
-		case COL_TYPE::TRACK    : title = "Track";    break;
-		case COL_TYPE::FILENAME : title = "Filename"; break;
-		case COL_TYPE::OFFSET   : title = "Offset";   break;
-		case COL_TYPE::LENGTH   : title = "Length";   break;
-		case COL_TYPE::MATCH    : title = "Theirs";   break;
-		case COL_TYPE::CHECKSUM : title = "Mine";     break;
-	}
-
-	return title;
-}
-
-
-void TypedColsTableBase::set_widths(const COL_TYPE type, const int width)
+void TypedColsTableBase::set_widths(const CELL_TYPE type, const int width)
 {
 	for (std::size_t col = 0; col < columns(); ++col)
 	{
@@ -1233,33 +1298,16 @@ void TypedColsTableBase::set_widths(const COL_TYPE type, const int width)
 }
 
 
-void TypedColsTableBase::print_column_titles(std::ostream &out) const
-{
-	for (std::size_t col = 0; col < columns(); ++col)
-	{
-		out << std::setw(width(col)) << std::left << title(col);
-
-		if (col < columns() - 1)
-		{
-			out << column_delimiter();
-		}
-	}
-
-	out << std::endl;
-}
-
-
-int TypedColsTableBase::convert_from(const TypedColsTableBase::COL_TYPE type)
-	const
+int TypedColsTableBase::convert_from(const CELL_TYPE type) const
 {
 	return to_underlying(type);
 }
 
 
-TypedColsTableBase::COL_TYPE TypedColsTableBase::convert_to(const int type)
+CELL_TYPE TypedColsTableBase::convert_to(const int type)
 	const
 {
-	return static_cast<COL_TYPE>(type);
+	return static_cast<CELL_TYPE>(type);
 }
 
 
@@ -1280,17 +1328,17 @@ int TypedColsTableBase::columns_apply_md_settings()
 {
 	std::size_t md_cols = 0;
 
-	if (track())    { assign_type(md_cols, COL_TYPE::TRACK);    ++md_cols; }
-	if (filename()) { assign_type(md_cols, COL_TYPE::FILENAME); ++md_cols; }
-	if (offset())   { assign_type(md_cols, COL_TYPE::OFFSET);   ++md_cols; }
-	if (length())   { assign_type(md_cols, COL_TYPE::LENGTH);   ++md_cols; }
+	if (track())    { assign_type(md_cols, CELL_TYPE::TRACK);    ++md_cols; }
+	if (filename()) { assign_type(md_cols, CELL_TYPE::FILENAME); ++md_cols; }
+	if (offset())   { assign_type(md_cols, CELL_TYPE::OFFSET);   ++md_cols; }
+	if (length())   { assign_type(md_cols, CELL_TYPE::LENGTH);   ++md_cols; }
 
-	COL_TYPE type = COL_TYPE::TRACK;
+	CELL_TYPE type = CELL_TYPE::TRACK;
 	for (std::size_t c = 0; c < md_cols; ++c)
 	{
 		type = type_of(c);
 
-		set_title(c, default_title(type));
+		set_title(c, defaults::label(type));
 		set_width(c, default_width(type));
 	}
 

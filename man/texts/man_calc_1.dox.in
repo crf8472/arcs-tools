@@ -43,6 +43,12 @@ output ARCSs v1 as well as v2. By specifiying \b --no-v2 the calculation of
 ARCSv2 is suppressed. Combining this switch with \b --no-v1 will result in doing
 nothing.
 
+\par --tracks-as-cols
+Print the tracks or filenames as columns instead of the track properties. This
+implies --no-filenames. The columns are in the same order from left to right as
+the input filenames. If the columns represent tracks instead of files, the order
+of columns follows the order of track numbers in ascending from left to right.
+
 \copydoc inc_calcinfooptions
 
 \copydoc inc_outfileopt

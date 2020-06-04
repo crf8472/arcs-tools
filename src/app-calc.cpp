@@ -74,8 +74,6 @@ using arcsdec::ARCSCalculator;
 using arcsdec::TOCParser;
 
 
-
-
 // ARCalcOptions
 
 
@@ -204,7 +202,7 @@ std::unique_ptr<Options> ARCalcConfigurator::configure_calc_options(
 		options->set(ARCalcOptions::NOLENGTHS);
 		options->set(ARCalcOptions::NOFILENAMES);
 
-		//options->set(ARCalcOptions::NOCOLHEADERS); // Multiple Checksum types?
+		//options->set(ARCalcOptions::NOLABELS); // Multiple Checksum types?
 	}
 
 	return options;
@@ -218,65 +216,49 @@ const std::vector<std::pair<Option, OptionValue>>&
 	{
 		// calculation input options
 
-		{{      "first",    false, "~",
-			"Treat first audio file as first track" },
+		{{      "first",  false, "~", "Treat first audio file as first track" },
 			ARCalcOptions::FIRST },
-		{{      "last",     false, "~",
-			"Treat last audio file as last track" },
+		{{      "last",   false, "~", "Treat last audio file as last track" },
 			ARCalcOptions::LAST },
-		{{      "album",    false, "~",
-			"Abbreviates --first --last" },
+		{{      "album",  false, "~", "Abbreviates --first --last" },
 			ARCalcOptions::ALBUM },
-		{{ 'm', "metafile", true, "none",
-			"Specify metadata file (CUE) to use" },
+		{{ 'm', "metafile", true, "none", "Specify toc metadata file to use" },
 			ARCalcOptions::METAFILE },
 
 		// calculation output options
 
-		{{      "no-v1",    false, "FALSE",
-			"Do not provide ARCSv1" },
+		{{  "no-v1", false, "FALSE", "Do not provide ARCSv1" },
 			ARCalcOptions::NOV1 },
-		{{      "no-v2",    false, "FALSE",
-			"Do not provide ARCSv2" },
+		{{  "no-v2", false, "FALSE", "Do not provide ARCSv2" },
 			ARCalcOptions::NOV2 },
-		{{      "no-track-nos",  false, "FALSE",
-			"Do not print track numbers" },
+		{{  "no-track-nos", false, "FALSE", "Do not print track numbers" },
 			ARCalcOptions::NOTRACKS},
-		{{      "no-offsets",    false, "FALSE",
-			"Do not print track offsets" },
+		{{  "no-offsets", false, "FALSE", "Do not print track offsets" },
 			ARCalcOptions::NOOFFSETS},
-		{{      "no-lengths",    false, "FALSE",
-			"Do not print track lengths" },
+		{{  "no-lengths", false, "FALSE", "Do not print track lengths" },
 			ARCalcOptions::NOLENGTHS},
-		{{      "no-filenames",    false, "FALSE",
-			"Do not print the filenames" },
+		{{  "no-filenames", false, "FALSE", "Do not print the filenames" },
 			ARCalcOptions::NOFILENAMES},
-		{{      "no-col-headers",    false, "FALSE",
-			"Do not print column headers" },
-			ARCalcOptions::NOCOLHEADERS},
-		{{      "print-sums-only",    false, "FALSE",
-			"Print only the checksums" },
+		{{  "no-labels", false, "FALSE", "Do not print column or row labels" },
+			ARCalcOptions::NOLABELS},
+		{{  "print-sums-only", false, "FALSE", "Print only checksums" },
 			ARCalcOptions::SUMSONLY},
-		{{      "tracks-as-cols",    false, "FALSE",
-			"Print result with tracks as columns" },
+		{{  "tracks-as-cols", false, "FALSE", "Print tracks as columns" },
 			ARCalcOptions::TRACKSASCOLS},
-		{{      "col-delim",    true, " ",
-			"Specify column delimiter" },
+		{{  "col-delim", true, " ", "Specify column delimiter" },
 			ARCalcOptions::COLDELIM},
-		{{      "print-id",    false, "FALSE",
-			"Print the AccurateRip Id of the album" },
+		{{  "print-id", false, "FALSE", "Print AccurateRip Id of the album" },
 			ARCalcOptions::PRINTID},
-		{{      "print-url",   false, "FALSE",
-			"Print the AccurateRip URL of the album" },
+		{{  "print-url", false, "FALSE", "Print AccurateRip URL of the album" },
 			ARCalcOptions::PRINTURL},
 
 		// info output options
 
-		{{      "list-toc-formats",  false,   "FALSE",
-			"List all supported file formats for TOC metadata" },
+		{{  "list-toc-formats", false, "FALSE",
+				"List all supported file formats for TOC metadata" },
 			ARCalcOptions::LIST_TOC_FORMATS },
-		{{      "list-audio-formats",  false, "FALSE",
-			"List all supported audio codec/container formats" },
+		{{  "list-audio-formats", false, "FALSE",
+				"List all supported audio codec/container formats" },
 			ARCalcOptions::LIST_AUDIO_FORMATS }
 	};
 
@@ -373,17 +355,17 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 std::unique_ptr<ChecksumsResultPrinter> ARCalcApplication::configure_format(
 		const Options &options) const
 {
-	const bool with_toc = !options.get(ARCalcOptions::METAFILE).empty();
+	const bool has_toc = !options.get(ARCalcOptions::METAFILE).empty();
 
 	// Print track number if they are not forbidden and a TOC is present
 	const bool prints_tracks = options.is_set(ARCalcOptions::NOTRACKS)
 		? false
-		: with_toc;
+		: has_toc;
 
 	// Print offsets if they are not forbidden and a TOC is present
 	const bool prints_offsets = options.is_set(ARCalcOptions::NOOFFSETS)
 		? false
-		: with_toc;
+		: has_toc;
 
 	// Print lengths if they are not forbidden
 	const bool prints_lengths = not options.is_set(ARCalcOptions::NOLENGTHS);
@@ -391,17 +373,29 @@ std::unique_ptr<ChecksumsResultPrinter> ARCalcApplication::configure_format(
 	// Print filenames if they are not forbidden and explicitly requested
 	const bool prints_filenames = options.is_set(ARCalcOptions::NOFILENAMES)
 		? false
-		: not with_toc;
+		: not has_toc;
 
-	// Configure which implementation + which columns to show.
-	// All other details are hidden.
+	// Set column delimiter
+	const std::string coldelim = options.is_set(ARCalcOptions::COLDELIM)
+		? options.get(ARCalcOptions::COLDELIM)
+		: " ";
 
-	auto format = std::make_unique<AlbumChecksumsTableFormat>(0, 0,
-			prints_tracks, prints_offsets, prints_lengths, prints_filenames);
+	// Decide which implementation
 
-	if (options.is_set(ARCalcOptions::COLDELIM))
+	std::unique_ptr<ChecksumsResultPrinter> format;
+
+	if (options.is_set(ARCalcOptions::TRACKSASCOLS))
 	{
-		format->set_column_delimiter(options.get(ARCalcOptions::COLDELIM));
+		format = std::make_unique<TypedRowsTableFormat>(0,
+			not options.is_set(ARCalcOptions::NOLABELS),
+			prints_tracks, prints_offsets, prints_lengths, prints_filenames,
+			coldelim);
+	} else
+	{
+		format = std::make_unique<AlbumChecksumsTableFormat>(0, 0,
+			not options.is_set(ARCalcOptions::NOLABELS),
+			prints_tracks, prints_offsets, prints_lengths, prints_filenames,
+			coldelim);
 	}
 
 	return format;

@@ -145,7 +145,7 @@ const std::vector<std::pair<Option, OptionValue>>&
 			ARVerifyOptions::NOFILENAMES},
 		{{      "no-col-headers",    false, "FALSE",
 			"Do not print column headers" },
-			ARVerifyOptions::NOCOLHEADERS},
+			ARVerifyOptions::NOLABELS},
 		{{      "print-sums-only",    false, "FALSE",
 			"Print only the checksums" },
 			ARVerifyOptions::SUMSONLY},
@@ -268,11 +268,12 @@ std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
 	// show filenames otherwise
 	// show length in every case
 	auto format = std::make_unique<AlbumMatchTableFormat>(0,
+			options.is_set(ARVerifyOptions::NOLABELS),
 			prints_tracks, prints_offsets, prints_lengths, prints_filenames);
 
-	if (options.is_set(ARCalcOptions::COLDELIM))
+	if (options.is_set(ARVerifyOptions::COLDELIM))
 	{
-		format->set_column_delimiter(options.get(ARCalcOptions::COLDELIM));
+		format->set_column_delimiter(options.get(ARVerifyOptions::COLDELIM));
 	}
 
 	return format;

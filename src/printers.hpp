@@ -169,6 +169,16 @@ public:
 			const bool &track_count, const bool &disc_id_1,
 			const bool &disc_id_2, const bool &cddb_id);
 
+	/**
+	 * \brief Constructor setting all flags with empty ARId and no prefix.
+	 *
+	 * \param[in] url         Set to TRUE for printing the URL
+	 * \param[in] filename    Set to TRUE for printing the filename
+	 * \param[in] track_count Set to TRUE for printing the track_count
+	 * \param[in] disc_id_1   Set to TRUE for printing the disc id1
+	 * \param[in] disc_id_2   Set to TRUE for printing the disc id2
+	 * \param[in] cddb_id     Set to TRUE for printing the cddb id
+	 */
 	ARIdTableFormat(const bool &url, const bool &filename,
 			const bool &track_count, const bool &disc_id_1,
 			const bool &disc_id_2, const bool &cddb_id) :
@@ -178,7 +188,7 @@ public:
 	/**
 	 * \brief Default constructor.
 	 *
-	 * Sets all formatting flags to TRUE
+	 * Sets empty ARId, no prefix and all formatting flags to TRUE
 	 */
 	ARIdTableFormat() : ARIdTableFormat(arcstk::EmptyARId, std::string(),
 			true, true, false, false, false, false)
@@ -192,13 +202,20 @@ public:
 private:
 
 	void init(const int rows, const int cols) override;
+	// from StringTableStructure
 
 	void do_out(std::ostream &o, const std::tuple<ARId, std::string> &t)
-		override;
+		override; // from Print
 
 	std::string do_format(const ARId &id, const std::string &alt_prefix) const
-		override;
+		override; // from ARIdLayout
 
+	/**
+	 * \brief Print row label for the specified \c flag
+	 *
+	 * \param[in] out  Stream to print to
+	 * \param[in] flag Flag to print a label for
+	 */
 	void print_label(std::ostream &out, const ARIdLayout::ARID_FLAG flag) const;
 
 	/**
@@ -233,14 +250,17 @@ public:
 	 *
 	 * \param[in] rows     Number of tracks
 	 * \param[in] columns  Number of types
+	 * \param[in] label    Set to TRUE for printing column titles
 	 * \param[in] track    Set to TRUE for printing track number (if any)
 	 * \param[in] offset   Set to TRUE for printing offset (if any)
 	 * \param[in] length   Set to TRUE for printing length (if any)
 	 * \param[in] filename Set to TRUE for printing filename (if any)
+	 * \param[in] coldelim Set column delimiter
 	 */
 	AlbumChecksumsTableFormat(const int rows, const int columns,
-			const bool track, const bool offset, const bool length,
-			const bool filename);
+			const bool label, const bool track, const bool offset,
+			const bool length, const bool filename,
+			const std::string &coldelim);
 
 	/**
 	 * \brief Virtual default destructor.
@@ -250,18 +270,16 @@ public:
 private:
 
 	void init(const int rows, const int cols) override;
+	// from StringTableStructure
 
 	int columns_apply_cs_settings(
 			const std::vector<arcstk::checksum::type> &types) override;
+	// from TypedColsTableBase
 
 	void do_out(std::ostream &o,
 		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
 		override;
-
-	/**
-	 * \brief Hexadecimal layout used for Checksums columns
-	 */
-	HexLayout hexlayout_;
+	// from Print
 };
 
 
@@ -285,13 +303,14 @@ public:
 	 * \brief Constructor.
 	 *
 	 * \param[in] rows     Number of tracks
+	 * \param[in] label    Set to TRUE for printing column titles
 	 * \param[in] track    Set to TRUE for printing track number (if any)
 	 * \param[in] offset   Set to TRUE for printing offset (if any)
 	 * \param[in] length   Set to TRUE for printing length (if any)
 	 * \param[in] filename Set to TRUE for printing filename (if any)
 	 */
-	AlbumMatchTableFormat(const int rows, const bool track, const bool offset,
-			const bool length, const bool filename);
+	AlbumMatchTableFormat(const int rows, const bool track, const bool label,
+			const bool offset, const bool length, const bool filename);
 
 	/**
 	 * \brief Virtual default destructor.
@@ -301,18 +320,52 @@ public:
 private:
 
 	void init(const int rows, const int cols) override;
+	// from StringTableStructure
 
 	int columns_apply_cs_settings(
 			const std::vector<arcstk::checksum::type> &types) override;
+	// from TypedColsTableBase
 
 	void do_out(std::ostream &out,
 			const std::tuple<Checksums*, std::vector<std::string>, ARResponse,
 			Match*, int, bool, TOC*, ARId> &t) override;
+	// from Print
+};
+
+
+/**
+ * \brief For printing in a format where checksums are rows and tracks are cols.
+ */
+class TypedRowsTableFormat final : public TypedRowsTableBase
+								 , public ChecksumsResultPrinter
+{
+public:
 
 	/**
-	 * \brief Hexadecimal layout used for Checksums columns
+	 * \brief Constructor.
+	 *
+	 * \param[in] cols     Number of tracks
+	 * \param[in] label    Set to TRUE for printing row labels
+	 * \param[in] track    Set to TRUE for printing track number (if any)
+	 * \param[in] offset   Set to TRUE for printing offset (if any)
+	 * \param[in] length   Set to TRUE for printing length (if any)
+	 * \param[in] filename Set to TRUE for printing filename (if any)
+	 * \param[in] coldelim Set column delimiter
 	 */
-	HexLayout hexlayout_;
+	TypedRowsTableFormat(const int cols, const bool label,
+			const bool track, const bool offset,
+			const bool length, const bool filename,
+			const std::string &coldelim);
+
+private:
+
+	void init(const int rows, const int cols) override;
+	// from StringTableBase
+
+	void do_out(std::ostream &o,
+		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
+		override;
+	// from Print
 };
 
 } // namespace arcsapp
