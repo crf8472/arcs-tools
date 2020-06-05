@@ -239,6 +239,8 @@ using ChecksumsResultPrinter =
 
 /**
  * \brief Simple table format for album-based Checksums.
+ *
+ * Checksums are columns and tracks are rows.
  */
 class AlbumChecksumsTableFormat final   : public TypedColsTableBase
 										, public ChecksumsResultPrinter
@@ -275,6 +277,44 @@ private:
 	int columns_apply_cs_settings(
 			const std::vector<arcstk::checksum::type> &types) override;
 	// from TypedColsTableBase
+
+	void do_out(std::ostream &o,
+		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
+		override;
+	// from Print
+};
+
+
+/**
+ * \brief Simple table format for album-based Checksums.
+ *
+ * Checksums are rows and tracks are cols.
+ */
+class AlbumTracksTableFormat final  : public TypedRowsTableBase
+									, public ChecksumsResultPrinter
+{
+public:
+
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] cols     Number of tracks
+	 * \param[in] label    Set to TRUE for printing row labels
+	 * \param[in] track    Set to TRUE for printing track number (if any)
+	 * \param[in] offset   Set to TRUE for printing offset (if any)
+	 * \param[in] length   Set to TRUE for printing length (if any)
+	 * \param[in] filename Set to TRUE for printing filename (if any)
+	 * \param[in] coldelim Set column delimiter
+	 */
+	AlbumTracksTableFormat(const int cols, const bool label,
+			const bool track, const bool offset,
+			const bool length, const bool filename,
+			const std::string &coldelim);
+
+private:
+
+	void init(const int rows, const int cols) override;
+	// from StringTableBase
 
 	void do_out(std::ostream &o,
 		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
@@ -329,42 +369,6 @@ private:
 	void do_out(std::ostream &out,
 			const std::tuple<Checksums*, std::vector<std::string>, ARResponse,
 			Match*, int, bool, TOC*, ARId> &t) override;
-	// from Print
-};
-
-
-/**
- * \brief For printing in a format where checksums are rows and tracks are cols.
- */
-class TypedRowsTableFormat final : public TypedRowsTableBase
-								 , public ChecksumsResultPrinter
-{
-public:
-
-	/**
-	 * \brief Constructor.
-	 *
-	 * \param[in] cols     Number of tracks
-	 * \param[in] label    Set to TRUE for printing row labels
-	 * \param[in] track    Set to TRUE for printing track number (if any)
-	 * \param[in] offset   Set to TRUE for printing offset (if any)
-	 * \param[in] length   Set to TRUE for printing length (if any)
-	 * \param[in] filename Set to TRUE for printing filename (if any)
-	 * \param[in] coldelim Set column delimiter
-	 */
-	TypedRowsTableFormat(const int cols, const bool label,
-			const bool track, const bool offset,
-			const bool length, const bool filename,
-			const std::string &coldelim);
-
-private:
-
-	void init(const int rows, const int cols) override;
-	// from StringTableBase
-
-	void do_out(std::ostream &o,
-		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
-		override;
 	// from Print
 };
 

@@ -1208,7 +1208,7 @@ namespace defaults
 {
 
 /**
- * \brief Return current default title for columns or rows of the given type
+ * \brief Return default title for columns or rows of the given type
  *
  * \param[in] type The type to get the default title for
  *
@@ -1221,7 +1221,36 @@ std::string label(const CELL_TYPE type);
  */
 extern const std::size_t max_label_length;
 
+/**
+ * \brief Return default width for columns of the given type
+ *
+ * \param[in] type The type to get the default width for
+ *
+ * \return Default width for columns of this \c type
+ */
+int width(const CELL_TYPE type);
+
 } //namespace defaults
+
+
+/**
+ * \brief Convert from CELL_TYPE to int
+ *
+ * \param[in] type Type to convert
+ *
+ * \return Integer representing this type
+ */
+int convert_from(const CELL_TYPE type);
+
+
+/**
+ * \brief Convert to CELL_TYPE from int
+ *
+ * \param[in] type Integer representing the type
+ *
+ * \return Column type
+ */
+CELL_TYPE convert_to(const int type);
 
 
 /**
@@ -1313,7 +1342,7 @@ public:
 	 * \param[in] col  The column to set the type for
 	 * \param[in] type The type to set
 	 */
-	void assign_type(const int col, const CELL_TYPE type); // TODO protected to Base
+	void assign_type(const int col, const CELL_TYPE type);
 
 	/**
 	 * \brief Return type of specified column
@@ -1322,16 +1351,7 @@ public:
 	 *
 	 * \return Type of specified column
 	 */
-	CELL_TYPE type_of(const int col) const; // TODO protected to Base
-
-	/**
-	 * \brief Return current default width for columns of the given type
-	 *
-	 * \param[in] type The type to get the default width for
-	 *
-	 * \return Default width for columns of this \c type
-	 */
-	int default_width(const CELL_TYPE type) const;
+	CELL_TYPE type_of(const int col) const;
 
 	/**
 	 * \brief Set widths of all columns with given type
@@ -1342,24 +1362,6 @@ public:
 	void set_widths(const CELL_TYPE type, const int width);
 
 protected:
-
-	/**
-	 * \brief Convert from CELL_TYPE to int
-	 *
-	 * \param[in] type Type to convert
-	 *
-	 * \return Integer representing this type
-	 */
-	int convert_from(const CELL_TYPE type) const;
-
-	/**
-	 * \brief Convert to CELL_TYPE from int
-	 *
-	 * \param[in] type Integer representing the type
-	 *
-	 * \return Column type
-	 */
-	CELL_TYPE convert_to(const int type) const;
 
 	/**
 	 * \brief Return number of declared metadata columns.

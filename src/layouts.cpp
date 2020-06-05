@@ -39,7 +39,37 @@ std::string label(const CELL_TYPE type)
 
 const std::size_t max_label_length = 8; // TODO Magic number (FILENAME, CHECKSUM)
 
+int width(const CELL_TYPE type)
+{
+	const int default_w = defaults::label(type).length();
+	int min_w = 0;
+
+	switch (type)
+	{
+		case CELL_TYPE::TRACK    : min_w =  2; break;
+		case CELL_TYPE::FILENAME : min_w = 12; break;
+		case CELL_TYPE::OFFSET   :
+		case CELL_TYPE::LENGTH   : min_w =  7; break;
+		case CELL_TYPE::MATCH    :
+		case CELL_TYPE::CHECKSUM : min_w =  8; break;
+	}
+
+	return std::max(min_w, default_w);
+}
+
 } // namespace defaults
+
+
+int convert_from(const CELL_TYPE type)
+{
+	return to_underlying(type);
+}
+
+
+CELL_TYPE convert_to(const int type)
+{
+	return static_cast<CELL_TYPE>(type);
+}
 
 
 // WithInternalFlags
@@ -1226,9 +1256,14 @@ const NumberLayout& WithChecksumLayout::checksum_layout() const
 // TypedRowsTableBase
 
 
-TypedRowsTableBase::TypedRowsTableBase(const int rows, const int columns,
-			const bool label, const bool track, const bool offset,
-			const bool length, const bool filename)
+TypedRowsTableBase::TypedRowsTableBase(
+		const int rows,
+		const int columns,
+		const bool label,
+		const bool track,
+		const bool offset,
+		const bool length,
+		const bool filename)
 	: WithARId()
 	, WithChecksumLayout()
 	, StringTableStructure(rows, columns)
@@ -1241,18 +1276,18 @@ TypedRowsTableBase::TypedRowsTableBase(const int rows, const int columns,
 // TypedColsTableBase
 
 
-TypedColsTableBase::TypedColsTableBase(const int rows,
+TypedColsTableBase::TypedColsTableBase(
+		const int rows,
 		const int columns,
-		const bool show_label,
-		const bool show_track,
-		const bool show_offset,
-		const bool show_length,
-		const bool show_filename)
+		const bool label,
+		const bool track,
+		const bool offset,
+		const bool length,
+		const bool filename)
 	: WithARId()
 	, WithChecksumLayout()
 	, StringTableStructure(rows, columns)
-	, WithMetadataFlagMethods(
-			show_label, show_track, show_offset, show_length, show_filename)
+	, WithMetadataFlagMethods(label, track, offset, length, filename)
 {
 	// empty
 }
@@ -1270,44 +1305,12 @@ CELL_TYPE TypedColsTableBase::type_of(const int col) const
 }
 
 
-int TypedColsTableBase::default_width(const CELL_TYPE type) const
-{
-	const int default_w = defaults::label(type).length();
-	int min_w = 0;
-
-	switch (type)
-	{
-		case CELL_TYPE::TRACK    : min_w =  2; break;
-		case CELL_TYPE::FILENAME : min_w = 12; break;
-		case CELL_TYPE::OFFSET   :
-		case CELL_TYPE::LENGTH   : min_w =  7; break;
-		case CELL_TYPE::MATCH    :
-		case CELL_TYPE::CHECKSUM : min_w =  8; break;
-	}
-
-	return std::max(min_w, default_w);
-}
-
-
 void TypedColsTableBase::set_widths(const CELL_TYPE type, const int width)
 {
 	for (std::size_t col = 0; col < columns(); ++col)
 	{
 		if (type_of(col) == type) { set_width(col, width); }
 	}
-}
-
-
-int TypedColsTableBase::convert_from(const CELL_TYPE type) const
-{
-	return to_underlying(type);
-}
-
-
-CELL_TYPE TypedColsTableBase::convert_to(const int type)
-	const
-{
-	return static_cast<CELL_TYPE>(type);
 }
 
 
@@ -1339,7 +1342,7 @@ int TypedColsTableBase::columns_apply_md_settings()
 		type = type_of(c);
 
 		set_title(c, defaults::label(type));
-		set_width(c, default_width(type));
+		set_width(c, defaults::width(type));
 	}
 
 	return md_cols;

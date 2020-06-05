@@ -386,7 +386,7 @@ std::unique_ptr<ChecksumsResultPrinter> ARCalcApplication::configure_format(
 
 	if (options.is_set(ARCalcOptions::TRACKSASCOLS))
 	{
-		format = std::make_unique<TypedRowsTableFormat>(0,
+		format = std::make_unique<AlbumTracksTableFormat>(0,
 			not options.is_set(ARCalcOptions::NOLABELS),
 			prints_tracks, prints_offsets, prints_lengths, prints_filenames,
 			coldelim);

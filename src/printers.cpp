@@ -277,7 +277,7 @@ int AlbumChecksumsTableFormat::columns_apply_cs_settings(
 	{
 		assign_type(col, CELL_TYPE::CHECKSUM);
 		set_title(col, arcstk::checksum::type_name(*type_to_print));
-		set_width(col, default_width(CELL_TYPE::CHECKSUM));
+		set_width(col, defaults::width(CELL_TYPE::CHECKSUM));
 
 		++col;
 		++type_to_print;
@@ -410,13 +410,13 @@ int AlbumMatchTableFormat::columns_apply_cs_settings(
 	{
 		assign_type(col_idx, CELL_TYPE::CHECKSUM);
 		set_title(col_idx, arcstk::checksum::type_name(*type_to_print));
-		set_width(col_idx, default_width(CELL_TYPE::CHECKSUM));
+		set_width(col_idx, defaults::width(CELL_TYPE::CHECKSUM));
 
 		++col_idx;
 
 		assign_type(col_idx, CELL_TYPE::MATCH);
 		set_title(col_idx, defaults::label(CELL_TYPE::MATCH));
-		set_width(col_idx, default_width(CELL_TYPE::MATCH));
+		set_width(col_idx, defaults::width(CELL_TYPE::MATCH));
 
 		++col_idx;
 
@@ -529,10 +529,10 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 }
 
 
-// TypedRowsTableFormat
+// AlbumTracksTableFormat
 
 
-TypedRowsTableFormat::TypedRowsTableFormat(const int cols, const bool label,
+AlbumTracksTableFormat::AlbumTracksTableFormat(const int cols, const bool label,
 		const bool track, const bool offset, const bool length,
 		const bool filename, const std::string &coldelim)
 	: TypedRowsTableBase(0, cols, label, track, offset, length, filename)
@@ -543,13 +543,13 @@ TypedRowsTableFormat::TypedRowsTableFormat(const int cols, const bool label,
 }
 
 
-void TypedRowsTableFormat::init(const int /* rows */, const int /* cols */)
+void AlbumTracksTableFormat::init(const int /* rows */, const int /* cols */)
 {
 	// empty
 }
 
 
-void TypedRowsTableFormat::do_out(std::ostream &o,
+void AlbumTracksTableFormat::do_out(std::ostream &o,
 		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
 {
 	auto checksums = std::get<0>(t);
@@ -573,44 +573,76 @@ void TypedRowsTableFormat::do_out(std::ostream &o,
 
 	const auto types_to_print = ordered_typelist(*checksums);
 
-	resize(filename() + offset() + length() + types_to_print.size(),
+	resize(track() + filename() + offset() + length() + types_to_print.size(),
 				label() + checksums->size());
 
-	const std::size_t start_col = label() ? 1 : 0;
-
-	if (start_col > 0)
+	if (label())
 	{
-		// We know that column 0 is a label column
+		// Use column 0 as label column
 		set_width(0, defaults::max_label_length);
+		set_alignment(0, true);
 		set_title(0, "Label");
 	}
 
 	int trackno = 1;
+	const std::size_t start_col = label() ? 1 : 0;
+	const std::string col_label = toc ? "Track " : "File ";
+
 	for (std::size_t col = start_col; col < columns(); ++col)
 	{
 		set_width(col, 8);
-		set_title(col, "Track " + std::to_string(trackno)); // TODO filenames?
+		set_title(col, col_label + std::to_string(trackno));
 
 		++trackno;
 	}
 
 	// Print table
 
-	print_column_titles(o);
+// Commented out: Works technically ok, but adds redundancy
+//	print_column_titles(o);
 
-	if (filename())
+// Commented out: printing filenames makes any col width to explode
+// Options:
+// - Do not print filenames, just assume the right order
+// - Make cols fixed width
+//	if (filename())
+//	{
+//		if (label())
+//		{
+//			o   << std::setw(width(0))
+//				<< (alignment(0) > 0 ? std::left : std::right)
+//				<< defaults::label(CELL_TYPE::FILENAME)
+//				<< column_delimiter();
+//		}
+//
+//		int trackno = 0;
+//		for (std::size_t col = start_col; col < columns(); ++col) // print cell
+//		{
+//			o   << std::setw(width(col))
+//				<< (alignment(col) > 0 ? std::left : std::right)
+//				<< filenames[trackno]
+//				<< column_delimiter();
+//			++trackno;
+//		}
+//		o   << std::endl;
+//	}
+
+	if (track())
 	{
 		if (label())
 		{
-			o	<< defaults::label(CELL_TYPE::FILENAME) << column_delimiter();
+			o   << std::setw(width(0))
+				<< (alignment(0) > 0 ? std::left : std::right)
+				<< "Track"
+				<< column_delimiter();
 		}
 
-		int trackno = 0;
+		int trackno = 1;
 		for (std::size_t col = start_col; col < columns(); ++col) // print cell
 		{
 			o   << std::setw(width(col))
 				<< (alignment(col) > 0 ? std::left : std::right)
-				<< filenames[trackno]
+				<< std::to_string(trackno)
 				<< column_delimiter();
 			++trackno;
 		}
@@ -621,7 +653,10 @@ void TypedRowsTableFormat::do_out(std::ostream &o,
 	{
 		if (label())
 		{
-			o	<< defaults::label(CELL_TYPE::OFFSET) << column_delimiter();
+			o   << std::setw(width(0))
+				<< (alignment(0) > 0 ? std::left : std::right)
+				<< defaults::label(CELL_TYPE::OFFSET)
+				<< column_delimiter();
 		}
 
 		int trackno = 1;
@@ -640,7 +675,10 @@ void TypedRowsTableFormat::do_out(std::ostream &o,
 	{
 		if (label())
 		{
-			o	<< defaults::label(CELL_TYPE::LENGTH) << column_delimiter();
+			o   << std::setw(width(0))
+				<< (alignment(0) > 0 ? std::left : std::right)
+				<< defaults::label(CELL_TYPE::LENGTH)
+				<< column_delimiter();
 		}
 
 		int trackno = 0;
@@ -659,7 +697,10 @@ void TypedRowsTableFormat::do_out(std::ostream &o,
 	{
 		if (label())
 		{
-			o	<< arcstk::checksum::type_name(type) << column_delimiter();
+			o   << std::setw(width(0))
+				<< (alignment(0) > 0 ? std::left : std::right)
+				<< arcstk::checksum::type_name(type)
+				<< column_delimiter();
 		}
 
 		int trackno = 0;
