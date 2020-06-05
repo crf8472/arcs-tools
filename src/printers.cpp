@@ -71,18 +71,26 @@ ARTripletFormat::ARTripletFormat()
 }
 
 
+void ARTripletFormat::assertions(const std::tuple<int, ARTriplet> &t) const
+{
+	// TODO implement
+}
+
+
 void ARTripletFormat::do_out(std::ostream &out,
 		const std::tuple<int, ARTriplet> &t)
 {
 	auto track   = std::get<0>(t);
 	auto triplet = std::get<1>(t);
 
-	HexLayout hex;
+	HexLayout hex; // TODO Make this configurable, inherit from WithChecksums...
 	hex.set_show_base(false);
 	hex.set_uppercase(true);
 
 	const int width_arcs = 8;
 	const int width_conf = 2;
+
+	const std::string unparsed_value = "????????";
 
 	out << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
 
@@ -92,7 +100,7 @@ void ARTripletFormat::do_out(std::ostream &out,
 			<< hex.format(triplet.arcs(), width_arcs);
 	} else
 	{
-		out << std::setw(width_arcs) << "????????";
+		out << std::setw(width_arcs) << unparsed_value;
 	}
 
 	out << " ";
@@ -114,7 +122,7 @@ void ARTripletFormat::do_out(std::ostream &out,
 			<< hex.format(triplet.frame450_arcs(), width_arcs);
 	} else
 	{
-		out << std::setw(width_arcs) << "????????";
+		out << std::setw(width_arcs) << unparsed_value;
 	}
 
 	out << std::endl;
@@ -220,6 +228,12 @@ std::string ARIdTableFormat::do_format(const ARId &id,
 }
 
 
+void ARIdTableFormat::assertions(const std::tuple<ARId, std::string> &t) const
+{
+	// TODO implement
+}
+
+
 void ARIdTableFormat::do_out(std::ostream &o,
 		const std::tuple<ARId, std::string> &t)
 {
@@ -231,6 +245,67 @@ void ARIdTableFormat::print_label(std::ostream &out,
 		const ARIdLayout::ARID_FLAG flag) const
 {
 	out << std::setw(width(0)) << row_labels_[to_underlying(flag)] + ":";
+}
+
+
+// ChecksumsResultPrinter
+
+
+void ChecksumsResultPrinter::assertions(
+		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
+	const
+{
+	const auto  checksums = std::get<0>(t);
+	const auto& filenames = std::get<1>(t);
+	const auto  toc       = std::get<2>(t);
+	const auto& arid      = std::get<3>(t);
+
+	const auto correct_total_tracks = checksums->size();
+
+	if (!checksums or correct_total_tracks == 0)
+	{
+		throw std::invalid_argument("Missing value: "
+				"Need some Checksums to print");
+	}
+
+	if (auto track0 = checksums->at(0);
+		track0.types().empty() or track0.empty())
+	{
+		throw std::invalid_argument("Missing value: "
+				"Checksums seem to hold no checksums");
+	}
+
+	if (!toc and filenames.empty())
+	{
+		throw std::invalid_argument("Missing value: "
+				"Need either TOC data or filenames to print results");
+	}
+
+	if (not (!toc
+		or static_cast<uint16_t>(toc->track_count()) == correct_total_tracks))
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Checksums for " + std::to_string(correct_total_tracks)
+				+ " files/tracks, but TOC specifies "
+				+ std::to_string(toc->track_count()) + " tracks.");
+	}
+
+	if (not (filenames.empty() or filenames.size() == correct_total_tracks))
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Checksums for " + std::to_string(correct_total_tracks)
+				+ " files/tracks, but " + std::to_string(filenames.size())
+				+ " files.");
+	}
+
+	if (not (arid.empty()
+		or static_cast<uint16_t>(arid.track_count()) == correct_total_tracks))
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Checksums for " + std::to_string(correct_total_tracks)
+				+ " files/tracks, but AccurateRip id specifies "
+				+ std::to_string(arid.track_count()) + " tracks.");
+	}
 }
 
 
@@ -288,26 +363,40 @@ int AlbumChecksumsTableFormat::columns_apply_cs_settings(
 void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
 {
-	auto checksums = std::get<0>(t);
-	auto filenames = std::get<1>(t);
-	auto toc = std::get<2>(t);
+	assertions(t);
 
-	auto types_to_print = ordered_typelist(*checksums);
+	const auto  checksums = std::get<0>(t);
+	const auto& filenames = std::get<1>(t);
+	const auto  toc       = std::get<2>(t);
+	//const auto& arid      = std::get<3>(t); // TODO Implement printing
 
-	resize(1/*titles*/ + checksums->size(),
+	const auto types_to_print = ordered_typelist(*checksums);
+
+	if (types_to_print.empty())
+	{
+		throw std::invalid_argument("Missing value: "
+				"Checksums seem to hold no checksums");
+	}
+
+
+	// Configure table
+
+	if (!toc) { set_offset(false); }
+	if (filenames.empty()) { set_filename(false); }
+	// assertion is fulfilled that either not filenames.empty() or non-null toc
+
+	resize(checksums->size() + label(),
 			total_metadata_columns() + types_to_print.size());
-
-	// Apply column settings
+	// assertion is fulfilled that rows >= 1 as well as columns >= 1
 
 	const auto md_offset = columns_apply_md_settings();
 	columns_apply_cs_settings(types_to_print);
 	set_widths(CELL_TYPE::FILENAME, optimal_width(filenames));
 
-	if (!toc) { set_offset(false); }
 
 	// Print table
 
-	print_column_titles(out);
+	if (label()) { print_column_titles(out); }
 
 	arcstk::checksum::type cstype = arcstk::checksum::type::ARCS2; // default
 	std::string cell{};
@@ -387,26 +476,26 @@ void AlbumTracksTableFormat::init(const int /* rows */, const int /* cols */)
 void AlbumTracksTableFormat::do_out(std::ostream &o,
 		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
 {
-	auto checksums = std::get<0>(t);
-	auto toc = std::get<2>(t);
-	auto filenames = std::get<1>(t);
+	assertions(t);
 
-	if (!toc)
+	const auto  checksums = std::get<0>(t);
+	const auto& filenames = std::get<1>(t);
+	const auto  toc       = std::get<2>(t);
+	//const auto& arid      = std::get<3>(t); // TODO Implement printing
+
+	const auto types_to_print = ordered_typelist(*checksums);
+
+	if (types_to_print.empty())
 	{
-		set_offset(false);
-
-		if (filenames.size() < checksums->size())
-		{
-			throw std::runtime_error("Too less filenames: "
-					+ std::to_string(filenames.size())
-					+ " but checksums result suggests "
-					+ std::to_string(checksums->size()));
-		}
+		throw std::invalid_argument("Missing value: "
+				"Checksums seem to hold no checksums");
 	}
 
 	// Configure table
 
-	const auto types_to_print = ordered_typelist(*checksums);
+	if (!toc) { set_offset(false); }
+	if (filenames.empty()) { set_filename(false); }
+	// assertion is fulfilled that either not filenames.empty() or non-null toc
 
 	resize(track() + filename() + offset() + length() + types_to_print.size(),
 				label() + checksums->size());
@@ -414,15 +503,18 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 	if (label())
 	{
 		// Use column 0 as label column
-		set_width(0, defaults::max_label_length);
-		set_alignment(0, true);
+
 		set_title(0, "Label");
+		set_width(0, optimal_label_width());
+		set_alignment(0, true);
 	}
+
+	const std::string col_label = toc ? "Track " : "File ";
+	// FIXME Only checking toc oversees the case where files form an album
+	// Better: some "is album" flag
 
 	int trackno = 1;
 	const std::size_t start_col = label() ? 1 : 0;
-	const std::string col_label = toc ? "Track " : "File ";
-
 	for (std::size_t col = start_col; col < columns(); ++col)
 	{
 		set_width(col, 8);
@@ -433,8 +525,7 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 
 	// Print table
 
-// Commented out: Works technically ok, but adds redundancy
-//	print_column_titles(o);
+	if (label()) { print_column_titles(o); }
 
 // Commented out: printing filenames makes any col width to explode
 // Options:
@@ -612,6 +703,15 @@ int AlbumMatchTableFormat::columns_apply_cs_settings(
 	}
 
 	return col_idx - total_metadata_columns();
+}
+
+
+void AlbumMatchTableFormat::assertions(
+		const std::tuple<Checksums*, std::vector<std::string>, ARResponse,
+			Match*, int, bool, TOC*, ARId> &t)
+	const
+{
+	// TODO implement
 }
 
 

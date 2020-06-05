@@ -99,6 +99,14 @@ public:
 		this->do_out(outstream, this->objects_);
 	}
 
+protected:
+
+	/**
+	 * \brief Do assertions for input arguments
+	 */
+	virtual void assertions(const std::tuple<Args...> &t) const
+	= 0;
+
 private:
 
 	/**
@@ -132,8 +140,12 @@ public:
 
 private:
 
+	void assertions(const std::tuple<int, ARTriplet> &t) const override;
+	// from Print
+
 	void do_out(std::ostream &out, const std::tuple<int, ARTriplet> &t)
 		override;
+	// from Print
 };
 
 
@@ -204,6 +216,9 @@ private:
 	void init(const int rows, const int cols) override;
 	// from StringTableStructure
 
+	void assertions(const std::tuple<ARId, std::string> &t) const override;
+	// from Print
+
 	void do_out(std::ostream &o, const std::tuple<ARId, std::string> &t)
 		override; // from Print
 
@@ -233,8 +248,26 @@ private:
 /**
  * \brief Alias for classes printing checksum calculation results.
  */
-using ChecksumsResultPrinter =
+using ChecksumsResultPrinterBase =
 	Print<Checksums*, std::vector<std::string>, TOC*, ARId>;
+
+
+/**
+ * \brief Inherit assertions common to all Checksum printers.
+ */
+class ChecksumsResultPrinter : public ChecksumsResultPrinterBase
+{
+public:
+
+	using ChecksumsResultPrinterBase::ChecksumsResultPrinterBase;
+
+protected:
+
+	void assertions(
+		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
+		const override;
+	// from Print
+};
 
 
 /**
@@ -360,6 +393,11 @@ private:
 	int columns_apply_cs_settings(
 			const std::vector<arcstk::checksum::type> &types) override;
 	// from TypedColsTableBase
+
+	void assertions(
+			const std::tuple<Checksums*, std::vector<std::string>, ARResponse,
+			Match*, int, bool, TOC*, ARId> &t) const override;
+	// from Print
 
 	void do_out(std::ostream &out,
 			const std::tuple<Checksums*, std::vector<std::string>, ARResponse,

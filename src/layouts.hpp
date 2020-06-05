@@ -600,6 +600,25 @@ public:
 	bool alignment(const int col) const;
 
 	/**
+	 * \brief Set the column type
+	 *
+	 * \param[in] col   Column index
+	 * \param[in] type  The column type
+	 */
+	void set_type(const int col, const int type);
+
+	/**
+	 * \brief Get type of a column
+	 *
+	 * \param[in] col The column to get the type of
+	 *
+	 * \return Type of the column
+	 *
+	 * \throws std::out_of_range If col > columns() or col < 0.
+	 */
+	int type(const int col) const;
+
+	/**
 	 * \brief Set the column name
 	 *
 	 * \param[in] col   Column index
@@ -619,23 +638,23 @@ public:
 	std::string title(const int col) const;
 
 	/**
-	 * \brief Set the column type
+	 * \brief Set the row label
 	 *
-	 * \param[in] col   Column index
-	 * \param[in] type  The column type
+	 * \param[in] row   Row index
+	 * \param[in] label The row label
 	 */
-	void set_type(const int col, const int type);
+	void set_row_label(const int row, const std::string &label);
 
 	/**
-	 * \brief Get type of a column
+	 * \brief Get label of row
 	 *
-	 * \param[in] col The column to get the type of
+	 * \param[in] row The row to get the label of
 	 *
-	 * \return Type of the column
+	 * \return Label of the row
 	 *
-	 * \throws std::out_of_range If col > columns() or col < 0.
+	 * \throws std::out_of_range If row > rows()
 	 */
-	int type(const int col) const;
+	std::string row_label(const int row) const;
 
 	/**
 	 * \brief Set the column delimiter symbol
@@ -674,7 +693,7 @@ public:
 private:
 
 	/**
-	 * \brief Implements StringTable::rows()
+	 * \brief Implements TableStructure::rows()
 	 *
 	 * \return The number of rows
 	 */
@@ -682,7 +701,7 @@ private:
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::columns()
+	 * \brief Implements TableStructure::columns()
 	 *
 	 * \return The number of columns
 	 */
@@ -690,7 +709,7 @@ private:
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::set_width(const int, const int)
+	 * \brief Implements TableStructure::set_width(const int, const int)
 	 *
 	 * \param[in] col  The column id
 	 * \param[in] width Widht of the column
@@ -699,7 +718,7 @@ private:
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::width(const int)
+	 * \brief Implements TableStructure::width(const int)
 	 *
 	 * \param[in] col The column to get the width of
 	 *
@@ -711,7 +730,7 @@ private:
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::set_alignment(const int, const bool)
+	 * \brief Implements TableStructure::set_alignment(const int, const bool)
 	 *
 	 * \param[in] col   Column index
 	 * \param[in] align Alignment
@@ -720,7 +739,7 @@ private:
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::alignment(const int)
+	 * \brief Implements TableStructure::alignment(const int)
 	 *
 	 * \param[in] col   Column index
 	 *
@@ -730,28 +749,7 @@ private:
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::set_title(const int, const std::string&)
-	 *
-	 * \param[in] col  Column index
-	 * \param[in] name Column title
-	 */
-	virtual void do_set_title(const int col, const std::string &name)
-	= 0;
-
-	/**
-	 * \brief Implements StringTable::title(const int)
-	 *
-	 * \param[in] col The column to get the title of
-	 *
-	 * \return Title of the column
-	 *
-	 * \throws std::out_of_range If col > columns or col < 0.
-	 */
-	virtual std::string do_title(const int col) const
-	= 0;
-
-	/**
-	 * \brief Implements StringTable::set_type(const int, const int)
+	 * \brief Implements TableStructure::set_type(const int, const int)
 	 *
 	 * \param[in] col  Column index
 	 * \param[in] name Column type
@@ -760,7 +758,7 @@ private:
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::type(const int)
+	 * \brief Implements TableStructure::type(const int)
 	 *
 	 * \param[in] col The column to get the type of
 	 *
@@ -772,7 +770,49 @@ private:
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::set_column_delimiter(const std::string&)
+	 * \brief Implements TableStructure::set_title(const int, const std::string&)
+	 *
+	 * \param[in] col   Column index
+	 * \param[in] title Column title
+	 */
+	virtual void do_set_title(const int col, const std::string &title)
+	= 0;
+
+	/**
+	 * \brief Implements TableStructure::title(const int)
+	 *
+	 * \param[in] col The column to get the title of
+	 *
+	 * \return Title of the column
+	 *
+	 * \throws std::out_of_range If col > columns or col < 0.
+	 */
+	virtual std::string do_title(const int col) const
+	= 0;
+
+	/**
+	 * \brief Implements TableStructure::set_row_label(const int, const std::string&)
+	 *
+	 * \param[in] row   Row index
+	 * \param[in] label Row label
+	 */
+	virtual void do_set_row_label(const int row, const std::string &label)
+	= 0;
+
+	/**
+	 * \brief Implements TableStructure::label(const int)
+	 *
+	 * \param[in] row The row to get the label of
+	 *
+	 * \return Label of the row
+	 *
+	 * \throws std::out_of_range If row > rows()
+	 */
+	virtual std::string do_row_label(const int row) const
+	= 0;
+
+	/**
+	 * \brief Implements TableStructure::set_column_delimiter(const std::string&)
 	 *
 	 * \param[in] delim The column delimiter symbol
 	 */
@@ -780,7 +820,7 @@ private:
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::column_delimiter()
+	 * \brief Implements TableStructure::column_delimiter()
 	 *
 	 * \return The column delimiter
 	 */
@@ -788,7 +828,7 @@ private:
 	= 0;
 
 	/**
-	 * \brief Implements StringTable::resize(const int, const int)
+	 * \brief Implements TableStructure::resize(const int, const int)
 	 *
 	 * \param[in] rows  Number of rows
 	 * \param[in] cols  Number of columns
@@ -851,6 +891,15 @@ protected:
 	 * \param[in] out The stream to print
 	 */
 	virtual void print_column_titles(std::ostream &out) const;
+
+	/**
+	 * \brief Return the optimal width for the label column.
+	 *
+	 * The optimal width is based only on the labels that would be printed.
+	 *
+	 * \return Optimal width for label column
+	 */
+	int optimal_label_width() const;
 
 	/**
 	 * \brief Resize the dimensions of the layout
@@ -921,11 +970,14 @@ private:
 	void do_set_alignment(const int col, const bool align) override;
 	bool do_alignment(const int col) const override;
 
+	void do_set_type(const int col, const int type) override;
+	int do_type(const int col) const override;
+
 	void do_set_title(const int col, const std::string &name) override;
 	std::string do_title(const int col) const override;
 
-	void do_set_type(const int col, const int type) override;
-	int do_type(const int col) const override;
+	void do_set_row_label(const int row, const std::string &label) override;
+	std::string do_row_label(const int row) const override;
 
 	void do_set_column_delimiter(const std::string &delim) override;
 	std::string do_column_delimiter() const override;
@@ -1215,11 +1267,6 @@ namespace defaults
  * \return Default title for columns of this \c type
  */
 std::string label(const CELL_TYPE type);
-
-/**
- * \brief Length of the longest default label
- */
-extern const std::size_t max_label_length;
 
 /**
  * \brief Return default width for columns of the given type

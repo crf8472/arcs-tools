@@ -465,6 +465,18 @@ bool TableStructure::alignment(const int col) const
 }
 
 
+void TableStructure::set_type(const int col, const int type)
+{
+	this->do_set_type(col, type);
+}
+
+
+int TableStructure::type(const int col) const
+{
+	return this->do_type(col);
+}
+
+
 void TableStructure::set_title(const int col, const std::string &title)
 {
 	this->do_set_title(col, title);
@@ -477,15 +489,15 @@ std::string TableStructure::title(const int col) const
 }
 
 
-void TableStructure::set_type(const int col, const int type)
+void TableStructure::set_row_label(const int row, const std::string &label)
 {
-	this->do_set_type(col, type);
+	this->do_set_row_label(row, label);
 }
 
 
-int TableStructure::type(const int col) const
+std::string TableStructure::row_label(const int row) const
 {
-	return this->do_type(col);
+	return this->do_row_label(row);
 }
 
 
@@ -532,19 +544,27 @@ public:
 	int columns() const;
 
 	void set_width(const int col, const int width);
-	int width(const int col);
+	int width(const int col) const;
 
 	void set_alignment(const int col, const bool align);
-	bool alignment(const int col);
-
-	void set_title(const int col, const std::string &title);
-	std::string title(const int col) const;
+	bool alignment(const int col) const;
 
 	void set_type(const int col, const int type);
 	int type(const int col) const;
 
+	void set_title(const int col, const std::string &title);
+	std::string title(const int col) const;
+
+	void set_label(const int row, const std::string &label);
+	std::string label(const int row) const;
+
 	void set_col_delim(const std::string &delim);
 	std::string col_delim() const;
+
+	/**
+	 * \brief Optimal width for printing the label column
+	 */
+	int optimal_label_width() const;
 
 	/**
 	 * \brief Resize to new dimensions
@@ -571,26 +591,6 @@ public:
 private:
 
 	/**
-	 * \brief The column widths.
-	 */
-	std::vector<int> widths_;
-
-	/**
-	 * \brief The column alignments.
-	 */
-	std::vector<bool> alignments_;
-
-	/**
-	 * \brief The column titles.
-	 */
-	std::vector<std::string> titles_;
-
-	/**
-	 * \brief The column types.
-	 */
-	std::vector<int> types_;
-
-	/**
 	 * \brief Number of rows.
 	 */
 	int rows_;
@@ -601,6 +601,31 @@ private:
 	int cols_;
 
 	/**
+	 * \brief The column widths.
+	 */
+	std::vector<int> widths_;
+
+	/**
+	 * \brief The column alignments.
+	 */
+	std::vector<bool> alignments_;
+
+	/**
+	 * \brief The column types.
+	 */
+	std::vector<int> col_types_;
+
+	/**
+	 * \brief The column titles.
+	 */
+	std::vector<std::string> col_titles_;
+
+	/**
+	 * \brief The row titles.
+	 */
+	std::vector<std::string> row_labels_;
+
+	/**
 	 * \brief Column delimiter.
 	 */
 	std::string column_delim_;
@@ -608,12 +633,13 @@ private:
 
 
 StringTableStructure::Impl::Impl(const int rows, const int cols)
-	: widths_       (cols)
-	, alignments_   (cols)
-	, titles_       (cols)
-	, types_        (cols)
-	, rows_         { rows }
+	: rows_         { rows }
 	, cols_         { cols }
+	, widths_       (cols)
+	, alignments_   (cols)
+	, col_types_    (cols)
+	, col_titles_   (cols)
+	, row_labels_   (rows)
 	, column_delim_ { " " }
 {
 	// empty
@@ -647,7 +673,7 @@ void StringTableStructure::Impl::set_width(const int col, const int width)
 }
 
 
-int StringTableStructure::Impl::width(const int col)
+int StringTableStructure::Impl::width(const int col) const
 {
 	return widths_[col];
 }
@@ -659,7 +685,7 @@ void StringTableStructure::Impl::set_alignment(const int col, const bool align)
 }
 
 
-bool StringTableStructure::Impl::alignment(const int col)
+bool StringTableStructure::Impl::alignment(const int col) const
 {
 	return alignments_[col];
 }
@@ -668,25 +694,38 @@ bool StringTableStructure::Impl::alignment(const int col)
 void StringTableStructure::Impl::set_title(const int col,
 		const std::string &title)
 {
-	titles_[col] = title;
+	col_titles_[col] = title;
 }
 
 
 std::string StringTableStructure::Impl::title(const int col) const
 {
-	return titles_[col];
+	return col_titles_[col];
+}
+
+
+void StringTableStructure::Impl::set_label(const int row,
+		const std::string &label)
+{
+	row_labels_[row] = label;
+}
+
+
+std::string StringTableStructure::Impl::label(const int row) const
+{
+	return row_labels_[row];
 }
 
 
 void StringTableStructure::Impl::set_type(const int col, const int type)
 {
-	types_[col] = type;
+	col_types_[col] = type;
 }
 
 
 int StringTableStructure::Impl::type(const int col) const
 {
-	return types_[col];
+	return col_types_[col];
 }
 
 
@@ -702,6 +741,12 @@ std::string StringTableStructure::Impl::col_delim() const
 }
 
 
+int StringTableStructure::Impl::optimal_label_width() const
+{
+	return std::max(optimal_width(row_labels_), width(0)/* col title */);
+}
+
+
 void StringTableStructure::Impl::resize(const int rows, const int cols)
 {
 	rows_ = rows;
@@ -709,8 +754,10 @@ void StringTableStructure::Impl::resize(const int rows, const int cols)
 
 	widths_.resize(columns());
 	alignments_.resize(columns());
-	titles_.resize(columns());
-	types_.resize(columns());
+	col_types_.resize(columns());
+
+	col_titles_.resize(this->columns());
+	row_labels_.resize(this->rows());
 }
 
 
@@ -746,12 +793,13 @@ void StringTableStructure::Impl::swap(StringTableStructure::Impl rhs)
 {
 	using std::swap;
 
-	swap(widths_, rhs.widths_);
-	swap(alignments_, rhs.alignments_);
-	swap(titles_, rhs.titles_);
-	swap(types_, rhs.types_);
 	swap(rows_, rhs.rows_);
 	swap(cols_, rhs.cols_);
+	swap(widths_, rhs.widths_);
+	swap(alignments_, rhs.alignments_);
+	swap(col_types_, rhs.col_types_);
+	swap(col_titles_, rhs.col_titles_);
+	swap(row_labels_, rhs.row_labels_);
 	swap(column_delim_, rhs.column_delim_);
 }
 
@@ -801,6 +849,12 @@ StringTableStructure::StringTableStructure(StringTableStructure &&rhs)
 
 StringTableStructure::~StringTableStructure() noexcept
 = default;
+
+
+int StringTableStructure::optimal_label_width() const
+{
+	return impl_->optimal_label_width();
+}
 
 
 void StringTableStructure::resize_layout(const int rows, const int cols) const
@@ -875,6 +929,18 @@ bool StringTableStructure::do_alignment(const int col) const
 }
 
 
+void StringTableStructure::do_set_type(const int col, const int type)
+{
+	impl_->set_type(col, type);
+}
+
+
+int StringTableStructure::do_type(const int col) const
+{
+	return impl_->type(col);
+}
+
+
 void StringTableStructure::do_set_title(const int col, const std::string &title)
 {
 	impl_->set_title(col, title);
@@ -887,15 +953,16 @@ std::string StringTableStructure::do_title(const int col) const
 }
 
 
-void StringTableStructure::do_set_type(const int col, const int type)
+void StringTableStructure::do_set_row_label(const int row,
+		const std::string &label)
 {
-	impl_->set_type(col, type);
+	impl_->set_label(row, label);
 }
 
 
-int StringTableStructure::do_type(const int col) const
+std::string StringTableStructure::do_row_label(const int row) const
 {
-	return impl_->type(col);
+	return impl_->label(row);
 }
 
 
@@ -923,7 +990,7 @@ void StringTableStructure::print_column_titles(std::ostream &out) const
 	{
 		out << std::setw(width(col)) << std::left << title(col);
 
-		if (col < columns() - 1)
+		if (col < columns() - 1) // Avoid delimiter after rightmost column
 		{
 			out << column_delimiter();
 		}
@@ -1041,7 +1108,7 @@ void StringTableBase::Impl::swap(Impl rhs)
 
 int StringTableBase::Impl::index(const int row, const int col) const
 {
-	return row * cols_ + col;
+	return row * cols_ + col; // FIXME Use columns() of base class here!
 }
 
 
@@ -1201,9 +1268,15 @@ std::ostream& operator << (std::ostream &out, const StringTableBase &table)
 	}
 	out << std::endl;
 
+	const auto label_width = table.optimal_label_width();
+
 	// Row contents
 	for (std::size_t row = 0; row < table.rows(); ++row)
 	{
+		out << std::setw(label_width) << std::left
+			<< table.row_label(row)
+			<< table.column_delimiter();
+
 		for (col = 0; col < table.columns(); ++col)
 		{
 			out << std::setw(table.width(col))
