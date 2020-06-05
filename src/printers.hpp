@@ -250,8 +250,6 @@ public:
 	/**
 	 * \brief Constructor.
 	 *
-	 * \param[in] rows     Number of tracks
-	 * \param[in] columns  Number of types
 	 * \param[in] label    Set to TRUE for printing column titles
 	 * \param[in] track    Set to TRUE for printing track number (if any)
 	 * \param[in] offset   Set to TRUE for printing offset (if any)
@@ -259,9 +257,8 @@ public:
 	 * \param[in] filename Set to TRUE for printing filename (if any)
 	 * \param[in] coldelim Set column delimiter
 	 */
-	AlbumChecksumsTableFormat(const int rows, const int columns,
-			const bool label, const bool track, const bool offset,
-			const bool length, const bool filename,
+	AlbumChecksumsTableFormat(const bool label, const bool track,
+			const bool offset, const bool length, const bool filename,
 			const std::string &coldelim);
 
 	/**
@@ -298,7 +295,6 @@ public:
 	/**
 	 * \brief Constructor.
 	 *
-	 * \param[in] cols     Number of tracks
 	 * \param[in] label    Set to TRUE for printing row labels
 	 * \param[in] track    Set to TRUE for printing track number (if any)
 	 * \param[in] offset   Set to TRUE for printing offset (if any)
@@ -306,9 +302,8 @@ public:
 	 * \param[in] filename Set to TRUE for printing filename (if any)
 	 * \param[in] coldelim Set column delimiter
 	 */
-	AlbumTracksTableFormat(const int cols, const bool label,
-			const bool track, const bool offset,
-			const bool length, const bool filename,
+	AlbumTracksTableFormat(const bool label, const bool track,
+			const bool offset, const bool length, const bool filename,
 			const std::string &coldelim);
 
 private:

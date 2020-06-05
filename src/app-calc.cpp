@@ -386,13 +386,13 @@ std::unique_ptr<ChecksumsResultPrinter> ARCalcApplication::configure_format(
 
 	if (options.is_set(ARCalcOptions::TRACKSASCOLS))
 	{
-		format = std::make_unique<AlbumTracksTableFormat>(0,
+		format = std::make_unique<AlbumTracksTableFormat>(
 			not options.is_set(ARCalcOptions::NOLABELS),
 			prints_tracks, prints_offsets, prints_lengths, prints_filenames,
 			coldelim);
 	} else
 	{
-		format = std::make_unique<AlbumChecksumsTableFormat>(0, 0,
+		format = std::make_unique<AlbumChecksumsTableFormat>(
 			not options.is_set(ARCalcOptions::NOLABELS),
 			prints_tracks, prints_offsets, prints_lengths, prints_filenames,
 			coldelim);
