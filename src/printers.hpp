@@ -249,7 +249,7 @@ private:
  * \brief Alias for classes printing checksum calculation results.
  */
 using ChecksumsResultPrinterBase =
-	Print<Checksums*, std::vector<std::string>, TOC*, ARId>;
+	Print<Checksums*, std::vector<std::string>, TOC*, ARId, bool>;
 
 
 /**
@@ -264,7 +264,8 @@ public:
 protected:
 
 	void assertions(
-		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
+		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId, bool>
+			&t)
 		const override;
 	// from Print
 };
@@ -309,7 +310,8 @@ private:
 	// from TypedColsTableBase
 
 	void do_out(std::ostream &o,
-		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
+		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId, bool>
+			&t)
 		override;
 	// from Print
 };
@@ -345,7 +347,8 @@ private:
 	// from StringTableBase
 
 	void do_out(std::ostream &o,
-		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
+		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId, bool>
+			&t)
 		override;
 	// from Print
 };

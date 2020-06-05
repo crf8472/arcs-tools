@@ -890,7 +890,32 @@ protected:
 	 *
 	 * \param[in] out The stream to print
 	 */
-	virtual void print_column_titles(std::ostream &out) const;
+	void print_column_titles(std::ostream &out) const;
+
+	/**
+	 * \brief Worker to print a row label
+	 *
+	 * Default implementation prints row_label(row) with alignment to the right
+	 * side.
+	 *
+	 * \param[in] out The stream to print
+	 * \param[in] row Current row
+	 */
+	void print_label(std::ostream &out, const int row) const;
+
+	/**
+	 * \brief Worker to print a cell.
+	 *
+	 * Default implementation prints \c text using \c width(col) and
+	 * \c alignment(col).
+	 *
+	 * \param[in] out        The stream to print to
+	 * \param[in] col        Current column
+	 * \param[in] text       Text to print
+	 * \param[in] with_delim TRUE prints a column delimiter, FALSE skips it
+	 */
+	void print_cell(std::ostream &out, const int col, const std::string &text,
+		const bool with_delim) const;
 
 	/**
 	 * \brief Return the optimal width for the label column.
@@ -904,10 +929,10 @@ protected:
 	/**
 	 * \brief Resize the dimensions of the layout
 	 *
-	 * \param[in] rows
-	 * \param[in] cols
+	 * \param[in] rows New number of rows
+	 * \param[in] cols New number of columns
 	 */
-	void resize_layout(const int rows, const int cols) const;
+	void update_dimensions(const int rows, const int cols) const;
 
 	/**
 	 * \brief TRUE if \c row is within the dimensions
@@ -1129,9 +1154,9 @@ protected:
 
 	StringTableBase(StringTableBase &&rhs) noexcept;
 
-	// TODO copy assignment
+	StringTableBase& operator = (const StringTableBase &rhs);
 
-	// TODO move assignment
+	StringTableBase& operator = (StringTableBase &&rhs) noexcept;
 
 	// TODO swap
 
@@ -1192,6 +1217,7 @@ class StringTable : public StringTableBase
 public:
 
 	using StringTableBase::StringTableBase;
+	using StringTableBase::operator=;
 
 private:
 

@@ -743,7 +743,7 @@ std::string StringTableStructure::Impl::col_delim() const
 
 int StringTableStructure::Impl::optimal_label_width() const
 {
-	return std::max(optimal_width(row_labels_), width(0)/* col title */);
+	return optimal_width(row_labels_);
 }
 
 
@@ -857,7 +857,7 @@ int StringTableStructure::optimal_label_width() const
 }
 
 
-void StringTableStructure::resize_layout(const int rows, const int cols) const
+void StringTableStructure::update_dimensions(const int rows, const int cols) const
 {
 	impl_->resize(rows, cols);
 }
@@ -901,7 +901,7 @@ std::size_t StringTableStructure::do_columns() const
 
 void StringTableStructure::do_resize(const int rows, const int cols)
 {
-	resize_layout(rows, cols);
+	update_dimensions(rows, cols);
 }
 
 
@@ -988,7 +988,8 @@ void StringTableStructure::print_column_titles(std::ostream &out) const
 {
 	for (std::size_t col = 0; col < columns(); ++col)
 	{
-		out << std::setw(width(col)) << std::left << title(col);
+		out << std::setw(width(col)) << std::left << std::setfill(' ')
+			<< title(col);
 
 		if (col < columns() - 1) // Avoid delimiter after rightmost column
 		{
@@ -1000,6 +1001,29 @@ void StringTableStructure::print_column_titles(std::ostream &out) const
 }
 
 
+void StringTableStructure::print_label(std::ostream &o, const int row) const
+{
+	o << std::setw(optimal_label_width())
+		<< std::left // TODO Make Configurable?
+		<< row_label(row)
+		<< column_delimiter();
+}
+
+
+void StringTableStructure::print_cell(std::ostream &o, const int col,
+		const std::string &text, const bool with_delim) const
+{
+	o   << std::setw(width(col))
+		<< (alignment(col) > 0 ? std::left : std::right)
+		<< text;
+
+	if (with_delim)
+	{
+		o << column_delimiter();
+	}
+}
+
+
 /**
  * \brief Private implementation of a StringTableBase
  */
@@ -1007,11 +1031,15 @@ class StringTableBase::Impl final
 {
 public:
 
-	Impl(const int rows, const int columns);
+	Impl(const int rows, const int columns, StringTableBase* owner);
 
-	Impl(const Impl &rhs);
+	Impl(const Impl &rhs, StringTableBase* owner);
 
-	Impl(Impl &&rhs) noexcept;
+	Impl(const Impl &rhs) = delete; // Avoid warning for not providing
+
+	Impl(Impl &&rhs, StringTableBase* owner) noexcept;
+
+	Impl(Impl &&rhs) noexcept = delete;
 
 	void resize(const int rows, const int cols);
 
@@ -1022,6 +1050,10 @@ public:
 	int current_row() const;
 
 	void swap(Impl rhs);
+
+	Impl& operator = (const Impl &rhs) = delete;
+
+	Impl& operator = (Impl &&rhs) noexcept = delete;
 
 private:
 
@@ -1041,6 +1073,11 @@ private:
 	std::vector<std::string> cells_;
 
 	/**
+	 * \brief The "owning" StringTableBase.
+	 */
+	StringTableBase* owner_;
+
+	/**
 	 * \brief The first row that is not filled
 	 */
 	int current_row_;
@@ -1048,28 +1085,44 @@ private:
 	/**
 	 * \brief Number of columns.
 	 */
-	int cols_; // TODO Redundant value, also in StringTableStructure
+	//int cols_; // TODO Redundant value, also in StringTableStructure
 };
 
 
-StringTableBase::Impl::Impl(const int rows, const int cols)
+StringTableBase::Impl::Impl(const int rows, const int cols,
+		StringTableBase* owner)
 	: cells_ (rows * cols)
+	, owner_ { owner }
 	, current_row_ { 0 }
-	, cols_ { cols }
+	//, cols_ { cols }
 {
 	// empty
 }
 
 
-StringTableBase::Impl::	Impl(const Impl &rhs) = default;
+StringTableBase::Impl::	Impl(const Impl &rhs, StringTableBase *owner)
+	: cells_ (rhs.cells_)
+	, owner_ { owner }
+	, current_row_ { rhs.current_row_ }
+	//, cols_ { rhs.cols_ }
+{
+	// empty
+}
 
 
-StringTableBase::Impl::	Impl(Impl &&rhs) noexcept = default;
+StringTableBase::Impl::	Impl(Impl &&rhs, StringTableBase *owner) noexcept
+	: cells_ (std::move(rhs.cells_))
+	, owner_ { owner }
+	, current_row_ { std::move(rhs.current_row_) }
+	//, cols_ { std::move(rhs.cols_) }
+{
+	// empty
+}
 
 
 void StringTableBase::Impl::resize(const int rows, const int cols)
 {
-	cols_ = cols;
+	//cols_ = cols;
 	cells_.resize(rows * cols);
 }
 
@@ -1102,13 +1155,16 @@ void StringTableBase::Impl::swap(Impl rhs)
 	using std::swap;
 
 	swap(cells_, rhs.cells_);
-	swap(cols_, rhs.cols_);
+	swap(current_row_, rhs.current_row_);
+	swap(owner_, rhs.owner_);
+	//swap(cols_, rhs.cols_);
 }
 
 
 int StringTableBase::Impl::index(const int row, const int col) const
 {
-	return row * cols_ + col; // FIXME Use columns() of base class here!
+	//return row * cols_ + col; // FIXME Use columns() of base class here!
+	return row * owner_->columns() + col;
 }
 
 
@@ -1119,7 +1175,7 @@ StringTableBase::StringTableBase(const int rows, const int columns,
 			const bool dyn_col_widths, const bool allow_append_rows)
 	: StringTableStructure(rows, columns)
 	, flags_ { dyn_col_widths, allow_append_rows }
-	, impl_(std::make_unique<StringTableBase::Impl>(rows, columns))
+	, impl_(std::make_unique<StringTableBase::Impl>(rows, columns, this))
 {
 	// empty
 }
@@ -1128,7 +1184,7 @@ StringTableBase::StringTableBase(const int rows, const int columns,
 StringTableBase::StringTableBase(const StringTableBase &rhs)
 	: StringTableStructure(rhs)
 	, flags_ { rhs.flags_ }
-	, impl_  { std::make_unique<StringTableBase::Impl>(*rhs.impl_) }
+	, impl_  { std::make_unique<StringTableBase::Impl>(*rhs.impl_, this) }
 {
 	// empty
 }
@@ -1137,13 +1193,30 @@ StringTableBase::StringTableBase(const StringTableBase &rhs)
 StringTableBase::StringTableBase(StringTableBase &&rhs) noexcept
 	: StringTableStructure(std::move(rhs))
 	, flags_ { std::move(rhs.flags_) }
-	, impl_  { std::move(rhs.impl_)  }
+	, impl_  { std::make_unique<StringTableBase::Impl>(std::move(*rhs.impl_),
+			this) }
 {
 	// empty
 }
 
 
 StringTableBase::~StringTableBase() noexcept = default;
+
+
+StringTableBase& StringTableBase::operator = (const StringTableBase &rhs)
+{
+	impl_ = std::make_unique<Impl>(std::move(*rhs.impl_), this);
+
+	return *this;
+}
+
+
+StringTableBase& StringTableBase::operator = (StringTableBase &&rhs) noexcept
+{
+	impl_ = std::make_unique<Impl>(std::move(*rhs.impl_), this);
+
+	return *this;
+}
 
 
 bool StringTableBase::has_dynamic_widths() const
@@ -1250,7 +1323,7 @@ std::string StringTableBase::do_cell(const int row, const int col) const
 
 void StringTableBase::do_resize(const int rows, const int cols)
 {
-	resize_layout(rows, cols); // resize StrinTableStructure
+	update_dimensions(rows, cols); // resize StringTableStructure
 	impl_->resize(rows, cols);
 }
 

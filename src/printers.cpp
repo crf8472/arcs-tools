@@ -252,17 +252,19 @@ void ARIdTableFormat::print_label(std::ostream &out,
 
 
 void ChecksumsResultPrinter::assertions(
-		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
+		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId, bool>
+		&t)
 	const
 {
 	const auto  checksums = std::get<0>(t);
 	const auto& filenames = std::get<1>(t);
 	const auto  toc       = std::get<2>(t);
 	const auto& arid      = std::get<3>(t);
+	const auto  is_album  = std::get<4>(t);
 
-	const auto correct_total_tracks = checksums->size();
+	const auto total_tracks = checksums->size();
 
-	if (!checksums or correct_total_tracks == 0)
+	if (!checksums or total_tracks == 0)
 	{
 		throw std::invalid_argument("Missing value: "
 				"Need some Checksums to print");
@@ -281,28 +283,27 @@ void ChecksumsResultPrinter::assertions(
 				"Need either TOC data or filenames to print results");
 	}
 
-	if (not (!toc
-		or static_cast<uint16_t>(toc->track_count()) == correct_total_tracks))
+	if (toc && static_cast<uint16_t>(toc->track_count()) != total_tracks)
 	{
 		throw std::invalid_argument("Mismatch: "
-				"Checksums for " + std::to_string(correct_total_tracks)
+				"Checksums for " + std::to_string(total_tracks)
 				+ " files/tracks, but TOC specifies "
 				+ std::to_string(toc->track_count()) + " tracks.");
 	}
 
-	if (not (filenames.empty() or filenames.size() == correct_total_tracks))
+	if (not (filenames.empty() or filenames.size() == total_tracks))
 	{
 		throw std::invalid_argument("Mismatch: "
-				"Checksums for " + std::to_string(correct_total_tracks)
+				"Checksums for " + std::to_string(total_tracks)
 				+ " files/tracks, but " + std::to_string(filenames.size())
 				+ " files.");
 	}
 
 	if (not (arid.empty()
-		or static_cast<uint16_t>(arid.track_count()) == correct_total_tracks))
+		or static_cast<uint16_t>(arid.track_count()) == total_tracks))
 	{
 		throw std::invalid_argument("Mismatch: "
-				"Checksums for " + std::to_string(correct_total_tracks)
+				"Checksums for " + std::to_string(total_tracks)
 				+ " files/tracks, but AccurateRip id specifies "
 				+ std::to_string(arid.track_count()) + " tracks.");
 	}
@@ -323,7 +324,7 @@ AlbumChecksumsTableFormat::AlbumChecksumsTableFormat(
 			0, 0, show_labels, show_track, show_offset, show_length,
 			show_filename)
 	, ChecksumsResultPrinter(                          /* TODO Use EmptyARId */
-			nullptr, std::vector<std::string>{}, nullptr, ARId{0,0,0,0})
+			nullptr, std::vector<std::string>{}, nullptr, ARId{0,0,0,0}, false)
 {
 	this->init(0, 0); // do_out() does resize() anyway!
 	this->set_column_delimiter(coldelim);
@@ -361,7 +362,8 @@ int AlbumChecksumsTableFormat::columns_apply_cs_settings(
 
 
 void AlbumChecksumsTableFormat::do_out(std::ostream &out,
-		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
+		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId, bool>
+		&t)
 {
 	assertions(t);
 
@@ -369,6 +371,7 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 	const auto& filenames = std::get<1>(t);
 	const auto  toc       = std::get<2>(t);
 	//const auto& arid      = std::get<3>(t); // TODO Implement printing
+	//const auto  is_album  = std::get<4>(t);
 
 	const auto types_to_print = ordered_typelist(*checksums);
 
@@ -438,14 +441,7 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 				case CELL_TYPE::MATCH    : break;
 			}
 
-			out << std::setw(width(col))
-				<< (alignment(col) > 0 ? std::left : std::right)
-				<< cell;
-
-			if (col < columns() - 1) // No delimiter on rightmost column
-			{
-				out << column_delimiter();
-			}
+			print_cell(out, col, cell, col < columns() - 1);
 		}
 		out << std::endl;
 	}
@@ -460,7 +456,7 @@ AlbumTracksTableFormat::AlbumTracksTableFormat(const bool label,
 		const bool filename, const std::string &coldelim)
 	: TypedRowsTableBase(0, 0, label, track, offset, length, filename)
 	, ChecksumsResultPrinter(                          /* TODO Use EmptyARId */
-			nullptr, std::vector<std::string>{}, nullptr, ARId{0,0,0,0})
+			nullptr, std::vector<std::string>{}, nullptr, ARId{0,0,0,0}, false)
 {
 	this->init(0, 0); // do_out() does resize() anyway!
 	this->set_column_delimiter(coldelim);
@@ -474,14 +470,16 @@ void AlbumTracksTableFormat::init(const int /* rows */, const int /* cols */)
 
 
 void AlbumTracksTableFormat::do_out(std::ostream &o,
-		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId> &t)
+		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId, bool>
+		&t)
 {
 	assertions(t);
 
 	const auto  checksums = std::get<0>(t);
 	const auto& filenames = std::get<1>(t);
 	const auto  toc       = std::get<2>(t);
-	//const auto& arid      = std::get<3>(t); // TODO Implement printing
+	const auto& arid      = std::get<3>(t); // TODO Implement printing
+	const auto  is_album  = std::get<4>(t);
 
 	const auto types_to_print = ordered_typelist(*checksums);
 
@@ -493,153 +491,120 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 
 	// Configure table
 
+	if (is_album) { set_track(true); }
 	if (!toc) { set_offset(false); }
 	if (filenames.empty()) { set_filename(false); }
 	// assertion is fulfilled that either not filenames.empty() or non-null toc
 
-	resize(track() + filename() + offset() + length() + types_to_print.size(),
-				label() + checksums->size());
+	const bool show_input = track() or filename();
 
+	resize(show_input + offset() + length() + types_to_print.size(),
+				checksums->size());
+
+	// Assign row labels
 	if (label())
 	{
-		// Use column 0 as label column
+		// Determine labels (we have to know the optimal width)
+		// XXX TypedColsTableBase does this kind of stuff in apply_md_settings()
 
-		set_title(0, "Label");
-		set_width(0, optimal_label_width());
-		set_alignment(0, true);
-	}
-
-	const std::string col_label = toc ? "Track " : "File ";
-	// FIXME Only checking toc oversees the case where files form an album
-	// Better: some "is album" flag
-
-	int trackno = 1;
-	const std::size_t start_col = label() ? 1 : 0;
-	for (std::size_t col = start_col; col < columns(); ++col)
-	{
-		set_width(col, 8);
-		set_title(col, col_label + std::to_string(trackno));
-
-		++trackno;
-	}
-
-	// Print table
-
-	if (label()) { print_column_titles(o); }
-
-// Commented out: printing filenames makes any col width to explode
-// Options:
-// - Do not print filenames, just assume the right order
-// - Make cols fixed width
-//	if (filename())
-//	{
-//		if (label())
-//		{
-//			o   << std::setw(width(0))
-//				<< (alignment(0) > 0 ? std::left : std::right)
-//				<< defaults::label(CELL_TYPE::FILENAME)
-//				<< column_delimiter();
-//		}
-//
-//		int trackno = 0;
-//		for (std::size_t col = start_col; col < columns(); ++col) // print cell
-//		{
-//			o   << std::setw(width(col))
-//				<< (alignment(col) > 0 ? std::left : std::right)
-//				<< filenames[trackno]
-//				<< column_delimiter();
-//			++trackno;
-//		}
-//		o   << std::endl;
-//	}
-
-	if (track())
-	{
-		if (label())
+		int row = 0;
+		if (show_input)
 		{
-			o   << std::setw(width(0))
-				<< (alignment(0) > 0 ? std::left : std::right)
-				<< "Track"
-				<< column_delimiter();
+			// track() is interpreted differently when --tracks-are-cols:
+			// Print either track number or file input number if tracks are
+			// not available. Conversely, ignore filename().
+
+			const std::string input_label = is_album
+				? defaults::label(CELL_TYPE::TRACK)
+				: defaults::label(CELL_TYPE::FILENAME);
+
+			set_row_label(row, input_label);
+			++row;
 		}
+		for (const auto& type : types_to_print)
+		{
+			set_row_label(row, arcstk::checksum::type_name(type));
+			++row;
+		}
+		if (offset())
+			{ set_row_label(row, defaults::label(CELL_TYPE::OFFSET)); ++row; }
+		if (length())
+			{ set_row_label(row, defaults::label(CELL_TYPE::LENGTH)); ++row; }
+		// ... skip filename ...
+	}
+
+	// Assign column widths
+	for (std::size_t col = 0; col < columns(); ++col) // print cell
+	{
+		set_width(col, 8); // TODO Magic number, only ok while no filenames
+		set_alignment(col, false);
+	}
+
+	// Print table rows
+
+	int row = 0;
+
+	if (show_input)
+	{
+		if (label()) { print_label(o, row); }
 
 		int trackno = 1;
-		for (std::size_t col = start_col; col < columns(); ++col) // print cell
+		for (std::size_t col = 0; col < columns(); ++col)
 		{
-			o   << std::setw(width(col))
-				<< (alignment(col) > 0 ? std::left : std::right)
-				<< std::to_string(trackno)
-				<< column_delimiter();
+			print_cell(o, col, std::to_string(trackno), true);
 			++trackno;
 		}
-		o   << std::endl;
-	}
 
-	if (offset())
-	{
-		if (label())
-		{
-			o   << std::setw(width(0))
-				<< (alignment(0) > 0 ? std::left : std::right)
-				<< defaults::label(CELL_TYPE::OFFSET)
-				<< column_delimiter();
-		}
-
-		int trackno = 1;
-		for (std::size_t col = start_col; col < columns(); ++col) // print cell
-		{
-			o   << std::setw(width(col))
-				<< (alignment(col) > 0 ? std::left : std::right)
-				<< std::to_string(toc->offset(trackno))
-				<< column_delimiter();
-			++trackno;
-		}
-		o   << std::endl;
-	}
-
-	if (length())
-	{
-		if (label())
-		{
-			o   << std::setw(width(0))
-				<< (alignment(0) > 0 ? std::left : std::right)
-				<< defaults::label(CELL_TYPE::LENGTH)
-				<< column_delimiter();
-		}
-
-		int trackno = 0;
-		for (std::size_t col = start_col; col < columns(); ++col) // print cell
-		{
-			o   << std::setw(width(col))
-				<< (alignment(col) > 0 ? std::left : std::right)
-				<< checksums->at(trackno).length()
-				<< column_delimiter();
-			++trackno;
-		}
-		o   << std::endl;
+		o << std::endl;
+		++row;
 	}
 
 	for (const auto& type : types_to_print)
 	{
-		if (label())
+		if (label()) { print_label(o, row); }
+
+		int index = 0;
+		for (std::size_t col = 0; col < columns(); ++col, ++index)
 		{
-			o   << std::setw(width(0))
-				<< (alignment(0) > 0 ? std::left : std::right)
-				<< arcstk::checksum::type_name(type)
-				<< column_delimiter();
+			print_cell(o, col,
+				checksum_layout().format(
+					checksums->at(index).get(type).value(), 8),
+				true);
 		}
 
-		int trackno = 0;
-		for (std::size_t col = start_col; col < columns(); ++col) // print cell
+		o << std::endl;
+		++row;
+	}
+
+	if (offset())
+	{
+		if (label()) { print_label(o, row); }
+
+		int trackno = 1;
+		for (std::size_t col = 0; col < columns(); ++col)
 		{
-			o   << std::setw(width(col))
-				<< (alignment(col) > 0 ? std::left : std::right)
-				<< checksum_layout().format(
-						checksums->at(trackno).get(type).value(), 8)
-				<< column_delimiter();
+			print_cell(o, col, std::to_string(toc->offset(trackno)), true);
 			++trackno;
 		}
-		o   << std::endl;
+
+		o << std::endl;
+		++row;
+	}
+
+	if (length())
+	{
+		if (label()) { print_label(o, row); }
+
+		int index = 0;
+		for (std::size_t col = 0; col < columns(); ++col, ++index)
+		{
+			print_cell(o, col,
+				std::to_string(checksums->at(index).length()),
+				true);
+		}
+
+		o << std::endl;
+		++row;
 	}
 }
 
@@ -805,10 +770,7 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 					break;
 			}
 
-			out << std::setw(width(col))
-				<< (alignment(col) > 0 ? std::left : std::right)
-				<< cell
-				<< column_delimiter();
+			print_cell(out, col, cell, col < columns() - 1);
 		}
 
 		out << std::endl;

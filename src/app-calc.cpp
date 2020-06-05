@@ -175,21 +175,43 @@ std::unique_ptr<Options> ARCalcConfigurator::configure_calc_options(
 			ARCS_LOG(DEBUG1) << "Activate option LAST due to METAFILE";
 			options->set(ARCalcOptions::LAST);
 		}
+
+		ARCS_LOG(DEBUG1) << "Activate option ALBUM due to METAFILE";
+		options->set(ARCalcOptions::ALBUM);
 	}
 
 	// Album or not
 
 	if (options->is_set(ARCalcOptions::ALBUM))
 	{
-		if (options->is_set(ARCalcOptions::METAFILE))
+		if (not options->is_set(ARCalcOptions::FIRST))
 		{
-			ARCS_LOG_INFO << "Option ALBUM is redundant when METAFILE is passed";
-		} else
-		{
-			ARCS_LOG(DEBUG1) << "Activate album mode";
+			ARCS_LOG(DEBUG1) << "Activate option FIRST due to ALBUM";
 
 			options->set(ARCalcOptions::FIRST);
+		} else
+		{
+			ARCS_LOG_INFO <<
+				"Option FIRST is redundant when ALBUM is passed";
+		}
+
+		if (not options->is_set(ARCalcOptions::LAST))
+		{
+			ARCS_LOG(DEBUG1) << "Activate option LAST due to ALBUM";
+
 			options->set(ARCalcOptions::LAST);
+		} else
+		{
+			ARCS_LOG_INFO <<
+				"Option LAST is redundant when ALBUM is passed";
+		}
+	} else
+	{
+		if (options->is_set(ARCalcOptions::FIRST)
+			and options->is_set(ARCalcOptions::LAST))
+		{
+			ARCS_LOG(DEBUG1) << "Activate option ALBUM due to FIRST and LAST";
+			options->set(ARCalcOptions::ALBUM);
 		}
 	}
 
@@ -201,8 +223,7 @@ std::unique_ptr<Options> ARCalcConfigurator::configure_calc_options(
 		options->set(ARCalcOptions::NOOFFSETS);
 		options->set(ARCalcOptions::NOLENGTHS);
 		options->set(ARCalcOptions::NOFILENAMES);
-
-		//options->set(ARCalcOptions::NOLABELS); // Multiple Checksum types?
+		options->set(ARCalcOptions::NOLABELS); // Multiple Checksum types?
 	}
 
 	return options;
@@ -312,6 +333,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 	{
 		// No Offsets => No ARId => No TOC
 		// => No Album information, but may be requested as album by options
+		// (since we have no offsets, we cannot offer to compute the ARId)
 
 		ARCSCalculator c { checksum_type };
 
@@ -485,7 +507,8 @@ int ARCalcApplication::run_calculation(const Options &options)
 		? arcstk::toc::get_filenames(toc)
 		: options.get_arguments();
 
-	format->use(&checksums, std::move(filenames), toc.get(), std::move(arid));
+	format->use(&checksums, std::move(filenames), toc.get(), std::move(arid),
+			options.is_set(ARCalcOptions::ALBUM));
 	output(*format);
 
 	return EXIT_SUCCESS;
