@@ -96,8 +96,6 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 			const std::vector<std::string> &audiofilenames,
 			const std::string &metafilename) const
 {
-	ARCS_LOG_DEBUG << "Specified audiofilenames and metafilename";
-
 	if (audiofilenames.empty())
 	{
 		if (not metafilename.empty())

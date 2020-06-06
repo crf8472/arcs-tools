@@ -272,7 +272,7 @@ void ChecksumsResultPrinter::assertions(
 	const auto& filenames = std::get<1>(t);
 	const auto  toc       = std::get<2>(t);
 	const auto& arid      = std::get<3>(t);
-	const auto  is_album  = std::get<4>(t);
+	//const auto  is_album  = std::get<4>(t); // unused
 
 	const auto total_tracks = checksums->size();
 
@@ -489,7 +489,7 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 	const auto  checksums = std::get<0>(t);
 	const auto& filenames = std::get<1>(t);
 	const auto  toc       = std::get<2>(t);
-	const auto& arid      = std::get<3>(t); // TODO Implement printing
+	//const auto& arid      = std::get<3>(t); // TODO Implement printing
 	const auto  is_album  = std::get<4>(t);
 
 	const auto types_to_print = ordered_typelist(*checksums);
@@ -638,8 +638,21 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 MatchResultPrinter::MatchResultPrinter()
 	: MatchResultPrinterBase(nullptr, std::vector<std::string>{}, ARResponse{},
 			nullptr, 0, false, nullptr, ARId(arcstk::EmptyARId))
+	, match_symbol_ { "   ==   " }
 {
 	// empty
+}
+
+
+void MatchResultPrinter::set_match_symbol(const std::string &match_symbol)
+{
+	match_symbol_ = match_symbol;
+}
+
+
+const std::string& MatchResultPrinter::match_symbol() const
+{
+	return match_symbol_;
 }
 
 
@@ -667,25 +680,12 @@ AlbumMatchTableFormat::AlbumMatchTableFormat(
 			/* columns = metadata columns + matching checksums + match info */
 			show_label, show_track, show_offset, show_length, show_filename)
 	, MatchResultPrinter()
-	, match_symbol_ { "   ==   " }
 {
 	this->init(rows, this->columns());
 }
 
 
 AlbumMatchTableFormat::~AlbumMatchTableFormat() noexcept = default;
-
-
-void AlbumMatchTableFormat::set_match_symbol(const std::string &match_symbol)
-{
-	match_symbol_ = match_symbol;
-}
-
-
-const std::string& AlbumMatchTableFormat::match_symbol() const
-{
-	return match_symbol_;
-}
 
 
 void AlbumMatchTableFormat::init(const int /* rows */, const int /* cols */)
@@ -737,7 +737,7 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 	const auto  best      = std::get<4>(t);
 	const auto  version   = std::get<5>(t);
 	const auto  toc       = std::get<6>(t);
-	const auto& arid      = std::get<7>(t);
+	//const auto& arid      = std::get<7>(t);
 
 	using TYPE = arcstk::checksum::type;
 

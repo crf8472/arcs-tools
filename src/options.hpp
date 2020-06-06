@@ -267,12 +267,12 @@ private:
 	/**
 	 * \brief Boolean and valued options
 	 */
-	OptionValue config_;
+	std::vector<bool> flags_;
 
 	/**
 	 * \brief Valued options' values
 	 */
-	std::map<OptionValue, std::string> option_map_;
+	std::map<OptionValue, std::string> values_;
 
 	/**
 	 * \brief Arguments (non-option values)

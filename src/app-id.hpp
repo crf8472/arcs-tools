@@ -31,45 +31,14 @@ class CLITokens;
 /**
  * \brief Configuration options for ARIdApplications.
  */
-class ARIdOptions : public Options
+struct ARIdOptions
 {
-
-public:
-
-	/**
-	 * \brief Requested cddb id
-	 */
-	static constexpr OptionValue CDDBID = 1;
-
-	/**
-	 * \brief Requested url
-	 */
-	static constexpr OptionValue URL = 2;
-
-	/**
-	 * \brief Requested ar db id
-	 */
-	static constexpr OptionValue DBID = 4;
-
-	/**
-	 * \brief Requested entire disc profile
-	 */
-	static constexpr OptionValue PROFILE = 8;
-
-	/**
-	 * \brief Specified AUDIOFILE file
-	 */
-	static constexpr OptionValue AUDIOFILE = 16;
-
-	/**
-	 * \brief Specified alternative URL prefix
-	 */
-	static constexpr OptionValue PRE = 32;
-
-	/**
-	 * \brief Default constructor.
-	 */
-	ARIdOptions();
+	static constexpr OptionValue CDDBID    = 1;
+	static constexpr OptionValue URL       = 2;
+	static constexpr OptionValue DBID      = 3;
+	static constexpr OptionValue PROFILE   = 4;
+	static constexpr OptionValue AUDIOFILE = 5;
+	static constexpr OptionValue URLPREFIX = 6;
 };
 
 

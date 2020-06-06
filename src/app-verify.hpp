@@ -44,36 +44,16 @@ using arcstk::Match;
 /**
  * \brief Configuration options for ARVerifyApplications.
  */
-class ARVerifyOptions : public ARCalcOptions
+class VERIFY : public CALCBASE
 {
+	static constexpr auto& MY = CALCBASE::MAX_CONSTANT;
+
 public:
-
-	// ... all values from ARCalcOptions
-
-	/**
-	 * \brief Response data to parse for verification
-	 */
-	static constexpr OptionValue RESPONSEFILE = MAX_CONSTANT * 2^1;
-
-	/**
-	 * \brief Reference values data to parse for verification
-	 */
-	static constexpr OptionValue REFVALUES    = MAX_CONSTANT * 2^2;
-
-	/**
-	 * \brief Do not print anything, just return YES or NO
-	 */
-	static constexpr OptionValue BOOLEAN      = MAX_CONSTANT * 2^3;
-
-	/**
-	 * \brief Do not print the result and use BOOLEAN
-	 */
-	static constexpr OptionValue NOOUTPUT     = MAX_CONSTANT * 2^4;
-
-	/**
-	 * \brief Print every match
-	 */
-	static constexpr OptionValue PRINTALL     = MAX_CONSTANT * 2^5;
+	static constexpr OptionValue RESPONSEFILE = MY + 1;
+	static constexpr OptionValue REFVALUES    = MY + 2;
+	static constexpr OptionValue PRINTALL     = MY + 3;
+	static constexpr OptionValue BOOLEAN      = MY + 4;
+	static constexpr OptionValue NOOUTPUT     = MY + 5;
 };
 
 
@@ -83,8 +63,8 @@ public:
  * The ARVerifyConfigurator understands all options understood by the
  * ARCalcConfigurator.
  */
-class ARVerifyConfigurator final : public ARCalcConfigurator
-{ // XXX Non-leaf class ARCalcConfigurator is not abstract
+class ARVerifyConfigurator final : public ARCalcConfiguratorBase
+{
 public:
 
 	/**

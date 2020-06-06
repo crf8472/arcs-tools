@@ -37,83 +37,53 @@ namespace arcsapp
 
 class CLITokens;
 
-/**
- * \brief Options for configuring ARCSApplication instances.
- */
-class ARCalcOptions : public Options
-{
-public:
 
+/**
+ * \brief Options to configure ARApplication instances that do ARCS calculation.
+ */
+struct CALCBASE
+{
+	// No-calculation output (info) options
+
+	static constexpr OptionValue LIST_TOC_FORMATS   = 1;
+	static constexpr OptionValue LIST_AUDIO_FORMATS = 2;
 
 	// Calculation input options
 
-	static constexpr OptionValue FIRST    = 1;
-	static constexpr OptionValue LAST     = 2;
-	static constexpr OptionValue ALBUM    = 4;
-	static constexpr OptionValue METAFILE = 8;
-
+	static constexpr OptionValue FIRST        = 3;
+	static constexpr OptionValue LAST         = 4;
+	static constexpr OptionValue ALBUM        = 5;
+	static constexpr OptionValue METAFILE     = 6;
+	static constexpr OptionValue METAFILEPATH = 7; // has no cli token
 
 	// Calculation output options
 
-	static constexpr OptionValue NOV1         =    16;
-	static constexpr OptionValue NOV2         =    32;
-	static constexpr OptionValue NOTRACKS     =    64;
-	static constexpr OptionValue NOOFFSETS    =   128;
-	static constexpr OptionValue NOLENGTHS    =   256;
-	static constexpr OptionValue NOFILENAMES  =   512;
-	static constexpr OptionValue NOLABELS     =  1024;
-	static constexpr OptionValue SUMSONLY     =  2048;
-	static constexpr OptionValue TRACKSASCOLS =  4096;
-	static constexpr OptionValue COLDELIM     =  8192;
-	static constexpr OptionValue PRINTID      = 16384;
-	static constexpr OptionValue PRINTURL     = 32768;
-
-
-	// No-calculation output options
-
-	static constexpr OptionValue LIST_TOC_FORMATS   =  65536;
-	static constexpr OptionValue LIST_AUDIO_FORMATS = 131072;
-
-
-	// Internal options
-
-
-	/**
-	 * \brief Metadata file path.
-	 *
-	 * Extracted from METAFILE.
-	 */
-	static constexpr OptionValue METAFILEPATH = 262144;
-
+	static constexpr OptionValue NOTRACKS     =  8;
+	static constexpr OptionValue NOFILENAMES  =  9;
+	static constexpr OptionValue NOOFFSETS    = 10;
+	static constexpr OptionValue NOLENGTHS    = 11;
+	static constexpr OptionValue NOLABELS     = 12;
+	static constexpr OptionValue COLDELIM     = 13;
+	static constexpr OptionValue PRINTID      = 14;
+	static constexpr OptionValue PRINTURL     = 15;
 
 protected:
 
 	/**
-	 * \brief Max constant occurring in ARCalcOptions
+	 * \brief Max constant occurring in CALC
 	 */
-	static constexpr OptionValue MAX_CONSTANT = METAFILEPATH;
+	static constexpr OptionValue MAX_CONSTANT = 15;
 };
 
 
 /**
- * \brief Configurator for ARCSApplications.
+ * \brief Base clase for ARApplication instances that support CALCBASE options.
  */
-class ARCalcConfigurator : public Configurator
-{ // XXX Should be 'final' but ARVerifyConfigurator is a subclass!
+class ARCalcConfiguratorBase : public Configurator
+{
 public:
 
-	/**
-	 * \brief Empty constructor
-	 *
-	 * \param[in] argc Number of command line arguments
-	 * \param[in] argv Command line arguments
-	 */
-	ARCalcConfigurator(int argc, char** argv);
-
-	/**
-	 * \brief Virtual default destructor
-	 */
-	~ARCalcConfigurator() noexcept override;
+	using Configurator::Configurator;
 
 protected:
 
@@ -123,15 +93,55 @@ protected:
 	 * This is used to determine whether the optional info options are to be
 	 * ignored in the presence of a calculation request.
 	 *
+	 * \param[in] options The options to configure
+	 *
 	 * \return TRUE iff a real calculation is requested.
 	 */
 	bool calculation_requested(const Options &options) const;
 
 	/**
-	 * \brief Implement configuration of calc options for reuse in subclass
+	 * \brief Worker: implement configuration of CALCBASE options for reuse in
+	 * subclasses.
+	 *
+	 * \param[in] options The options to configure
+	 *
+	 * \return Configured options
 	 */
-	std::unique_ptr<Options> configure_calc_options(
+	std::unique_ptr<Options> configure_calcbase_options(
 			std::unique_ptr<Options> options) const;
+};
+
+
+/**
+ * \brief Options exclusive to ARCalcApplication
+ */
+class CALC : public CALCBASE
+{
+	static constexpr auto& START = CALCBASE::MAX_CONSTANT;
+
+public:
+
+	static constexpr OptionValue NOV1         = START + 1;
+	static constexpr OptionValue NOV2         = START + 2;
+	static constexpr OptionValue SUMSONLY     = START + 3;
+	static constexpr OptionValue TRACKSASCOLS = START + 4;
+};
+
+
+/**
+ * \brief Configurator for ARCalcApplication instances.
+ */
+class ARCalcConfigurator : public ARCalcConfiguratorBase
+{
+public:
+
+	/**
+	 * \brief Empty constructor
+	 *
+	 * \param[in] argc Number of command line arguments
+	 * \param[in] argv Command line arguments
+	 */
+	ARCalcConfigurator(int argc, char** argv);
 
 private:
 

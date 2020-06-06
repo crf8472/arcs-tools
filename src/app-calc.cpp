@@ -74,74 +74,81 @@ using arcsdec::ARCSCalculator;
 using arcsdec::TOCParser;
 
 
-// ARCalcOptions
+// CALCBASE
+
+constexpr OptionValue CALCBASE::LIST_TOC_FORMATS;
+constexpr OptionValue CALCBASE::LIST_AUDIO_FORMATS;
+constexpr OptionValue CALCBASE::FIRST;
+constexpr OptionValue CALCBASE::LAST;
+constexpr OptionValue CALCBASE::ALBUM;
+constexpr OptionValue CALCBASE::METAFILE;
+constexpr OptionValue CALCBASE::METAFILEPATH; // has no cli token
+constexpr OptionValue CALCBASE::NOTRACKS;
+constexpr OptionValue CALCBASE::NOFILENAMES;
+constexpr OptionValue CALCBASE::NOOFFSETS;
+constexpr OptionValue CALCBASE::NOLENGTHS;
+constexpr OptionValue CALCBASE::NOLABELS;
+constexpr OptionValue CALCBASE::COLDELIM;
+constexpr OptionValue CALCBASE::PRINTID;
+constexpr OptionValue CALCBASE::PRINTURL;
+
+constexpr OptionValue CALCBASE::MAX_CONSTANT;
 
 
-constexpr OptionValue ARCalcOptions::NOV1;
-constexpr OptionValue ARCalcOptions::NOV2;
-constexpr OptionValue ARCalcOptions::ALBUM;
-constexpr OptionValue ARCalcOptions::FIRST;
-constexpr OptionValue ARCalcOptions::LAST;
-constexpr OptionValue ARCalcOptions::METAFILE;
-constexpr OptionValue ARCalcOptions::LIST_TOC_FORMATS;
-constexpr OptionValue ARCalcOptions::LIST_AUDIO_FORMATS;
-constexpr OptionValue ARCalcOptions::METAFILEPATH;
+// CALC
+
+constexpr OptionValue CALC::NOV1;
+constexpr OptionValue CALC::NOV2;
+constexpr OptionValue CALC::SUMSONLY;
+constexpr OptionValue CALC::TRACKSASCOLS;
 
 
-// ARCalcConfigurator
+// ARCalcConfiguratorBase
 
 
-ARCalcConfigurator::ARCalcConfigurator(int argc, char** argv)
-	: Configurator(argc, argv)
+bool ARCalcConfiguratorBase::calculation_requested(const Options &options) const
 {
-	// empty
-}
-
-
-ARCalcConfigurator::~ARCalcConfigurator() noexcept
-= default;
-
-
-bool ARCalcConfigurator::calculation_requested(const Options &options) const
-{
-	return options.is_set(ARCalcOptions::METAFILE)
+	return options.is_set(CALC::METAFILE)
 		or not options.no_arguments();
 }
 
 
-std::unique_ptr<Options> ARCalcConfigurator::configure_calc_options(
+std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 		std::unique_ptr<Options> options) const
 {
-	//const auto calculation_request = bool { calculation_requested(options) };
-
 	if (not calculation_requested(*options))
 	{
-		return options; // Only no-calc options present
+		ARCS_LOG_INFO << "No calculation task requested, stop configuring";
+		return options;
 	}
 
-	if (options->is_set(ARCalcOptions::LIST_TOC_FORMATS))
+	// Info Options
+
+	if (options->is_set(CALCBASE::LIST_TOC_FORMATS))
 	{
-		ARCS_LOG_WARNING << "Option LIST_TOC_FORMATS is ignored";
-		options->unset(ARCalcOptions::LIST_TOC_FORMATS);
+		ARCS_LOG_WARNING <<
+			"Option LIST_TOC_FORMATS is ignored due to calculation task";
+		options->unset(CALCBASE::LIST_TOC_FORMATS);
 	}
 
-	if (options->is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
+	if (options->is_set(CALCBASE::LIST_AUDIO_FORMATS))
 	{
-		ARCS_LOG_WARNING << "Option LIST_AUDIO_FORMATS is ignored";
-		options->unset(ARCalcOptions::LIST_AUDIO_FORMATS);
+		ARCS_LOG_WARNING <<
+			"Option LIST_AUDIO_FORMATS is ignored due to calculation task";
+		options->unset(CALCBASE::LIST_AUDIO_FORMATS);
 	}
 
-	// Metafile: get path + activate album mode
+	// Metafile: Get Path + Activate Album Mode
 
-	if (options->is_set(ARCalcOptions::METAFILE))
+	if (options->is_set(CALCBASE::METAFILE))
 	{
-		auto metafilename(options->get(ARCalcOptions::METAFILE));
+		auto metafilename(options->get(CALCBASE::METAFILE));
 
 		if (metafilename.empty())
 		{
-			// no metadata file specified ...
+			// No Metadata File Specified ...
 
-			 // TODO Better: check for some "ARCalcOptions::AUDIOFILES" list
+			 // TODO Better: Check for Some "CALCBASE::AUDIOFILES" List
 			if (options->no_arguments())
 			{
 				ARCS_LOG_ERROR << "No metafile and no audiofile specified";
@@ -151,82 +158,90 @@ std::unique_ptr<Options> ARCalcConfigurator::configure_calc_options(
 
 		// Provide Path of the Metafile as Searchpath
 
-		options->put(ARCalcOptions::METAFILEPATH,
-			file::path(options->get(ARCalcOptions::METAFILE)));
+		options->put(CALCBASE::METAFILEPATH,
+			file::path(options->get(CALCBASE::METAFILE)));
 
-		// Activate album mode
+		// Activate Album Mode
 
-		if (options->is_set(ARCalcOptions::FIRST))
+		if (options->is_set(CALCBASE::ALBUM))
 		{
 			ARCS_LOG_INFO <<
-				"Option FIRST is redundant when metafile is passed";
+				"Option ALBUM is redundant when METAFILE is passed";
+		} else
+		{
+			ARCS_LOG(DEBUG1) << "Activate option ALBUM due to METAFILE";
+			options->set(CALCBASE::ALBUM);
+		}
+
+		if (options->is_set(CALCBASE::FIRST))
+		{
+			ARCS_LOG_INFO <<
+				"Option FIRST is redundant when METAFILE is passed";
 		} else
 		{
 			ARCS_LOG(DEBUG1) << "Activate option FIRST due to METAFILE";
-			options->set(ARCalcOptions::FIRST);
+			options->set(CALCBASE::FIRST);
 		}
 
-		if (options->is_set(ARCalcOptions::LAST))
+		if (options->is_set(CALCBASE::LAST))
 		{
 			ARCS_LOG_INFO <<
-				"Option LAST is redundant when metafile is passed";
+				"Option LAST is redundant when METAFILE is passed";
 		} else
 		{
 			ARCS_LOG(DEBUG1) << "Activate option LAST due to METAFILE";
-			options->set(ARCalcOptions::LAST);
-		}
-
-		ARCS_LOG(DEBUG1) << "Activate option ALBUM due to METAFILE";
-		options->set(ARCalcOptions::ALBUM);
-	}
-
-	// Album or not
-
-	if (options->is_set(ARCalcOptions::ALBUM))
-	{
-		if (not options->is_set(ARCalcOptions::FIRST))
-		{
-			ARCS_LOG(DEBUG1) << "Activate option FIRST due to ALBUM";
-
-			options->set(ARCalcOptions::FIRST);
-		} else
-		{
-			ARCS_LOG_INFO <<
-				"Option FIRST is redundant when ALBUM is passed";
-		}
-
-		if (not options->is_set(ARCalcOptions::LAST))
-		{
-			ARCS_LOG(DEBUG1) << "Activate option LAST due to ALBUM";
-
-			options->set(ARCalcOptions::LAST);
-		} else
-		{
-			ARCS_LOG_INFO <<
-				"Option LAST is redundant when ALBUM is passed";
+			options->set(CALCBASE::LAST);
 		}
 	} else
 	{
-		if (options->is_set(ARCalcOptions::FIRST)
-			and options->is_set(ARCalcOptions::LAST))
+		// No metafile: Album Mode or Not?
+
+		if (options->is_set(CALCBASE::ALBUM))
 		{
-			ARCS_LOG(DEBUG1) << "Activate option ALBUM due to FIRST and LAST";
-			options->set(ARCalcOptions::ALBUM);
+			if (not options->is_set(CALCBASE::FIRST))
+			{
+				ARCS_LOG(DEBUG1) << "Activate option FIRST due to ALBUM";
+
+				options->set(CALCBASE::FIRST);
+			} else
+			{
+				ARCS_LOG_INFO <<
+					"Option FIRST is redundant when ALBUM is passed";
+			}
+
+			if (not options->is_set(CALCBASE::LAST))
+			{
+				ARCS_LOG(DEBUG1) << "Activate option LAST due to ALBUM";
+
+				options->set(CALCBASE::LAST);
+			} else
+			{
+				ARCS_LOG_INFO <<
+					"Option LAST is redundant when ALBUM is passed";
+			}
+		} else
+		{
+			if (options->is_set(CALCBASE::FIRST)
+				and options->is_set(CALCBASE::LAST))
+			{
+				ARCS_LOG(DEBUG1) <<
+					"Activate option ALBUM due to FIRST and LAST";
+				options->set(CALCBASE::ALBUM);
+			}
 		}
 	}
 
-	// Printing options
-
-	if (options->is_set(ARCalcOptions::SUMSONLY))
-	{
-		options->set(ARCalcOptions::NOTRACKS);
-		options->set(ARCalcOptions::NOFILENAMES);
-		options->set(ARCalcOptions::NOOFFSETS);
-		options->set(ARCalcOptions::NOLENGTHS);
-		options->set(ARCalcOptions::NOLABELS); // Multiple Checksum types?
-	}
-
 	return options;
+}
+
+
+// ARCalcConfigurator
+
+
+ARCalcConfigurator::ARCalcConfigurator(int argc, char** argv)
+	: ARCalcConfiguratorBase(argc, argv)
+{
+	// empty
 }
 
 
@@ -238,49 +253,49 @@ const std::vector<std::pair<Option, OptionValue>>&
 		// calculation input options
 
 		{{      "first",  false, "~", "Treat first audio file as first track" },
-			ARCalcOptions::FIRST },
+			CALC::FIRST },
 		{{      "last",   false, "~", "Treat last audio file as last track" },
-			ARCalcOptions::LAST },
+			CALC::LAST },
 		{{      "album",  false, "~", "Abbreviates --first --last" },
-			ARCalcOptions::ALBUM },
+			CALC::ALBUM },
 		{{ 'm', "metafile", true, "none", "Specify toc metadata file to use" },
-			ARCalcOptions::METAFILE },
+			CALC::METAFILE },
 
 		// calculation output options
 
 		{{  "no-v1", false, "FALSE", "Do not provide ARCSv1" },
-			ARCalcOptions::NOV1 },
+			CALC::NOV1 },
 		{{  "no-v2", false, "FALSE", "Do not provide ARCSv2" },
-			ARCalcOptions::NOV2 },
+			CALC::NOV2 },
 		{{  "no-track-nos", false, "FALSE", "Do not print track numbers" },
-			ARCalcOptions::NOTRACKS},
+			CALC::NOTRACKS},
 		{{  "no-filenames", false, "FALSE", "Do not print the filenames" },
-			ARCalcOptions::NOFILENAMES},
+			CALC::NOFILENAMES},
 		{{  "no-offsets", false, "FALSE", "Do not print track offsets" },
-			ARCalcOptions::NOOFFSETS},
+			CALC::NOOFFSETS},
 		{{  "no-lengths", false, "FALSE", "Do not print track lengths" },
-			ARCalcOptions::NOLENGTHS},
+			CALC::NOLENGTHS},
 		{{  "no-labels", false, "FALSE", "Do not print column or row labels" },
-			ARCalcOptions::NOLABELS},
+			CALC::NOLABELS},
 		{{  "print-sums-only", false, "FALSE", "Print only checksums" },
-			ARCalcOptions::SUMSONLY},
+			CALC::SUMSONLY},
 		{{  "tracks-as-cols", false, "FALSE", "Print tracks as columns" },
-			ARCalcOptions::TRACKSASCOLS},
+			CALC::TRACKSASCOLS},
 		{{  "col-delim", true, " ", "Specify column delimiter" },
-			ARCalcOptions::COLDELIM},
+			CALC::COLDELIM},
 		{{  "print-id", false, "FALSE", "Print AccurateRip Id of the album" },
-			ARCalcOptions::PRINTID},
+			CALC::PRINTID},
 		{{  "print-url", false, "FALSE", "Print AccurateRip URL of the album" },
-			ARCalcOptions::PRINTURL},
+			CALC::PRINTURL},
 
 		// info output options
 
 		{{  "list-toc-formats", false, "FALSE",
 				"List all supported file formats for TOC metadata" },
-			ARCalcOptions::LIST_TOC_FORMATS },
+			CALC::LIST_TOC_FORMATS },
 		{{  "list-audio-formats", false, "FALSE",
 				"List all supported audio codec/container formats" },
-			ARCalcOptions::LIST_AUDIO_FORMATS }
+			CALC::LIST_AUDIO_FORMATS }
 	};
 
 	return local_options;
@@ -309,7 +324,20 @@ int ARCalcConfigurator::do_parse_arguments(CLITokens& cli, Options &options)
 std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 		std::unique_ptr<Options> options)
 {
-	return this->configure_calc_options(std::move(options));
+	auto coptions = this->configure_calcbase_options(std::move(options));
+
+	// Printing options
+
+	if (coptions->is_set(CALC::SUMSONLY))
+	{
+		coptions->set(CALC::NOTRACKS);
+		coptions->set(CALC::NOFILENAMES);
+		coptions->set(CALC::NOOFFSETS);
+		coptions->set(CALC::NOLENGTHS);
+		coptions->set(CALC::NOLABELS); // Multiple Checksum types?
+	}
+
+	return coptions;
 }
 
 
@@ -327,7 +355,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 		: ChecksumType::ARCS1;
 
 	std::vector<std::string> audiofilenames = options.get_arguments();
-	std::string metafilename = options.get(ARCalcOptions::METAFILE);
+	std::string metafilename = options.get(CALC::METAFILE);
 
 	if (metafilename.empty())
 	{
@@ -339,8 +367,8 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 
 		// Checksums for a list of files (no tracks known)
 		auto checksums = c.calculate(audiofilenames,
-				options.is_set(ARCalcOptions::FIRST),
-				options.is_set(ARCalcOptions::LAST));
+				options.is_set(CALC::FIRST),
+				options.is_set(CALC::LAST));
 
 		return std::tuple<Checksums, ARId, std::unique_ptr<TOC>>(
 				checksums, *make_empty_arid(), nullptr);
@@ -351,7 +379,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 		// => Album
 
 		const auto audiofilenames = options.get_arguments();
-		auto metafilepath         = options.get(ARCalcOptions::METAFILEPATH);
+		auto metafilepath         = options.get(CALC::METAFILEPATH);
 
 		calc::ARCSMultifileAlbumCalculator c { checksum_type };
 
@@ -377,45 +405,45 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 std::unique_ptr<ChecksumsResultPrinter> ARCalcApplication::configure_format(
 		const Options &options) const
 {
-	const bool has_toc = !options.get(ARCalcOptions::METAFILE).empty();
+	const bool has_toc = !options.get(CALC::METAFILE).empty();
 
 	// Print track number if they are not forbidden and a TOC is present
-	const bool prints_tracks = options.is_set(ARCalcOptions::NOTRACKS)
+	const bool prints_tracks = options.is_set(CALC::NOTRACKS)
 		? false
 		: has_toc;
 
 	// Print offsets if they are not forbidden and a TOC is present
-	const bool prints_offsets = options.is_set(ARCalcOptions::NOOFFSETS)
+	const bool prints_offsets = options.is_set(CALC::NOOFFSETS)
 		? false
 		: has_toc;
 
 	// Print lengths if they are not forbidden
-	const bool prints_lengths = not options.is_set(ARCalcOptions::NOLENGTHS);
+	const bool prints_lengths = not options.is_set(CALC::NOLENGTHS);
 
 	// Print filenames if they are not forbidden and explicitly requested
-	const bool prints_filenames = options.is_set(ARCalcOptions::NOFILENAMES)
+	const bool prints_filenames = options.is_set(CALC::NOFILENAMES)
 		? false
 		: not has_toc;
 
 	// Set column delimiter
-	const std::string coldelim = options.is_set(ARCalcOptions::COLDELIM)
-		? options.get(ARCalcOptions::COLDELIM)
+	const std::string coldelim = options.is_set(CALC::COLDELIM)
+		? options.get(CALC::COLDELIM)
 		: " ";
 
 	// Decide which implementation
 
 	std::unique_ptr<ChecksumsResultPrinter> format;
 
-	if (options.is_set(ARCalcOptions::TRACKSASCOLS))
+	if (options.is_set(CALC::TRACKSASCOLS))
 	{
 		format = std::make_unique<AlbumTracksTableFormat>(
-			not options.is_set(ARCalcOptions::NOLABELS),
+			not options.is_set(CALC::NOLABELS),
 			prints_tracks, prints_offsets, prints_lengths, prints_filenames,
 			coldelim);
 	} else
 	{
 		format = std::make_unique<AlbumChecksumsTableFormat>(
-			not options.is_set(ARCalcOptions::NOLABELS),
+			not options.is_set(CALC::NOLABELS),
 			prints_tracks, prints_offsets, prints_lengths, prints_filenames,
 			coldelim);
 	}
@@ -431,11 +459,11 @@ std::set<arcstk::checksum::type> ARCalcApplication::requested_types(
 
 	std::set<arcstk::checksum::type> types = {};
 
-	if (not options.is_set(ARCalcOptions::NOV1))
+	if (not options.is_set(CALC::NOV1))
 	{
 		types.insert(arcstk::checksum::type::ARCS1);
 	}
-	if (not options.is_set(ARCalcOptions::NOV2))
+	if (not options.is_set(CALC::NOV2))
 	{
 		types.insert(arcstk::checksum::type::ARCS2);
 	}
@@ -446,12 +474,12 @@ std::set<arcstk::checksum::type> ARCalcApplication::requested_types(
 
 int ARCalcApplication::run_info(const Options &options)
 {
-	if (options.is_set(ARCalcOptions::LIST_TOC_FORMATS))
+	if (options.is_set(CALC::LIST_TOC_FORMATS))
 	{
 		output(SupportedFormats::toc(), options.output());
 	}
 
-	if (options.is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
+	if (options.is_set(CALC::LIST_AUDIO_FORMATS))
 	{
 		output(SupportedFormats::audio(), options.output());
 	}
@@ -508,7 +536,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 		: options.get_arguments();
 
 	format->use(&checksums, std::move(filenames), toc.get(), std::move(arid),
-			options.is_set(ARCalcOptions::ALBUM));
+			options.is_set(CALC::ALBUM));
 	output(*format);
 
 	return EXIT_SUCCESS;
@@ -538,8 +566,8 @@ int ARCalcApplication::do_run(const Options &options)
 {
 	// If only info options are present, handle info request
 
-	if (options.is_set(ARCalcOptions::LIST_TOC_FORMATS)
-		or options.is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
+	if (options.is_set(CALC::LIST_TOC_FORMATS)
+		or options.is_set(CALC::LIST_AUDIO_FORMATS))
 	{
 		return this->run_info(options);
 	}

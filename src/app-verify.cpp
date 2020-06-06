@@ -78,20 +78,21 @@ using arcstk::AlbumMatcher;
 using arcsdec::ARCSCalculator;
 
 
-// ARVerifyOptions
+// VERIFY
 
 
-constexpr OptionValue ARVerifyOptions::RESPONSEFILE;
-constexpr OptionValue ARVerifyOptions::REFVALUES;
-constexpr OptionValue ARVerifyOptions::BOOLEAN;
-constexpr OptionValue ARVerifyOptions::PRINTALL;
+constexpr OptionValue VERIFY::RESPONSEFILE;
+constexpr OptionValue VERIFY::REFVALUES;
+constexpr OptionValue VERIFY::PRINTALL;
+constexpr OptionValue VERIFY::BOOLEAN;
+constexpr OptionValue VERIFY::NOOUTPUT;
 
 
 // ARVerifyConfigurator
 
 
 ARVerifyConfigurator::ARVerifyConfigurator(int argc, char** argv)
-	: ARCalcConfigurator(argc, argv)
+	: ARCalcConfiguratorBase(argc, argv)
 {
 	// empty
 }
@@ -106,79 +107,79 @@ const std::vector<std::pair<Option, OptionValue>>&
 
 		{{      "first",    false, "~",
 			"Treat first audio file as first track" },
-			ARVerifyOptions::FIRST },
+			VERIFY::FIRST },
 		{{      "last",     false, "~",
 			"Treat last audio file as last track" },
-			ARVerifyOptions::LAST },
+			VERIFY::LAST },
 		{{      "album",    false, "~",
 			"Abbreviates --first --last" },
-			ARVerifyOptions::ALBUM },
+			VERIFY::ALBUM },
 		{{ 'm', "metafile", true, "none",
 			"Specify metadata file (TOC) to use" },
-			ARVerifyOptions::METAFILE },
+			VERIFY::METAFILE },
 		{{ 'r', "response", true, "none",
 			"Specify AccurateRip response file" },
-			ARVerifyOptions::RESPONSEFILE },
+			VERIFY::RESPONSEFILE },
 		{{      "refvalues", true, "none",
 			"Specify AccurateRip reference values (as hex value list)" },
-			ARVerifyOptions::REFVALUES},
+			VERIFY::REFVALUES},
 
 		// calculation output options
 
-		{{      "no-v1",    false, "FALSE",
-			"Do not provide ARCSv1" },
-			ARVerifyOptions::NOV1 },
-		{{      "no-v2",    false, "FALSE",
-			"Do not provide ARCSv2" },
-			ARVerifyOptions::NOV2 },
+		//{{      "no-v1",    false, "FALSE",  // unsupported
+		//	"Do not provide ARCSv1" },
+		//	VERIFY::NOV1 },
+		//{{      "no-v2",    false, "FALSE",  // unsupported
+		//	"Do not provide ARCSv2" },
+		//	VERIFY::NOV2 },
 		{{      "no-track-nos",  false, "FALSE",
 			"Do not print track numbers" },
-			ARVerifyOptions::NOTRACKS},
-		{{      "no-offsets",    false, "FALSE",
-			"Do not print track offsets" },
-			ARVerifyOptions::NOOFFSETS},
-		{{      "no-lengths",    false, "FALSE",
-			"Do not print track lengths" },
-			ARVerifyOptions::NOLENGTHS},
+			VERIFY::NOTRACKS},
 		{{      "no-filenames",    false, "FALSE",
 			"Do not print the filenames" },
-			ARVerifyOptions::NOFILENAMES},
-		{{      "no-col-headers",    false, "FALSE",
-			"Do not print column headers" },
-			ARVerifyOptions::NOLABELS},
-		{{      "print-sums-only",    false, "FALSE",
-			"Print only the checksums" },
-			ARVerifyOptions::SUMSONLY},
-		{{      "tracks-as-cols",    false, "FALSE",
-			"Print result with tracks as columns" },
-			ARVerifyOptions::TRACKSASCOLS},
+			VERIFY::NOFILENAMES},
+		{{      "no-offsets",    false, "FALSE",
+			"Do not print track offsets" },
+			VERIFY::NOOFFSETS},
+		{{      "no-lengths",    false, "FALSE",
+			"Do not print track lengths" },
+			VERIFY::NOLENGTHS},
+		{{      "no-labels",    false, "FALSE",
+			"Do not print column or row labels" },
+			VERIFY::NOLABELS},
+		//{{      "print-sums-only",    false, "FALSE",  // unsupported
+		//	"Print only the checksums" },
+		//	VERIFY::SUMSONLY},
+		//{{      "tracks-as-cols",    false, "FALSE",  // unsupported
+		//	"Print result with tracks as columns" },
+		//	VERIFY::TRACKSASCOLS},
 		{{      "col-delim",    true, " ",
 			"Specify column delimiter" },
-			ARVerifyOptions::COLDELIM},
+			VERIFY::COLDELIM},
 		{{      "print-id",    false, "FALSE",
 			"Print the AccurateRip Id of the album" },
-			ARVerifyOptions::PRINTID},
+			VERIFY::PRINTID},
 		{{      "print-url",   false, "FALSE",
 			"Print the AccurateRip URL of the album" },
-			ARVerifyOptions::PRINTURL},
+			VERIFY::PRINTURL},
 		{{      "print-all-matches",   false, "FALSE",
 			"Print verification results for all blocks" },
-			ARVerifyOptions::PRINTALL},
+			VERIFY::PRINTALL},
 		{{ 'b', "boolean",   false, "FALSE",
 			"Return number of differing tracks in best match" },
-			ARVerifyOptions::BOOLEAN},
+			VERIFY::BOOLEAN},
 		{{ 'n', "no-output", false, "FALSE",
 			"Do not print the result (implies --boolean)" },
-			ARVerifyOptions::NOOUTPUT},
+			VERIFY::NOOUTPUT},
 
 		// info output options
 
 		{{      "list-toc-formats",  false,   "FALSE",
 			"List all supported file formats for TOC metadata" },
-			ARVerifyOptions::LIST_TOC_FORMATS },
+			VERIFY::LIST_TOC_FORMATS },
 		{{      "list-audio-formats",  false, "FALSE",
 			"List all supported audio codec/container formats" },
-			ARVerifyOptions::LIST_AUDIO_FORMATS }
+			VERIFY::LIST_AUDIO_FORMATS }
 	};
 
 	return local_options;
@@ -188,7 +189,21 @@ const std::vector<std::pair<Option, OptionValue>>&
 std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 		std::unique_ptr<Options> options)
 {
-	return this->configure_calc_options(std::move(options));
+	if (options->is_set(VERIFY::FIRST))
+	{
+		std::cout << "Verify FIRST set" << std::endl;
+	}
+
+	auto voptions = configure_calcbase_options(std::move(options));
+
+	// NOOUTPUT implies BOOLEAN
+
+	if (voptions->is_set(VERIFY::NOOUTPUT))
+	{
+		voptions->set(VERIFY::BOOLEAN);
+	}
+
+	return voptions;
 }
 
 
@@ -199,7 +214,7 @@ ARResponse ARVerifyApplication::parse_response(const Options &options) const
 {
 	// Parse the AccurateRip response
 
-	std::string responsefile(options.get(ARVerifyOptions::RESPONSEFILE));
+	std::string responsefile(options.get(VERIFY::RESPONSEFILE));
 
 	std::unique_ptr<ARStreamParser> parser;
 
@@ -244,23 +259,23 @@ ARResponse ARVerifyApplication::parse_response(const Options &options) const
 std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
 		const Options &options, const bool with_filenames) const
 {
-	const bool with_toc = !options.get(ARVerifyOptions::METAFILE).empty();
+	const bool with_toc = !options.get(VERIFY::METAFILE).empty();
 
 	// Print track number if they are not forbidden and a TOC is present
-	const bool prints_tracks = options.is_set(ARVerifyOptions::NOTRACKS)
+	const bool prints_tracks = options.is_set(VERIFY::NOTRACKS)
 		? false
 		: with_toc;
 
 	// Print offsets if they are not forbidden and a TOC is present
-	const bool prints_offsets = options.is_set(ARVerifyOptions::NOOFFSETS)
+	const bool prints_offsets = options.is_set(VERIFY::NOOFFSETS)
 		? false
 		: with_toc;
 
 	// Print lengths if they are not forbidden
-	const bool prints_lengths = not options.is_set(ARVerifyOptions::NOLENGTHS);
+	const bool prints_lengths = not options.is_set(VERIFY::NOLENGTHS);
 
 	// Print filenames if they are not forbidden and explicitly requested
-	const bool prints_filenames = options.is_set(ARVerifyOptions::NOFILENAMES)
+	const bool prints_filenames = options.is_set(VERIFY::NOFILENAMES)
 		? false
 		: with_filenames;
 
@@ -268,12 +283,12 @@ std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
 	// show filenames otherwise
 	// show length in every case
 	auto format = std::make_unique<AlbumMatchTableFormat>(0,
-			options.is_set(ARVerifyOptions::NOLABELS),
+			options.is_set(VERIFY::NOLABELS),
 			prints_tracks, prints_offsets, prints_lengths, prints_filenames);
 
-	if (options.is_set(ARVerifyOptions::COLDELIM))
+	if (options.is_set(VERIFY::COLDELIM))
 	{
-		format->set_column_delimiter(options.get(ARVerifyOptions::COLDELIM));
+		format->set_column_delimiter(options.get(VERIFY::COLDELIM));
 	}
 
 	return format;
@@ -325,12 +340,12 @@ std::unique_ptr<Configurator> ARVerifyApplication::create_configurator(
 
 int ARVerifyApplication::run_info(const Options &options)
 {
-	if (options.is_set(ARCalcOptions::LIST_TOC_FORMATS))
+	if (options.is_set(VERIFY::LIST_TOC_FORMATS))
 	{
 		output(SupportedFormats::toc(), options.output());
 	}
 
-	if (options.is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
+	if (options.is_set(VERIFY::LIST_AUDIO_FORMATS))
 	{
 		output(SupportedFormats::audio(), options.output());
 	}
@@ -359,7 +374,7 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 	std::unique_ptr<const Matcher> diff;
 
-	const bool album_requested = !options.get(ARCalcOptions::METAFILE).empty();
+	const bool album_requested = !options.get(VERIFY::METAFILE).empty();
 	bool with_filenames = true;
 
 	if (album_requested)
@@ -416,7 +431,10 @@ int ARVerifyApplication::run_calculation(const Options &options)
 			<< " in response, having difference " << diff->best_difference();
 	}
 
-	// Print results
+	if (options.is_set(VERIFY::NOOUTPUT)) // implies BOOLEAN
+	{
+		return diff->best_difference(); // 0 on accurate match, else > 0
+	}
 
 	auto filenames = toc
 		? arcstk::toc::get_filenames(toc)
@@ -430,7 +448,9 @@ int ARVerifyApplication::run_calculation(const Options &options)
 		toc.get(), std::move(arid));
 	output(*format);
 
-	return EXIT_SUCCESS;
+	return options.is_set(VERIFY::BOOLEAN)
+		? diff->best_difference()
+		: EXIT_SUCCESS;
 }
 
 
@@ -438,8 +458,8 @@ int ARVerifyApplication::do_run(const Options &options)
 {
 	// If only info options are present, handle info request
 
-	if (options.is_set(ARCalcOptions::LIST_TOC_FORMATS)
-		or options.is_set(ARCalcOptions::LIST_AUDIO_FORMATS))
+	if (options.is_set(VERIFY::LIST_TOC_FORMATS)
+		or options.is_set(VERIFY::LIST_AUDIO_FORMATS))
 	{
 		return this->run_info(options);
 	}

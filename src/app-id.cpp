@@ -48,12 +48,6 @@ using arcstk::ARId;
 using arcsdec::ARIdCalculator;
 
 
-// ARIdOptions
-
-
-ARIdOptions::ARIdOptions() = default;
-
-
 // ARIdConfigurator
 
 
@@ -85,7 +79,7 @@ const std::vector<std::pair<Option, OptionValue>>&
 					"use the specified prefix"
 						"instead of the default "
 						"'http://accuraterip.com/accuraterip/'" },
-					ARIdOptions::PRE },
+					ARIdOptions::URLPREFIX },
 			{{ 'a', "audiofile",   true, "none",
 					"specify input audio file" },
 					ARIdOptions::AUDIOFILE }
@@ -140,12 +134,12 @@ int ARIdApplication::do_run(const Options &options)
 	if (options.is_set(ARIdOptions::PROFILE))
 	{
 		format = std::make_unique<ARIdTableFormat>(*id,
-			options.get(ARIdOptions::PRE),
+			options.get(ARIdOptions::URLPREFIX),
 			true, true, true, true, true, true);
 	} else
 	{
 		format = std::make_unique<ARIdTableFormat>(*id,
-			options.get(ARIdOptions::PRE),
+			options.get(ARIdOptions::URLPREFIX),
 			options.is_set(ARIdOptions::URL),
 			options.is_set(ARIdOptions::DBID),
 			false /* no track count */,
@@ -155,7 +149,7 @@ int ARIdApplication::do_run(const Options &options)
 		);
 	}
 
-	//format->use(*id, options.get(ARIdOptions::PRE));
+	//format->use(*id, options.get(ARIdOptions::URLPREFIX));
 	output(*format);
 
 	return EXIT_SUCCESS;
