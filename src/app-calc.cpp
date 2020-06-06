@@ -220,9 +220,9 @@ std::unique_ptr<Options> ARCalcConfigurator::configure_calc_options(
 	if (options->is_set(ARCalcOptions::SUMSONLY))
 	{
 		options->set(ARCalcOptions::NOTRACKS);
+		options->set(ARCalcOptions::NOFILENAMES);
 		options->set(ARCalcOptions::NOOFFSETS);
 		options->set(ARCalcOptions::NOLENGTHS);
-		options->set(ARCalcOptions::NOFILENAMES);
 		options->set(ARCalcOptions::NOLABELS); // Multiple Checksum types?
 	}
 
@@ -254,12 +254,12 @@ const std::vector<std::pair<Option, OptionValue>>&
 			ARCalcOptions::NOV2 },
 		{{  "no-track-nos", false, "FALSE", "Do not print track numbers" },
 			ARCalcOptions::NOTRACKS},
+		{{  "no-filenames", false, "FALSE", "Do not print the filenames" },
+			ARCalcOptions::NOFILENAMES},
 		{{  "no-offsets", false, "FALSE", "Do not print track offsets" },
 			ARCalcOptions::NOOFFSETS},
 		{{  "no-lengths", false, "FALSE", "Do not print track lengths" },
 			ARCalcOptions::NOLENGTHS},
-		{{  "no-filenames", false, "FALSE", "Do not print the filenames" },
-			ARCalcOptions::NOFILENAMES},
 		{{  "no-labels", false, "FALSE", "Do not print column or row labels" },
 			ARCalcOptions::NOLABELS},
 		{{  "print-sums-only", false, "FALSE", "Print only checksums" },

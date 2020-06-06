@@ -80,6 +80,8 @@ void ARTripletFormat::assertions(const std::tuple<int, ARTriplet> &t) const
 void ARTripletFormat::do_out(std::ostream &out,
 		const std::tuple<int, ARTriplet> &t)
 {
+	assertions(t);
+
 	auto track   = std::get<0>(t);
 	auto triplet = std::get<1>(t);
 
@@ -237,6 +239,8 @@ void ARIdTableFormat::assertions(const std::tuple<ARId, std::string> &t) const
 void ARIdTableFormat::do_out(std::ostream &o,
 		const std::tuple<ARId, std::string> &t)
 {
+	assertions(t);
+
 	o << format(std::get<0>(t), std::get<1>(t)) << std::endl;
 }
 
@@ -496,7 +500,7 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 	if (filenames.empty()) { set_filename(false); }
 	// assertion is fulfilled that either not filenames.empty() or non-null toc
 
-	const bool show_input = track() or filename();
+	const bool show_input = filename(); // Overrides --no-track-nos
 
 	resize(show_input + offset() + length() + types_to_print.size(),
 				checksums->size());
@@ -504,13 +508,13 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 	// Assign row labels
 	if (label())
 	{
-		// Determine labels (we have to know the optimal width)
+		// Determine row labels (we must know the optimal width when printing)
 		// XXX TypedColsTableBase does this kind of stuff in apply_md_settings()
 
 		int row = 0;
 		if (show_input)
 		{
-			// track() is interpreted differently when --tracks-are-cols:
+			// track() is interpreted differently when --tracks-as-cols:
 			// Print either track number or file input number if tracks are
 			// not available. Conversely, ignore filename().
 
@@ -549,11 +553,12 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 		if (label()) { print_label(o, row); }
 
 		int trackno = 1;
-		for (std::size_t col = 0; col < columns(); ++col)
+		for (std::size_t col = 0; col < columns() - 1; ++col)
 		{
 			print_cell(o, col, std::to_string(trackno), true);
 			++trackno;
 		}
+		print_cell(o, columns() - 1, std::to_string(trackno), false);
 
 		o << std::endl;
 		++row;
@@ -564,13 +569,18 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 		if (label()) { print_label(o, row); }
 
 		int index = 0;
-		for (std::size_t col = 0; col < columns(); ++col, ++index)
+		for (std::size_t col = 0; col < columns() - 1; ++col, ++index)
 		{
 			print_cell(o, col,
 				checksum_layout().format(
 					checksums->at(index).get(type).value(), 8),
 				true);
 		}
+
+		print_cell(o, columns() - 1,
+				checksum_layout().format(
+					checksums->at(index).get(type).value(), 8),
+				false);
 
 		o << std::endl;
 		++row;
@@ -581,11 +591,13 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 		if (label()) { print_label(o, row); }
 
 		int trackno = 1;
-		for (std::size_t col = 0; col < columns(); ++col)
+		for (std::size_t col = 0; col < columns() - 1; ++col)
 		{
 			print_cell(o, col, std::to_string(toc->offset(trackno)), true);
 			++trackno;
 		}
+		print_cell(o, columns() - 1, std::to_string(toc->offset(trackno)),
+				false);
 
 		o << std::endl;
 		++row;
@@ -596,12 +608,15 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 		if (label()) { print_label(o, row); }
 
 		int index = 0;
-		for (std::size_t col = 0; col < columns(); ++col, ++index)
+		for (std::size_t col = 0; col < columns() - 1; ++col, ++index)
 		{
 			print_cell(o, col,
 				std::to_string(checksums->at(index).length()),
 				true);
 		}
+		print_cell(o, columns() - 1,
+				std::to_string(checksums->at(index).length()),
+				false);
 
 		o << std::endl;
 		++row;
@@ -684,6 +699,8 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 		const std::tuple<Checksums*, std::vector<std::string>, ARResponse,
 				Match*, int, bool, TOC*, ARId> &t)
 {
+	assertions(t);
+
 	auto checksums = *std::get<0>(t);
 	auto filenames = std::get<1>(t);
 	auto response = std::get<2>(t);
