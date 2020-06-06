@@ -259,14 +259,18 @@ class ChecksumsResultPrinter : public ChecksumsResultPrinterBase
 {
 public:
 
+	/**
+	 * \brief Default constructor
+	 */
+	ChecksumsResultPrinter();
+
 	using ChecksumsResultPrinterBase::ChecksumsResultPrinterBase;
 
 protected:
 
 	void assertions(
 		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId, bool>
-			&t)
-		const override;
+			&t) const override;
 	// from Print
 };
 
@@ -311,8 +315,7 @@ private:
 
 	void do_out(std::ostream &o,
 		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId, bool>
-			&t)
-		override;
+			&t) override;
 	// from Print
 };
 
@@ -348,8 +351,7 @@ private:
 
 	void do_out(std::ostream &o,
 		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId, bool>
-			&t)
-		override;
+			&t) override;
 	// from Print
 };
 
@@ -357,9 +359,57 @@ private:
 /**
  * \brief Alias for classes printing match results.
  */
-using MatchResultPrinter =
+using MatchResultPrinterBase =
 	Print<Checksums*, std::vector<std::string>, ARResponse, Match*, int, bool,
 		TOC*, ARId>;
+
+
+/**
+ * \brief Inherit assertions common to all Checksum printers.
+ */
+class MatchResultPrinter : public MatchResultPrinterBase
+{
+public:
+
+	/**
+	 * \brief Default constructor
+	 */
+	MatchResultPrinter();
+
+	using MatchResultPrinterBase::MatchResultPrinterBase;
+
+	/**
+	 * \brief Set the symbol to be printed on identity of two checksum values.
+	 *
+	 * When some values do not match, the respective values are printed.
+	 *
+	 * \param[in] match_symbol The symbol to represent a match
+	 */
+	void set_match_symbol(const std::string &match_symbol);
+
+	/**
+	 * \brief The symbol to be printed on identity of two checksum values.
+	 *
+	 * When some values do not match, the respective values are printed.
+	 *
+	 * \return Match symbol
+	 */
+	const std::string& match_symbol() const;
+
+protected:
+
+	void assertions(
+		const std::tuple<Checksums*, std::vector<std::string>, ARResponse,
+			Match*, int, bool, TOC*, ARId> &t) const override;
+	// from Print
+
+private:
+
+	/**
+	 * \brief The symbol to be printed on identity of two checksum values.
+	 */
+	std::string match_symbol_;
+};
 
 
 /**
@@ -396,11 +446,6 @@ private:
 	int columns_apply_cs_settings(
 			const std::vector<arcstk::checksum::type> &types) override;
 	// from TypedColsTableBase
-
-	void assertions(
-			const std::tuple<Checksums*, std::vector<std::string>, ARResponse,
-			Match*, int, bool, TOC*, ARId> &t) const override;
-	// from Print
 
 	void do_out(std::ostream &out,
 			const std::tuple<Checksums*, std::vector<std::string>, ARResponse,
