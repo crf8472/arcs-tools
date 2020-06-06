@@ -238,13 +238,6 @@ std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 // ARCalcConfigurator
 
 
-ARCalcConfigurator::ARCalcConfigurator(int argc, char** argv)
-	: ARCalcConfiguratorBase(argc, argv)
-{
-	// empty
-}
-
-
 const std::vector<std::pair<Option, OptionValue>>&
 	ARCalcConfigurator::do_supported_options() const
 {

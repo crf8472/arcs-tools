@@ -336,7 +336,6 @@ AlbumChecksumsTableFormat::AlbumChecksumsTableFormat(
 			show_labels, show_track, show_offset, show_length, show_filename)
 	, ChecksumsResultPrinter()
 {
-	;
 	this->init(0, 0); // do_out() does resize() anyway!
 	this->set_column_delimiter(coldelim);
 }
@@ -668,20 +667,18 @@ void MatchResultPrinter::assertions(
 
 
 AlbumMatchTableFormat::AlbumMatchTableFormat(
-			const int rows,
 			const bool show_label,
 			const bool show_track,
 			const bool show_offset,
 			const bool show_length,
-			const bool show_filename)
-	: TypedColsTableBase(
-			rows, /* rows == tracks */
-			(show_track + show_offset + show_length + show_filename + 2),
-			/* columns = metadata columns + matching checksums + match info */
+			const bool show_filename,
+			const std::string &coldelim)
+	: TypedColsTableBase(0, 0,
 			show_label, show_track, show_offset, show_length, show_filename)
 	, MatchResultPrinter()
 {
-	this->init(rows, this->columns());
+	this->init(0, 0); // do_out() does resize() anyway!
+	this->set_column_delimiter(coldelim);
 }
 
 

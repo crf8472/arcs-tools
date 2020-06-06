@@ -51,12 +51,6 @@ using arcsdec::ARIdCalculator;
 // ARIdConfigurator
 
 
-ARIdConfigurator::ARIdConfigurator(int argc, char** argv)
-	: Configurator(argc, argv)
-{
-	// empty
-}
-
 const std::vector<std::pair<Option, OptionValue>>&
 	ARIdConfigurator::do_supported_options() const
 {

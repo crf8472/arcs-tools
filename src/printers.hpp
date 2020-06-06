@@ -423,15 +423,16 @@ public:
 	/**
 	 * \brief Constructor.
 	 *
-	 * \param[in] rows     Number of tracks
 	 * \param[in] label    Set to TRUE for printing column titles
 	 * \param[in] track    Set to TRUE for printing track number (if any)
 	 * \param[in] offset   Set to TRUE for printing offset (if any)
 	 * \param[in] length   Set to TRUE for printing length (if any)
 	 * \param[in] filename Set to TRUE for printing filename (if any)
+	 * \param[in] coldelim Set column delimiter
 	 */
-	AlbumMatchTableFormat(const int rows, const bool track, const bool label,
-			const bool offset, const bool length, const bool filename);
+	AlbumMatchTableFormat(const bool track, const bool label,
+			const bool offset, const bool length, const bool filename,
+			const std::string &coldelim);
 
 	/**
 	 * \brief Virtual default destructor.

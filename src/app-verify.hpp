@@ -67,13 +67,7 @@ class ARVerifyConfigurator final : public ARCalcConfiguratorBase
 {
 public:
 
-	/**
-	 * \brief Constructor.
-	 *
-	 * \param[in] argc Number of command line arguments
-	 * \param[in] argv Command line arguments
-	 */
-	ARVerifyConfigurator(int argc, char** argv);
+	using ARCalcConfiguratorBase::ARCalcConfiguratorBase;
 
 private:
 

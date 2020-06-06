@@ -131,17 +131,11 @@ public:
 /**
  * \brief Configurator for ARCalcApplication instances.
  */
-class ARCalcConfigurator : public ARCalcConfiguratorBase
+class ARCalcConfigurator final : public ARCalcConfiguratorBase
 {
 public:
 
-	/**
-	 * \brief Empty constructor
-	 *
-	 * \param[in] argc Number of command line arguments
-	 * \param[in] argv Command line arguments
-	 */
-	ARCalcConfigurator(int argc, char** argv);
+	using ARCalcConfiguratorBase::ARCalcConfiguratorBase;
 
 private:
 

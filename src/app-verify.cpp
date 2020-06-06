@@ -91,13 +91,6 @@ constexpr OptionValue VERIFY::NOOUTPUT;
 // ARVerifyConfigurator
 
 
-ARVerifyConfigurator::ARVerifyConfigurator(int argc, char** argv)
-	: ARCalcConfiguratorBase(argc, argv)
-{
-	// empty
-}
-
-
 const std::vector<std::pair<Option, OptionValue>>&
 	ARVerifyConfigurator::do_supported_options() const
 {
@@ -279,17 +272,15 @@ std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
 		? false
 		: with_filenames;
 
-	// show track + offset only when toc is requested
-	// show filenames otherwise
-	// show length in every case
-	auto format = std::make_unique<AlbumMatchTableFormat>(0,
-			options.is_set(VERIFY::NOLABELS),
-			prints_tracks, prints_offsets, prints_lengths, prints_filenames);
+	// Set column delimiter
+	const std::string coldelim = options.is_set(CALC::COLDELIM)
+		? options.get(CALC::COLDELIM)
+		: " ";
 
-	if (options.is_set(VERIFY::COLDELIM))
-	{
-		format->set_column_delimiter(options.get(VERIFY::COLDELIM));
-	}
+	auto format = std::make_unique<AlbumMatchTableFormat>(
+			not options.is_set(VERIFY::NOLABELS),
+			prints_tracks, prints_offsets, prints_lengths, prints_filenames,
+			coldelim);
 
 	return format;
 }

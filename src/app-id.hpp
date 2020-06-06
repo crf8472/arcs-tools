@@ -49,13 +49,7 @@ class ARIdConfigurator final : public Configurator
 {
 public:
 
-	/**
-	 * \brief Constructor.
-	 *
-	 * \param[in] argc Number of command line arguments
-	 * \param[in] argv Command line arguments
-	 */
-	ARIdConfigurator(int argc, char** argv);
+	using Configurator::Configurator;
 
 private:
 
