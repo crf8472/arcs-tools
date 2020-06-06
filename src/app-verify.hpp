@@ -21,13 +21,13 @@
 #endif
 
 #ifndef __ARCSTOOLS_ARCALC_HPP__
-#include "app-calc.hpp"          // for ARCalcConfigurator, ARCalcOptions
+#include "app-calc.hpp"          // for ARCalcConfigurator, CALC
 #endif
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"       // for ARApplication
 #endif
 #ifndef __ARCSTOOLS_PRINTERS_HPP__
-#include "printers.hpp"     // for ARResponse, Checksums, Match
+#include "printers.hpp"          // for ARResponse, Checksums, Match
 #endif
 
 namespace arcsapp

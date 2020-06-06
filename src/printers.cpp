@@ -72,9 +72,9 @@ ARTripletFormat::ARTripletFormat()
 }
 
 
-void ARTripletFormat::assertions(const std::tuple<int, ARTriplet> &t) const
+void ARTripletFormat::assertions(const std::tuple<int, ARTriplet> &) const
 {
-	// TODO implement
+	// empty
 }
 
 
@@ -83,8 +83,8 @@ void ARTripletFormat::do_out(std::ostream &out,
 {
 	assertions(t);
 
-	auto track   = std::get<0>(t);
-	auto triplet = std::get<1>(t);
+	const auto& track   = std::get<0>(t);
+	const auto& triplet = std::get<1>(t);
 
 	HexLayout hex; // TODO Make this configurable, inherit from WithChecksums...
 	hex.set_show_base(false);
@@ -231,9 +231,9 @@ std::string ARIdTableFormat::do_format(const ARId &id,
 }
 
 
-void ARIdTableFormat::assertions(const std::tuple<ARId, std::string> &t) const
+void ARIdTableFormat::assertions(const std::tuple<ARId, std::string> &) const
 {
-	// TODO implement
+	// empty
 }
 
 
@@ -659,7 +659,87 @@ void MatchResultPrinter::assertions(
 		const std::tuple<Checksums*, std::vector<std::string>, ARResponse,
 			Match*, int, bool, TOC*, ARId> &t) const
 {
-	// TODO implement
+	const auto  checksums = std::get<0>(t);
+	const auto& filenames = std::get<1>(t);
+	const auto  toc       = std::get<6>(t);
+	const auto& arid      = std::get<7>(t);
+
+	const auto total_tracks = checksums->size();
+
+	if (!checksums or total_tracks == 0)
+	{
+		throw std::invalid_argument("Missing value: "
+				"Need some Checksums to print");
+	}
+
+	if (auto track0 = checksums->at(0);
+		track0.types().empty() or track0.empty())
+	{
+		throw std::invalid_argument("Missing value: "
+				"Checksums seem to hold no checksums");
+	}
+
+	if (!toc and filenames.empty())
+	{
+		throw std::invalid_argument("Missing value: "
+				"Need either TOC data or filenames to print results");
+	}
+
+	if (toc && static_cast<uint16_t>(toc->track_count()) != total_tracks)
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Checksums for " + std::to_string(total_tracks)
+				+ " files/tracks, but TOC specifies "
+				+ std::to_string(toc->track_count()) + " tracks.");
+	}
+
+	if (not (filenames.empty() or filenames.size() == total_tracks))
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Checksums for " + std::to_string(total_tracks)
+				+ " files/tracks, but " + std::to_string(filenames.size())
+				+ " files.");
+	}
+
+	if (not (arid.empty()
+		or static_cast<uint16_t>(arid.track_count()) == total_tracks))
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Checksums for " + std::to_string(total_tracks)
+				+ " files/tracks, but AccurateRip id specifies "
+				+ std::to_string(arid.track_count()) + " tracks.");
+	}
+
+	// Specific for verify
+
+	const auto  response  = std::get<2>(t);
+	const auto  match     = std::get<3>(t);
+	const auto  block     = std::get<4>(t);
+	//const auto  version   = std::get<5>(t); // unused
+
+	if (static_cast<std::size_t>(response.tracks_per_block()) != total_tracks)
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Reference for " + std::to_string(total_tracks)
+				+ " tracks, but Checksums specify "
+				+ std::to_string(total_tracks) + " tracks.");
+	}
+
+	if (block > match->total_blocks())
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Match contains no block " + std::to_string(block)
+				+ " but contains only "
+				+ std::to_string(match->total_blocks()) + " blocks.");
+	}
+
+	if (static_cast<std::size_t>(block) > response.size())
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Reference contains no block " + std::to_string(block)
+				+ " but contains only "
+				+ std::to_string(response.size()) + " blocks.");
+	}
 }
 
 

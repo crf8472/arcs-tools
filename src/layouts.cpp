@@ -37,8 +37,6 @@ std::string label(const CELL_TYPE type)
 	return title;
 }
 
-const std::size_t max_label_length = 8; // TODO Magic number (FILENAME, CHECKSUM)
-
 int width(const CELL_TYPE type)
 {
 	const int default_w = defaults::label(type).length();
