@@ -64,6 +64,39 @@ inline int optimal_width(Container&& list)
 
 
 /**
+ * \brief Interface for formatting numbers
+ */
+class NumberLayout
+{
+public:
+
+	/**
+	 * \brief Virtual default destructor
+	 */
+	virtual ~NumberLayout() noexcept;
+
+	/**
+	 * \brief Layout an unsigned 32 bit integer
+	 *
+	 * \param[in] number  Number to format
+	 * \param[in] width   Width to format
+	 */
+	std::string format(const uint32_t &number, const int width) const;
+
+private:
+
+	/**
+	 * \brief Implements NumberLayout::(const uint32_t &, const int) const
+	 *
+	 * \param[in] number  Number to format
+	 * \param[in] width   Width to format
+	 */
+	virtual std::string do_format(const uint32_t &number, const int width) const
+	= 0;
+};
+
+
+/**
  * \brief Internal flag API
  *
  * Provides 32 boolean states with accessors.
@@ -134,9 +167,97 @@ private:
 
 
 /**
+ * \brief Format numbers in hexadecimal representation
+ */
+class HexLayout : public NumberLayout
+				, private WithInternalFlags
+{
+public:
+
+	/**
+	 * \brief Constructor
+	 */
+	HexLayout();
+
+	/**
+	 * \brief Make the base '0x' visible
+	 *
+	 * \param[in] base Flag for showing the base
+	 */
+	void set_show_base(const bool base);
+
+	/**
+	 * \brief Return TRUE if the base is shown, otherwise FALSE
+	 *
+	 * \return TRUE if the base is shown, otherwise FALSE
+	 */
+	bool shows_base() const;
+
+	/**
+	 * \brief Make the hex digits A-F uppercase
+	 *
+	 * \param[in] base Flag for making hex digits A-F uppercase
+	 */
+	void set_uppercase(const bool base);
+
+	/**
+	 * \brief Return TRUE if A-F are uppercase, otherwise FALSE
+	 *
+	 * \return TRUE if A-F are uppercase, otherwise FALSE
+	 */
+	bool is_uppercase() const;
+
+private:
+
+	std::string do_format(const uint32_t &number, const int width) const
+		override;
+};
+
+
+/**
+ * \brief Property to set or use a layout for printing checksums.
+ */
+class WithChecksumLayout
+{
+public:
+
+	/**
+	 * \brief Default constructor
+	 *
+	 * Initializes a default HexLayout.
+	 */
+	WithChecksumLayout();
+
+	virtual ~WithChecksumLayout() noexcept;
+
+	/**
+	 * \brief Set the layout for printing the checksums
+	 *
+	 * \param[in] layout Layout for printing the checksums
+	 */
+	void set_checksum_layout(std::unique_ptr<NumberLayout> &layout);
+
+	/**
+	 * \brief Return the layout for printing the checksums
+	 *
+	 * \return Layout for printing the checksums
+	 */
+	const NumberLayout& checksum_layout() const;
+
+private:
+
+	/**
+	 * \brief Layout used for CHECKSUM columns to print the checksums
+	 */
+	std::unique_ptr<NumberLayout> checksum_layout_;
+};
+
+
+/**
  * \brief Abstract base class for output formats of ARId.
  */
 class ARIdLayout : protected WithInternalFlags
+				 , public WithChecksumLayout
 {
 public:
 
@@ -457,87 +578,6 @@ public:
 
 
 /**
- * \brief Interface for formatting numbers
- */
-class NumberLayout
-{
-public:
-
-	/**
-	 * \brief Virtual default destructor
-	 */
-	virtual ~NumberLayout() noexcept;
-
-	/**
-	 * \brief Layout an unsigned 32 bit integer
-	 *
-	 * \param[in] number  Number to format
-	 * \param[in] width   Width to format
-	 */
-	std::string format(const uint32_t &number, const int width) const;
-
-private:
-
-	/**
-	 * \brief Implements NumberLayout::(const uint32_t &, const int) const
-	 *
-	 * \param[in] number  Number to format
-	 * \param[in] width   Width to format
-	 */
-	virtual std::string do_format(const uint32_t &number, const int width) const
-	= 0;
-};
-
-
-/**
- * \brief Format numbers in hexadecimal representation
- */
-class HexLayout : public NumberLayout
-				, private WithInternalFlags
-{
-public:
-
-	/**
-	 * \brief Constructor
-	 */
-	HexLayout();
-
-	/**
-	 * \brief Make the base '0x' visible
-	 *
-	 * \param[in] base Flag for showing the base
-	 */
-	void set_show_base(const bool base);
-
-	/**
-	 * \brief Return TRUE if the base is shown, otherwise FALSE
-	 *
-	 * \return TRUE if the base is shown, otherwise FALSE
-	 */
-	bool shows_base() const;
-
-	/**
-	 * \brief Make the hex digits A-F uppercase
-	 *
-	 * \param[in] base Flag for making hex digits A-F uppercase
-	 */
-	void set_uppercase(const bool base);
-
-	/**
-	 * \brief Return TRUE if A-F are uppercase, otherwise FALSE
-	 *
-	 * \return TRUE if A-F are uppercase, otherwise FALSE
-	 */
-	bool is_uppercase() const;
-
-private:
-
-	std::string do_format(const uint32_t &number, const int width) const
-		override;
-};
-
-
-/**
  * \brief A table with formatted columns
  */
 class TableStructure
@@ -853,8 +893,8 @@ private:
 /**
  * \brief Base class for a table of strings layout.
  *
- * Implement function \c init() in a subclass to get a concrete layout.
- * The default implementation of init() is empty in StringTable.
+ * Implement function \c do_init() in a subclass to get a concrete layout.
+ * The default implementation of do_init() is empty in StringTable.
  *
  * \see StringTable
  */
@@ -879,6 +919,15 @@ public:
 	 * \brief Virtual default destructor.
 	 */
 	virtual ~StringTableStructure() noexcept;
+
+	/**
+	 * \brief Initialize the instance with the specified number of
+	 * rows and columns.
+	 *
+	 * \param[in] rows Number of rows
+	 * \param[in] cols Number of columns
+	 */
+	void init(const int rows, const int cols);
 
 protected:
 
@@ -977,13 +1026,7 @@ protected:
 
 private:
 
-	/**
-	 * \brief Initialize the instance with the specified dimensions
-	 *
-	 * \param[in] rows Number of rows to init
-	 * \param[in] cols Number of columns to init
-	 */
-	virtual void init(const int rows, const int cols)
+	virtual void do_init(const int rows, const int cols)
 	= 0;
 
 	std::size_t do_rows() const override;
@@ -1221,47 +1264,8 @@ public:
 
 private:
 
-	void init(const int rows, const int cols) override;
+	void do_init(const int rows, const int cols) override;
 	// from StringTableStructure
-};
-
-
-/**
- * \brief Property to set or use a layout for printing checksums.
- */
-class WithChecksumLayout
-{
-public:
-
-	/**
-	 * \brief Default constructor
-	 *
-	 * Initializes a default HexLayout.
-	 */
-	WithChecksumLayout();
-
-	virtual ~WithChecksumLayout() noexcept;
-
-	/**
-	 * \brief Set the layout for printing the checksums
-	 *
-	 * \param[in] layout Layout for printing the checksums
-	 */
-	void set_checksum_layout(std::unique_ptr<NumberLayout> &layout);
-
-	/**
-	 * \brief Return the layout for printing the checksums
-	 *
-	 * \return Layout for printing the checksums
-	 */
-	const NumberLayout& checksum_layout() const;
-
-private:
-
-	/**
-	 * \brief Layout used for CHECKSUM columns to print the checksums
-	 */
-	std::unique_ptr<NumberLayout> checksum_layout_;
 };
 
 
@@ -1364,6 +1368,8 @@ public:
 	TypedRowsTableBase(const int rows, const int columns)
 		: TypedRowsTableBase(rows, columns, true, true, true, true, true)
 	{ /* empty */ };
+
+	// FIXME Make abstract!
 };
 
 

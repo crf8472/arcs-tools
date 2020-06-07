@@ -213,7 +213,7 @@ public:
 
 private:
 
-	void init(const int rows, const int cols) override;
+	void do_init(const int rows, const int cols) override;
 	// from StringTableStructure
 
 	void assertions(const std::tuple<ARId, std::string> &t) const override;
@@ -224,19 +224,6 @@ private:
 
 	std::string do_format(const ARId &id, const std::string &alt_prefix) const
 		override; // from ARIdLayout
-
-	/**
-	 * \brief Print row label for the specified \c flag
-	 *
-	 * \param[in] out  Stream to print to
-	 * \param[in] flag Flag to print a label for
-	 */
-	void print_label(std::ostream &out, const ARIdLayout::ARID_FLAG flag) const;
-
-	/**
-	 * \brief Row labels
-	 */
-	const std::array<std::string, to_underlying(ARID_FLAG::COUNT)> row_labels_;
 
 	/**
 	 * \brief Iterable array of show flags
@@ -306,7 +293,7 @@ public:
 
 private:
 
-	void init(const int rows, const int cols) override;
+	void do_init(const int rows, const int cols) override;
 	// from StringTableStructure
 
 	int columns_apply_cs_settings(
@@ -346,7 +333,7 @@ public:
 
 private:
 
-	void init(const int rows, const int cols) override;
+	void do_init(const int rows, const int cols) override;
 	// from StringTableBase
 
 	void do_out(std::ostream &o,
@@ -441,7 +428,7 @@ public:
 
 private:
 
-	void init(const int rows, const int cols) override;
+	void do_init(const int rows, const int cols) override;
 	// from StringTableStructure
 
 	int columns_apply_cs_settings(

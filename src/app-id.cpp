@@ -142,6 +142,7 @@ int ARIdApplication::do_run(const Options &options)
 			options.is_set(ARIdOptions::CDDBID)
 		);
 	}
+	//format->init();
 
 	//format->use(*id, options.get(ARIdOptions::URLPREFIX));
 	output(*format);

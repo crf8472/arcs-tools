@@ -70,6 +70,18 @@ CELL_TYPE convert_to(const int type)
 }
 
 
+// NumberLayout
+
+
+NumberLayout::~NumberLayout() noexcept = default;
+
+
+std::string NumberLayout::format(const uint32_t &number, const int width) const
+{
+	return this->do_format(number, width);
+}
+
+
 // WithInternalFlags
 
 
@@ -113,6 +125,90 @@ bool WithInternalFlags::only_one_flag() const
 bool WithInternalFlags::only(const int idx) const
 {
 	return flag(idx) && only_one_flag();
+}
+
+
+// HexLayout
+
+
+HexLayout::HexLayout()
+{
+	set_show_base(false);
+	set_uppercase(true);
+}
+
+
+void HexLayout::set_show_base(const bool base)
+{
+	set_flag(0, base);
+}
+
+
+bool HexLayout::shows_base() const
+{
+	return flag(0);
+}
+
+
+void HexLayout::set_uppercase(const bool uppercase)
+{
+	set_flag(1, uppercase);
+}
+
+
+bool HexLayout::is_uppercase() const
+{
+	return flag(1);
+}
+
+
+std::string HexLayout::do_format(const uint32_t &number, const int width) const
+{
+	std::stringstream ss;
+
+	if (shows_base())
+	{
+		ss << std::showbase;
+	}
+
+	if (is_uppercase())
+	{
+		ss << std::uppercase;
+	}
+
+	// ss_flags  =  ss.flags();
+	// ss_flags &= ~ss.basefield;
+	// ss_flags &= ~ss.adjustfield;
+	// ss.flags(ss_flags);
+
+	ss << std::hex << std::setw(width) << std::setfill('0') << number;
+	return ss.str();
+}
+
+
+// WithChecksumLayout
+
+
+WithChecksumLayout::WithChecksumLayout()
+	: checksum_layout_ { std::make_unique<HexLayout>() }
+{
+	// empty
+}
+
+
+WithChecksumLayout::~WithChecksumLayout() noexcept = default;
+
+
+void WithChecksumLayout::set_checksum_layout(
+		std::unique_ptr<NumberLayout> &layout)
+{
+	checksum_layout_ = std::move(layout);
+}
+
+
+const NumberLayout& WithChecksumLayout::checksum_layout() const
+{
+	return *checksum_layout_;
 }
 
 
@@ -348,76 +444,6 @@ bool WithMetadataFlagMethods::filename() const
 void WithMetadataFlagMethods::set_filename(const bool &filename)
 {
 	this->set_flag(4, filename);
-}
-
-
-// NumberLayout
-
-
-NumberLayout::~NumberLayout() noexcept = default;
-
-
-std::string NumberLayout::format(const uint32_t &number, const int width) const
-{
-	return this->do_format(number, width);
-}
-
-
-// HexLayout
-
-
-HexLayout::HexLayout()
-{
-	set_show_base(false);
-	set_uppercase(true);
-}
-
-
-void HexLayout::set_show_base(const bool base)
-{
-	set_flag(0, base);
-}
-
-
-bool HexLayout::shows_base() const
-{
-	return flag(0);
-}
-
-
-void HexLayout::set_uppercase(const bool uppercase)
-{
-	set_flag(1, uppercase);
-}
-
-
-bool HexLayout::is_uppercase() const
-{
-	return flag(1);
-}
-
-
-std::string HexLayout::do_format(const uint32_t &number, const int width) const
-{
-	std::stringstream ss;
-
-	if (shows_base())
-	{
-		ss << std::showbase;
-	}
-
-	if (is_uppercase())
-	{
-		ss << std::uppercase;
-	}
-
-	// ss_flags  =  ss.flags();
-	// ss_flags &= ~ss.basefield;
-	// ss_flags &= ~ss.adjustfield;
-	// ss.flags(ss_flags);
-
-	ss << std::hex << std::setw(width) << std::setfill('0') << number;
-	return ss.str();
 }
 
 
@@ -1365,35 +1391,9 @@ std::ostream& operator << (std::ostream &out, const StringTableBase &table)
 // StringTable
 
 
-void StringTable::init(const int /* row */, const int /* col */)
+void StringTable::do_init(const int /* row */, const int /* col */)
 {
 	// empty
-}
-
-
-// WithChecksumLayout
-
-
-WithChecksumLayout::WithChecksumLayout()
-	: checksum_layout_ { std::make_unique<HexLayout>() }
-{
-	// empty
-}
-
-
-WithChecksumLayout::~WithChecksumLayout() noexcept = default;
-
-
-void WithChecksumLayout::set_checksum_layout(
-		std::unique_ptr<NumberLayout> &layout)
-{
-	checksum_layout_ = std::move(layout);
-}
-
-
-const NumberLayout& WithChecksumLayout::checksum_layout() const
-{
-	return *checksum_layout_;
 }
 
 

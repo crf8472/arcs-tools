@@ -141,46 +141,50 @@ ARIdTableFormat::ARIdTableFormat(const ARId &id, const std::string &alt_prefix,
 		const bool &cddb_id)
 	: ARIdLayout(url, filename, track_count, disc_id_1, disc_id_2, cddb_id)
 	, StringTableStructure(
-			url + filename + track_count + disc_id_1 + disc_id_2 + cddb_id,
-			only_one_flag() ? 1 : 2 // one or two columns
-		)
-	, Print<ARId, std::string>(ARId(id), std::string(alt_prefix)) // FIXME Copies to remove constness
-	, row_labels_ { "URL", "Filename", "Tracks", "ID1", "ID2", "CDDB ID" }
+			url + filename + track_count + disc_id_1 + disc_id_2 + cddb_id, 1)
+	, ARIdPrinter(ARId(id) /* copy away constness */, std::string(alt_prefix))
 	, show_flags_ { ARID_FLAG::URL, ARID_FLAG::FILENAME, ARID_FLAG::TRACKS,
 		ARID_FLAG::ID1, ARID_FLAG::ID2, ARID_FLAG::CDDBID }
 {
-	this->init(rows(), columns());
+	const std::vector<std::string> labels =
+		{ "URL", "Filename", "Tracks", "ID1", "ID2", "CDDB ID" };
+
+	int i = 0;
+	for (const auto& sflag : show_flags_) // TODO Do this non-dynamically!
+	{
+		i = to_underlying(sflag);
+		if (static_cast<std::size_t>(i) < rows())
+		{
+			set_row_label(i, labels[i]);
+		}
+	}
 }
 
 
 ARIdTableFormat::~ARIdTableFormat() noexcept = default;
 
 
-void ARIdTableFormat::init(const int /* rows */, const int /* cols */)
+void ARIdTableFormat::do_init(const int /* rows */, const int /* cols */)
 {
-	set_alignment(0, -1);
-
-	if (columns() > 1) // If there is a label column, its width is known
-	{
-		set_width(0, optimal_width(row_labels_) + 2 /* colon + 1 WS */);
-	}
+	// empty
 }
 
 
 std::string ARIdTableFormat::do_format(const ARId &id,
 			const std::string &alt_prefix) const
 {
-	if (no_flags()) // return ARId as default
+	if (no_flags()) // return ARId as default, ignore any Hex layout settings
 	{
 		return id.to_string();
 	}
 
-	const bool label_requested = columns() > 1;
+	const int total_labels = url() + filename() + track_count() +
+		disc_id_1() + disc_id_2() + cddb_id();
 
 	std::stringstream stream;
 	stream << std::left;
 
-	HexLayout hex;
+	HexLayout hex; // TODO Make configurable
 	hex.set_uppercase(true);
 
 	std::string value;
@@ -189,10 +193,11 @@ std::string ARIdTableFormat::do_format(const ARId &id,
 	{
 		if (not flag(to_underlying(sflag))) { continue; }
 
-		if (label_requested)
+		if (total_labels > 1)
 		{
 			if (!stream.str().empty()) { stream << std::endl; }
-			print_label(stream, sflag);
+
+			print_label(stream, to_underlying(sflag));
 		}
 
 		switch (sflag)
@@ -243,13 +248,6 @@ void ARIdTableFormat::do_out(std::ostream &o,
 	assertions(t);
 
 	o << format(std::get<0>(t), std::get<1>(t)) << std::endl;
-}
-
-
-void ARIdTableFormat::print_label(std::ostream &out,
-		const ARIdLayout::ARID_FLAG flag) const
-{
-	out << std::setw(width(0)) << row_labels_[to_underlying(flag)] + ":";
 }
 
 
@@ -336,7 +334,6 @@ AlbumChecksumsTableFormat::AlbumChecksumsTableFormat(
 			show_labels, show_track, show_offset, show_length, show_filename)
 	, ChecksumsResultPrinter()
 {
-	this->init(0, 0); // do_out() does resize() anyway!
 	this->set_column_delimiter(coldelim);
 }
 
@@ -345,7 +342,8 @@ AlbumChecksumsTableFormat::~AlbumChecksumsTableFormat() noexcept
 = default;
 
 
-void AlbumChecksumsTableFormat::init(const int /* rows */, const int /* cols */)
+void AlbumChecksumsTableFormat::do_init(const int /* rows */,
+		const int /* cols */)
 {
 	// empty
 }
@@ -468,12 +466,11 @@ AlbumTracksTableFormat::AlbumTracksTableFormat(const bool label,
 	: TypedRowsTableBase(0, 0, label, track, offset, length, filename)
 	, ChecksumsResultPrinter()
 {
-	this->init(0, 0); // do_out() does resize() anyway!
 	this->set_column_delimiter(coldelim);
 }
 
 
-void AlbumTracksTableFormat::init(const int /* rows */, const int /* cols */)
+void AlbumTracksTableFormat::do_init(const int /* rows */, const int /* cols */)
 {
 	// empty
 }
@@ -757,7 +754,6 @@ AlbumMatchTableFormat::AlbumMatchTableFormat(
 			show_label, show_track, show_offset, show_length, show_filename)
 	, MatchResultPrinter()
 {
-	this->init(0, 0); // do_out() does resize() anyway!
 	this->set_column_delimiter(coldelim);
 }
 
@@ -765,7 +761,7 @@ AlbumMatchTableFormat::AlbumMatchTableFormat(
 AlbumMatchTableFormat::~AlbumMatchTableFormat() noexcept = default;
 
 
-void AlbumMatchTableFormat::init(const int /* rows */, const int /* cols */)
+void AlbumMatchTableFormat::do_init(const int /* rows */, const int /* cols */)
 {
 	// empty
 }

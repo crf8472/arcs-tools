@@ -72,13 +72,13 @@ TEST_CASE ( "WithMetadataFlagMethods", "" )
 TEST_CASE ( "ARIdTableFormat", "" )
 {
 	using arcsapp::ARIdTableFormat;
+	using ARID_FLAG = ARIdTableFormat::ARID_FLAG;
 
 	ARIdTableFormat f(true, false, false, false, false, false);
 
-	using ARID_FLAG = ARIdTableFormat::ARID_FLAG;
-
-	REQUIRE ( f.rows() == 1 );
+	REQUIRE ( f.rows()    == 1 );
 	REQUIRE ( f.columns() == 1 );
+
 	REQUIRE ( f.has_only(ARID_FLAG::URL) );
 	REQUIRE ( not f.has_only(ARID_FLAG::FILENAME) );
 	REQUIRE ( not f.has_only(ARID_FLAG::TRACKS) );
