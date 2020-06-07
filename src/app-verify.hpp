@@ -43,25 +43,29 @@ using arcstk::Match;
 
 /**
  * \brief Configuration options for ARVerifyApplications.
+ *
+ * Access options for verify exclusively by this class, not by CALCBASE.
  */
 class VERIFY : public CALCBASE
 {
-	static constexpr auto& MY = CALCBASE::MAX_CONSTANT;
+	static constexpr auto& BASE = CALCBASE::MAX_CONSTANT;
 
 public:
-	static constexpr OptionValue RESPONSEFILE = MY + 1;
-	static constexpr OptionValue REFVALUES    = MY + 2;
-	static constexpr OptionValue PRINTALL     = MY + 3;
-	static constexpr OptionValue BOOLEAN      = MY + 4;
-	static constexpr OptionValue NOOUTPUT     = MY + 5;
+	static constexpr OptionValue NOFIRST      = BASE + 1;
+	static constexpr OptionValue NOLAST       = BASE + 2;
+	static constexpr OptionValue NOALBUM      = BASE + 3;
+	static constexpr OptionValue RESPONSEFILE = BASE + 4;
+	static constexpr OptionValue REFVALUES    = BASE + 5;
+	static constexpr OptionValue PRINTALL     = BASE + 6;
+	static constexpr OptionValue BOOLEAN      = BASE + 7;
+	static constexpr OptionValue NOOUTPUT     = BASE + 8;
 };
 
 
 /**
  * \brief Configurator for ARVerifyApplication instances.
  *
- * The ARVerifyConfigurator understands all options understood by the
- * ARCalcConfigurator.
+ * Respects all VERIFY options.
  */
 class ARVerifyConfigurator final : public ARCalcConfiguratorBase
 {
@@ -80,32 +84,28 @@ private:
 
 
 /**
- * \brief AccurateRip Checksum Verifying Application.
+ * \brief Application to verify AccurateRip checksums.
  */
 class ARVerifyApplication final : public ARApplication
 {
-	std::string do_name() const override;
-
-	std::string do_call_syntax() const override;
-
-	std::unique_ptr<Configurator> create_configurator(
-			int argc, char** argv) const override;
-
-	int do_run(const Options &options) override;
-
 	/**
-	 * \brief Parse the input for an ARResponse
-	 */
-	ARResponse parse_response(const Options &options) const;
-
-	/**
-	 * \brief Configure an output format for the result
+	 * \brief Configure an output format for the result.
+	 *
+	 * \param[in] options        The options to run the application
+	 * \param[in] with_filenames Flag to indicate whether to print filenames
 	 */
 	std::unique_ptr<MatchResultPrinter> configure_format(const Options &options,
 		const bool with_filenames) const;
 
 	/**
-	 * \brief Log matching files from a file list.
+	 * \brief Worker: parse the input for an ARResponse.
+	 *
+	 * \param[in] options The options to run the application
+	 */
+	ARResponse parse_response(const Options &options) const;
+
+	/**
+	 * \brief Worker: Log matching files from a file list.
 	 *
 	 * \param[in] checksums Checksums to get matching tracks
 	 * \param[in] match     Matcher to show match
@@ -117,22 +117,23 @@ class ARVerifyApplication final : public ARApplication
 		const bool version = true) const;
 
 	/**
-	 * \brief Worker method for run(): handles info requests.
-	 *
-	 * \param[in] options The options to run the application
-	 *
-	 * \return Application return code
-	 */
-	int run_info(const Options &options);
-
-	/**
-	 * \brief Worker method for run(): handles calculation requests.
+	 * \brief Worker for run(): handles calculation requests.
 	 *
 	 * \param[in] options The options to run the application
 	 *
 	 * \return Application return code
 	 */
 	int run_calculation(const Options &options);
+
+
+	std::string do_name() const override;
+
+	std::string do_call_syntax() const override;
+
+	std::unique_ptr<Configurator> create_configurator(
+			int argc, char** argv) const override;
+
+	int do_run(const Options &options) override;
 };
 
 } // namespace arcsapp

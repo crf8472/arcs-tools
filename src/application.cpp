@@ -157,8 +157,10 @@ std::unique_ptr<Options> ARApplication::setup_options(int argc, char** argv)
 
 void ARApplication::fatal_error(const std::string &message) const
 {
+	//ARCS_LOG_ERROR << message;
 	throw std::runtime_error(message);
 }
+
 
 } //namespace arcsapp
 

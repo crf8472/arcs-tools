@@ -72,7 +72,7 @@ public:
 	 * \param[in] argc Number of command line input arguments
 	 * \param[in] argv Array of command line input arguments
 	 *
-	 * \return The result value of the application
+	 * \return Application return code
 	 */
 	int run(int argc, char** argv);
 
@@ -169,37 +169,12 @@ private:
 	/**
 	 * \brief Implements run().
 	 *
-	 * \param[in] options The options for this application
+	 * \param[in] options The options to run the application
 	 *
-	 * \return The result value of the application
+	 * \return Application return code
 	 */
 	virtual int do_run(const Options &options)
 	= 0;
-};
-
-/**
- * \brief Provides the stereotypical content of main()
- */
-template <class APPLICATIONTYPE>
-class Application
-{
-public:
-
-	int run(int argc, char** argv)
-	{
-		APPLICATIONTYPE application;
-
-		try
-		{
-			return application.run(argc, argv);
-
-		} catch (const std::exception &e)
-		{
-			std::cerr << "ERROR: " << e.what() << std::endl;
-
-			return EXIT_FAILURE;
-		}
-	}
 };
 
 } // namespace arcsapp

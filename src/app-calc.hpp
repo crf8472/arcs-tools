@@ -43,20 +43,17 @@ class CLITokens;
  */
 struct CALCBASE
 {
-	// No-calculation output (info) options
+	// Info Output Options (no calculation)
 
 	static constexpr OptionValue LIST_TOC_FORMATS   = 1;
 	static constexpr OptionValue LIST_AUDIO_FORMATS = 2;
 
-	// Calculation input options
+	// Calculation Input Options
 
-	static constexpr OptionValue FIRST        = 3;
-	static constexpr OptionValue LAST         = 4;
-	static constexpr OptionValue ALBUM        = 5;
 	static constexpr OptionValue METAFILE     = 6;
 	static constexpr OptionValue METAFILEPATH = 7; // has no cli token
 
-	// Calculation output options
+	// Calculation Output Options
 
 	static constexpr OptionValue NOTRACKS     =  8;
 	static constexpr OptionValue NOFILENAMES  =  9;
@@ -85,23 +82,25 @@ public:
 
 	using Configurator::Configurator;
 
-protected:
-
 	/**
 	 * \brief Worker: returns TRUE iff some real calculation is requested.
 	 *
 	 * This is used to determine whether the optional info options are to be
 	 * ignored in the presence of a calculation request.
 	 *
-	 * \param[in] options The options to configure
+	 * \param[in] options The input options (may or may not be configured)
 	 *
 	 * \return TRUE iff a real calculation is requested.
 	 */
-	bool calculation_requested(const Options &options) const;
+	static bool calculation_requested(const Options &options);
+
+protected:
 
 	/**
 	 * \brief Worker: implement configuration of CALCBASE options for reuse in
 	 * subclasses.
+	 *
+	 * Calls calculation_requested() on unconfigured input options.
 	 *
 	 * \param[in] options The options to configure
 	 *
@@ -113,23 +112,35 @@ protected:
 
 
 /**
- * \brief Options exclusive to ARCalcApplication
+ * \brief Options exclusive to ARCalcApplication.
+ *
+ * Access options for verify exclusively by this class, not by CALCBASE.
  */
 class CALC : public CALCBASE
 {
-	static constexpr auto& START = CALCBASE::MAX_CONSTANT;
+	static constexpr auto& BASE = CALCBASE::MAX_CONSTANT;
 
 public:
 
-	static constexpr OptionValue NOV1         = START + 1;
-	static constexpr OptionValue NOV2         = START + 2;
-	static constexpr OptionValue SUMSONLY     = START + 3;
-	static constexpr OptionValue TRACKSASCOLS = START + 4;
+	// Calculation Input Options
+
+	static constexpr OptionValue FIRST        = BASE + 1;
+	static constexpr OptionValue LAST         = BASE + 2;
+	static constexpr OptionValue ALBUM        = BASE + 3;
+
+	// Calculation Output Options
+
+	static constexpr OptionValue NOV1         = BASE + 4;
+	static constexpr OptionValue NOV2         = BASE + 5;
+	static constexpr OptionValue SUMSONLY     = BASE + 6;
+	static constexpr OptionValue TRACKSASCOLS = BASE + 7;
 };
 
 
 /**
  * \brief Configurator for ARCalcApplication instances.
+ *
+ * Respects all CALC options.
  */
 class ARCalcConfigurator final : public ARCalcConfiguratorBase
 {
@@ -150,7 +161,7 @@ private:
 
 
 /**
- * \brief Checksum Calculation Application
+ * \brief Application to calculate AccurateRip checksums.
  */
 class ARCalcApplication final : public ARApplication
 {
@@ -159,28 +170,22 @@ public:
 	/**
 	 * \brief Do calculation based on the options passed.
 	 *
-	 * Implementation can use any of the \c options, but should not alter
-	 * the set of requested types.
-	 *
-	 * \param[in] options The options to use
-	 * \param[in] types   The checksum types requested
+	 * \param[in] metafilename   Filename of the TOC file
+	 * \param[in] audiofilenames Filenames of the audio files
+	 * \param[in] as_first       Flag to indicate album first track
+	 * \param[in] as_last        Flag to indicate album last track
+	 * \param[in] types          The checksum types requested
 	 *
 	 * \return Calculation result
 	 */
 	static std::tuple<Checksums, ARId, std::unique_ptr<TOC>> calculate(
-			const Options &options,
-			const std::set<arcstk::checksum::type> &types);
+		const std::string &metafilename,
+		const std::vector<std::string> &audiofilenames,
+		const bool as_first,
+		const bool as_last,
+		const std::set<arcstk::checksum::type> &types);
 
 private:
-
-	std::string do_name() const override;
-
-	std::string do_call_syntax() const override;
-
-	std::unique_ptr<Configurator> create_configurator(int argc, char** argv)
-		const override;
-
-	int do_run(const Options &options) override;
 
 	/**
 	 * \brief Create the printing format according to the options
@@ -194,9 +199,9 @@ private:
 			const Options &options) const;
 
 	/**
-	 * \brief Determine the requested checksum types for calculation.
+	 * \brief Worker: Determine the requested checksum types for calculation.
 	 *
-	 * \param[in] options   The options parsed from command line
+	 * \param[in] options The options parsed from command line
 	 *
 	 * \return Checksum types to calculate.
 	 */
@@ -204,22 +209,23 @@ private:
 		const;
 
 	/**
-	 * \brief Worker method for run(): handles info requests.
-	 *
-	 * \param[in] options The options to run the application
-	 *
-	 * \return Application return code
-	 */
-	int run_info(const Options &options);
-
-	/**
-	 * \brief Worker method for run(): handles calculation requests.
+	 * \brief Worker for run(): handles calculation requests.
 	 *
 	 * \param[in] options The options to run the application
 	 *
 	 * \return Application return code
 	 */
 	int run_calculation(const Options &options);
+
+
+	std::string do_name() const override;
+
+	std::string do_call_syntax() const override;
+
+	std::unique_ptr<Configurator> create_configurator(int argc, char** argv)
+		const override;
+
+	int do_run(const Options &options) override;
 };
 
 } // namespace arcsapp

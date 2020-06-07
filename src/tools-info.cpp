@@ -177,5 +177,6 @@ const StringTable& SupportedFormats::toc()
 	return collector.info();
 }
 
+
 } //namespace arcsapp
 

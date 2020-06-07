@@ -20,6 +20,8 @@ namespace file
  *
  * The string returned will be empty, if the filename contains no path.
  *
+ * The returned string is guaranteed to end with a path separator.
+ *
  * \param[in] filename The filename to extract the path from.
  *
  * \return The path, if filename contains any, or an empty string

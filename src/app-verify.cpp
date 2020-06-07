@@ -81,6 +81,9 @@ using arcsdec::ARCSCalculator;
 // VERIFY
 
 
+constexpr OptionValue VERIFY::NOFIRST;
+constexpr OptionValue VERIFY::NOLAST;
+constexpr OptionValue VERIFY::NOALBUM;
 constexpr OptionValue VERIFY::RESPONSEFILE;
 constexpr OptionValue VERIFY::REFVALUES;
 constexpr OptionValue VERIFY::PRINTALL;
@@ -98,15 +101,15 @@ const std::vector<std::pair<Option, OptionValue>>&
 	{
 		// calculation input options
 
-		{{      "first",    false, "~",
-			"Treat first audio file as first track" },
-			VERIFY::FIRST },
-		{{      "last",     false, "~",
-			"Treat last audio file as last track" },
-			VERIFY::LAST },
-		{{      "album",    false, "~",
-			"Abbreviates --first --last" },
-			VERIFY::ALBUM },
+		{{      "no-first",    false, "~",
+			"Do not treat first audio file as first track" },
+			VERIFY::NOFIRST },
+		{{      "no-last",     false, "~",
+			"Do not treat last audio file as last track" },
+			VERIFY::NOLAST },
+		{{      "no-album",    false, "~",
+			"Abbreviates --no-first --no-last" },
+			VERIFY::NOALBUM },
 		{{ 'm', "metafile", true, "none",
 			"Specify metadata file (TOC) to use" },
 			VERIFY::METAFILE },
@@ -115,16 +118,10 @@ const std::vector<std::pair<Option, OptionValue>>&
 			VERIFY::RESPONSEFILE },
 		{{      "refvalues", true, "none",
 			"Specify AccurateRip reference values (as hex value list)" },
-			VERIFY::REFVALUES},
+			VERIFY::REFVALUES}, // TODO
 
 		// calculation output options
 
-		//{{      "no-v1",    false, "FALSE",  // unsupported
-		//	"Do not provide ARCSv1" },
-		//	VERIFY::NOV1 },
-		//{{      "no-v2",    false, "FALSE",  // unsupported
-		//	"Do not provide ARCSv2" },
-		//	VERIFY::NOV2 },
 		{{      "no-track-nos",  false, "FALSE",
 			"Do not print track numbers" },
 			VERIFY::NOTRACKS},
@@ -140,24 +137,18 @@ const std::vector<std::pair<Option, OptionValue>>&
 		{{      "no-labels",    false, "FALSE",
 			"Do not print column or row labels" },
 			VERIFY::NOLABELS},
-		//{{      "print-sums-only",    false, "FALSE",  // unsupported
-		//	"Print only the checksums" },
-		//	VERIFY::SUMSONLY},
-		//{{      "tracks-as-cols",    false, "FALSE",  // unsupported
-		//	"Print result with tracks as columns" },
-		//	VERIFY::TRACKSASCOLS},
 		{{      "col-delim",    true, " ",
 			"Specify column delimiter" },
 			VERIFY::COLDELIM},
 		{{      "print-id",    false, "FALSE",
 			"Print the AccurateRip Id of the album" },
-			VERIFY::PRINTID},
+			VERIFY::PRINTID}, // TODO
 		{{      "print-url",   false, "FALSE",
 			"Print the AccurateRip URL of the album" },
-			VERIFY::PRINTURL},
+			VERIFY::PRINTURL}, // TODO
 		{{      "print-all-matches",   false, "FALSE",
 			"Print verification results for all blocks" },
-			VERIFY::PRINTALL},
+			VERIFY::PRINTALL}, // TODO
 		{{ 'b', "boolean",   false, "FALSE",
 			"Return number of differing tracks in best match" },
 			VERIFY::BOOLEAN},
@@ -182,12 +173,27 @@ const std::vector<std::pair<Option, OptionValue>>&
 std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 		std::unique_ptr<Options> options)
 {
-	if (options->is_set(VERIFY::FIRST))
-	{
-		std::cout << "Verify FIRST set" << std::endl;
-	}
-
 	auto voptions = configure_calcbase_options(std::move(options));
+
+	// Album mode
+
+	if (voptions->is_set(VERIFY::NOALBUM))
+	{
+		ARCS_LOG(DEBUG1) << "Activate option NOFIRST due to NOALBUM";
+		voptions->set(VERIFY::NOFIRST);
+
+		ARCS_LOG(DEBUG1) << "Activate option NOLAST due to NOALBUM";
+		voptions->set(VERIFY::NOLAST);
+	} else
+	{
+		if(voptions->is_set(VERIFY::NOFIRST) and
+				voptions->is_set(VERIFY::NOLAST))
+		{
+			ARCS_LOG(DEBUG1) <<
+				"Activate option NOALBUM due to NOFIRST and NOLAST";
+			voptions->set(VERIFY::NOALBUM);
+		}
+	}
 
 	// NOOUTPUT implies BOOLEAN
 
@@ -329,28 +335,16 @@ std::unique_ptr<Configurator> ARVerifyApplication::create_configurator(
 }
 
 
-int ARVerifyApplication::run_info(const Options &options)
-{
-	if (options.is_set(VERIFY::LIST_TOC_FORMATS))
-	{
-		output(SupportedFormats::toc(), options.output());
-	}
-
-	if (options.is_set(VERIFY::LIST_AUDIO_FORMATS))
-	{
-		output(SupportedFormats::audio(), options.output());
-	}
-
-	return EXIT_SUCCESS;
-}
-
-
 int ARVerifyApplication::run_calculation(const Options &options)
 {
-	// Calculate the actual ARCSs from input files (force ARCSv1 + ARCSv2)
+	// Calculate the actual ARCSs from input files
 
-	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(options,
-			{ arcstk::checksum::type::ARCS2 });
+	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(
+			options.get(CALC::METAFILE),
+			options.get_arguments(),
+			not options.is_set(VERIFY::NOFIRST),
+			not options.is_set(VERIFY::NOLAST),
+			{ arcstk::checksum::type::ARCS2 } /* force ARCSv1 + ARCSv2 */);
 
 	if (checksums.size() == 0)
 	{
@@ -365,39 +359,11 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 	std::unique_ptr<const Matcher> diff;
 
-	const bool album_requested = !options.get(VERIFY::METAFILE).empty();
-	bool with_filenames = true;
+	const bool album_requested = not options.is_set(VERIFY::NOALBUM);
 
-	if (album_requested)
-	{
-		// With Offsets, ARId and Result
+	bool print_filenames = true;
 
-		if (!toc)
-		{
-			ARCS_LOG_ERROR << "Calculation returned no TOC.";
-			// TODO throw;
-		}
-
-		if (arid.empty())
-		{
-			ARCS_LOG_ERROR << "Calculation returned no identifier.";
-		}
-
-		// Verify pairwise distinct audio files
-
-		const auto& [ single_audio_file, pw_distinct ] =
-			calc::audiofile_layout(*toc);
-
-		if (not single_audio_file and not pw_distinct)
-		{
-			throw std::runtime_error("Images with audio files that contain"
-				" some but not all tracks are currently unsupported");
-		}
-
-		with_filenames = not single_audio_file;
-
-		diff = std::make_unique<AlbumMatcher>(checksums, arid, response);
-	} else
+	if (not album_requested)
 	{
 		// No Offsets => No ARId => No TOC
 
@@ -407,9 +373,37 @@ int ARVerifyApplication::run_calculation(const Options &options)
 		{
 			log_matching_files(checksums, *diff->match(), 1, true);
 		}
-	}
+	} else
+	{
+		// Do verification for Offsets, ARId and TOC
 
-	// Print match results
+		if (!toc)
+		{
+			this->fatal_error(
+					"Album requested, but calculation returned no TOC.");
+		}
+
+		if (arid.empty())
+		{
+			this->fatal_error(
+					"Album requested, but calculation returned an empty ARId.");
+		}
+
+		// Verify pairwise distinct audio files
+
+		const auto& [ single_audio_file, pairwse_distinct_files ] =
+			calc::audiofile_layout(*toc);
+
+		if (not single_audio_file and not pairwse_distinct_files)
+		{
+			throw std::runtime_error("Images with audio files that contain"
+				" some but not all tracks are currently unsupported");
+		}
+
+		print_filenames = not single_audio_file;
+
+		diff = std::make_unique<AlbumMatcher>(checksums, arid, response);
+	}
 
 	if (diff->matches())
 	{
@@ -427,16 +421,20 @@ int ARVerifyApplication::run_calculation(const Options &options)
 		return diff->best_difference(); // 0 on accurate match, else > 0
 	}
 
-	auto filenames = toc
-		? arcstk::toc::get_filenames(toc)
-		: options.get_arguments();
+	// Print match results
+
+	auto filenames = not options.no_arguments()
+		? options.get_arguments()
+		: (toc ? arcstk::toc::get_filenames(toc) : std::vector<std::string>{} );
+
 	Match *match = const_cast<Match*>(diff->match()); // FIXME catastrophic
 
-	auto format = configure_format(options, with_filenames);
+	auto format = configure_format(options, print_filenames);
 
 	format->use(&checksums, std::move(filenames), std::move(response),
 		std::move(match), diff->best_match(), diff->matches_v2(),
 		toc.get(), std::move(arid));
+
 	output(*format);
 
 	return options.is_set(VERIFY::BOOLEAN)
@@ -447,15 +445,24 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 int ARVerifyApplication::do_run(const Options &options)
 {
-	// If only info options are present, handle info request
-
-	if (options.is_set(VERIFY::LIST_TOC_FORMATS)
-		or options.is_set(VERIFY::LIST_AUDIO_FORMATS))
+	if (ARCalcConfiguratorBase::calculation_requested(options))
 	{
-		return this->run_info(options);
+		return this->run_calculation(options);
 	}
 
-	return this->run_calculation(options);
+	// If only info options are present, handle info request
+
+	if (options.is_set(VERIFY::LIST_TOC_FORMATS))
+	{
+		output(SupportedFormats::toc(), options.output());
+	}
+
+	if (options.is_set(VERIFY::LIST_AUDIO_FORMATS))
+	{
+		output(SupportedFormats::audio(), options.output());
+	}
+
+	return EXIT_SUCCESS;
 }
 
 } // namespace arcsapp

@@ -15,11 +15,10 @@ namespace arcsapp
 {
 
 /**
- * \brief Tool class to print supported formats
+ * \brief Tool class to get supported formats
  */
 class SupportedFormats final
 {
-
 public:
 
 	static const StringTable& audio();

@@ -1,3 +1,4 @@
+#include <arcstk/identifier.hpp>
 #ifndef __ARCSTOOLS_ARCALC_HPP__
 #include "app-calc.hpp"
 #endif
@@ -78,9 +79,6 @@ using arcsdec::TOCParser;
 
 constexpr OptionValue CALCBASE::LIST_TOC_FORMATS;
 constexpr OptionValue CALCBASE::LIST_AUDIO_FORMATS;
-constexpr OptionValue CALCBASE::FIRST;
-constexpr OptionValue CALCBASE::LAST;
-constexpr OptionValue CALCBASE::ALBUM;
 constexpr OptionValue CALCBASE::METAFILE;
 constexpr OptionValue CALCBASE::METAFILEPATH; // has no cli token
 constexpr OptionValue CALCBASE::NOTRACKS;
@@ -97,6 +95,9 @@ constexpr OptionValue CALCBASE::MAX_CONSTANT;
 
 // CALC
 
+constexpr OptionValue CALC::FIRST;
+constexpr OptionValue CALC::LAST;
+constexpr OptionValue CALC::ALBUM;
 constexpr OptionValue CALC::NOV1;
 constexpr OptionValue CALC::NOV2;
 constexpr OptionValue CALC::SUMSONLY;
@@ -106,10 +107,9 @@ constexpr OptionValue CALC::TRACKSASCOLS;
 // ARCalcConfiguratorBase
 
 
-bool ARCalcConfiguratorBase::calculation_requested(const Options &options) const
+bool ARCalcConfiguratorBase::calculation_requested(const Options &options)
 {
-	return options.is_set(CALC::METAFILE)
-		or not options.no_arguments();
+	return options.is_set(CALCBASE::METAFILE) or not options.no_arguments();
 }
 
 
@@ -118,7 +118,8 @@ std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 {
 	if (not calculation_requested(*options))
 	{
-		ARCS_LOG_INFO << "No calculation task requested, stop configuring";
+		ARCS_LOG_INFO <<
+			"No calculation task requested, no configuring required";
 		return options;
 	}
 
@@ -142,13 +143,10 @@ std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 
 	if (options->is_set(CALCBASE::METAFILE))
 	{
-		auto metafilename(options->get(CALCBASE::METAFILE));
-
-		if (metafilename.empty())
+		if (options->get(CALCBASE::METAFILE).empty())
 		{
-			// No Metadata File Specified ...
+			// No Metadata File Specified
 
-			 // TODO Better: Check for Some "CALCBASE::AUDIOFILES" List
 			if (options->no_arguments())
 			{
 				ARCS_LOG_ERROR << "No metafile and no audiofile specified";
@@ -159,76 +157,7 @@ std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 		// Provide Path of the Metafile as Searchpath
 
 		options->put(CALCBASE::METAFILEPATH,
-			file::path(options->get(CALCBASE::METAFILE)));
-
-		// Activate Album Mode
-
-		if (options->is_set(CALCBASE::ALBUM))
-		{
-			ARCS_LOG_INFO <<
-				"Option ALBUM is redundant when METAFILE is passed";
-		} else
-		{
-			ARCS_LOG(DEBUG1) << "Activate option ALBUM due to METAFILE";
-			options->set(CALCBASE::ALBUM);
-		}
-
-		if (options->is_set(CALCBASE::FIRST))
-		{
-			ARCS_LOG_INFO <<
-				"Option FIRST is redundant when METAFILE is passed";
-		} else
-		{
-			ARCS_LOG(DEBUG1) << "Activate option FIRST due to METAFILE";
-			options->set(CALCBASE::FIRST);
-		}
-
-		if (options->is_set(CALCBASE::LAST))
-		{
-			ARCS_LOG_INFO <<
-				"Option LAST is redundant when METAFILE is passed";
-		} else
-		{
-			ARCS_LOG(DEBUG1) << "Activate option LAST due to METAFILE";
-			options->set(CALCBASE::LAST);
-		}
-	} else
-	{
-		// No metafile: Album Mode or Not?
-
-		if (options->is_set(CALCBASE::ALBUM))
-		{
-			if (not options->is_set(CALCBASE::FIRST))
-			{
-				ARCS_LOG(DEBUG1) << "Activate option FIRST due to ALBUM";
-
-				options->set(CALCBASE::FIRST);
-			} else
-			{
-				ARCS_LOG_INFO <<
-					"Option FIRST is redundant when ALBUM is passed";
-			}
-
-			if (not options->is_set(CALCBASE::LAST))
-			{
-				ARCS_LOG(DEBUG1) << "Activate option LAST due to ALBUM";
-
-				options->set(CALCBASE::LAST);
-			} else
-			{
-				ARCS_LOG_INFO <<
-					"Option LAST is redundant when ALBUM is passed";
-			}
-		} else
-		{
-			if (options->is_set(CALCBASE::FIRST)
-				and options->is_set(CALCBASE::LAST))
-			{
-				ARCS_LOG(DEBUG1) <<
-					"Activate option ALBUM due to FIRST and LAST";
-				options->set(CALCBASE::ALBUM);
-			}
-		}
+				file::path(options->get(CALCBASE::METAFILE)));
 	}
 
 	return options;
@@ -243,7 +172,7 @@ const std::vector<std::pair<Option, OptionValue>>&
 {
 	const static std::vector<std::pair<Option, OptionValue>> local_options =
 	{
-		// calculation input options
+		// Calculation Input Options
 
 		{{      "first",  false, "~", "Treat first audio file as first track" },
 			CALC::FIRST },
@@ -254,12 +183,18 @@ const std::vector<std::pair<Option, OptionValue>>&
 		{{ 'm', "metafile", true, "none", "Specify toc metadata file to use" },
 			CALC::METAFILE },
 
-		// calculation output options
+		// Calculation Output Options
 
 		{{  "no-v1", false, "FALSE", "Do not provide ARCSv1" },
 			CALC::NOV1 },
 		{{  "no-v2", false, "FALSE", "Do not provide ARCSv2" },
 			CALC::NOV2 },
+		{{  "print-sums-only", false, "FALSE", "Print only checksums" },
+			CALC::SUMSONLY},
+		{{  "tracks-as-cols", false, "FALSE", "Print tracks as columns" },
+			CALC::TRACKSASCOLS},
+
+		// from CALCBASE
 		{{  "no-track-nos", false, "FALSE", "Do not print track numbers" },
 			CALC::NOTRACKS},
 		{{  "no-filenames", false, "FALSE", "Do not print the filenames" },
@@ -270,18 +205,14 @@ const std::vector<std::pair<Option, OptionValue>>&
 			CALC::NOLENGTHS},
 		{{  "no-labels", false, "FALSE", "Do not print column or row labels" },
 			CALC::NOLABELS},
-		{{  "print-sums-only", false, "FALSE", "Print only checksums" },
-			CALC::SUMSONLY},
-		{{  "tracks-as-cols", false, "FALSE", "Print tracks as columns" },
-			CALC::TRACKSASCOLS},
-		{{  "col-delim", true, " ", "Specify column delimiter" },
+		{{  "col-delim", true, "<blank>", "Specify column delimiter" },
 			CALC::COLDELIM},
 		{{  "print-id", false, "FALSE", "Print AccurateRip Id of the album" },
 			CALC::PRINTID},
 		{{  "print-url", false, "FALSE", "Print AccurateRip URL of the album" },
 			CALC::PRINTURL},
 
-		// info output options
+		// Info Output Options
 
 		{{  "list-toc-formats", false, "FALSE",
 				"List all supported file formats for TOC metadata" },
@@ -319,6 +250,80 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 {
 	auto coptions = this->configure_calcbase_options(std::move(options));
 
+	// Determine whether to set ALBUM mode
+
+	if (options->is_set(CALC::METAFILE))
+	{
+		// Activate Album Mode
+
+		if (options->is_set(CALC::ALBUM))
+		{
+			ARCS_LOG_INFO <<
+				"Option ALBUM is redundant when METAFILE is passed";
+		} else
+		{
+			ARCS_LOG(DEBUG1) << "Activate option ALBUM due to METAFILE";
+			options->set(CALC::ALBUM);
+		}
+
+		if (options->is_set(CALC::FIRST))
+		{
+			ARCS_LOG_INFO <<
+				"Option FIRST is redundant when METAFILE is passed";
+		} else
+		{
+			ARCS_LOG(DEBUG1) << "Activate option FIRST due to METAFILE";
+			options->set(CALC::FIRST);
+		}
+
+		if (options->is_set(CALC::LAST))
+		{
+			ARCS_LOG_INFO <<
+				"Option LAST is redundant when METAFILE is passed";
+		} else
+		{
+			ARCS_LOG(DEBUG1) << "Activate option LAST due to METAFILE";
+			options->set(CALC::LAST);
+		}
+	} else
+	{
+		// No metafile: Album Mode or Not?
+
+		if (options->is_set(CALC::ALBUM))
+		{
+			if (not options->is_set(CALC::FIRST))
+			{
+				ARCS_LOG(DEBUG1) << "Activate option FIRST due to ALBUM";
+
+				options->set(CALC::FIRST);
+			} else
+			{
+				ARCS_LOG_INFO <<
+					"Option FIRST is redundant when ALBUM is passed";
+			}
+
+			if (not options->is_set(CALC::LAST))
+			{
+				ARCS_LOG(DEBUG1) << "Activate option LAST due to ALBUM";
+
+				options->set(CALC::LAST);
+			} else
+			{
+				ARCS_LOG_INFO <<
+					"Option LAST is redundant when ALBUM is passed";
+			}
+		} else
+		{
+			if (options->is_set(CALC::FIRST)
+				and options->is_set(CALC::LAST))
+			{
+				ARCS_LOG(DEBUG1) <<
+					"Activate option ALBUM due to FIRST and LAST";
+				options->set(CALC::ALBUM);
+			}
+		}
+	}
+
 	// Printing options
 
 	if (coptions->is_set(CALC::SUMSONLY))
@@ -338,7 +343,11 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 
 
 std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
-		const Options &options, const std::set<arcstk::checksum::type> &types)
+	const std::string &metafilename,
+	const std::vector<std::string> &audiofilenames,
+	const bool as_first,
+	const bool as_last,
+	const std::set<arcstk::checksum::type> &types)
 {
 	using ChecksumType = arcstk::checksum::type;
 
@@ -347,32 +356,10 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 		? ChecksumType::ARCS2
 		: ChecksumType::ARCS1;
 
-	std::vector<std::string> audiofilenames = options.get_arguments();
-	std::string metafilename = options.get(CALC::METAFILE);
-
-	if (metafilename.empty())
-	{
-		// No Offsets => No ARId => No TOC
-		// => No Album information, but may be requested as album by options
-		// (since we have no offsets, we cannot offer to compute the ARId)
-
-		ARCSCalculator c { checksum_type };
-
-		// Checksums for a list of files (no tracks known)
-		auto checksums = c.calculate(audiofilenames,
-				options.is_set(CALC::FIRST),
-				options.is_set(CALC::LAST));
-
-		return std::tuple<Checksums, ARId, std::unique_ptr<TOC>>(
-				checksums, *make_empty_arid(), nullptr);
-
-	} else
+	if (not metafilename.empty())
 	{
 		// With Offsets, ARId and Result
 		// => Album
-
-		const auto audiofilenames = options.get_arguments();
-		auto metafilepath         = options.get(CALC::METAFILEPATH);
 
 		calc::ARCSMultifileAlbumCalculator c { checksum_type };
 
@@ -382,15 +369,26 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 		// Create a class that concatenates audiofilenames from TOC to a
 		// searchpath AND check for existence of the resulting filename.
 
-		// TODO And sanitize the METAFILEPATH if necessery, it has to end
-		// with a file separator
-
 		auto [ checksums, arid, toc ] = audiofilenames.empty()
-			? c.calculate(metafilename, metafilepath)
+			? c.calculate(metafilename, file::path(metafilename))
 			: c.calculate(audiofilenames, metafilename);
 
 		return std::tuple<Checksums, ARId, std::unique_ptr<TOC>>(
 				checksums, arid, std::move(toc));
+	} else
+	{
+		// No Offsets => No ARId => No TOC
+		// => No Album information, but may be requested as album by options
+		// (since we have no offsets, we cannot offer to compute the ARId)
+
+		ARCSCalculator c { checksum_type };
+
+		// Checksums for a list of files (no tracks known)
+		auto checksums = c.calculate(audiofilenames, as_first, as_last);
+
+		return std::tuple<Checksums, ARId, std::unique_ptr<TOC>>(
+				checksums, arcstk::EmptyARId, nullptr);
+
 	}
 }
 
@@ -465,22 +463,6 @@ std::set<arcstk::checksum::type> ARCalcApplication::requested_types(
 }
 
 
-int ARCalcApplication::run_info(const Options &options)
-{
-	if (options.is_set(CALC::LIST_TOC_FORMATS))
-	{
-		output(SupportedFormats::toc(), options.output());
-	}
-
-	if (options.is_set(CALC::LIST_AUDIO_FORMATS))
-	{
-		output(SupportedFormats::audio(), options.output());
-	}
-
-	return EXIT_SUCCESS;
-}
-
-
 int ARCalcApplication::run_calculation(const Options &options)
 {
 	// Determine the explicitly requested types
@@ -499,7 +481,10 @@ int ARCalcApplication::run_calculation(const Options &options)
 	// a byproduct of ARCS2 and the type-to-calculate ARCS2 hence represents
 	// both the types-requested ARCS1 as well as ARCS2).
 
-	auto [ checksums, arid, toc ] = this->calculate(options, requested_types);
+	auto [ checksums, arid, toc ] = this->calculate(
+			options.get(CALC::METAFILE), options.get_arguments(),
+			options.is_set(CALC::FIRST), options.is_set(CALC::LAST),
+			requested_types);
 
 	if (checksums.size() == 0)
 	{
@@ -557,18 +542,24 @@ std::unique_ptr<Configurator> ARCalcApplication::create_configurator(
 
 int ARCalcApplication::do_run(const Options &options)
 {
-	// If only info options are present, handle info request
-
-	if (options.is_set(CALC::LIST_TOC_FORMATS)
-		or options.is_set(CALC::LIST_AUDIO_FORMATS))
+	if (ARCalcConfiguratorBase::calculation_requested(options))
 	{
-		return this->run_info(options);
+		return this->run_calculation(options);
 	}
 
-	// Else: Handle calculation request
+	// If only info options are present, handle info request
 
-	return this->run_calculation(options);
+	if (options.is_set(CALC::LIST_TOC_FORMATS))
+	{
+		output(SupportedFormats::toc(), options.output());
+	}
+
+	if (options.is_set(CALC::LIST_AUDIO_FORMATS))
+	{
+		output(SupportedFormats::audio(), options.output());
+	}
+
+	return EXIT_SUCCESS;
 }
 
 } // namespace arcsapp
-
