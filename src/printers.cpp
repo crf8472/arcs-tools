@@ -301,7 +301,8 @@ void ChecksumsResultPrinter::assertions(
 				+ std::to_string(toc->track_count()) + " tracks.");
 	}
 
-	if (not (filenames.empty() or filenames.size() == total_tracks))
+	if (not (filenames.empty() or filenames.size() == total_tracks
+				or filenames.size() == 1))
 	{
 		throw std::invalid_argument("Mismatch: "
 				"Checksums for " + std::to_string(total_tracks)
@@ -690,7 +691,8 @@ void MatchResultPrinter::assertions(
 				+ std::to_string(toc->track_count()) + " tracks.");
 	}
 
-	if (not (filenames.empty() or filenames.size() == total_tracks))
+	if (not (filenames.empty() or filenames.size() == total_tracks or
+				filenames.size() == 1))
 	{
 		throw std::invalid_argument("Mismatch: "
 				"Checksums for " + std::to_string(total_tracks)
