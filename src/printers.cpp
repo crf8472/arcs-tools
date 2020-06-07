@@ -256,7 +256,7 @@ void ARIdTableFormat::do_out(std::ostream &o,
 
 ChecksumsResultPrinter::ChecksumsResultPrinter()
 	: ChecksumsResultPrinterBase(nullptr, std::vector<std::string>{}, nullptr,
-			ARId(arcstk::EmptyARId), false)
+			ARId(arcstk::EmptyARId) /* constness */, false)
 {
 	// empty
 }
@@ -633,7 +633,7 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 
 MatchResultPrinter::MatchResultPrinter()
 	: MatchResultPrinterBase(nullptr, std::vector<std::string>{}, ARResponse{},
-			nullptr, 0, false, nullptr, ARId(arcstk::EmptyARId))
+			nullptr, 0, false, nullptr, ARId(arcstk::EmptyARId) /* constness */)
 	, match_symbol_ { "   ==   " }
 {
 	// empty
