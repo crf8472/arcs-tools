@@ -49,9 +49,6 @@
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"           // for ARCSMultifileAlbumCalculator
 #endif
-#ifndef __ARCSTOOLS_TOOLS_FS_HPP__
-#include "tools-fs.hpp"             // for path
-#endif
 #ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
 #include "tools-info.hpp"           // for SupportedFormats
 #endif
@@ -80,7 +77,6 @@ using arcsdec::TOCParser;
 constexpr OptionValue CALCBASE::LIST_TOC_FORMATS;
 constexpr OptionValue CALCBASE::LIST_AUDIO_FORMATS;
 constexpr OptionValue CALCBASE::METAFILE;
-constexpr OptionValue CALCBASE::METAFILEPATH; // has no cli token
 constexpr OptionValue CALCBASE::NOTRACKS;
 constexpr OptionValue CALCBASE::NOFILENAMES;
 constexpr OptionValue CALCBASE::NOOFFSETS;
@@ -153,11 +149,6 @@ std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 				return std::make_unique<Options>();
 			}
 		}
-
-		// Provide Path of the Metafile as Searchpath
-
-		options->put(CALCBASE::METAFILEPATH,
-				file::path(options->get(CALCBASE::METAFILE)));
 	}
 
 	return options;
@@ -356,40 +347,13 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 		? ChecksumType::ARCS2
 		: ChecksumType::ARCS1;
 
-	if (not metafilename.empty())
-	{
-		// With Offsets, ARId and Result
-		// => Album
+	calc::ARCSMultifileAlbumCalculator c { checksum_type };
 
-		calc::ARCSMultifileAlbumCalculator c { checksum_type };
+	auto [ checksums, arid, toc ] = not metafilename.empty()
+		? c.calculate(metafilename, audiofilenames)       //Album: with TOC
+		: c.calculate(audiofilenames, as_first, as_last); //Tracks/Album w/o TOC
 
-		// TODO Resolve the audiofilenames HERE instead to do this within
-		// the calculator class. Because the existence and validity
-		// checks are done on THIS level, not in the delegate.
-		// Create a class that concatenates audiofilenames from TOC to a
-		// searchpath AND check for existence of the resulting filename.
-
-		auto [ checksums, arid, toc ] = audiofilenames.empty()
-			? c.calculate(metafilename, file::path(metafilename))
-			: c.calculate(audiofilenames, metafilename);
-
-		return std::tuple<Checksums, ARId, std::unique_ptr<TOC>>(
-				checksums, arid, std::move(toc));
-	} else
-	{
-		// No Offsets => No ARId => No TOC
-		// => No Album information, but may be requested as album by options
-		// (since we have no offsets, we cannot offer to compute the ARId)
-
-		ARCSCalculator c { checksum_type };
-
-		// Checksums for a list of files (no tracks known)
-		auto checksums = c.calculate(audiofilenames, as_first, as_last);
-
-		return std::tuple<Checksums, ARId, std::unique_ptr<TOC>>(
-				checksums, arcstk::EmptyARId, nullptr);
-
-	}
+	return std::make_tuple(checksums, arid, std::move(toc));
 }
 
 
@@ -403,6 +367,11 @@ std::unique_ptr<ChecksumsResultPrinter> ARCalcApplication::configure_format(
 		? false
 		: has_toc;
 
+	// Print filenames if they are not forbidden and a TOC is _not_ present
+	const bool prints_filenames = options.is_set(CALC::NOFILENAMES)
+		? false
+		: not has_toc;
+
 	// Print offsets if they are not forbidden and a TOC is present
 	const bool prints_offsets = options.is_set(CALC::NOOFFSETS)
 		? false
@@ -410,11 +379,6 @@ std::unique_ptr<ChecksumsResultPrinter> ARCalcApplication::configure_format(
 
 	// Print lengths if they are not forbidden
 	const bool prints_lengths = not options.is_set(CALC::NOLENGTHS);
-
-	// Print filenames if they are not forbidden and explicitly requested
-	const bool prints_filenames = options.is_set(CALC::NOFILENAMES)
-		? false
-		: not has_toc;
 
 	// Set column delimiter
 	const std::string coldelim = options.is_set(CALC::COLDELIM)

@@ -213,7 +213,7 @@ ARResponse ARVerifyApplication::parse_response(const Options &options) const
 {
 	// Parse the AccurateRip response
 
-	std::string responsefile(options.get(VERIFY::RESPONSEFILE));
+	std::string responsefile { options.get(VERIFY::RESPONSEFILE) };
 
 	std::unique_ptr<ARStreamParser> parser;
 
@@ -337,6 +337,33 @@ std::unique_ptr<Configurator> ARVerifyApplication::create_configurator(
 
 int ARVerifyApplication::run_calculation(const Options &options)
 {
+	// Parse reference ARCSs from AccurateRip
+
+	std::unique_ptr<ARResponse> response;
+
+	if (not options.is_set(VERIFY::REFVALUES))
+	{
+		// stdin
+		response = std::make_unique<ARResponse>(parse_response(options));
+	} else
+	{
+		using arcstk::Checksum;
+
+		auto refvals_cli = options.get(VERIFY::REFVALUES);
+		std::replace(refvals_cli.begin(), refvals_cli.end(), ',', ' ');
+		auto refvals = std::istringstream { refvals_cli };
+
+		auto refsumstr = std::string {};
+		unsigned long refsumval = 0;
+
+		std::vector<Checksum> refsums = {};
+		while (refvals >> refsumstr) {
+			refsumval = std::stoul(refsumstr);
+			refsums.push_back(Checksum { static_cast<uint32_t>(refsumval) });
+		}
+
+	}
+
 	// Calculate the actual ARCSs from input files
 
 	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(
@@ -351,10 +378,6 @@ int ARVerifyApplication::run_calculation(const Options &options)
 		this->fatal_error("Calculation returned no checksums.");
 	}
 
-	// Parse reference ARCSs from AccurateRip
-
-	auto response = parse_response(options);
-
 	// Perform match
 
 	std::unique_ptr<const Matcher> diff;
@@ -367,7 +390,7 @@ int ARVerifyApplication::run_calculation(const Options &options)
 	{
 		// No Offsets => No ARId => No TOC
 
-		diff = std::make_unique<TracksetMatcher>(checksums, response);
+		diff = std::make_unique<TracksetMatcher>(checksums, *response);
 
 		if (Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG))
 		{
@@ -402,7 +425,7 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 		print_filenames = not single_audio_file;
 
-		diff = std::make_unique<AlbumMatcher>(checksums, arid, response);
+		diff = std::make_unique<AlbumMatcher>(checksums, arid, *response);
 	}
 
 	if (diff->matches())
@@ -431,7 +454,7 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 	auto format = configure_format(options, print_filenames);
 
-	format->use(&checksums, std::move(filenames), std::move(response),
+	format->use(&checksums, std::move(filenames), std::move(*response),
 		std::move(match), diff->best_match(), diff->matches_v2(),
 		toc.get(), std::move(arid));
 

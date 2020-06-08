@@ -90,34 +90,55 @@ public:
 	 *
 	 * If the metadata file contains any names of audiofiles, they are ignored
 	 * in favor of \c audiofilenames. If the list of audiofiles is empty, the
-	 * function will return an empty result.
+	 * path of the metafilename will be searched for audiofile names specified
+	 * within the metafilename.
 	 *
-	 * \param[in] audiofilenames Name of the audio files
 	 * \param[in] metafilename   Name of the metadata file
+	 * \param[in] audiofilenames Name of the audio files
 	 *
 	 * \return Checksums, Id and TOC of the image represented by the input files
+	 */
+	std::tuple<Checksums, ARId, std::unique_ptr<TOC>> calculate(
+			const std::string &metafilename,
+			const std::vector<std::string> &audiofilenames) const;
+
+	/**
+	 * \brief Calculate ARCSs for the given audio files.
+	 *
+	 * It can be specified that the sequence of audiofiles forms an album by
+	 * passing <tt>true</tt> for both boolean parameters.
+	 *
+	 * The ARCSs in the result will have the same order as the input files,
+	 * so for any index i: 0 <= i < audiofilenames.size(), result[i] will be the
+	 * result for audiofilenames[i]. The result will have the same size as
+	 * audiofilenames.
+	 *
+	 * Note that in this use case, it is not offered to compute the ARId of the
+	 * album since the exact offsets are missing. The ARId returned will be
+	 * therefore be empty, the TOC pointer will be nullptr.
+	 *
+	 * \param[in] audiofilename  Name  of the audiofile
+	 * \param[in] skip_front     Skip front samples of first track
+	 * \param[in] skip_back      Skip back samples of last track
+	 *
+	 * \return The AccurateRip checksum of this track
 	 */
 	std::tuple<Checksums, ARId, std::unique_ptr<TOC>> calculate(
 			const std::vector<std::string> &audiofilenames,
-			const std::string &metafilename) const;
+			const bool &skip_front, const bool &skip_back) const;
 
 	/**
-	 * \brief Calculate ARCS values of the CD image represented by the specified
-	 * metadata file and search audiofiles in the searchpath.
+	 * \brief Set the checksum type to be calculated.
 	 *
-	 * The searchpath must end with a file separator.
-	 *
-	 * \param[in] metafilename   Name of the metadata file
-	 * \param[in] searchpath     Name of the searchpath for audio files
-	 *
-	 * \return Checksums, Id and TOC of the image represented by the input files
+	 * \param[in] type Checksum type to be calculated
 	 */
-	std::tuple<Checksums, ARId, std::unique_ptr<TOC>> calculate(
-			const std::string &metafilename, const std::string &searchpath)
-			const;
-
 	void set_type(const arcstk::checksum::type &type);
 
+	/**
+	 * \brief The checksum type to be calculated.
+	 *
+	 * \return Checksum type to be calculated by this instance
+	 */
 	arcstk::checksum::type type() const;
 
 private:

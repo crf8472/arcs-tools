@@ -50,26 +50,25 @@ struct CALCBASE
 
 	// Calculation Input Options
 
-	static constexpr OptionValue METAFILE     = 6;
-	static constexpr OptionValue METAFILEPATH = 7; // has no cli token
+	static constexpr OptionValue METAFILE     =  3;
 
 	// Calculation Output Options
 
-	static constexpr OptionValue NOTRACKS     =  8;
-	static constexpr OptionValue NOFILENAMES  =  9;
-	static constexpr OptionValue NOOFFSETS    = 10;
-	static constexpr OptionValue NOLENGTHS    = 11;
-	static constexpr OptionValue NOLABELS     = 12;
-	static constexpr OptionValue COLDELIM     = 13;
-	static constexpr OptionValue PRINTID      = 14;
-	static constexpr OptionValue PRINTURL     = 15;
+	static constexpr OptionValue NOTRACKS     =  4;
+	static constexpr OptionValue NOFILENAMES  =  5;
+	static constexpr OptionValue NOOFFSETS    =  6;
+	static constexpr OptionValue NOLENGTHS    =  7;
+	static constexpr OptionValue NOLABELS     =  8;
+	static constexpr OptionValue COLDELIM     =  9;
+	static constexpr OptionValue PRINTID      = 10;
+	static constexpr OptionValue PRINTURL     = 11;
 
 protected:
 
 	/**
 	 * \brief Max constant occurring in CALC
 	 */
-	static constexpr OptionValue MAX_CONSTANT = 15;
+	static constexpr OptionValue MAX_CONSTANT = 11;
 };
 
 
