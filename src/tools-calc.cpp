@@ -62,11 +62,12 @@ std::pair<bool,bool> audiofile_layout(const TOC &toc)
  */
 class ARCSMultifileAlbumCalculator::Impl final
 {
-
 public:
 
 	/**
-	 * \brief Implements ARCSMultifileAlbumCalculator::
+	 * \brief Calculate ARCS values for album overriding audiofile names.
+	 *
+	 * If \c audiofilenames are empty, result will be empty.
 	 *
 	 * \param[in] metafilename   Metadata file
 	 * \param[in] audiofilenames List of audiofile names
@@ -76,7 +77,9 @@ public:
 			const std::vector<std::string> &audiofilenames) const;
 
 	/**
-	 * \brief Implements ARCSMultifileAlbumCalculator::
+	 * \brief Calculate ARCS values for album with audiofilenames from metafile.
+	 *
+	 * If metafile does not specify any audiofilenames, result will be empty.
 	 *
 	 * \param[in] metafilename Metadata file
 	 * \param[in] searchpath   Searchpath for audiofiles
@@ -86,7 +89,9 @@ public:
 			const std::string &searchpath) const;
 
 	/**
-	 * \brief Implements ARCSMultifileAlbumCalculator::
+	 * \brief Calculate ARCS values for audiofilenams without TOC.
+	 *
+	 * Mere wrapper for arcsdec::ARCSCalculator.
 	 *
 	 * \param[in] audiofilenames Names of the audiofile
 	 * \param[in] skip_front     Skip front samples of first track
@@ -192,9 +197,10 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 
 	// Validate audiofile set
 
-	const auto& [ single_audio_file, pw_distinct ] = audiofile_layout(*toc);
+	const auto& [ single_audio_file, pairwise_distinct ] =
+		audiofile_layout(*toc);
 
-	if (not single_audio_file and not pw_distinct)
+	if (not single_audio_file and not pairwise_distinct)
 	{
 		ARCS_LOG_ERROR <<
 			"TOC references a set of multiple audio files, but they are not "
