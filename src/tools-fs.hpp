@@ -38,6 +38,16 @@ std::string path(const std::string &filename);
 bool file_exists(const std::string &filename);
 
 /**
+ * \brief Worker to prepend a path to a filename.
+ *
+ * \param[in] path     The (absolute or relative) path to prepend
+ * \param[in] filename The filename to prepend \c path to
+ *
+ * \return The filename with the path prepended
+ */
+void prepend_path(const std::string &path, std::string &filename);
+
+/**
  * \brief Service method: check whether a file with given prefix exists with
  * at least one of a list of suffices.
  *

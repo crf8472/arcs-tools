@@ -16,23 +16,27 @@ namespace arcsapp
 namespace file
 {
 
+// Define file separator (quick and dirty)
+// FIXME C++17's filesystem has better facilites to do this
+#ifdef _WIN32
+const std::string file_sep("\\");
+#else
+const std::string file_sep("/");
+#endif
+
+
 std::string path(const std::string &filename)
 {
 	if (filename.empty())
 	{
-		return std::string();
+		return std::string{};
 	}
 
 	// FIXME C++17's filesystem has better facilites to do this
-#ifdef _WIN32
-	std::string file_sep("\\");
-#else
-	std::string file_sep("/");
-#endif
 	auto pos = filename.find_last_of(file_sep);
 	if (pos == std::string::npos) // no file separator found, no path specified
 	{
-		return std::string();
+		return std::string{};
 	}
 
 	return filename.substr(0, pos).append(file_sep);
@@ -47,6 +51,19 @@ bool file_exists(const std::string &filename)
 	// Use POSIX stat to check whether file exists
 	struct stat buffer;
 	return stat(filename.c_str(), &buffer) == 0;
+}
+
+
+void prepend_path(const std::string &path, std::string &filename)
+{
+	std::string filepath { path };
+	auto pos = filepath.find_last_of(file_sep);
+	if (pos == std::string::npos) // add trailing file separator
+	{
+		filepath.append(file_sep);
+	}
+
+	filename.insert(0, path);
 }
 
 

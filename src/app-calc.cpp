@@ -349,9 +349,9 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 
 	calc::ARCSMultifileAlbumCalculator c { checksum_type };
 
-	auto [ checksums, arid, toc ] = not metafilename.empty()
-		? c.calculate(metafilename, audiofilenames)       //Album: with TOC
-		: c.calculate(audiofilenames, as_first, as_last); //Tracks/Album w/o TOC
+	auto [ checksums, arid, toc ] = metafilename.empty()
+		? c.calculate(audiofilenames, as_first, as_last) //Tracks/Album w/o TOC
+		: c.calculate(audiofilenames, metafilename);     //Album: with TOC
 
 	return std::make_tuple(checksums, arid, std::move(toc));
 }

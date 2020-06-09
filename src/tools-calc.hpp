@@ -50,9 +50,9 @@ using arcstk::Checksums;
  *
  * \param[in] toc The TOC to analyze
  *
- * \return TRUE iff \c toc references a single audio file.
+ * \return Flags for audiolayout, list of audio files
  */
-std::pair<bool,bool> audiofile_layout(const TOC &toc);
+std::tuple<bool,bool,std::vector<std::string>> audiofile_layout(const TOC &toc);
 
 
 /**
@@ -93,14 +93,14 @@ public:
 	 * path of the metafilename will be searched for audiofile names specified
 	 * within the metafilename.
 	 *
-	 * \param[in] metafilename   Name of the metadata file
 	 * \param[in] audiofilenames Name of the audio files
+	 * \param[in] metafilename   Name of the metadata file
 	 *
 	 * \return Checksums, Id and TOC of the image represented by the input files
 	 */
 	std::tuple<Checksums, ARId, std::unique_ptr<TOC>> calculate(
-			const std::string &metafilename,
-			const std::vector<std::string> &audiofilenames) const;
+			const std::vector<std::string> &audiofilenames,
+			const std::string &metafilename) const;
 
 	/**
 	 * \brief Calculate ARCSs for the given audio files.
