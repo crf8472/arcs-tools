@@ -2,6 +2,7 @@
 #include "app-verify.hpp"
 #endif
 
+#include <algorithm>                // for replace
 #include <cstdlib>                  // for EXIT_SUCCESS
 #include <fstream>                  // for basic_ofstream<>::__filebuf_type
 #include <iostream>                 // for operator<<, ostream, cout, basic_...
@@ -67,13 +68,15 @@ using arcstk::ARFileParser;
 using arcstk::ARId;
 using arcstk::ARResponse;
 using arcstk::ARStdinParser;
+using arcstk::Checksum;
 using arcstk::Checksums;
 using arcstk::Logging;
 using arcstk::DefaultContentHandler;
 using arcstk::DefaultErrorHandler;
 using arcstk::Matcher;
-using arcstk::TracksetMatcher;
 using arcstk::AlbumMatcher;
+using arcstk::ListMatcher;
+using arcstk::TracksetMatcher;
 
 using arcsdec::ARCSCalculator;
 
@@ -89,6 +92,33 @@ constexpr OptionValue VERIFY::REFVALUES;
 constexpr OptionValue VERIFY::PRINTALL;
 constexpr OptionValue VERIFY::BOOLEAN;
 constexpr OptionValue VERIFY::NOOUTPUT;
+
+
+//
+
+
+/**
+ * \brief Return reference checksums from block \c block in order of appearance.
+ *
+ * \param[in] response The ARResponse to get a checksum block of
+ * \param[in] block    Index of the block to read off
+ *
+ * \return Checksums in block \c block
+ */
+std::vector<Checksum> sums_in_block(const ARResponse response, const int block)
+{
+	auto sums = std::vector<Checksum>{};
+	sums.reserve(response.tracks_per_block());
+
+	int i = 1;
+	for (const auto& triplet : response[block])
+	{
+		sums.push_back(Checksum { triplet.arcs() });
+		++i;
+	}
+
+	return sums;
+}
 
 
 // ARVerifyConfigurator
@@ -213,9 +243,9 @@ ARResponse ARVerifyApplication::parse_response(const Options &options) const
 {
 	// Parse the AccurateRip response
 
-	std::string responsefile { options.get(VERIFY::RESPONSEFILE) };
-
 	std::unique_ptr<ARStreamParser> parser;
+
+	std::string responsefile { options.get(VERIFY::RESPONSEFILE) };
 
 	if (responsefile.empty())
 	{
@@ -252,6 +282,45 @@ ARResponse ARVerifyApplication::parse_response(const Options &options) const
 	ARCS_LOG_DEBUG << "Response object created";
 
 	return response;
+}
+
+
+std::vector<Checksum> ARVerifyApplication::parse_refvalues(
+		const std::string &input) const
+{
+	if (input.empty())
+	{
+		return std::vector<Checksum>{};
+	}
+
+	const char delim = ',';
+
+	auto in { input };
+	std::replace(in.begin(), in.end(), delim, ' ');
+	auto refvals = std::istringstream { in };
+	auto refsum = uint32_t { 0 };
+
+	std::vector<Checksum> refsums = {};
+	{
+		auto value = std::string {};
+
+		int t = 1;
+		while (refvals >> value)
+		{
+			refsum = std::stoul(value, 0, 16);
+
+			ARCS_LOG_DEBUG << "Input reference sum " << value
+				<< " for track/file " << t
+				<< " is parsed as "
+				<< std::hex << std::uppercase
+				<< std::setw(8) << std::setfill('0') << refsum;
+
+			refsums.push_back(Checksum { refsum });
+			++t;
+		}
+	}
+
+	return refsums;
 }
 
 
@@ -339,29 +408,37 @@ int ARVerifyApplication::run_calculation(const Options &options)
 {
 	// Parse reference ARCSs from AccurateRip
 
-	std::unique_ptr<ARResponse> response;
+	auto reference = std::unique_ptr<ARResponse> {};
+	auto refvals   = std::vector<Checksum> {};
 
-	if (not options.is_set(VERIFY::REFVALUES))
+	if (options.is_set(VERIFY::REFVALUES))
 	{
-		// stdin
-		response = std::make_unique<ARResponse>(parse_response(options));
-	} else
-	{
-		using arcstk::Checksum;
-
 		auto refvals_cli = options.get(VERIFY::REFVALUES);
-		std::replace(refvals_cli.begin(), refvals_cli.end(), ',', ' ');
-		auto refvals = std::istringstream { refvals_cli };
-
-		auto refsumstr = std::string {};
-		unsigned long refsumval = 0;
-
-		std::vector<Checksum> refsums = {};
-		while (refvals >> refsumstr) {
-			refsumval = std::stoul(refsumstr);
-			refsums.push_back(Checksum { static_cast<uint32_t>(refsumval) });
+		try
+		{
+			refvals = parse_refvalues(refvals_cli);
+		} catch (const std::exception &e)
+		{
+			ARCS_LOG_ERROR << e.what();
+			refvals = {};
 		}
 
+		// TODO From here to rest of block is placeholder code
+
+		std::ostringstream outlist;
+		for (const auto& v : refvals)
+		{
+			outlist << std::hex << std::uppercase
+				<< std::setw(8) << std::setfill('0') << v.value() << " ";
+		}
+
+		ARCS_LOG_DEBUG <<
+			"Option --refvals was parsed with the following values: "
+			<< outlist.str();
+	} else
+	{
+		// stdin or accuraterip .bin-file
+		reference = std::make_unique<ARResponse>(parse_response(options));
 	}
 
 	// Calculate the actual ARCSs from input files
@@ -380,17 +457,23 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 	// Perform match
 
-	std::unique_ptr<const Matcher> diff;
-
 	const bool album_requested = not options.is_set(VERIFY::NOALBUM);
 
 	bool print_filenames = true;
+
+	std::unique_ptr<const Matcher> diff;
 
 	if (not album_requested)
 	{
 		// No Offsets => No ARId => No TOC
 
-		diff = std::make_unique<TracksetMatcher>(checksums, *response);
+		if (options.is_set(VERIFY::REFVALUES))
+		{
+			diff = std::make_unique<ListMatcher>(checksums, refvals);
+		} else
+		{
+			diff = std::make_unique<TracksetMatcher>(checksums, *reference);
+		}
 
 		if (Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG))
 		{
@@ -414,7 +497,7 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 		// Verify pairwise distinct audio files
 
-		const auto& [ single_audio_file, pairwse_distinct_files ] =
+		const auto& [ single_audio_file, pairwse_distinct_files, audiofiles ] =
 			calc::audiofile_layout(*toc);
 
 		if (not single_audio_file and not pairwse_distinct_files)
@@ -425,8 +508,15 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 		print_filenames = not single_audio_file;
 
-		diff = std::make_unique<AlbumMatcher>(checksums, arid, *response);
-	}
+		if (options.is_set(VERIFY::REFVALUES))
+		{
+			diff = std::make_unique<ListMatcher>(checksums, refvals);
+		} else
+		{
+			diff = std::make_unique<AlbumMatcher>(checksums, arid, *reference);
+		}
+	} // if album_requested
+
 
 	if (diff->matches())
 	{
@@ -454,9 +544,14 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 	auto format = configure_format(options, print_filenames);
 
-	format->use(&checksums, std::move(filenames), std::move(*response),
-		std::move(match), diff->best_match(), diff->matches_v2(),
-		toc.get(), std::move(arid));
+	if (refvals.empty())
+	{
+		refvals = sums_in_block(*reference, diff->best_match());
+	}
+
+	format->use(&checksums, std::move(filenames), std::move(refvals),
+			std::move(match), diff->best_match(), diff->matches_v2(),
+			toc.get(), std::move(arid));
 
 	output(*format);
 

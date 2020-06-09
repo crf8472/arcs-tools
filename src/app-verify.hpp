@@ -12,6 +12,7 @@
 #include <cstdint>               // for uint16_t, uint32_t
 #include <memory>                // for unique_ptr
 #include <string>                // for string
+#include <vector>                // for vector
 
 #ifndef __LIBARCSTK_MATCH_HPP__
 #include <arcstk/match.hpp>
@@ -38,6 +39,7 @@ class Configurator;
 class Options;
 
 
+using arcstk::Checksum;
 using arcstk::Checksums;
 using arcstk::Match;
 
@@ -101,8 +103,19 @@ class ARVerifyApplication final : public ARApplication
 	 * \brief Worker: parse the input for an ARResponse.
 	 *
 	 * \param[in] options The options to run the application
+	 *
+	 * \return ARResponse object
 	 */
 	ARResponse parse_response(const Options &options) const;
+
+	/**
+	 * \brief Worker: parse the input reference values.
+	 *
+	 * \param[in] values The reference values as passed from the cli
+	 *
+	 * \return ARResponse object
+	 */
+	std::vector<Checksum> parse_refvalues(const std::string &values) const;
 
 	/**
 	 * \brief Worker: Log matching files from a file list.

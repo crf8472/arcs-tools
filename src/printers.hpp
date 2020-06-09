@@ -38,6 +38,7 @@ using arcstk::ARId;
 using arcstk::ARTriplet;
 using arcstk::ARBlock;
 using arcstk::ARResponse;
+using arcstk::Checksum;
 using arcstk::Checksums;
 using arcstk::Match;
 using arcstk::TOC;
@@ -347,8 +348,8 @@ private:
  * \brief Alias for classes printing match results.
  */
 using MatchResultPrinterBase =
-	Print<Checksums*, std::vector<std::string>, ARResponse, Match*, int, bool,
-		TOC*, ARId>;
+	Print<Checksums*, std::vector<std::string>, std::vector<Checksum>, Match*,
+	int, bool, TOC*, ARId>;
 
 
 /**
@@ -386,8 +387,9 @@ public:
 protected:
 
 	void assertions(
-		const std::tuple<Checksums*, std::vector<std::string>, ARResponse,
-			Match*, int, bool, TOC*, ARId> &t) const override;
+		const std::tuple<Checksums*, std::vector<std::string>,
+			std::vector<Checksum>, Match*, int, bool, TOC*, ARId> &t) const
+		override;
 	// from Print
 
 private:
@@ -436,8 +438,8 @@ private:
 	// from TypedColsTableBase
 
 	void do_out(std::ostream &out,
-			const std::tuple<Checksums*, std::vector<std::string>, ARResponse,
-			Match*, int, bool, TOC*, ARId> &t) override;
+			const std::tuple<Checksums*, std::vector<std::string>,
+			std::vector<Checksum>, Match*, int, bool, TOC*, ARId> &t) override;
 	// from Print
 };
 

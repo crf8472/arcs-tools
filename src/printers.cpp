@@ -633,8 +633,9 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 
 
 MatchResultPrinter::MatchResultPrinter()
-	: MatchResultPrinterBase(nullptr, std::vector<std::string>{}, ARResponse{},
-			nullptr, 0, false, nullptr, ARId(arcstk::EmptyARId) /* constness */)
+	: MatchResultPrinterBase(nullptr, std::vector<std::string>{},
+		std::vector<Checksum>{}, nullptr, 0, false, nullptr,
+		ARId(arcstk::EmptyARId) /* constness */)
 	, match_symbol_ { "   ==   " }
 {
 	// empty
@@ -654,8 +655,8 @@ const std::string& MatchResultPrinter::match_symbol() const
 
 
 void MatchResultPrinter::assertions(
-		const std::tuple<Checksums*, std::vector<std::string>, ARResponse,
-			Match*, int, bool, TOC*, ARId> &t) const
+		const std::tuple<Checksums*, std::vector<std::string>,
+			std::vector<Checksum>, Match*, int, bool, TOC*, ARId> &t) const
 {
 	const auto  checksums = std::get<0>(t);
 	const auto& filenames = std::get<1>(t);
@@ -711,15 +712,15 @@ void MatchResultPrinter::assertions(
 
 	// Specific for verify
 
-	const auto  response  = std::get<2>(t);
+	const auto  refsums   = std::get<2>(t);
 	const auto  match     = std::get<3>(t);
 	const auto  block     = std::get<4>(t);
 	//const auto  version   = std::get<5>(t); // unused
 
-	if (static_cast<std::size_t>(response.tracks_per_block()) != total_tracks)
+	if (refsums.size() != total_tracks)
 	{
 		throw std::invalid_argument("Mismatch: "
-				"Reference for " + std::to_string(total_tracks)
+				"Reference for " + std::to_string(refsums.size())
 				+ " tracks, but Checksums specify "
 				+ std::to_string(total_tracks) + " tracks.");
 	}
@@ -732,13 +733,13 @@ void MatchResultPrinter::assertions(
 				+ std::to_string(match->total_blocks()) + " blocks.");
 	}
 
-	if (static_cast<std::size_t>(block) > response.size())
-	{
-		throw std::invalid_argument("Mismatch: "
-				"Reference contains no block " + std::to_string(block)
-				+ " but contains only "
-				+ std::to_string(response.size()) + " blocks.");
-	}
+	//if (static_cast<std::size_t>(block) > response.size())
+	//{
+	//	throw std::invalid_argument("Mismatch: "
+	//			"Reference contains no block " + std::to_string(block)
+	//			+ " but contains only "
+	//			+ std::to_string(response.size()) + " blocks.");
+	//}
 }
 
 
@@ -800,14 +801,14 @@ int AlbumMatchTableFormat::columns_apply_cs_settings(
 
 
 void AlbumMatchTableFormat::do_out(std::ostream &out,
-		const std::tuple<Checksums*, std::vector<std::string>, ARResponse,
-				Match*, int, bool, TOC*, ARId> &t)
+		const std::tuple<Checksums*, std::vector<std::string>,
+			std::vector<Checksum>, Match*, int, bool, TOC*, ARId> &t)
 {
 	assertions(t);
 
 	const auto  checksums = std::get<0>(t);
 	const auto& filenames = std::get<1>(t);
-	const auto& response  = std::get<2>(t);
+	const auto& refsums   = std::get<2>(t);
 	const auto  match     = std::get<3>(t);
 	const auto  best      = std::get<4>(t);
 	const auto  version   = std::get<5>(t);
@@ -821,10 +822,10 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 	// Configure table
 
 	// Determine number of rows
-	const int total_entries = 1 /* col titles */ +
-		(toc ? checksums->size()
-			 : std::max(static_cast<int>(checksums->size()),
-					response.tracks_per_block()));
+	const int total_entries = 1 /* col titles */
+		+ (toc
+				? checksums->size()
+				: std::max(checksums->size(), refsums.size()));
 
 	if (!toc) { set_offset(false); }
 
@@ -887,7 +888,7 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 					} else
 					{
 						cell = checksum_layout().format(
-								response[best].at(row).arcs(), width(col));
+								refsums[row].value(), width(col));
 					}
 					break;
 			}
