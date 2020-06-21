@@ -100,24 +100,6 @@ switch is ignored if input files are specified.
 
 \page inc_calcinoptions
 
-\par --first
-Process the first of the audiofiles as first track of an album. This option is
-implied in \b -m. This switch is intended for cases in which all tracks of an
-album are represented as single files but no TOC metadata is present.
-See also \b --last and \b --album.
-
-\par --last
-Process the last of the audiofiles as last track of an album. This option is
-implied in \b -m. This switch is intended for cases in which all tracks of an
-album are represented as single files but no TOC metadata is present.
-See also \b --first and \b --album.
-
-\par --album
-Abbreviates \b --first \b --last to process the first of the audiofiles as first
-track and the last one as the last track of an album. This option is
-implied in \b -m. This switch is intended for cases in which all tracks of an
-album are represented as single files but no TOC metadata is present.
-
 \par -m,--metadata=TOCFILE
 Specify the file with the TOC data of the original medium. Accepted input
 formats are the ones listed by \b --list-toc-formats. The specified file is

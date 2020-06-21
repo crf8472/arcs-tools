@@ -20,8 +20,10 @@ TOC information and verifies them against reference checksums.
 
 \copydoc inc_calcdesc
 
-The reference checksums are mandatory. They can be specified by the name of a
-binary file (some dBAR-*.bin file) using \b -r or can be piped in via stdin.
+The reference checksums are mandatory. They either can be specified by the name
+of a binary file (some dBAR-*.bin file) using \b -r or can be piped in via
+stdin. Reference checksums can also be passed as a comma-separated list of
+\b --refvalues that are parsed as hexadecimal numbers.
 
 
 \section OPTIONS
@@ -32,18 +34,63 @@ binary file (some dBAR-*.bin file) using \b -r or can be piped in via stdin.
 Specify the binary file with the AccurateRip response. Parsed text files will
 not be accepted. If \b -r is absent, references are expected on stdin.
 
+\par --refvalues=...,...
+Comma-separated list of hexadecimal values (with or without leading base marker
+'0x') that are treated as reference values for verification.
+
+\par --no-first
+Do not process the first of the audiofiles as first track of an album.
+See also \b --no-last and \b --no-album.
+
+\par --no-last
+Do not process the last of the audiofiles as last track of an album.
+See also \b --no-first and \b --no-album.
+
+\par --no-album
+Abbreviates \b --no-first \b --no-last to suppress calculating a first and a
+last track. This switch is intended for cases in which only some tracks of an
+album are to be verified.
+
 \copydoc inc_calcinoptions
 
 
 \subsection OUTPUT Options for output
 
-\par -n,--no-print
-(NOT YET IMPLEMENTED) Do not print any result. Return the diff count of the best
-match. This entails that 0 indicates a successful verification and some value
-bigger than 0 indicates that some tracks could not be verified.
+\par --no-track-nos
+Suppress output of track numbers.
 
-\par --print-all
+\par --no-filenames
+Suppress output of audio filenames.
+
+\par --no-offsets
+Suppress output of track offsets.
+
+\par --no-lengths
+Suppress output of track lengths.
+
+\par --no-labels
+Suppress output of any row labels and column titles.
+
+\par --col-delim
+Set the column delimiter for table output
+
+\par --print-id
+(NOT YET IMPLEMENTED) Print it AccurateRip id of the album to be verified.
+
+\par --print-url
+(NOT YET IMPLEMENTED) Print the AccurateRip URL of the album to be verified.
+
+\par --print-all-matches
 (NOT YET IMPLEMENTED) Print each block match, sorted from best to worst.
+
+\par -b,--boolean
+Return the diff count of the best match. This entails that 0 indicates a
+successful verification and some value bigger than 0 indicates that some tracks
+could not be verified.
+
+\par -n,--no-output
+Do not print any result. Implies -b, therefore the return value will be
+informative.
 
 \copydoc inc_calcinfooptions
 
