@@ -94,9 +94,6 @@ constexpr OptionValue VERIFY::BOOLEAN;
 constexpr OptionValue VERIFY::NOOUTPUT;
 
 
-//
-
-
 /**
  * \brief Return reference checksums from block \c block in order of appearance.
  *
@@ -414,27 +411,13 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 	if (options.is_set(VERIFY::REFVALUES))
 	{
-		auto refvals_cli = options.get(VERIFY::REFVALUES);
-		try
-		{
-			refvals = parse_refvalues(refvals_cli);
-		} catch (const std::exception &e)
-		{
-			ARCS_LOG_ERROR << e.what();
-			refvals = {};
-		}
+		refvals = parse_refvalues(options.get(VERIFY::REFVALUES));
 
-		// TODO From here to rest of block is placeholder code
+		// Log the parsing result
 
 		std::ostringstream outlist;
-		for (const auto& v : refvals)
-		{
-			outlist << std::hex << std::uppercase
-				<< std::setw(8) << std::setfill('0') << v.value() << " ";
-		}
-
-		ARCS_LOG_DEBUG <<
-			"Option --refvals was parsed with the following values: "
+		for (const auto& v : refvals) { outlist << v << " "; }
+		ARCS_LOG_DEBUG << "Option --refvals was passed the following values: "
 			<< outlist.str();
 	} else
 	{
@@ -445,7 +428,7 @@ int ARVerifyApplication::run_calculation(const Options &options)
 	// Calculate the actual ARCSs from input files
 
 	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(
-			options.get(CALC::METAFILE),
+			options.get(VERIFY::METAFILE),
 			options.get_arguments(),
 			not options.is_set(VERIFY::NOFIRST),
 			not options.is_set(VERIFY::NOLAST),
@@ -537,42 +520,33 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 	// Print match results
 
-	auto filenames = not options.no_arguments()
+	const auto filenames = not options.no_arguments()
 		? options.get_arguments()
 		: (toc ? arcstk::toc::get_filenames(toc) : std::vector<std::string>{} );
-
-	Match *match = const_cast<Match*>(diff->match()); // FIXME catastrophic
-
-	auto best_match = diff->best_match();
-
-	auto matches_v2 = diff->matches_v2();
-
+	const auto match = diff->match();
 	const auto format = configure_format(options, print_filenames);
 
 	if (options.is_set(VERIFY::PRINTALL))
 	{
-		if (refvals.empty())
+		if (refvals.empty()) // Use blocks as refvals
 		{
-			//std::vector<Checksum> refvals;
-			int b = 0;
-
-			for (ARResponse::size_type block = 0; block < reference->size();
-					++block)
+			int block = 0; // convert block counter to int
+			for (ARResponse::size_type b = 0; b < reference->size(); ++b)
 			{
+				// TODO Something like a table label would be nice:
 				//std::cout << "Block " << std::to_string(1 + block) << std::endl;
 
 				refvals = sums_in_block(*reference, block);
-				b = block;
 
+				block = b;
 				format->use(std::make_tuple(&checksums, &filenames, &refvals,
-						match, &b, nullptr, toc.get(), &arid));
+						match, &block, nullptr, toc.get(), &arid));
 
 				output(*format);
 			}
-		} else // Use refvals
+		} else // Use existing refvals
 		{
 			const int only_block = 0;
-
 			format->use(std::make_tuple(&checksums, &filenames, &refvals,
 					match, &only_block, nullptr, toc.get(), &arid));
 
@@ -584,6 +558,9 @@ int ARVerifyApplication::run_calculation(const Options &options)
 		{
 			refvals = sums_in_block(*reference, diff->best_match());
 		}
+
+		const auto best_match = diff->best_match();
+		const auto matches_v2 = diff->matches_v2();
 
 		format->use(std::make_tuple(&checksums, &filenames, &refvals, match,
 				&best_match, &matches_v2, toc.get(), &arid));
