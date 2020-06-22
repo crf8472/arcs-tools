@@ -549,15 +549,47 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 	const auto format = configure_format(options, print_filenames);
 
-	if (refvals.empty())
+	if (options.is_set(VERIFY::PRINTALL))
 	{
-		refvals = sums_in_block(*reference, diff->best_match());
+		if (refvals.empty())
+		{
+			//std::vector<Checksum> refvals;
+			int b = 0;
+
+			for (ARResponse::size_type block = 0; block < reference->size();
+					++block)
+			{
+				//std::cout << "Block " << std::to_string(1 + block) << std::endl;
+
+				refvals = sums_in_block(*reference, block);
+				b = block;
+
+				format->use(std::make_tuple(&checksums, &filenames, &refvals,
+						match, &b, nullptr, toc.get(), &arid));
+
+				output(*format);
+			}
+		} else // Use refvals
+		{
+			const int only_block = 0;
+
+			format->use(std::make_tuple(&checksums, &filenames, &refvals,
+					match, &only_block, nullptr, toc.get(), &arid));
+
+			output(*format);
+		}
+	} else // print only best match
+	{
+		if (refvals.empty())
+		{
+			refvals = sums_in_block(*reference, diff->best_match());
+		}
+
+		format->use(std::make_tuple(&checksums, &filenames, &refvals, match,
+				&best_match, &matches_v2, toc.get(), &arid));
+
+		output(*format);
 	}
-
-	format->use(std::make_tuple(&checksums, &filenames, &refvals, match,
-			&best_match, &matches_v2, toc.get(), &arid));
-
-	output(*format);
 
 	return options.is_set(VERIFY::BOOLEAN)
 		? diff->best_difference()

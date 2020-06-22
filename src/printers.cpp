@@ -821,16 +821,23 @@ int AlbumMatchTableFormat::columns_apply_cs_settings(
 	auto type_to_print = types.cbegin();
 	std::size_t col_idx = total_metadata_columns();
 
+	// Add the column with reference values ("Theirs")
+
+	assign_type(col_idx, CELL_TYPE::CHECKSUM);
+	set_title(col_idx, "Theirs");
+	set_width(col_idx, defaults::width(CELL_TYPE::CHECKSUM));
+
+	++col_idx;
+
+	// Add the columns with my values
+
+	using TYPE = arcstk::checksum::type;
+
 	while (col_idx < columns() and type_to_print != types.cend())
 	{
-		assign_type(col_idx, CELL_TYPE::CHECKSUM);
-		set_title(col_idx, arcstk::checksum::type_name(*type_to_print));
-		set_width(col_idx, defaults::width(CELL_TYPE::CHECKSUM));
-
-		++col_idx;
-
 		assign_type(col_idx, CELL_TYPE::MATCH);
-		set_title(col_idx, defaults::label(CELL_TYPE::MATCH));
+		set_title(col_idx,
+				"Mine v" + std::to_string(1 + (*type_to_print == TYPE::ARCS2)));
 		set_width(col_idx, defaults::width(CELL_TYPE::MATCH));
 
 		++col_idx;
@@ -853,27 +860,40 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 	const auto& filenames = std::get<1>(t);
 	const auto& refsums   = std::get<2>(t);
 	const auto  match     = std::get<3>(t);
-	const auto  best      = std::get<4>(t);
+	const auto  block     = std::get<4>(t);
 	const auto  version   = std::get<5>(t);
 	const auto  toc       = std::get<6>(t);
 	//const auto& arid      = std::get<7>(t);
 
 	using TYPE = arcstk::checksum::type;
 
-	std::vector<TYPE> types_to_print = { version ? TYPE::ARCS2 : TYPE::ARCS1 };
+	std::vector<TYPE> types_to_print;
+	if (!version)
+	{
+		types_to_print = std::vector<TYPE>{ TYPE::ARCS2, TYPE::ARCS1 };
+	} else
+	{
+		if (*version)
+		{
+			types_to_print.push_back(TYPE::ARCS2);
+		} else
+		{
+			types_to_print.push_back(TYPE::ARCS1);
+		}
+	}
+	types_to_print.shrink_to_fit();
 
 	// Configure table
 
 	// Determine number of rows
 	const int total_entries = 1 /* col titles */
-		+ (toc
-				? checksums->size()
-				: std::max(checksums->size(), refsums->size()));
+		+ (toc ? checksums->size()
+			   : std::max(checksums->size(), refsums->size()));
 
 	if (!toc) { set_offset(false); }
 
 	// TODO Use init() instead
-	resize(total_entries, total_metadata_columns() + types_to_print.size() * 2);
+	resize(total_entries, total_metadata_columns() + types_to_print.size() + 1);
 
 	const auto md_offset = columns_apply_md_settings();
 	set_widths(CELL_TYPE::FILENAME, optimal_width(*filenames));
@@ -887,7 +907,6 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 	TYPE cstype = TYPE::ARCS2; // default
 	std::string cell{};
 	int trackno = 1;
-	int m_columns = 0;
 
 	for (std::size_t row = 0; row < rows() - 1; ++row, ++trackno) // print row
 	{
@@ -915,23 +934,21 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 						{ cell = std::to_string(checksums->at(row).length()); }
 					break;
 
-				case CELL_TYPE::CHECKSUM :
-					cstype = types_to_print[col - md_offset - m_columns];
+				case CELL_TYPE::CHECKSUM : // "Theirs" column
 					cell = checksum_layout().format(
-							checksums->at(row).get(cstype).value(),
-							width(col));
+								(*refsums)[row].value(), width(col));
 					break;
 
-				case CELL_TYPE::MATCH    :
-					cstype = types_to_print[col - md_offset - m_columns];
-					++ m_columns;
-					if (match->track(*best, row, *version))
+				case CELL_TYPE::MATCH    : // "Mine" columns (may be one or two)
+					cstype = types_to_print[col - md_offset - 1];
+					if (match->track(*block, row, cstype == TYPE::ARCS2))
 					{
 						cell = match_symbol();
 					} else
 					{
 						cell = checksum_layout().format(
-								(*refsums)[row].value(), width(col));
+							checksums->at(row).get(cstype).value(),
+							width(col));
 					}
 					break;
 			}
@@ -940,7 +957,6 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 		}
 
 		out << std::endl;
-		m_columns = 0;
 	}
 }
 
