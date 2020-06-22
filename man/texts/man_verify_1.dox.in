@@ -32,7 +32,7 @@ stdin. Reference checksums can also be passed as a comma-separated list of
 
 \par -r,--response=RESPONSEFILE
 Specify the binary file with the AccurateRip response. Parsed text files will
-not be accepted. If \b -r is absent, references are expected on stdin.
+not be accepted. If \b --response is absent, references are expected on stdin.
 
 \par --refvalues=...,...
 Comma-separated list of hexadecimal values (with or without leading base marker
@@ -81,16 +81,21 @@ Set the column delimiter for table output
 (NOT YET IMPLEMENTED) Print the AccurateRip URL of the album to be verified.
 
 \par --print-all-matches
-(NOT YET IMPLEMENTED) Print each block match, sorted from best to worst.
+Print each match trial for each reference block regardless of the result. This
+entails that one output table for each reference block will be printed, showing
+the match results for ARCSv1 as well as ARCSv2 for this particular block. If
+\b --refvalues is used, the effect is just to activate the output of the match
+result for ARCSv1 as well as ARCSv2.
 
 \par -b,--boolean
-Return the diff count of the best match. This entails that 0 indicates a
-successful verification and some value bigger than 0 indicates that some tracks
-could not be verified.
+Return the difference of the best match. Hence, 0 indicates a successful
+verification and some value bigger than 0 indicates that some input tracks
+could not be verified. The result only informs whether some reference block
+could be matched for either ARCSv1 or ARCSv2.
 
 \par -n,--no-output
-Do not print any result. Implies -b, therefore the return value will be
-informative.
+Do not print any result. Implies \b --boolean, therefore the return value will
+be informative.
 
 \copydoc inc_calcinfooptions
 
