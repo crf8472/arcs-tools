@@ -1,4 +1,5 @@
 #include <arcstk/identifier.hpp>
+#include <tuple>
 #ifndef __ARCSTOOLS_PRINTERS_HPP__
 #include "printers.hpp"
 #endif
@@ -66,20 +67,32 @@ std::vector<arcstk::checksum::type> ordered_typelist(const Checksums &checksums)
 
 
 ARTripletFormat::ARTripletFormat()
-	: Print<int, ARTriplet> { 0, ARTriplet() }
+	: Print<int, ARTriplet> { std::make_tuple(nullptr, nullptr) }
 {
 	// empty
 }
 
 
-void ARTripletFormat::assertions(const std::tuple<int, ARTriplet> &) const
+void ARTripletFormat::assertions(const std::tuple<const int*,
+		const ARTriplet*> &t) const
 {
-	// empty
+	const auto* track   = std::get<0>(t);
+	const auto* triplet = std::get<1>(t);
+
+	if (!track)
+	{
+		// TODO throw
+	}
+
+	if (!triplet)
+	{
+		// TODO throw
+	}
 }
 
 
 void ARTripletFormat::do_out(std::ostream &out,
-		const std::tuple<int, ARTriplet> &t)
+		const std::tuple<const int*, const ARTriplet*> &t)
 {
 	assertions(t);
 
@@ -93,14 +106,15 @@ void ARTripletFormat::do_out(std::ostream &out,
 	const int width_arcs = 8;
 	const int width_conf = 2;
 
-	const std::string unparsed_value = "????????";
+	const auto unparsed_value = std::string { "????????" };
 
+	// TODO Make label configurable
 	out << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
 
-	if (triplet.arcs_valid())
+	if (triplet->arcs_valid())
 	{
 		out << std::setw(width_arcs)
-			<< hex.format(triplet.arcs(), width_arcs);
+			<< hex.format(triplet->arcs(), width_arcs);
 	} else
 	{
 		out << std::setw(width_arcs) << unparsed_value;
@@ -109,20 +123,20 @@ void ARTripletFormat::do_out(std::ostream &out,
 	out << " ";
 
 	out << "(";
-	if (triplet.confidence_valid())
+	if (triplet->confidence_valid())
 	{
 		out << std::setw(width_conf) << std::setfill('0')
-			<< static_cast<unsigned int>(triplet.confidence());
+			<< static_cast<unsigned int>(triplet->confidence());
 	} else
 	{
 		out << "??";
 	}
 	out << ") ";
 
-	if (triplet.frame450_arcs_valid())
+	if (triplet->frame450_arcs_valid())
 	{
 		out << std::setw(width_arcs)
-			<< hex.format(triplet.frame450_arcs(), width_arcs);
+			<< hex.format(triplet->frame450_arcs(), width_arcs);
 	} else
 	{
 		out << std::setw(width_arcs) << unparsed_value;
@@ -142,7 +156,7 @@ ARIdTableFormat::ARIdTableFormat(const ARId &id, const std::string &alt_prefix,
 	: ARIdLayout(url, filename, track_count, disc_id_1, disc_id_2, cddb_id)
 	, StringTableStructure(
 			url + filename + track_count + disc_id_1 + disc_id_2 + cddb_id, 1)
-	, ARIdPrinter(ARId(id) /* copy away constness */, std::string(alt_prefix))
+	, ARIdPrinter(std::make_tuple(&id, &alt_prefix))
 	, show_flags_ { ARID_FLAG::URL, ARID_FLAG::FILENAME, ARID_FLAG::TRACKS,
 		ARID_FLAG::ID1, ARID_FLAG::ID2, ARID_FLAG::CDDBID }
 {
@@ -236,18 +250,33 @@ std::string ARIdTableFormat::do_format(const ARId &id,
 }
 
 
-void ARIdTableFormat::assertions(const std::tuple<ARId, std::string> &) const
+void ARIdTableFormat::assertions(const std::tuple<const ARId*,
+		const std::string*> &t) const
 {
-	// empty
+	const auto* arid       = std::get<0>(t);
+	const auto* alt_prefix = std::get<1>(t);
+
+	if (!arid)
+	{
+		// TODO throw
+	}
+
+	if (!alt_prefix)
+	{
+		// TODO throw
+	}
 }
 
 
 void ARIdTableFormat::do_out(std::ostream &o,
-		const std::tuple<ARId, std::string> &t)
+		const std::tuple<const ARId*, const std::string*> &t)
 {
 	assertions(t);
 
-	o << format(std::get<0>(t), std::get<1>(t)) << std::endl;
+	const auto id         = std::get<0>(t);
+	const auto alt_prefix = std::get<1>(t);
+
+	o << format(*id, *alt_prefix) << std::endl;
 }
 
 
@@ -255,16 +284,16 @@ void ARIdTableFormat::do_out(std::ostream &o,
 
 
 ChecksumsResultPrinter::ChecksumsResultPrinter()
-	: ChecksumsResultPrinterBase(nullptr, std::vector<std::string>{}, nullptr,
-			ARId(arcstk::EmptyARId) /* constness */, false)
+	: ChecksumsResultPrinterBase(
+			std::make_tuple(nullptr, nullptr, nullptr, nullptr, nullptr))
 {
 	// empty
 }
 
 
 void ChecksumsResultPrinter::assertions(
-		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId, bool>
-		&t) const
+		const std::tuple<const Checksums*, const std::vector<std::string>*,
+		const TOC*, const ARId*, const bool*> &t) const
 {
 	const auto  checksums = std::get<0>(t);
 	const auto& filenames = std::get<1>(t);
@@ -287,7 +316,7 @@ void ChecksumsResultPrinter::assertions(
 				"Checksums seem to hold no checksums");
 	}
 
-	if (!toc and filenames.empty())
+	if (!toc and (!filenames or filenames->empty()))
 	{
 		throw std::invalid_argument("Missing value: "
 				"Need either TOC data or filenames to print results");
@@ -301,22 +330,22 @@ void ChecksumsResultPrinter::assertions(
 				+ std::to_string(toc->track_count()) + " tracks.");
 	}
 
-	if (not (filenames.empty() or filenames.size() == total_tracks
-				or filenames.size() == 1))
+	if (filenames and not (filenames->empty()
+				or filenames->size() == total_tracks or filenames->size() == 1))
 	{
 		throw std::invalid_argument("Mismatch: "
 				"Checksums for " + std::to_string(total_tracks)
-				+ " files/tracks, but " + std::to_string(filenames.size())
+				+ " files/tracks, but " + std::to_string(filenames->size())
 				+ " files.");
 	}
 
-	if (not (arid.empty()
-		or static_cast<uint16_t>(arid.track_count()) == total_tracks))
+	if (arid and not (arid->empty()
+		or static_cast<uint16_t>(arid->track_count()) == total_tracks))
 	{
 		throw std::invalid_argument("Mismatch: "
 				"Checksums for " + std::to_string(total_tracks)
 				+ " files/tracks, but AccurateRip id specifies "
-				+ std::to_string(arid.track_count()) + " tracks.");
+				+ std::to_string(arid->track_count()) + " tracks.");
 	}
 }
 
@@ -333,7 +362,8 @@ AlbumChecksumsTableFormat::AlbumChecksumsTableFormat(
 		const std::string &coldelim)
 	: TypedColsTableBase(0, 0,
 			show_labels, show_track, show_offset, show_length, show_filename)
-	, ChecksumsResultPrinter()
+	, ChecksumsResultPrinter(std::make_tuple(nullptr, nullptr, nullptr, nullptr,
+				nullptr))
 {
 	this->set_column_delimiter(coldelim);
 }
@@ -371,8 +401,8 @@ int AlbumChecksumsTableFormat::columns_apply_cs_settings(
 
 
 void AlbumChecksumsTableFormat::do_out(std::ostream &out,
-		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId, bool>
-		&t)
+		const std::tuple<const Checksums*, const std::vector<std::string>*,
+		const TOC*, const ARId*, const bool*> &t)
 {
 	assertions(t);
 
@@ -394,7 +424,7 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 	// Configure table
 
 	if (!toc) { set_offset(false); }
-	if (filenames.empty()) { set_filename(false); }
+	if (filenames->empty()) { set_filename(false); }
 	// assertion is fulfilled that either not filenames.empty() or non-null toc
 
 	// TODO Use init() instead
@@ -404,7 +434,7 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 
 	const auto md_offset = columns_apply_md_settings();
 	columns_apply_cs_settings(types_to_print);
-	set_widths(CELL_TYPE::FILENAME, optimal_width(filenames));
+	set_widths(CELL_TYPE::FILENAME, optimal_width(*filenames));
 
 
 	// Print table
@@ -428,7 +458,7 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 
 				case CELL_TYPE::FILENAME :
 					if (filename())
-						{ cell = filenames.at(row); }
+						{ cell = filenames->at(row); }
 					break;
 
 				case CELL_TYPE::OFFSET   :
@@ -465,7 +495,8 @@ AlbumTracksTableFormat::AlbumTracksTableFormat(const bool label,
 		const bool track, const bool offset, const bool length,
 		const bool filename, const std::string &coldelim)
 	: TypedRowsTableBase(0, 0, label, track, offset, length, filename)
-	, ChecksumsResultPrinter()
+	, ChecksumsResultPrinter(std::make_tuple(nullptr, nullptr, nullptr, nullptr,
+				nullptr))
 {
 	this->set_column_delimiter(coldelim);
 }
@@ -478,8 +509,8 @@ void AlbumTracksTableFormat::do_init(const int /* rows */, const int /* cols */)
 
 
 void AlbumTracksTableFormat::do_out(std::ostream &o,
-		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId, bool>
-		&t)
+		const std::tuple<const Checksums*, const std::vector<std::string>*,
+		const TOC*, const ARId*, const bool*> &t)
 {
 	assertions(t);
 
@@ -501,7 +532,7 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 
 	if (is_album) { set_track(true); }
 	if (!toc) { set_offset(false); }
-	if (filenames.empty()) { set_filename(false); }
+	if (!filenames or filenames->empty()) { set_filename(false); }
 	// assertion is fulfilled that either not filenames.empty() or non-null toc
 
 	const bool show_input = filename(); // Overrides --no-track-nos
@@ -633,9 +664,8 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 
 
 MatchResultPrinter::MatchResultPrinter()
-	: MatchResultPrinterBase(nullptr, std::vector<std::string>{},
-		std::vector<Checksum>{}, nullptr, 0, false, nullptr,
-		ARId(arcstk::EmptyARId) /* constness */)
+	: MatchResultPrinterBase(std::make_tuple(nullptr, nullptr, nullptr, nullptr,
+		nullptr, nullptr, nullptr, nullptr))
 	, match_symbol_ { "   ==   " }
 {
 	// empty
@@ -655,8 +685,9 @@ const std::string& MatchResultPrinter::match_symbol() const
 
 
 void MatchResultPrinter::assertions(
-		const std::tuple<Checksums*, std::vector<std::string>,
-			std::vector<Checksum>, Match*, int, bool, TOC*, ARId> &t) const
+		const std::tuple<const Checksums*, const std::vector<std::string>*,
+			const std::vector<Checksum>*, const Match*, const int*, const bool*,
+			const TOC*, const ARId*> &t) const
 {
 	const auto  checksums = std::get<0>(t);
 	const auto& filenames = std::get<1>(t);
@@ -678,7 +709,7 @@ void MatchResultPrinter::assertions(
 				"Checksums seem to hold no checksums");
 	}
 
-	if (!toc and filenames.empty())
+	if (!toc and (!filenames or filenames->empty()))
 	{
 		throw std::invalid_argument("Missing value: "
 				"Need either TOC data or filenames to print results");
@@ -692,22 +723,22 @@ void MatchResultPrinter::assertions(
 				+ std::to_string(toc->track_count()) + " tracks.");
 	}
 
-	if (not (filenames.empty() or filenames.size() == total_tracks or
-				filenames.size() == 1))
+	if (not (!filenames or filenames->empty()
+				or filenames->size() == total_tracks or filenames->size() == 1))
 	{
 		throw std::invalid_argument("Mismatch: "
 				"Checksums for " + std::to_string(total_tracks)
-				+ " files/tracks, but " + std::to_string(filenames.size())
+				+ " files/tracks, but " + std::to_string(filenames->size())
 				+ " files.");
 	}
 
-	if (not (arid.empty()
-		or static_cast<uint16_t>(arid.track_count()) == total_tracks))
+	if (arid and not (arid->empty()
+		or static_cast<uint16_t>(arid->track_count()) == total_tracks))
 	{
 		throw std::invalid_argument("Mismatch: "
 				"Checksums for " + std::to_string(total_tracks)
 				+ " files/tracks, but AccurateRip id specifies "
-				+ std::to_string(arid.track_count()) + " tracks.");
+				+ std::to_string(arid->track_count()) + " tracks.");
 	}
 
 	// Specific for verify
@@ -717,29 +748,40 @@ void MatchResultPrinter::assertions(
 	const auto  block     = std::get<4>(t);
 	//const auto  version   = std::get<5>(t); // unused
 
-	if (refsums.size() != total_tracks)
+	if (!refsums)
+	{
+		throw std::invalid_argument("Missing reference checksums, "
+				"nothing to print.");
+	}
+
+	if (refsums->size() != total_tracks)
 	{
 		throw std::invalid_argument("Mismatch: "
-				"Reference for " + std::to_string(refsums.size())
+				"Reference for " + std::to_string(refsums->size())
 				+ " tracks, but Checksums specify "
 				+ std::to_string(total_tracks) + " tracks.");
 	}
 
-	if (block > match->total_blocks())
+	if (!match)
+	{
+		throw std::invalid_argument("Missing match information, "
+				"nothing to print.");
+	}
+
+	if (!block)
+	{
+		throw std::invalid_argument(
+			"Index of matching checksum block is missing, "
+				"nothing to print.");
+	}
+
+	if (*block > match->total_blocks())
 	{
 		throw std::invalid_argument("Mismatch: "
-				"Match contains no block " + std::to_string(block)
+				"Match contains no block " + std::to_string(*block)
 				+ " but contains only "
 				+ std::to_string(match->total_blocks()) + " blocks.");
 	}
-
-	//if (static_cast<std::size_t>(block) > response.size())
-	//{
-	//	throw std::invalid_argument("Mismatch: "
-	//			"Reference contains no block " + std::to_string(block)
-	//			+ " but contains only "
-	//			+ std::to_string(response.size()) + " blocks.");
-	//}
 }
 
 
@@ -801,8 +843,9 @@ int AlbumMatchTableFormat::columns_apply_cs_settings(
 
 
 void AlbumMatchTableFormat::do_out(std::ostream &out,
-		const std::tuple<Checksums*, std::vector<std::string>,
-			std::vector<Checksum>, Match*, int, bool, TOC*, ARId> &t)
+		const std::tuple<const Checksums*, const std::vector<std::string>*,
+			const std::vector<Checksum>*, const Match*, const int*, const bool*,
+			const TOC*, const ARId*> &t)
 {
 	assertions(t);
 
@@ -825,7 +868,7 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 	const int total_entries = 1 /* col titles */
 		+ (toc
 				? checksums->size()
-				: std::max(checksums->size(), refsums.size()));
+				: std::max(checksums->size(), refsums->size()));
 
 	if (!toc) { set_offset(false); }
 
@@ -833,7 +876,7 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 	resize(total_entries, total_metadata_columns() + types_to_print.size() * 2);
 
 	const auto md_offset = columns_apply_md_settings();
-	set_widths(CELL_TYPE::FILENAME, optimal_width(filenames));
+	set_widths(CELL_TYPE::FILENAME, optimal_width(*filenames));
 
 	columns_apply_cs_settings(types_to_print);
 
@@ -859,7 +902,7 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 
 				case CELL_TYPE::FILENAME :
 					if (filename())
-						{ cell = filenames.at(row); }
+						{ cell = filenames->at(row); }
 					break;
 
 				case CELL_TYPE::OFFSET   :
@@ -882,13 +925,13 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 				case CELL_TYPE::MATCH    :
 					cstype = types_to_print[col - md_offset - m_columns];
 					++ m_columns;
-					if (match->track(best, row, version))
+					if (match->track(*best, row, *version))
 					{
 						cell = match_symbol();
 					} else
 					{
 						cell = checksum_layout().format(
-								refsums[row].value(), width(col));
+								(*refsums)[row].value(), width(col));
 					}
 					break;
 			}
@@ -902,4 +945,3 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 }
 
 } // namespace arcsapp
-

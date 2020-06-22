@@ -140,7 +140,7 @@ private:
 	/**
 	 * \brief Internal track counter.
 	 */
-	uint8_t track_;
+	int track_;
 
 	/**
 	 * \brief Internal format used for printing the ARIds.

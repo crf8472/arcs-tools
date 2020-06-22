@@ -375,8 +375,9 @@ void ARVerifyApplication::log_matching_files(const Checksums &checksums,
 		{
 			if (match.track(block, track, version))
 			{
-				ARCS_LOG_DEBUG << "Pos " << track << " matches track "
-					<< (track+1) << " in block " << block;
+				ARCS_LOG_DEBUG << "Pos " << std::to_string(track)
+					<< " matches track " << std::to_string(track + 1)
+					<< " in block " << std::to_string(block);
 
 				--unmatched;
 			}
@@ -542,16 +543,19 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 	Match *match = const_cast<Match*>(diff->match()); // FIXME catastrophic
 
-	auto format = configure_format(options, print_filenames);
+	auto best_match = diff->best_match();
+
+	auto matches_v2 = diff->matches_v2();
+
+	const auto format = configure_format(options, print_filenames);
 
 	if (refvals.empty())
 	{
 		refvals = sums_in_block(*reference, diff->best_match());
 	}
 
-	format->use(&checksums, std::move(filenames), std::move(refvals),
-			std::move(match), diff->best_match(), diff->matches_v2(),
-			toc.get(), std::move(arid));
+	format->use(std::make_tuple(&checksums, &filenames, &refvals, match,
+			&best_match, &matches_v2, toc.get(), &arid));
 
 	output(*format);
 

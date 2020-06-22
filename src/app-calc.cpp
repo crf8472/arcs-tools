@@ -477,8 +477,10 @@ int ARCalcApplication::run_calculation(const Options &options)
 		? arcstk::toc::get_filenames(toc)
 		: options.get_arguments();
 
-	format->use(&checksums, std::move(filenames), toc.get(), std::move(arid),
-			options.is_set(CALC::ALBUM));
+	auto album_mode = options.is_set(CALC::ALBUM);
+
+	format->use(std::make_tuple(&checksums, &filenames, toc.get(), &arid,
+				&album_mode));
 	output(*format);
 
 	return EXIT_SUCCESS;

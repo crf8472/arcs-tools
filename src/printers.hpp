@@ -45,13 +45,13 @@ using arcstk::TOC;
 
 
 // forward declare Print<>
-template <typename... Args>
+template <typename ...Args>
 class Print;
 
 /**
  * \brief Overload << to make each concrete Print<>er be usable with an ostream.
  */
-template <typename... Args>
+template <typename ...Args>
 std::ostream& operator << (std::ostream &stream, Print<Args...> &p)
 {
 	p.out(stream);
@@ -61,7 +61,7 @@ std::ostream& operator << (std::ostream &stream, Print<Args...> &p)
 /**
  * \brief Print an object that has an overload for operator << and ostream.
  */
-template <typename... Args>
+template <typename ...Args>
 class Print
 {
 public:
@@ -71,8 +71,8 @@ public:
 	/**
 	 * \brief Constructor
 	 */
-	Print(Args&&... args)
-		: objects_ { std::forward<Args>(args)... }
+	Print(std::tuple<const Args*...> args)
+		: pointers_ { args }
 	{
 		// empty
 	}
@@ -85,9 +85,9 @@ public:
 	/**
 	 * \brief Add the objects to print
 	 */
-	void use(Args&&... args)
+	void use(std::tuple<const Args*...> args)
 	{
-		objects_ = std::make_tuple(std::forward<Args>(args)...);
+		pointers_ = args;
 	}
 
 	/**
@@ -97,7 +97,7 @@ public:
 	 */
 	void out(std::ostream &outstream)
 	{
-		this->do_out(outstream, this->objects_);
+		this->do_out(outstream, this->pointers_);
 	}
 
 protected:
@@ -105,23 +105,23 @@ protected:
 	/**
 	 * \brief Do assertions for input arguments
 	 */
-	virtual void assertions(const std::tuple<Args...> &t) const
+	virtual void assertions(const std::tuple<const Args*...> &t) const
 	= 0;
 
 private:
 
 	/**
-	 * \brief Store data objects to print them
+	 * \brief Store pointers to printable objects
 	 */
-	std::tuple<Args...> objects_;
+	std::tuple<const Args*...> pointers_;
 
 	/**
 	 * \brief Implements out()
 	 *
 	 * \param[in] o Stream to print to
-	 * \param[in] t Data tuple to print
+	 * \param[in] t Tuple of data pointers to print
 	 */
-	virtual void do_out(std::ostream &o, const std::tuple<Args...> &t)
+	virtual void do_out(std::ostream &o, const std::tuple<const Args*...> &t)
 	= 0;
 };
 
@@ -141,11 +141,12 @@ public:
 
 private:
 
-	void assertions(const std::tuple<int, ARTriplet> &t) const override;
+	void assertions(const std::tuple<const int*, const ARTriplet*> &t) const
+		override;
 	// from Print
 
-	void do_out(std::ostream &out, const std::tuple<int, ARTriplet> &t)
-		override;
+	void do_out(std::ostream &out,
+			const std::tuple<const int*, const ARTriplet*> &t) override;
 	// from Print
 };
 
@@ -217,10 +218,12 @@ private:
 	void do_init(const int rows, const int cols) override;
 	// from StringTableStructure
 
-	void assertions(const std::tuple<ARId, std::string> &t) const override;
+	void assertions(const std::tuple<const ARId*, const std::string*> &t) const
+		override;
 	// from Print
 
-	void do_out(std::ostream &o, const std::tuple<ARId, std::string> &t)
+	void do_out(std::ostream &o, const std::tuple<const ARId*,
+			const std::string*> &t)
 		override; // from Print
 
 	std::string do_format(const ARId &id, const std::string &alt_prefix) const
@@ -229,7 +232,7 @@ private:
 	/**
 	 * \brief Iterable array of show flags
 	 */
-	const std::array<ARID_FLAG,   to_underlying(ARID_FLAG::COUNT)> show_flags_;
+	const std::array<ARID_FLAG, to_underlying(ARID_FLAG::COUNT)> show_flags_;
 };
 
 
@@ -237,7 +240,7 @@ private:
  * \brief Alias for classes printing checksum calculation results.
  */
 using ChecksumsResultPrinterBase =
-	Print<Checksums*, std::vector<std::string>, TOC*, ARId, bool>;
+	Print<Checksums, std::vector<std::string>, TOC, ARId, bool>;
 
 
 /**
@@ -257,8 +260,8 @@ public:
 protected:
 
 	void assertions(
-		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId, bool>
-			&t) const override;
+		const std::tuple<const Checksums*, const std::vector<std::string>*,
+			const TOC*, const ARId*, const bool*> &t) const override;
 	// from Print
 };
 
@@ -302,8 +305,8 @@ private:
 	// from TypedColsTableBase
 
 	void do_out(std::ostream &o,
-		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId, bool>
-			&t) override;
+		const std::tuple<const Checksums*, const std::vector<std::string>*,
+		const TOC*, const ARId*, const bool*> &t) override;
 	// from Print
 };
 
@@ -338,8 +341,8 @@ private:
 	// from StringTableBase
 
 	void do_out(std::ostream &o,
-		const std::tuple<Checksums*, std::vector<std::string>, TOC*, ARId, bool>
-			&t) override;
+		const std::tuple<const Checksums*, const std::vector<std::string>*,
+			const TOC*, const ARId*, const bool*> &t) override;
 	// from Print
 };
 
@@ -348,8 +351,8 @@ private:
  * \brief Alias for classes printing match results.
  */
 using MatchResultPrinterBase =
-	Print<Checksums*, std::vector<std::string>, std::vector<Checksum>, Match*,
-	int, bool, TOC*, ARId>;
+	Print<Checksums, std::vector<std::string>, std::vector<Checksum>, Match,
+	int, bool, TOC, ARId>;
 
 
 /**
@@ -387,8 +390,9 @@ public:
 protected:
 
 	void assertions(
-		const std::tuple<Checksums*, std::vector<std::string>,
-			std::vector<Checksum>, Match*, int, bool, TOC*, ARId> &t) const
+		const std::tuple<const Checksums*, const std::vector<std::string>*,
+			const std::vector<Checksum>*, const Match*, const int*, const bool*,
+			const TOC*, const ARId*> &t) const
 		override;
 	// from Print
 
@@ -438,8 +442,10 @@ private:
 	// from TypedColsTableBase
 
 	void do_out(std::ostream &out,
-			const std::tuple<Checksums*, std::vector<std::string>,
-			std::vector<Checksum>, Match*, int, bool, TOC*, ARId> &t) override;
+			const std::tuple<const Checksums*, const std::vector<std::string>*,
+			const std::vector<Checksum>*, const Match*, const int*, const bool*,
+			const TOC*, const ARId*> &t)
+		override;
 	// from Print
 };
 

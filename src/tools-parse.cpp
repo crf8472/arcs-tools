@@ -114,9 +114,9 @@ void ARParserContentPrintHandler::do_triplet(const uint32_t arcs,
 		const uint8_t confidence, const uint32_t frame450_arcs)
 {
 	++track_;
-	ARTriplet triplet(arcs, confidence, frame450_arcs);
+	const ARTriplet triplet(arcs, confidence, frame450_arcs);
 
-	triplet_format()->use(track_, std::move(triplet));
+	triplet_format()->use(std::make_tuple(&track_, &triplet));
 	triplet_format()->out(out_stream_);
 }
 
@@ -127,10 +127,10 @@ void ARParserContentPrintHandler::do_triplet(const uint32_t arcs,
 		const bool frame450_arcs_valid)
 {
 	++track_;
-	ARTriplet triplet(arcs, confidence, frame450_arcs, arcs_valid,
+	const ARTriplet triplet(arcs, confidence, frame450_arcs, arcs_valid,
 			confidence_valid, frame450_arcs_valid);
 
-	triplet_format()->use(track_, std::move(triplet));
+	triplet_format()->use(std::make_tuple(&track_, &triplet));
 	triplet_format()->out(out_stream_);
 }
 
