@@ -123,7 +123,7 @@ protected:
 	* \return Type void iff object overloads operator << for std::ostream
 	*/
 	template <typename T>
-	auto output(T&& object, const std::string &filename = std::string{})
+	auto output(T&& object, const std::string &filename = std::string{}) const
 		-> decltype( std::cout << object, void() )
 	{
 		if (filename.empty()) // THIS defines the default behaviour!

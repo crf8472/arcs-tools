@@ -25,6 +25,20 @@ of a binary file (some dBAR-*.bin file) using \b -r or can be piped in via
 stdin. Reference checksums can also be passed as a comma-separated list of
 \b --refvalues that are parsed as hexadecimal numbers.
 
+The result will be the "best possible" match, i.e. the result of the comparison
+that provided the least number of non-identical checksums for an index position
+in the input. The number of these "non-matches" in the compared set is called
+"difference", e.g. if all but two checksums match, the difference is 2 and all
+but the corresponding two files or tracks can be considered verified.
+
+The output declares reference checksums as "Theirs", while the actual checksums
+are declared "Mine". Matches of checksums will be marked with symbol "==" in the
+corresponding table cell. For a non-matching checksum, the corresponding table
+cell will contain the respective checksum.
+
+Switch \b --print-all-matches shows any comparison that was actually performed
+in the output, regardless of v2 or v1 or whether a match was found.
+
 
 \section OPTIONS
 
@@ -85,13 +99,13 @@ Print each match trial for each reference block regardless of the result. This
 entails that one output table for each reference block will be printed, showing
 the match results for ARCSv1 as well as ARCSv2 for this particular block. If
 \b --refvalues is used, the effect is just to activate the output of the match
-result for ARCSv1 as well as ARCSv2.
+result for ARCSv2 as well as ARCSv1.
 
 \par -b,--boolean
 Return the difference of the best match. Hence, 0 indicates a successful
 verification and some value bigger than 0 indicates that some input tracks
 could not be verified. The result only informs whether some reference block
-could be matched for either ARCSv1 or ARCSv2.
+could be matched for either ARCSv2 or ARCSv1.
 
 \par -n,--no-output
 Do not print any result. Implies \b --boolean, therefore the return value will

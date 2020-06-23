@@ -42,6 +42,7 @@ class Options;
 using arcstk::Checksum;
 using arcstk::Checksums;
 using arcstk::Match;
+using arcstk::Matcher;
 
 /**
  * \brief Configuration options for ARVerifyApplications.
@@ -100,6 +101,20 @@ class ARVerifyApplication final : public ARApplication
 		const bool with_filenames) const;
 
 	/**
+	 * \brief Provide reference checksums from options.
+	 *
+	 * Reference checksums are either represented as binary data provided by
+	 * AccurateRip or as a list of numeric values provided the caller. Hence,
+	 * the are either an ARResponse instance or a vector of Checksum instances.
+	 *
+	 * The caller is responsible to interpreting the resulting tuple.
+	 *
+	 * \return Tuple of possible reference checksum representations
+	 */
+	std::tuple<ARResponse, std::vector<Checksum>> get_reference_checksums(
+			const Options &options) const;
+
+	/**
 	 * \brief Worker: parse the input for an ARResponse.
 	 *
 	 * \param[in] options The options to run the application
@@ -115,7 +130,17 @@ class ARVerifyApplication final : public ARApplication
 	 *
 	 * \return ARResponse object
 	 */
-	std::vector<Checksum> parse_refvalues(const std::string &values) const;
+	std::vector<Checksum> parse_refvalues(const Options &options) const;
+
+	/**
+	 * \brief Worker: parse the input reference values.
+	 *
+	 * \param[in] values The reference values as passed from the cli
+	 *
+	 * \return ARResponse object
+	 */
+	std::vector<Checksum> parse_refvalues_sequence(const std::string &values)
+		const;
 
 	/**
 	 * \brief Worker: Log matching files from a file list.
@@ -137,6 +162,24 @@ class ARVerifyApplication final : public ARApplication
 	 * \return Application return code
 	 */
 	int run_calculation(const Options &options);
+
+	/**
+	 * \brief Print the result of the matching operation.
+	 *
+	 * \param[in] options         Call options
+	 * \param[in] actual_sums     Actual checksums
+	 * \param[in] reference_sums  Reference checksums
+	 * \param[in] toc             TOC
+	 * \param[in] id              Album ARId
+	 * \param[in] diff            Matcher result
+	 * \param[in] print_filenames Flag to print filenames
+	 *
+	 */
+	void print_result(const Options &options,
+			const Checksums &actual_sums,
+			const std::tuple<ARResponse, std::vector<Checksum>> &reference_sums,
+			const TOC *toc, const ARId &id, const Matcher &diff,
+			const bool print_filenames) const;
 
 
 	std::string do_name() const override;

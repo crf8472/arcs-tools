@@ -236,6 +236,63 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 // ARVerifyApplication
 
 
+std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
+		const Options &options, const bool with_filenames) const
+{
+	const bool with_toc = !options.get(VERIFY::METAFILE).empty();
+
+	// Print track number if they are not forbidden and a TOC is present
+	const bool prints_tracks = options.is_set(VERIFY::NOTRACKS)
+		? false
+		: with_toc;
+
+	// Print offsets if they are not forbidden and a TOC is present
+	const bool prints_offsets = options.is_set(VERIFY::NOOFFSETS)
+		? false
+		: with_toc;
+
+	// Print lengths if they are not forbidden
+	const bool prints_lengths = not options.is_set(VERIFY::NOLENGTHS);
+
+	// Print filenames if they are not forbidden and explicitly requested
+	const bool prints_filenames = options.is_set(VERIFY::NOFILENAMES)
+		? false
+		: with_filenames;
+
+	// Set column delimiter
+	const std::string coldelim = options.is_set(CALC::COLDELIM)
+		? options.get(CALC::COLDELIM)
+		: " ";
+
+	auto format = std::make_unique<AlbumMatchTableFormat>(
+			not options.is_set(VERIFY::NOLABELS),
+			prints_tracks, prints_offsets, prints_lengths, prints_filenames,
+			coldelim);
+
+	return format;
+}
+
+
+std::tuple<ARResponse, std::vector<Checksum>>
+	ARVerifyApplication::get_reference_checksums(const Options &options) const
+{
+	auto response = ARResponse {};
+	auto refsums  = std::vector<Checksum> {};
+
+	if (options.is_set(VERIFY::REFVALUES))
+	{
+		// use referene checksums passed on command line
+		refsums = parse_refvalues(options);
+	} else
+	{
+		// stdin or accuraterip .bin-file
+		response = parse_response(options);
+	}
+
+	return std::make_tuple(response, refsums);
+}
+
+
 ARResponse ARVerifyApplication::parse_response(const Options &options) const
 {
 	// Parse the AccurateRip response
@@ -283,6 +340,22 @@ ARResponse ARVerifyApplication::parse_response(const Options &options) const
 
 
 std::vector<Checksum> ARVerifyApplication::parse_refvalues(
+		const Options &options) const
+{
+	auto refvals = parse_refvalues_sequence(options.get(VERIFY::REFVALUES));
+
+	// Log the parsing result
+
+	std::ostringstream outlist;
+	for (const auto& v : refvals) { outlist << v << " "; }
+	ARCS_LOG_DEBUG << "Option --refvals was passed the following values: "
+			<< outlist.str();
+
+	return refvals;
+}
+
+
+std::vector<Checksum> ARVerifyApplication::parse_refvalues_sequence(
 		const std::string &input) const
 {
 	if (input.empty())
@@ -308,9 +381,7 @@ std::vector<Checksum> ARVerifyApplication::parse_refvalues(
 
 			ARCS_LOG_DEBUG << "Input reference sum " << value
 				<< " for track/file " << t
-				<< " is parsed as "
-				<< std::hex << std::uppercase
-				<< std::setw(8) << std::setfill('0') << refsum;
+				<< " is parsed as " << refsum;
 
 			refsums.push_back(Checksum { refsum });
 			++t;
@@ -318,43 +389,6 @@ std::vector<Checksum> ARVerifyApplication::parse_refvalues(
 	}
 
 	return refsums;
-}
-
-
-std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
-		const Options &options, const bool with_filenames) const
-{
-	const bool with_toc = !options.get(VERIFY::METAFILE).empty();
-
-	// Print track number if they are not forbidden and a TOC is present
-	const bool prints_tracks = options.is_set(VERIFY::NOTRACKS)
-		? false
-		: with_toc;
-
-	// Print offsets if they are not forbidden and a TOC is present
-	const bool prints_offsets = options.is_set(VERIFY::NOOFFSETS)
-		? false
-		: with_toc;
-
-	// Print lengths if they are not forbidden
-	const bool prints_lengths = not options.is_set(VERIFY::NOLENGTHS);
-
-	// Print filenames if they are not forbidden and explicitly requested
-	const bool prints_filenames = options.is_set(VERIFY::NOFILENAMES)
-		? false
-		: with_filenames;
-
-	// Set column delimiter
-	const std::string coldelim = options.is_set(CALC::COLDELIM)
-		? options.get(CALC::COLDELIM)
-		: " ";
-
-	auto format = std::make_unique<AlbumMatchTableFormat>(
-			not options.is_set(VERIFY::NOLABELS),
-			prints_tracks, prints_offsets, prints_lengths, prints_filenames,
-			coldelim);
-
-	return format;
 }
 
 
@@ -406,24 +440,7 @@ int ARVerifyApplication::run_calculation(const Options &options)
 {
 	// Parse reference ARCSs from AccurateRip
 
-	auto reference = std::unique_ptr<ARResponse> {};
-	auto refvals   = std::vector<Checksum> {};
-
-	if (options.is_set(VERIFY::REFVALUES))
-	{
-		refvals = parse_refvalues(options.get(VERIFY::REFVALUES));
-
-		// Log the parsing result
-
-		std::ostringstream outlist;
-		for (const auto& v : refvals) { outlist << v << " "; }
-		ARCS_LOG_DEBUG << "Option --refvals was passed the following values: "
-			<< outlist.str();
-	} else
-	{
-		// stdin or accuraterip .bin-file
-		reference = std::make_unique<ARResponse>(parse_response(options));
-	}
+	auto reference_sums = this->get_reference_checksums(options);
 
 	// Calculate the actual ARCSs from input files
 
@@ -447,16 +464,20 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 	std::unique_ptr<const Matcher> diff;
 
+	if (options.is_set(VERIFY::REFVALUES))
+	{
+		diff = std::make_unique<ListMatcher>(checksums,
+				std::get<1>(reference_sums) /* refvals */);
+	}
+
 	if (not album_requested)
 	{
 		// No Offsets => No ARId => No TOC
 
-		if (options.is_set(VERIFY::REFVALUES))
+		if (!diff) // No ListMatcher for some refvals previously set
 		{
-			diff = std::make_unique<ListMatcher>(checksums, refvals);
-		} else
-		{
-			diff = std::make_unique<TracksetMatcher>(checksums, *reference);
+			diff = std::make_unique<TracksetMatcher>(checksums,
+					std::get<0>(reference_sums) /* ARResponse */);
 		}
 
 		if (Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG))
@@ -492,12 +513,10 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 		print_filenames = not single_audio_file;
 
-		if (options.is_set(VERIFY::REFVALUES))
+		if (!diff) // No ListMatcher for some refvals previously set
 		{
-			diff = std::make_unique<ListMatcher>(checksums, refvals);
-		} else
-		{
-			diff = std::make_unique<AlbumMatcher>(checksums, arid, *reference);
+			diff = std::make_unique<AlbumMatcher>(checksums, arid,
+				std::get<0>(reference_sums) /* ARResponse */);
 		}
 	} // if album_requested
 
@@ -520,57 +539,84 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 	// Print match results
 
-	const auto filenames = not options.no_arguments()
-		? options.get_arguments()
-		: (toc ? arcstk::toc::get_filenames(toc) : std::vector<std::string>{} );
-	const auto match = diff->match();
-	const auto format = configure_format(options, print_filenames);
-
-	if (options.is_set(VERIFY::PRINTALL))
-	{
-		if (refvals.empty()) // Use blocks as refvals
-		{
-			int block = 0; // convert block counter to int
-			for (ARResponse::size_type b = 0; b < reference->size(); ++b)
-			{
-				// TODO Something like a table label would be nice:
-				//std::cout << "Block " << std::to_string(1 + block) << std::endl;
-
-				refvals = sums_in_block(*reference, block);
-
-				block = b;
-				format->use(std::make_tuple(&checksums, &filenames, &refvals,
-						match, &block, nullptr, toc.get(), &arid));
-
-				output(*format);
-			}
-		} else // Use existing refvals
-		{
-			const int only_block = 0;
-			format->use(std::make_tuple(&checksums, &filenames, &refvals,
-					match, &only_block, nullptr, toc.get(), &arid));
-
-			output(*format);
-		}
-	} else // print only best match
-	{
-		if (refvals.empty())
-		{
-			refvals = sums_in_block(*reference, diff->best_match());
-		}
-
-		const auto best_match = diff->best_match();
-		const auto matches_v2 = diff->matches_v2();
-
-		format->use(std::make_tuple(&checksums, &filenames, &refvals, match,
-				&best_match, &matches_v2, toc.get(), &arid));
-
-		output(*format);
-	}
+	print_result(options, checksums, reference_sums, toc.get(), arid, *diff,
+			print_filenames);
 
 	return options.is_set(VERIFY::BOOLEAN)
 		? diff->best_difference()
 		: EXIT_SUCCESS;
+}
+
+
+void ARVerifyApplication::print_result(const Options &options,
+			const Checksums &actual_sums,
+			const std::tuple<ARResponse, std::vector<Checksum>> &reference_sums,
+			const TOC *toc, const ARId &arid, const arcstk::Matcher &diff,
+			const bool print_filenames) const
+{
+	const auto filenames = not options.no_arguments()
+		? options.get_arguments()
+		: (toc ? arcstk::toc::get_filenames(*toc) : std::vector<std::string>{});
+
+	const auto match = diff.match();
+
+	const auto format = configure_format(options, print_filenames);
+
+	if (options.is_set(VERIFY::PRINTALL))
+	{
+		const bool* print_v1_and_v2 = nullptr;
+
+		if (options.is_set(VERIFY::REFVALUES)) // Use refvals
+		{
+			const int only_block = 0;
+
+			format->use(std::make_tuple(&actual_sums, &filenames,
+					&std::get<1>(reference_sums) /* refvals */,
+					match, &only_block, print_v1_and_v2, toc, &arid));
+
+			output(*format);
+
+		} else // Use ARResponse
+		{
+			auto& response = std::get<0>(reference_sums);
+
+			int curr_block = 0; // convert block counter to int
+			for (ARResponse::size_type b = 0; b < response.size(); ++b)
+			{
+				// TODO Something like a table label would be nice:
+				//std::cout << "Block " << std::to_string(1 + block) << std::endl;
+
+				curr_block = b;
+				auto block_sums = sums_in_block(response, curr_block);
+
+				format->use(std::make_tuple(&actual_sums, &filenames,
+						&block_sums, match, &curr_block, print_v1_and_v2,
+						toc, &arid));
+
+				output(*format);
+			}
+		}
+	} else // print only best match
+	{
+		const auto best_block       = diff.best_match();
+		const auto matching_version = diff.matches_v2();
+
+		if (options.is_set(VERIFY::REFVALUES)) // Use refvals
+		{
+			format->use(std::make_tuple(&actual_sums, &filenames,
+					&std::get<1>(reference_sums) /* refvals */,
+					match, &best_block, &matching_version, toc, &arid));
+		} else // Use ARResponse
+		{
+			auto block_sums = sums_in_block(std::get<0>(reference_sums),
+					diff.best_match());
+
+			format->use(std::make_tuple(&actual_sums, &filenames, &block_sums,
+				match, &best_block, &matching_version, toc, &arid));
+		}
+
+		output(*format);
+	}
 }
 
 
