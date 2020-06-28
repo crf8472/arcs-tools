@@ -1391,39 +1391,30 @@ void StringTableBase::do_resize(const int rows, const int cols)
 	impl_->resize(rows, cols);
 }
 
-// TODO Use the print_*() functions of StringTableStructure!
+
 std::ostream& operator << (std::ostream &out, const StringTableBase &table)
 {
 	// Table title
 	if (const auto& title = table.table_title(); not title.empty())
 	{
-		out << title << ":" << std::endl;
+		table.print_title(out);
 	}
-
-	// Column titles
-	for (std::size_t col = 0; col < table.columns(); ++col)
-	{
-		out << std::setw(table.width(col)) << std::left
-			<< table.title(col)
-			<< table.column_delimiter();
-	}
-	out << std::endl;
 
 	const auto label_width = table.optimal_label_width();
+
+	// Column titles
+	out << std::setw(label_width) << std::left << std::setfill(' ') << ' ';
+	table.print_column_titles(out);
 
 	// Row contents
 	for (std::size_t row = 0; row < table.rows(); ++row)
 	{
-		out << std::setw(label_width) << std::left
-			<< table.row_label(row)
-			<< table.column_delimiter();
+		table.print_label(out, row);
 
 		for (std::size_t col = 0; col < table.columns(); ++col)
 		{
-			out << std::setw(table.width(col))
-				<< (table.alignment(col) > 0 ? std::left : std::right)
-				<< table.cell(row, col)
-				<< table.column_delimiter();
+			table.print_cell(out, col, table.cell(row, col),
+					col < table.columns() - 1);
 		}
 		out << std::endl;
 	}
