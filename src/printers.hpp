@@ -217,6 +217,15 @@ public:
 
 private:
 
+	/**
+	 * \brief Hexadecimal representation of the contained ids.
+	 *
+	 * \param[in] id Id to format
+	 *
+	 * \return Formatted id
+	 */
+	std::string hex_id(const uint32_t id) const;
+
 	void do_init(const int rows, const int cols) override;
 	// from StringTableStructure
 

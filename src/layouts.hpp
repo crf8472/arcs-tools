@@ -30,6 +30,7 @@ namespace arcsapp
 {
 
 using arcstk::ARId;
+using arcstk::Checksum;
 using arcstk::Checksums;
 
 
@@ -66,14 +67,14 @@ inline int optimal_width(Container&& list)
 /**
  * \brief Interface for formatting numbers
  */
-class NumberLayout
+class ChecksumLayout
 {
 public:
 
 	/**
 	 * \brief Virtual default destructor
 	 */
-	virtual ~NumberLayout() noexcept;
+	virtual ~ChecksumLayout() noexcept;
 
 	/**
 	 * \brief Layout an unsigned 32 bit integer
@@ -81,12 +82,12 @@ public:
 	 * \param[in] number  Number to format
 	 * \param[in] width   Width to format
 	 */
-	std::string format(const uint32_t &number, const int width) const;
+	std::string format(const Checksum &checksum, const int width) const;
 
 private:
 
 	/**
-	 * \brief Implements NumberLayout::(const uint32_t &, const int) const
+	 * \brief Implements ChecksumLayout::(const uint32_t &, const int) const
 	 *
 	 * \param[in] number  Number to format
 	 * \param[in] width   Width to format
@@ -169,7 +170,7 @@ private:
 /**
  * \brief Format numbers in hexadecimal representation
  */
-class HexLayout : public NumberLayout
+class HexLayout : public ChecksumLayout
 				, private WithInternalFlags
 {
 public:
@@ -228,6 +229,9 @@ public:
 	 */
 	WithChecksumLayout();
 
+	/**
+	 * \brief Virtual destructor.
+	 */
 	virtual ~WithChecksumLayout() noexcept;
 
 	/**
@@ -235,21 +239,21 @@ public:
 	 *
 	 * \param[in] layout Layout for printing the checksums
 	 */
-	void set_checksum_layout(std::unique_ptr<NumberLayout> &layout);
+	void set_checksum_layout(std::unique_ptr<ChecksumLayout> &layout);
 
 	/**
 	 * \brief Return the layout for printing the checksums
 	 *
 	 * \return Layout for printing the checksums
 	 */
-	const NumberLayout& checksum_layout() const;
+	const ChecksumLayout& checksum_layout() const;
 
 private:
 
 	/**
 	 * \brief Layout used for CHECKSUM columns to print the checksums
 	 */
-	std::unique_ptr<NumberLayout> checksum_layout_;
+	std::unique_ptr<ChecksumLayout> checksum_layout_;
 };
 
 

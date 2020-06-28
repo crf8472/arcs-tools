@@ -107,11 +107,9 @@ std::vector<Checksum> sums_in_block(const ARResponse response, const int block)
 	auto sums = std::vector<Checksum>{};
 	sums.reserve(response.tracks_per_block());
 
-	int i = 1;
 	for (const auto& triplet : response[block])
 	{
 		sums.push_back(Checksum { triplet.arcs() });
-		++i;
 	}
 
 	return sums;
@@ -583,9 +581,6 @@ void ARVerifyApplication::print_result(const Options &options,
 			int curr_block = 0; // convert block counter to int
 			for (ARResponse::size_type b = 0; b < response.size(); ++b)
 			{
-				// TODO Something like a table label would be nice:
-				//std::cout << "Block " << std::to_string(1 + block) << std::endl;
-
 				curr_block = b;
 				auto block_sums = sums_in_block(response, curr_block);
 
@@ -606,16 +601,18 @@ void ARVerifyApplication::print_result(const Options &options,
 			format->use(std::make_tuple(&actual_sums, &filenames,
 					&std::get<1>(reference_sums) /* refvals */,
 					match, &best_block, &matching_version, toc, &arid));
+
+			output(*format);
 		} else // Use ARResponse
 		{
-			auto block_sums = sums_in_block(std::get<0>(reference_sums),
+			auto ref_sums = sums_in_block(std::get<0>(reference_sums),
 					diff.best_match());
 
-			format->use(std::make_tuple(&actual_sums, &filenames, &block_sums,
+			format->use(std::make_tuple(&actual_sums, &filenames, &ref_sums,
 				match, &best_block, &matching_version, toc, &arid));
-		}
 
-		output(*format);
+			output(*format); // &ref_sums must be in scope
+		}
 	}
 }
 

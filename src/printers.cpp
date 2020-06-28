@@ -114,7 +114,7 @@ void ARTripletFormat::do_out(std::ostream &out,
 	if (triplet->arcs_valid())
 	{
 		out << std::setw(width_arcs)
-			<< hex.format(triplet->arcs(), width_arcs);
+			<< hex.format(Checksum { triplet->arcs() }, width_arcs);
 	} else
 	{
 		out << std::setw(width_arcs) << unparsed_value;
@@ -136,7 +136,7 @@ void ARTripletFormat::do_out(std::ostream &out,
 	if (triplet->frame450_arcs_valid())
 	{
 		out << std::setw(width_arcs)
-			<< hex.format(triplet->frame450_arcs(), width_arcs);
+			<< hex.format(Checksum { triplet->frame450_arcs() }, width_arcs);
 	} else
 	{
 		out << std::setw(width_arcs) << unparsed_value;
@@ -178,6 +178,17 @@ ARIdTableFormat::ARIdTableFormat(const ARId &id, const std::string &alt_prefix,
 ARIdTableFormat::~ARIdTableFormat() noexcept = default;
 
 
+std::string ARIdTableFormat::hex_id(const uint32_t id) const
+{
+	std::ostringstream out;
+
+	out << std::hex << std::uppercase << std::setfill('0')
+		<< std::setw(8) << id;
+
+	return out.str();
+}
+
+
 void ARIdTableFormat::do_init(const int /* rows */, const int /* cols */)
 {
 	// empty
@@ -197,9 +208,6 @@ std::string ARIdTableFormat::do_format(const ARId &id,
 
 	std::stringstream stream;
 	stream << std::left;
-
-	HexLayout hex; // TODO Make configurable
-	hex.set_uppercase(true);
 
 	std::string value;
 
@@ -231,13 +239,13 @@ std::string ARIdTableFormat::do_format(const ARId &id,
 				value = std::to_string(id.track_count());
 				break;
 			case ARID_FLAG::ID1:
-				value = hex.format(id.disc_id_1(), 8);
+				value = hex_id(id.disc_id_1());
 				break;
 			case ARID_FLAG::ID2:
-				value = hex.format(id.disc_id_2(), 8);
+				value = hex_id(id.disc_id_2());
 				break;
 			case ARID_FLAG::CDDBID:
-				value = hex.format(id.cddb_id(), 8);
+				value = hex_id(id.cddb_id());
 				break;
 			default:
 				break;
@@ -474,8 +482,7 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 				case CELL_TYPE::CHECKSUM :
 					cstype = types_to_print[col - md_offset];
 					cell = checksum_layout().format(
-							(*checksums)[row].get(cstype).value(),
-							width(col));
+							(*checksums)[row].get(cstype), width(col));
 					break;
 
 				case CELL_TYPE::MATCH    : break;
@@ -608,14 +615,12 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 		for (std::size_t col = 0; col < columns() - 1; ++col, ++index)
 		{
 			print_cell(o, col,
-				checksum_layout().format(
-					checksums->at(index).get(type).value(), 8),
+				checksum_layout().format(checksums->at(index).get(type), 8),
 				true);
 		}
 
 		print_cell(o, columns() - 1,
-				checksum_layout().format(
-					checksums->at(index).get(type).value(), 8),
+				checksum_layout().format(checksums->at(index).get(type), 8),
 				false);
 
 		o << std::endl;
@@ -856,13 +861,13 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 {
 	assertions(t);
 
-	const auto  checksums = std::get<0>(t);
-	const auto& filenames = std::get<1>(t);
-	const auto& refsums   = std::get<2>(t);
-	const auto  match     = std::get<3>(t);
-	const auto  block     = std::get<4>(t);
-	const auto  version   = std::get<5>(t);
-	const auto  toc       = std::get<6>(t);
+	auto checksums = std::get<0>(t);
+	auto filenames = std::get<1>(t);
+	auto refsums   = std::get<2>(t);
+	auto match     = std::get<3>(t);
+	auto block     = std::get<4>(t);
+	auto version   = std::get<5>(t);
+	auto toc       = std::get<6>(t);
 	//const auto& arid      = std::get<7>(t);
 
 	using TYPE = arcstk::checksum::type;
@@ -935,8 +940,8 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 					break;
 
 				case CELL_TYPE::CHECKSUM : // "Theirs" column
-					cell = checksum_layout().format(
-								(*refsums)[row].value(), width(col));
+					cell = checksum_layout().format((*refsums)[row],
+							width(col));
 					break;
 
 				case CELL_TYPE::MATCH    : // "Mine" columns (may be one or two)
@@ -947,7 +952,7 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 					} else
 					{
 						cell = checksum_layout().format(
-							checksums->at(row).get(cstype).value(),
+							checksums->at(row).get(cstype),
 							width(col));
 					}
 					break;

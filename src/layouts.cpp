@@ -70,15 +70,15 @@ CELL_TYPE convert_to(const int type)
 }
 
 
-// NumberLayout
+// ChecksumLayout
 
 
-NumberLayout::~NumberLayout() noexcept = default;
+ChecksumLayout::~ChecksumLayout() noexcept = default;
 
 
-std::string NumberLayout::format(const uint32_t &number, const int width) const
+std::string ChecksumLayout::format(const Checksum &c, const int width) const
 {
-	return this->do_format(number, width);
+	return this->do_format(c.value(), width);
 }
 
 
@@ -200,13 +200,13 @@ WithChecksumLayout::~WithChecksumLayout() noexcept = default;
 
 
 void WithChecksumLayout::set_checksum_layout(
-		std::unique_ptr<NumberLayout> &layout)
+		std::unique_ptr<ChecksumLayout> &layout)
 {
 	checksum_layout_ = std::move(layout);
 }
 
 
-const NumberLayout& WithChecksumLayout::checksum_layout() const
+const ChecksumLayout& WithChecksumLayout::checksum_layout() const
 {
 	return *checksum_layout_;
 }

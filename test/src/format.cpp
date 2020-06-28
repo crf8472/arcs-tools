@@ -10,11 +10,12 @@
 
 TEST_CASE ( "HexLayout", "[hexlayout]" )
 {
+	using arcsapp::Checksum;
 	using arcsapp::HexLayout;
 
 	auto hex_layout = std::make_unique<HexLayout>();
 
-	auto foo = hex_layout->format(3456, 3);
+	auto foo = hex_layout->format(Checksum { 3456 }, 3);
 
 	CHECK ( foo == "D80" );
 }
