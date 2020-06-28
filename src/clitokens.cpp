@@ -17,7 +17,7 @@ namespace arcsapp
 // CLITokens
 
 
-CLITokens::CLITokens (int argc, char **argv)
+CLITokens::CLITokens (int argc, const char* const * const argv)
 	: tokens_ {}
 {
 	if (!argv or !*argv)
@@ -25,7 +25,7 @@ CLITokens::CLITokens (int argc, char **argv)
 		return;
 	}
 
-	for (int i = 1; i < argc; ++i)
+	for (auto i = int { 1 }; i < argc; ++i)
 	{
 		this->tokens_.push_back(std::string(argv[i]));
 	}

@@ -149,7 +149,7 @@ const std::vector<Option> Configurator::global_options_ = {
 };
 
 
-Configurator::Configurator(int argc, char** argv)
+Configurator::Configurator(const int argc, const char* const * const argv)
 	: logman_ {
 		LogManager::get_loglevel(global(CONFIG::VERBOSITY).default_arg()),
 		LOGLEVEL::NONE /* quiet */
