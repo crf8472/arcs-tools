@@ -8,6 +8,7 @@
 #include <cstdlib>           // for EXIT_SUCCESS, EXIT_FAILURE
 #include <iostream>          // for operator<<, basic_ostream, endl, cerr
 #include <memory>            // for unique_ptr
+#include <exception>         // for exception
 #include <utility>           // for pair
 #include <string>            // for string
 
