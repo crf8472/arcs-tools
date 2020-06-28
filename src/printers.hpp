@@ -103,7 +103,9 @@ public:
 protected:
 
 	/**
-	 * \brief Do assertions for input arguments
+	 * \brief Do assertions for input arguments.
+	 *
+	 * \param[in] t Tuple of input arguments
 	 */
 	virtual void assertions(const std::tuple<const Args*...> &t) const
 	= 0;
