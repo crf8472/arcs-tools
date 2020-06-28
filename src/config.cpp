@@ -155,7 +155,7 @@ Configurator::Configurator(const int argc, const char* const * const argv)
 		LOGLEVEL::NONE /* quiet */
 
 	}
-	, cli_(argc, argv)
+	, tokens_(argc, argv)
 {
 	// We do not know whether the application is required to run quiet,
 	// so initial level is NOT default level but quiet level
@@ -185,7 +185,7 @@ void Configurator::configure_logging()
 
 std::unique_ptr<Options> Configurator::provide_options()
 {
-	auto options = this->parse_input(cli_);
+	auto options = this->parse_input(tokens_);
 
 	ARCS_LOG_DEBUG << "Command line input successfully parsed";
 
@@ -206,13 +206,13 @@ const std::vector<std::pair<Option, OptionValue>>&
 }
 
 
-std::pair<bool, std::string> Configurator::option(CLITokens &cli,
+std::pair<bool, std::string> Configurator::option(CLITokens &tokens,
 		const Option &option) const
 {
 	for (const auto& token : option.tokens())
 	{
 		if (const auto& [ found, value ] =
-			cli.consume_option_token(token, option.needs_value()); found)
+			tokens.consume(token, option.needs_value()); found)
 		{
 			if (option.needs_value() and value.empty())
 			{
@@ -224,24 +224,29 @@ std::pair<bool, std::string> Configurator::option(CLITokens &cli,
 		}
 	}
 
-	return std::make_pair(false, cli.empty_value());
+	return std::make_pair(false, tokens.empty_value());
 }
 
 
-std::string Configurator::argument(CLITokens &cli) const
+std::string Configurator::argument(CLITokens &tokens) const
 {
-	return cli.consume_argument();
+	return tokens.consume();
 }
 
 
-std::vector<std::string> Configurator::arguments(CLITokens &cli) const
+std::vector<std::string> Configurator::arguments(CLITokens &tokens) const
 {
-	auto arguments = std::vector<std::string> {};
-	arguments.reserve(cli.unconsumed_tokens().size());
-
-	while (cli.tokens_left())
+	if (tokens.empty())
 	{
-		arguments.push_back(this->argument(cli));
+		return std::vector<std::string>{};
+	}
+
+	auto arguments = std::vector<std::string> {};
+	arguments.reserve(tokens.unconsumed().size());
+
+	while (not tokens.empty())
+	{
+		arguments.push_back(this->argument(tokens));
 	}
 
 	return arguments;
@@ -252,10 +257,10 @@ int Configurator::configure_loglevel()
 {
 	// current loglevel is NONE (since QUIET could have been requested)
 
-	const auto& [ is_quiet, noval ] = this->option(cli_, global(CONFIG::QUIET));
+	const auto& [ is_quiet, noval ] = this->option(tokens_, global(CONFIG::QUIET));
 
 	const auto& [ verbosity_defined, parsed_level ] =
-		this->option(cli_, global(CONFIG::VERBOSITY));
+		this->option(tokens_, global(CONFIG::VERBOSITY));
 	// quiet overrides verbosity, but verbosity must be consumed, however
 
 	if (is_quiet)
@@ -278,7 +283,7 @@ int Configurator::configure_loglevel()
 
 std::tuple<std::string, std::string> Configurator::configure_logappender()
 {
-	const auto& [ found, logfile ] = this->option(cli_, global(CONFIG::LOGFILE));
+	const auto& [ found, logfile ] = this->option(tokens_, global(CONFIG::LOGFILE));
 
 	std::unique_ptr<Appender> appender;
 
@@ -303,13 +308,13 @@ std::tuple<std::string, std::string> Configurator::configure_logappender()
 }
 
 
-std::unique_ptr<Options> Configurator::parse_options(CLITokens& cli)
+std::unique_ptr<Options> Configurator::parse_options(CLITokens& tokens)
 {
 	// The --version flag is magic, the parsing can be stopped because it is
 	// known at this point what the application has to do.
 
-	if (const auto& [ found, value ] = this->option(cli, global(CONFIG::VERSION));
-		found)
+	if (const auto& [ found, value ] =
+			this->option(tokens, global(CONFIG::VERSION)); found)
 	{
 		Options options;
 		options.set_version(true);
@@ -333,7 +338,7 @@ std::unique_ptr<Options> Configurator::parse_options(CLITokens& cli)
 
 		// Try to consume supported options und assign their ids
 
-		if (const auto& [ found, value ] = this->option(cli, option); found)
+		if (const auto& [ found, value ] = this->option(tokens, option); found)
 		{
 			parsed_options->set(id);
 
@@ -345,24 +350,24 @@ std::unique_ptr<Options> Configurator::parse_options(CLITokens& cli)
 
 		if (Logging::instance().has_level(LOGLEVEL::DEBUG))
 		{
-			auto cli_fragment = std::ostringstream { };
+			auto print_fragment = std::ostringstream { };
 
-			if (auto tokens = cli.unconsumed_tokens(); not tokens.empty())
+			if (auto utokens = tokens.unconsumed(); not utokens.empty())
 			{
-				std::copy (tokens.begin(), tokens.end() - 1,
-					std::ostream_iterator<std::string>(cli_fragment, ",")
+				std::copy (utokens.begin(), utokens.end() - 1,
+					std::ostream_iterator<std::string>(print_fragment, ",")
 				);
-				cli_fragment << tokens.back();
+				print_fragment << utokens.back();
 			} // XXX This trick is duplicated in options.cpp/Options::token_str
 
-			ARCS_LOG(DEBUG2) << "Tokens left: " << cli_fragment.str();
+			ARCS_LOG(DEBUG2) << "Tokens left: " << print_fragment.str();
 		}
 	}
 
 	// Add builtin option: outfile
 
 	if (const auto& [ found, outfile ] =
-		this->option(cli, global(CONFIG::OUTFILE)); found)
+		this->option(tokens, global(CONFIG::OUTFILE)); found)
 	{
 		if (outfile.empty())
 		{
@@ -378,27 +383,27 @@ std::unique_ptr<Options> Configurator::parse_options(CLITokens& cli)
 }
 
 
-int Configurator::parse_arguments(CLITokens& cli, Options &options) const
+int Configurator::parse_arguments(CLITokens& tokens, Options &options) const
 {
-	return this->do_parse_arguments(cli, options);
+	return this->do_parse_arguments(tokens, options);
 }
 
 
-std::unique_ptr<Options> Configurator::parse_input(CLITokens& cli)
+std::unique_ptr<Options> Configurator::parse_input(CLITokens& tokens)
 {
-	auto options = this->parse_options(cli);
+	auto options = this->parse_options(tokens);
 
-	this->parse_arguments(cli, *options);
+	this->parse_arguments(tokens, *options);
 
 	// Finish Processing of the Command Line Input
 
-	if (cli.tokens_left())
+	if (not tokens.empty())
 	{
 		std::stringstream ss;
 
 		ss << "Unrecognized command line tokens: ";
 
-		for (const auto& token : cli.unconsumed_tokens())
+		for (const auto& token : tokens.unconsumed())
 		{
 			ss << "'" << token << "' ";
 		}
@@ -417,11 +422,11 @@ const Option& Configurator::global(const CONFIG c)
 
 
 
-int Configurator::do_parse_arguments(CLITokens& cli, Options &options) const
+int Configurator::do_parse_arguments(CLITokens& tokens, Options &options) const
 {
 	// allow only single argument
 
-	auto arg = this->argument(cli);
+	auto arg = this->argument(tokens);
 
 	if (arg.empty())
 	{
