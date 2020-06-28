@@ -270,13 +270,14 @@ public:
 	 */
 	enum class ARID_FLAG : int
 	{
-		URL      = 0,
-		FILENAME = 1,
-		TRACKS   = 2,
-		ID1      = 3,
-		ID2      = 4,
-		CDDBID   = 5,
-		COUNT    = 6
+		ID       = 0,
+		URL      = 1,
+		FILENAME = 2,
+		TRACKS   = 3,
+		ID1      = 4,
+		ID2      = 5,
+		CDDBID   = 6,
+		COUNT    = 7
 	};
 
 	/**
@@ -289,6 +290,7 @@ public:
 	/**
 	 * \brief Constructor setting all flags.
 	 *
+	 * \param[in] id          Set to TRUE for printing the ID
 	 * \param[in] url         Set to TRUE for printing the URL
 	 * \param[in] filename    Set to TRUE for printing the filename
 	 * \param[in] track_count Set to TRUE for printing the track_count
@@ -296,14 +298,28 @@ public:
 	 * \param[in] disc_id_2   Set to TRUE for printing the disc id2
 	 * \param[in] cddb_id     Set to TRUE for printing the cddb id
 	 */
-	ARIdLayout(const bool &url, const bool &filename,
-			const bool &track_count, const bool &disc_id_1,
-			const bool &disc_id_2, const bool &cddb_id);
+	ARIdLayout(const bool id, const bool url, const bool filename,
+			const bool track_count, const bool disc_id_1,
+			const bool disc_id_2, const bool cddb_id);
 
 	/**
 	 * \brief Virtual default destructor
 	 */
 	virtual ~ARIdLayout() noexcept;
+
+	/**
+	 * \brief Returns TRUE iff instance is configured to format the ID.
+	 *
+	 * \return ID flag
+	 */
+	bool id() const;
+
+	/**
+	 * \brief Set to TRUE to print the ID.
+	 *
+	 * \param[in] id Flag to indicate that the ID has to be printed
+	 */
+	void set_id(const bool id);
 
 	/**
 	 * \brief Returns TRUE iff instance is configured to format the URL.

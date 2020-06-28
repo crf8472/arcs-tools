@@ -129,11 +129,12 @@ int ARIdApplication::do_run(const Options &options)
 	{
 		format = std::make_unique<ARIdTableFormat>(*id,
 			options.get(ARIdOptions::URLPREFIX),
-			true, true, true, true, true, true);
+			true, true, true, true, true, true, true);
 	} else
 	{
 		format = std::make_unique<ARIdTableFormat>(*id,
 			options.get(ARIdOptions::URLPREFIX),
+			options.is_set(ARIdOptions::ID),
 			options.is_set(ARIdOptions::URL),
 			options.is_set(ARIdOptions::DBID),
 			false /* no track count */,

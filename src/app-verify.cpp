@@ -1,3 +1,4 @@
+#include "printers.hpp"
 #ifndef __ARCSTOOLS_APPARVERIFY_HPP__
 #include "app-verify.hpp"
 #endif
@@ -143,7 +144,7 @@ const std::vector<std::pair<Option, OptionValue>>&
 			VERIFY::RESPONSEFILE },
 		{{      "refvalues", true, "none",
 			"Specify AccurateRip reference values (as hex value list)" },
-			VERIFY::REFVALUES}, // TODO
+			VERIFY::REFVALUES},
 
 		// calculation output options
 
@@ -167,13 +168,13 @@ const std::vector<std::pair<Option, OptionValue>>&
 			VERIFY::COLDELIM},
 		{{      "print-id",    false, "FALSE",
 			"Print the AccurateRip Id of the album" },
-			VERIFY::PRINTID}, // TODO
+			VERIFY::PRINTID},
 		{{      "print-url",   false, "FALSE",
 			"Print the AccurateRip URL of the album" },
-			VERIFY::PRINTURL}, // TODO
+			VERIFY::PRINTURL},
 		{{      "print-all-matches",   false, "FALSE",
 			"Print verification results for all blocks" },
-			VERIFY::PRINTALL}, // TODO
+			VERIFY::PRINTALL},
 		{{ 'b', "boolean",   false, "FALSE",
 			"Return number of differing tracks in best match" },
 			VERIFY::BOOLEAN},
@@ -217,6 +218,26 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 			ARCS_LOG(DEBUG1) <<
 				"Activate option NOALBUM due to NOFIRST and NOLAST";
 			voptions->set(VERIFY::NOALBUM);
+		}
+	}
+
+	// Print ID only in case we have one from the reference data
+
+	if (voptions->is_set(VERIFY::REFVALUES))
+	{
+		if (voptions->is_set(VERIFY::PRINTID))
+		{
+			ARCS_LOG_WARNING <<
+				"Ignore option PRINTID since option REFVALUES is active "
+				"and reference values do not provide an ID to print";
+			voptions->unset(VERIFY::PRINTID);
+		}
+		if (voptions->is_set(VERIFY::PRINTURL))
+		{
+			ARCS_LOG_WARNING <<
+				"Ignore option PRINTURL since option REFVALUES is active "
+				"and reference values do not provide an URL to print";
+			voptions->unset(VERIFY::PRINTURL);
 		}
 	}
 
@@ -378,7 +399,7 @@ std::vector<Checksum> ARVerifyApplication::parse_refvalues_sequence(
 			refsum = std::stoul(value, 0, 16);
 
 			ARCS_LOG_DEBUG << "Input reference sum " << value
-				<< " for track/file " << t
+				<< " for track/file " << std::setw(2) << t
 				<< " is parsed as " << refsum;
 
 			refsums.push_back(Checksum { refsum });
@@ -558,6 +579,25 @@ void ARVerifyApplication::print_result(const Options &options,
 
 	const auto match = diff.match();
 
+	if (options.is_set(VERIFY::PRINTID) or options.is_set(VERIFY::PRINTURL))
+	{
+		// Do we have an id for "Theirs"? (Otherwise, forget about the actual
+		// ARId computed locally)
+		if (auto response = &std::get<0>(reference_sums); response)
+		{
+			const std::unique_ptr<ARIdTableFormat> idformat =
+				std::make_unique<ARIdTableFormat>();
+
+			idformat->set_id(options.is_set(VERIFY::PRINTID));
+			idformat->set_url(options.is_set(VERIFY::PRINTURL));
+
+			auto arid = response->at(diff.best_match()).id();
+			idformat->use(std::make_tuple(&arid, nullptr));
+
+			output(*idformat);
+		}
+	}
+
 	const auto format = configure_format(options, print_filenames);
 
 	if (options.is_set(VERIFY::PRINTALL))
@@ -640,4 +680,3 @@ int ARVerifyApplication::do_run(const Options &options)
 }
 
 } // namespace arcsapp
-

@@ -149,19 +149,20 @@ void ARTripletFormat::do_out(std::ostream &out,
 // ARIdTableFormat
 
 
-ARIdTableFormat::ARIdTableFormat(const ARId &id, const std::string &alt_prefix,
-		const bool &url, const bool &filename,
-		const bool &track_count, const bool &disc_id_1, const bool &disc_id_2,
-		const bool &cddb_id)
-	: ARIdLayout(url, filename, track_count, disc_id_1, disc_id_2, cddb_id)
+ARIdTableFormat::ARIdTableFormat(const ARId &arid,
+		const std::string &alt_prefix,
+		const bool id, const bool url, const bool filename,
+		const bool track_count, const bool disc_id_1, const bool disc_id_2,
+		const bool cddb_id)
+	: ARIdLayout(id, url, filename, track_count, disc_id_1, disc_id_2, cddb_id)
 	, StringTableStructure(
 			url + filename + track_count + disc_id_1 + disc_id_2 + cddb_id, 1)
-	, ARIdPrinter(std::make_tuple(&id, &alt_prefix))
-	, show_flags_ { ARID_FLAG::URL, ARID_FLAG::FILENAME, ARID_FLAG::TRACKS,
-		ARID_FLAG::ID1, ARID_FLAG::ID2, ARID_FLAG::CDDBID }
+	, ARIdPrinter(std::make_tuple(&arid, &alt_prefix))
+	, show_flags_ { ARID_FLAG::ID, ARID_FLAG::URL, ARID_FLAG::FILENAME,
+		ARID_FLAG::TRACKS, ARID_FLAG::ID1, ARID_FLAG::ID2, ARID_FLAG::CDDBID }
 {
 	const std::vector<std::string> labels =
-		{ "URL", "Filename", "Tracks", "ID1", "ID2", "CDDB ID" };
+		{ "ID", "URL", "Filename", "Tracks", "ID1", "ID2", "CDDB ID" };
 
 	int i = 0;
 	for (const auto& sflag : show_flags_) // TODO Do this non-dynamically!
@@ -195,15 +196,15 @@ void ARIdTableFormat::do_init(const int /* rows */, const int /* cols */)
 }
 
 
-std::string ARIdTableFormat::do_format(const ARId &id,
+std::string ARIdTableFormat::do_format(const ARId &arid,
 			const std::string &alt_prefix) const
 {
 	if (no_flags()) // return ARId as default, ignore any Hex layout settings
 	{
-		return id.to_string();
+		return arid.to_string();
 	}
 
-	const int total_labels = url() + filename() + track_count() +
+	const int total_labels = id() + url() + filename() + track_count() +
 		disc_id_1() + disc_id_2() + cddb_id();
 
 	std::stringstream stream;
@@ -224,28 +225,31 @@ std::string ARIdTableFormat::do_format(const ARId &id,
 
 		switch (sflag)
 		{
+			case ARID_FLAG::ID:
+				value = arid.to_string();
+				break;
 			case ARID_FLAG::URL:
-				value = id.url();
+				value = arid.url();
 				if (not alt_prefix.empty())
 				{
-					value.replace(0, id.prefix().length(), alt_prefix);
+					value.replace(0, arid.prefix().length(), alt_prefix);
 					// FIXME If alt_prefix does not end with '/' ?
 				}
 				break;
 			case ARID_FLAG::FILENAME:
-				value = id.filename();
+				value = arid.filename();
 				break;
 			case ARID_FLAG::TRACKS:
-				value = std::to_string(id.track_count());
+				value = std::to_string(arid.track_count());
 				break;
 			case ARID_FLAG::ID1:
-				value = hex_id(id.disc_id_1());
+				value = hex_id(arid.disc_id_1());
 				break;
 			case ARID_FLAG::ID2:
-				value = hex_id(id.disc_id_2());
+				value = hex_id(arid.disc_id_2());
 				break;
 			case ARID_FLAG::CDDBID:
-				value = hex_id(id.cddb_id());
+				value = hex_id(arid.cddb_id());
 				break;
 			default:
 				break;
@@ -261,18 +265,14 @@ std::string ARIdTableFormat::do_format(const ARId &id,
 void ARIdTableFormat::assertions(const std::tuple<const ARId*,
 		const std::string*> &t) const
 {
-	const auto* arid       = std::get<0>(t);
-	const auto* alt_prefix = std::get<1>(t);
+	const auto arid = std::get<0>(t);
 
 	if (!arid)
 	{
-		// TODO throw
+		throw std::invalid_argument("Cannot print a null pointer for an ARId");
 	}
 
-	if (!alt_prefix)
-	{
-		// TODO throw
-	}
+	// alt_prefix is allowed to be nullptr
 }
 
 
@@ -284,7 +284,13 @@ void ARIdTableFormat::do_out(std::ostream &o,
 	const auto id         = std::get<0>(t);
 	const auto alt_prefix = std::get<1>(t);
 
-	o << format(*id, *alt_prefix) << std::endl;
+	if (!alt_prefix)
+	{
+		o << format(*id, std::string{}) << std::endl;
+	} else
+	{
+		o << format(*id, *alt_prefix) << std::endl;
+	}
 }
 
 

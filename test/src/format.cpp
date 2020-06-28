@@ -75,11 +75,12 @@ TEST_CASE ( "ARIdTableFormat", "" )
 	using arcsapp::ARIdTableFormat;
 	using ARID_FLAG = ARIdTableFormat::ARID_FLAG;
 
-	ARIdTableFormat f(true, false, false, false, false, false);
+	ARIdTableFormat f(false, true, false, false, false, false, false);
 
 	REQUIRE ( f.rows()    == 1 );
 	REQUIRE ( f.columns() == 1 );
 
+	REQUIRE ( not f.has_only(ARID_FLAG::ID) );
 	REQUIRE ( f.has_only(ARID_FLAG::URL) );
 	REQUIRE ( not f.has_only(ARID_FLAG::FILENAME) );
 	REQUIRE ( not f.has_only(ARID_FLAG::TRACKS) );

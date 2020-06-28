@@ -222,11 +222,12 @@ ARIdLayout::ARIdLayout()
 }
 
 
-ARIdLayout::ARIdLayout(const bool &url, const bool &filename,
-		const bool &track_count, const bool &disc_id_1, const bool &disc_id_2,
-		const bool &cddb_id)
+ARIdLayout::ARIdLayout(const bool id, const bool url, const bool filename,
+		const bool track_count, const bool disc_id_1, const bool disc_id_2,
+		const bool cddb_id)
 	: WithInternalFlags(
 			0
+			| (id          << to_underlying(ARID_FLAG::ID))
 			| (url         << to_underlying(ARID_FLAG::URL))
 			| (filename    << to_underlying(ARID_FLAG::FILENAME))
 			| (track_count << to_underlying(ARID_FLAG::TRACKS))
@@ -240,6 +241,18 @@ ARIdLayout::ARIdLayout(const bool &url, const bool &filename,
 
 
 ARIdLayout::~ARIdLayout() noexcept = default;
+
+
+bool ARIdLayout::id() const
+{
+	return flag(to_underlying(ARID_FLAG::ID));
+}
+
+
+void ARIdLayout::set_id(const bool id)
+{
+	this->set_flag(to_underlying(ARID_FLAG::ID), id);
+}
 
 
 bool ARIdLayout::url() const

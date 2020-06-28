@@ -39,6 +39,7 @@ struct ARIdOptions
 	static constexpr OptionValue PROFILE   = 4;
 	static constexpr OptionValue AUDIOFILE = 5;
 	static constexpr OptionValue URLPREFIX = 6;
+	static constexpr OptionValue ID        = 7;
 };
 
 

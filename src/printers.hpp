@@ -171,8 +171,9 @@ public:
 	/**
 	 * \brief Constructor setting all flags.
 	 *
-	 * \param[in] id          ARId to print
+	 * \param[in] arid        ARId to print
 	 * \param[in] alt_prefix  Alternative URL prefix
+	 * \param[in] id          Set to TRUE for printing the ID
 	 * \param[in] url         Set to TRUE for printing the URL
 	 * \param[in] filename    Set to TRUE for printing the filename
 	 * \param[in] track_count Set to TRUE for printing the track_count
@@ -180,14 +181,15 @@ public:
 	 * \param[in] disc_id_2   Set to TRUE for printing the disc id2
 	 * \param[in] cddb_id     Set to TRUE for printing the cddb id
 	 */
-	ARIdTableFormat(const ARId &id, const std::string &alt_prefix,
-			const bool &url, const bool &filename,
-			const bool &track_count, const bool &disc_id_1,
-			const bool &disc_id_2, const bool &cddb_id);
+	ARIdTableFormat(const ARId &arid, const std::string &alt_prefix,
+			const bool id, const bool url, const bool filename,
+			const bool track_count, const bool disc_id_1,
+			const bool disc_id_2, const bool cddb_id);
 
 	/**
 	 * \brief Constructor setting all flags with empty ARId and no prefix.
 	 *
+	 * \param[in] id          Set to TRUE for printing the ID
 	 * \param[in] url         Set to TRUE for printing the URL
 	 * \param[in] filename    Set to TRUE for printing the filename
 	 * \param[in] track_count Set to TRUE for printing the track_count
@@ -195,19 +197,19 @@ public:
 	 * \param[in] disc_id_2   Set to TRUE for printing the disc id2
 	 * \param[in] cddb_id     Set to TRUE for printing the cddb id
 	 */
-	ARIdTableFormat(const bool &url, const bool &filename,
-			const bool &track_count, const bool &disc_id_1,
-			const bool &disc_id_2, const bool &cddb_id) :
-		ARIdTableFormat (arcstk::EmptyARId, std::string(), url, filename,
+	ARIdTableFormat(const bool id, const bool url, const bool filename,
+			const bool track_count, const bool disc_id_1, const bool disc_id_2,
+			const bool cddb_id)
+		: ARIdTableFormat (arcstk::EmptyARId, std::string(), id, url, filename,
 			track_count, disc_id_1, disc_id_2, cddb_id ) { /* empty */ };
 
 	/**
 	 * \brief Default constructor.
 	 *
-	 * Sets empty ARId, no prefix and all formatting flags to TRUE
+	 * Sets empty ARId, no prefix and all formatting flags to FALSE except URL.
 	 */
-	ARIdTableFormat() : ARIdTableFormat(arcstk::EmptyARId, std::string(),
-			true, true, false, false, false, false)
+	ARIdTableFormat() : ARIdTableFormat(arcstk::EmptyARId, std::string(), false,
+			true, false, false, false, false, false)
 	{ /* empty */ };
 
 	/**
