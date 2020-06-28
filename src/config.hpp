@@ -155,7 +155,7 @@ public:
 	 * \param[in] argc Number of CLI arguments
 	 * \param[in] argv Array of CLI arguments
 	 */
-	Configurator(int argc, char** argv);
+	Configurator(const int argc, const char* const * const argv);
 
 	/**
 	 * \brief Virtual default destructor.

@@ -39,7 +39,7 @@ public:
 	 * \param[in] argc Number of command line arguments
 	 * \param[in] argv Command line arguments
 	 */
-	CLITokens(int argc, char **argv);
+	CLITokens(int argc, const char* const * const argv);
 
 	/**
 	 * \brief Virtual default destructor.
