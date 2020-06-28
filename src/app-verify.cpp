@@ -645,7 +645,7 @@ void ARVerifyApplication::print_result(const Options &options,
 			output(*format);
 		} else // Use ARResponse
 		{
-			auto ref_sums = sums_in_block(std::get<0>(reference_sums),
+			const auto ref_sums = sums_in_block(std::get<0>(reference_sums),
 					diff.best_match());
 
 			format->use(std::make_tuple(&actual_sums, &filenames, &ref_sums,

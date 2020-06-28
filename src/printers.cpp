@@ -9,6 +9,7 @@
 #include <iostream>   // for ostream, operator<<, basic_ostream, endl, size_t
 #include <iterator>   // for back_insert_iterator, back_inserter
 #include <set>        // for operator!=, set, set<>::const_iterator
+#include <stdexcept>  // for invalid_argument
 #include <string>     // for string, operator<<, to_string, char_traits, ope...
 #include <vector>     // for vector, allocator
 
@@ -76,17 +77,18 @@ ARTripletFormat::ARTripletFormat()
 void ARTripletFormat::assertions(const std::tuple<const int*,
 		const ARTriplet*> &t) const
 {
-	const auto* track   = std::get<0>(t);
-	const auto* triplet = std::get<1>(t);
+	const auto track   = std::get<0>(t);
 
 	if (!track)
 	{
-		// TODO throw
+		throw std::invalid_argument("Cannot print a nullptr as track");
 	}
+
+	const auto triplet = std::get<1>(t);
 
 	if (!triplet)
 	{
-		// TODO throw
+		throw std::invalid_argument("Cannot print a nullptr as triplet");
 	}
 }
 
@@ -96,8 +98,8 @@ void ARTripletFormat::do_out(std::ostream &out,
 {
 	assertions(t);
 
-	const auto& track   = std::get<0>(t);
-	const auto& triplet = std::get<1>(t);
+	const auto track   = std::get<0>(t);
+	const auto triplet = std::get<1>(t);
 
 	HexLayout hex; // TODO Make this configurable, inherit from WithChecksums...
 	hex.set_show_base(false);
@@ -109,7 +111,7 @@ void ARTripletFormat::do_out(std::ostream &out,
 	const auto unparsed_value = std::string { "????????" };
 
 	// TODO Make label configurable
-	out << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
+	out << "Track " << std::setw(2) << std::setfill('0') << *track << ": ";
 
 	if (triplet->arcs_valid())
 	{
@@ -309,11 +311,11 @@ void ChecksumsResultPrinter::assertions(
 		const std::tuple<const Checksums*, const std::vector<std::string>*,
 		const TOC*, const ARId*, const bool*> &t) const
 {
-	const auto  checksums = std::get<0>(t);
-	const auto& filenames = std::get<1>(t);
-	const auto  toc       = std::get<2>(t);
-	const auto& arid      = std::get<3>(t);
-	//const auto  is_album  = std::get<4>(t); // unused
+	const auto checksums = std::get<0>(t);
+	const auto filenames = std::get<1>(t);
+	const auto toc       = std::get<2>(t);
+	const auto arid      = std::get<3>(t);
+	//const auto is_album  = std::get<4>(t); // unused
 
 	const auto total_tracks = checksums->size();
 
@@ -420,11 +422,11 @@ void AlbumChecksumsTableFormat::do_out(std::ostream &out,
 {
 	assertions(t);
 
-	const auto  checksums = std::get<0>(t);
-	const auto& filenames = std::get<1>(t);
-	const auto  toc       = std::get<2>(t);
-	//const auto& arid      = std::get<3>(t); // TODO Implement printing
-	//const auto  is_album  = std::get<4>(t);
+	const auto checksums = std::get<0>(t);
+	const auto filenames = std::get<1>(t);
+	const auto toc       = std::get<2>(t);
+	//const auto arid      = std::get<3>(t); // TODO Implement printing
+	//const auto is_album  = std::get<4>(t);
 
 	const auto types_to_print = ordered_typelist(*checksums);
 
@@ -527,11 +529,11 @@ void AlbumTracksTableFormat::do_out(std::ostream &o,
 {
 	assertions(t);
 
-	const auto  checksums = std::get<0>(t);
-	const auto& filenames = std::get<1>(t);
-	const auto  toc       = std::get<2>(t);
-	//const auto& arid      = std::get<3>(t); // TODO Implement printing
-	const auto  is_album  = std::get<4>(t);
+	const auto checksums = std::get<0>(t);
+	const auto filenames = std::get<1>(t);
+	const auto toc       = std::get<2>(t);
+	//const auto arid      = std::get<3>(t); // TODO Implement printing
+	const auto is_album  = std::get<4>(t);
 
 	const auto types_to_print = ordered_typelist(*checksums);
 
@@ -867,14 +869,14 @@ void AlbumMatchTableFormat::do_out(std::ostream &out,
 {
 	assertions(t);
 
-	auto checksums = std::get<0>(t);
-	auto filenames = std::get<1>(t);
-	auto refsums   = std::get<2>(t);
-	auto match     = std::get<3>(t);
-	auto block     = std::get<4>(t);
-	auto version   = std::get<5>(t);
-	auto toc       = std::get<6>(t);
-	//const auto& arid      = std::get<7>(t);
+	const auto checksums = std::get<0>(t);
+	const auto filenames = std::get<1>(t);
+	const auto refsums   = std::get<2>(t);
+	const auto match     = std::get<3>(t);
+	const auto block     = std::get<4>(t);
+	const auto version   = std::get<5>(t);
+	const auto toc       = std::get<6>(t);
+	//const auto arid      = std::get<7>(t);
 
 	using TYPE = arcstk::checksum::type;
 
