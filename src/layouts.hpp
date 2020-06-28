@@ -604,6 +604,20 @@ public:
 	std::size_t columns() const;
 
 	/**
+	 * \brief Set the title of this table.
+	 *
+	 * \param[in] title Title of this table
+	 */
+	void set_table_title(const std::string &title);
+
+	/**
+	 * \brief Get the title of this table.
+	 *
+	 * \return Title of this table
+	 */
+	const std::string& table_title() const;
+
+	/**
 	 * \brief Set the column width
 	 *
 	 * \param[in] col   Column index
@@ -746,6 +760,22 @@ private:
 	 * \return The number of columns
 	 */
 	virtual std::size_t do_columns() const
+	= 0;
+
+	/**
+	 * \brief Description.
+	 *
+	 * \param[in] title Title of the table
+	 */
+	virtual void do_set_table_title(const std::string &title)
+	= 0;
+
+	/**
+	 * \brief Return the title of the table.
+	 *
+	 * \return Title of the table
+	 */
+	virtual const std::string& do_table_title() const
 	= 0;
 
 	/**
@@ -932,12 +962,19 @@ public:
 protected:
 
 	/**
+	 * \brief Prints the title of the table.
+	 *
+	 * \param[in] out The stream to print to
+	 */
+	void print_title(std::ostream &out) const;
+
+	/**
 	 * \brief Worker to print column titles.
 	 *
 	 * Default implementation prints title(column) for each column
 	 * with alignment to the right side.
 	 *
-	 * \param[in] out The stream to print
+	 * \param[in] out The stream to print to
 	 */
 	void print_column_titles(std::ostream &out) const;
 
@@ -947,7 +984,7 @@ protected:
 	 * Default implementation prints row_label(row) with alignment to the right
 	 * side.
 	 *
-	 * \param[in] out The stream to print
+	 * \param[in] out The stream to print to
 	 * \param[in] row Current row
 	 */
 	void print_label(std::ostream &out, const int row) const;
@@ -1031,6 +1068,9 @@ private:
 
 	std::size_t do_rows() const override;
 	std::size_t do_columns() const override;
+
+	void do_set_table_title(const std::string &title) override;
+	const std::string& do_table_title() const override;
 
 	void do_set_width(const int col, const int width) override;
 	int do_width(const int col) const override;
