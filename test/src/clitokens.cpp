@@ -17,7 +17,25 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 {
 	using arcsapp::CLITokens;
 
-	SECTION ("CLITokens with correct input are ok")
+	SECTION ("CLITokens collects arguments correct")
+	{
+		const int argc = 6;
+		const char* input[] = { "arcstk-verify",
+			"irgendwas", "-m", "foo/foo.cue", "foo/foo.wav", "-r", "foo/foo.bin"
+		};
+
+		auto tokens = CLITokens(argc, input);
+
+		tokens.consume("-m", true);
+		tokens.consume("-r", true);
+
+		CHECK ( "irgendwas" == tokens.consume() );
+		CHECK ( "foo/foo.wav" == tokens.consume() );
+
+		CHECK ( tokens.empty() );
+	}
+
+	SECTION ("Unconsumed tokens will be arguments")
 	{
 		const int argc = 6;
 		const char* input[] = { "arcstk-verify",
@@ -25,6 +43,9 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 		};
 
 		auto tokens = CLITokens(argc, input);
+
+		tokens.consume("-m", true);
+		tokens.consume("-r", true);
 	}
 }
 

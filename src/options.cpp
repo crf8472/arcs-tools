@@ -143,21 +143,18 @@ std::string Options::output() const
 
 bool Options::is_set(const OptionValue &option) const
 {
-	//return config_ & option;
 	return flags_[option];
 }
 
 
 void Options::set(const OptionValue &option)
 {
-	//config_ |= option;
 	flags_[option] = true;
 }
 
 
 void Options::unset(const OptionValue &option)
 {
-	//config_ &= !option;
 	flags_[option] = false;
 }
 
@@ -212,7 +209,6 @@ void Options::append(const std::string &arg)
 
 bool Options::empty() const
 {
-	//return config_ == 0 && arguments_.empty() && values_.empty();
 	return flags_.empty() and values_.empty() and arguments_.empty();
 }
 

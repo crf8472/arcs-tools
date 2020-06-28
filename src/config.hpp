@@ -199,14 +199,14 @@ protected:
 	/**
 	 * \brief Worker: consume an option from the command line if present.
 	 *
-	 * \param[in] cli    The command line input to inspect for options
+	 * \param[in] tokens The command line input to inspect for options
 	 * \param[in] option The option to parse
 	 *
 	 * \return TRUE and the option value if the option was successfully consumed
 	 *
 	 * \throws CallSyntaxException On valued options with empty value
 	 */
-	std::pair<bool, std::string> option(CLITokens &cli, const Option &option)
+	std::pair<bool, std::string> option(CLITokens &tokens, const Option &option)
 		const;
 
 	/**
@@ -220,12 +220,12 @@ protected:
 	 * This function can be called multiple times and each call will try to
 	 * consume an argument.
 	 *
-	 * \param[in] cli The command line input to inspect for an argument
+	 * \param[in] tokens The command line input to inspect for an argument
 	 *
 	 * \return Argument string iff an argument could be consumed, otherwise
 	 * empty string
 	 */
-	std::string argument(CLITokens &cli) const;
+	std::string argument(CLITokens &tokens) const;
 
 	/**
 	 * \brief Service: consume all command line arguments.
@@ -234,14 +234,14 @@ protected:
 	 * that wish to support multiple arguments.
 	 *
 	 * Warning: this consumes every present token as part of an argument list.
-	 * After this function has been called, tokens_left() will be FALSE. Use
+	 * After this function has been called, \tokens.empty() will be TRUE. Use
 	 * this only as last parsing operation.
 	 *
-	 * \param[in] cli The command line input to inspect for arguments
+	 * \param[in] tokens The command line input to inspect for arguments
 	 *
 	 * \return List of arguments consumed
 	 */
-	std::vector<std::string> arguments(CLITokens &cli) const;
+	std::vector<std::string> arguments(CLITokens &tokens) const;
 
 	/**
 	 * \brief Worker: deduce the loglevel value from command line and activate
@@ -270,11 +270,13 @@ protected:
 	/**
 	 * \brief Worker: called by parse_input() to parse the options
 	 *
+	 * \param[in] tokens The tokens to parse
+	 *
 	 * \return Options parsed from the command line input
 	 *
 	 * \throw CallSyntaxException Iff the options cannot be parsed
 	 */
-	std::unique_ptr<Options> parse_options(CLITokens& cli);
+	std::unique_ptr<Options> parse_options(CLITokens& tokens);
 
 	/**
 	 * \brief Worker: called by parse_input() to parse the arguments.
@@ -297,14 +299,14 @@ protected:
 	 *
 	 * The default implementation consumes exactly one argument.
 	 *
-	 * \param[in] cli     The command line input to inspect for arguments
+	 * \param[in] tokens  The command line input to inspect for arguments
 	 * \param[in] options The Options to append the arguments to
 	 *
 	 * \return Number of arguments that have been parsed
 	 *
 	 * \throws CallSyntaxException Iff the arguments are not syntactically ok
 	 */
-	int parse_arguments(CLITokens& cli, Options &options) const;
+	int parse_arguments(CLITokens& tokens, Options &options) const;
 
 	/**
 	 * \brief Worker: parse the command line input to an object representation.
@@ -316,13 +318,13 @@ protected:
 	 * If <tt>parse_options()</tt> leaves unconsumed tokens from the command
 	 * line input, this will result in a subsequent <tt>std::runtime_error</tt>.
 	 *
-	 * \param[in] cli The command line input
+	 * \param[in] tokens The command line input
 	 *
 	 * \return Options parsed from the command line input
 	 *
 	 * \throw CallSyntaxException if the call command cannot be parsed
 	 */
-	std::unique_ptr<Options> parse_input(CLITokens& cli);
+	std::unique_ptr<Options> parse_input(CLITokens& tokens);
 
 	/**
 	 * \brief Globally managed options
@@ -373,14 +375,14 @@ private:
 	 *
 	 * Consumes exactly one argument.
 	 *
-	 * \param[in] cli     The command line input to inspect for arguments
+	 * \param[in] tokens  The command line input to inspect for arguments
 	 * \param[in] options The Options to append the arguments to
 	 *
 	 * \return Number of arguments that have been parsed
 	 *
 	 * \throws CallSyntaxException Iff the arguments are not syntactically ok
 	 */
-	virtual int do_parse_arguments(CLITokens& cli, Options &options) const;
+	virtual int do_parse_arguments(CLITokens& tokens, Options &options) const;
 
 	/**
 	 * \brief Called by parse_input() after .
@@ -408,7 +410,7 @@ private:
 	/**
 	 * \brief Internal representation of the CLITokens.
 	 */
-	CLITokens cli_;
+	CLITokens tokens_;
 };
 
 

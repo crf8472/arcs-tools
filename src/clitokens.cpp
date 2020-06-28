@@ -17,7 +17,7 @@ namespace arcsapp
 // CLITokens
 
 
-CLITokens::CLITokens (int argc, const char* const * const argv)
+CLITokens::CLITokens (const int argc, const char* const * const argv)
 	: tokens_ {}
 {
 	if (!argv or !*argv)
@@ -35,8 +35,8 @@ CLITokens::CLITokens (int argc, const char* const * const argv)
 CLITokens::~CLITokens () noexcept = default;
 
 
-std::tuple<bool, std::string> CLITokens::consume_option_token(
-		const std::string &token, const bool value_requested) noexcept
+std::tuple<bool, std::string> CLITokens::consume(const std::string &token,
+		const bool value_requested) noexcept
 {
 	if (tokens_.empty())
 	{
@@ -87,23 +87,23 @@ std::tuple<bool, std::string> CLITokens::consume_option_token(
 }
 
 
-const std::string CLITokens::consume_argument() noexcept
+const std::string CLITokens::consume() noexcept
 {
 	if (tokens_.empty())
 	{
 		return empty_value();
 	}
 
-	auto argument = tokens_.front();
+	auto token = tokens_.front();
 	tokens_.pop_front();
 
-	ARCS_LOG(DEBUG1) << "Consume argument: '" << argument << "'";
+	ARCS_LOG(DEBUG1) << "Consume token: '" << token << "'";
 
-	return argument;
+	return token;
 }
 
 
-bool CLITokens::token_present(const std::string &token) noexcept
+bool CLITokens::contains(const std::string &token) const noexcept
 {
 	auto itr = std::find(tokens_.begin(), tokens_.end(), token);
 
@@ -113,13 +113,13 @@ bool CLITokens::token_present(const std::string &token) noexcept
 }
 
 
-bool CLITokens::tokens_left() noexcept
+bool CLITokens::empty() noexcept
 {
-	return !tokens_.empty();
+	return tokens_.empty();
 }
 
 
-const std::vector<std::string> CLITokens::unconsumed_tokens() noexcept
+const std::vector<std::string> CLITokens::unconsumed() noexcept
 {
 	return std::vector<std::string>(tokens_.begin(), tokens_.end());
 }

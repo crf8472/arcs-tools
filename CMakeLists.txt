@@ -2,12 +2,12 @@
 
 cmake_minimum_required (VERSION 3.9.4 )
 
-## Set variables corresponding to unspecified versions to the empty string
-## needed for specifying the project version along with the name in project()
+## Set variables corresponding to unspecified versions to the empty string.
+## Required for specifying the project version along with the name in project()
 cmake_policy (SET CMP0048 NEW )
 
 ## Support new IN_LIST if() operator
-## required by FindDoxygen.cmake
+## Required by FindDoxygen.cmake
 cmake_policy (SET CMP0057 NEW )
 
 
@@ -23,7 +23,7 @@ set (PROJECT_DEFAULT_BUILD_TYPE "Release" )
 
 set (CMAKE_CXX_STANDARD 17 )
 set (CMAKE_CXX_STANDARD_REQUIRED ON )
-set (CMAKE_CXX_EXTENSIONS OFF ) ## use -std=c++11 instead of std=gnu++11
+set (CMAKE_CXX_EXTENSIONS OFF ) ## use -std=c++11 instead of -std=gnu++11
 
 
 ## --- Setup Version information
