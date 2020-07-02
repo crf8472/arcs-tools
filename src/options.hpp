@@ -20,7 +20,12 @@
 namespace arcsapp
 {
 
+
+/**
+ * \brief ID for a supported option
+ */
 using OptionValue = uint64_t;
+
 
 /**
  * \brief Descriptor for a single command line option.
