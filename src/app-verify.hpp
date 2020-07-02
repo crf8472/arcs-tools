@@ -54,14 +54,14 @@ class VERIFY : public CALCBASE
 	static constexpr auto& BASE = CALCBASE::MAX_CONSTANT;
 
 public:
-	static constexpr OptionValue NOFIRST      = BASE + 1;
-	static constexpr OptionValue NOLAST       = BASE + 2;
-	static constexpr OptionValue NOALBUM      = BASE + 3;
-	static constexpr OptionValue RESPONSEFILE = BASE + 4;
-	static constexpr OptionValue REFVALUES    = BASE + 5;
-	static constexpr OptionValue PRINTALL     = BASE + 6;
-	static constexpr OptionValue BOOLEAN      = BASE + 7;
-	static constexpr OptionValue NOOUTPUT     = BASE + 8;
+	static constexpr OptionCode NOFIRST      = BASE + 1;
+	static constexpr OptionCode NOLAST       = BASE + 2;
+	static constexpr OptionCode NOALBUM      = BASE + 3;
+	static constexpr OptionCode RESPONSEFILE = BASE + 4;
+	static constexpr OptionCode REFVALUES    = BASE + 5;
+	static constexpr OptionCode PRINTALL     = BASE + 6;
+	static constexpr OptionCode BOOLEAN      = BASE + 7;
+	static constexpr OptionCode NOOUTPUT     = BASE + 8;
 };
 
 
@@ -78,7 +78,7 @@ public:
 
 private:
 
-	const std::vector<std::pair<Option, OptionValue>>& do_supported_options()
+	const std::vector<std::pair<Option, OptionCode>>& do_supported_options()
 		const override;
 
 	std::unique_ptr<Options> do_configure_options(

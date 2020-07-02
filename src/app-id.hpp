@@ -33,13 +33,13 @@ class CLITokens;
  */
 struct ARIdOptions
 {
-	static constexpr OptionValue CDDBID    = 1;
-	static constexpr OptionValue URL       = 2;
-	static constexpr OptionValue DBID      = 3;
-	static constexpr OptionValue PROFILE   = 4;
-	static constexpr OptionValue AUDIOFILE = 5;
-	static constexpr OptionValue URLPREFIX = 6;
-	static constexpr OptionValue ID        = 7;
+	static constexpr OptionCode CDDBID    = 1;
+	static constexpr OptionCode URL       = 2;
+	static constexpr OptionCode DBID      = 3;
+	static constexpr OptionCode PROFILE   = 4;
+	static constexpr OptionCode AUDIOFILE = 5;
+	static constexpr OptionCode URLPREFIX = 6;
+	static constexpr OptionCode ID        = 7;
 };
 
 
@@ -54,7 +54,7 @@ public:
 
 private:
 
-	const std::vector<std::pair<Option, OptionValue>>&
+	const std::vector<std::pair<Option, OptionCode>>&
 		do_supported_options() const override;
 };
 

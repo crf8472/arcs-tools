@@ -45,30 +45,30 @@ struct CALCBASE
 {
 	// Info Output Options (no calculation)
 
-	static constexpr OptionValue LIST_TOC_FORMATS   = 1;
-	static constexpr OptionValue LIST_AUDIO_FORMATS = 2;
+	static constexpr OptionCode LIST_TOC_FORMATS   = 1;
+	static constexpr OptionCode LIST_AUDIO_FORMATS = 2;
 
 	// Calculation Input Options
 
-	static constexpr OptionValue METAFILE     =  3;
+	static constexpr OptionCode METAFILE     =  3;
 
 	// Calculation Output Options
 
-	static constexpr OptionValue NOTRACKS     =  4;
-	static constexpr OptionValue NOFILENAMES  =  5;
-	static constexpr OptionValue NOOFFSETS    =  6;
-	static constexpr OptionValue NOLENGTHS    =  7;
-	static constexpr OptionValue NOLABELS     =  8;
-	static constexpr OptionValue COLDELIM     =  9;
-	static constexpr OptionValue PRINTID      = 10;
-	static constexpr OptionValue PRINTURL     = 11;
+	static constexpr OptionCode NOTRACKS     =  4;
+	static constexpr OptionCode NOFILENAMES  =  5;
+	static constexpr OptionCode NOOFFSETS    =  6;
+	static constexpr OptionCode NOLENGTHS    =  7;
+	static constexpr OptionCode NOLABELS     =  8;
+	static constexpr OptionCode COLDELIM     =  9;
+	static constexpr OptionCode PRINTID      = 10;
+	static constexpr OptionCode PRINTURL     = 11;
 
 protected:
 
 	/**
 	 * \brief Max constant occurring in CALC
 	 */
-	static constexpr OptionValue MAX_CONSTANT = 11;
+	static constexpr OptionCode MAX_CONSTANT = 11;
 };
 
 
@@ -123,16 +123,16 @@ public:
 
 	// Calculation Input Options
 
-	static constexpr OptionValue FIRST        = BASE + 1;
-	static constexpr OptionValue LAST         = BASE + 2;
-	static constexpr OptionValue ALBUM        = BASE + 3;
+	static constexpr OptionCode FIRST        = BASE + 1;
+	static constexpr OptionCode LAST         = BASE + 2;
+	static constexpr OptionCode ALBUM        = BASE + 3;
 
 	// Calculation Output Options
 
-	static constexpr OptionValue NOV1         = BASE + 4;
-	static constexpr OptionValue NOV2         = BASE + 5;
-	static constexpr OptionValue SUMSONLY     = BASE + 6;
-	static constexpr OptionValue TRACKSASCOLS = BASE + 7;
+	static constexpr OptionCode NOV1         = BASE + 4;
+	static constexpr OptionCode NOV2         = BASE + 5;
+	static constexpr OptionCode SUMSONLY     = BASE + 6;
+	static constexpr OptionCode TRACKSASCOLS = BASE + 7;
 };
 
 
@@ -149,7 +149,7 @@ public:
 
 private:
 
-	const std::vector<std::pair<Option, OptionValue>>& do_supported_options()
+	const std::vector<std::pair<Option, OptionCode>>& do_supported_options()
 		const override;
 
 	int do_parse_arguments(CLITokens& cli, Options &options) const override;

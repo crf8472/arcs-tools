@@ -141,25 +141,25 @@ std::string Options::output() const
 }
 
 
-bool Options::is_set(const OptionValue &option) const
+bool Options::is_set(const OptionCode &option) const
 {
 	return flags_[option];
 }
 
 
-void Options::set(const OptionValue &option)
+void Options::set(const OptionCode &option)
 {
 	flags_[option] = true;
 }
 
 
-void Options::unset(const OptionValue &option)
+void Options::unset(const OptionCode &option)
 {
 	flags_[option] = false;
 }
 
 
-std::string Options::get(const OptionValue &option) const
+std::string Options::get(const OptionCode &option) const
 {
 	auto it = values_.find(option);
 
@@ -172,13 +172,13 @@ std::string Options::get(const OptionValue &option) const
 }
 
 
-void Options::put(const OptionValue &option, const std::string &value)
+void Options::put(const OptionCode &option, const std::string &value)
 {
 	values_.insert(std::make_pair(option, value));
 }
 
 
-std::string const Options::get_argument(const OptionValue &index) const
+std::string const Options::get_argument(const OptionCode &index) const
 {
 	if (index > arguments_.size())
 	{
@@ -215,20 +215,20 @@ bool Options::empty() const
 
 // Commented out but kept for reference
 
-//OptionValue Options::leftmost_flag() const
+//OptionCode Options::leftmost_flag() const
 //{
 //	auto flags = config_;
 //
 //	if (flags == 0) { return 0; }
 //
-//	OptionValue count = 0;
+//	OptionCode count = 0;
 //	while (flags > 1) { count++; flags >>= 1; }
 //
 //	return std::pow(2, count);
 //}
 
 
-//OptionValue Options::rightmost_flag() const
+//OptionCode Options::rightmost_flag() const
 //{
 //	return config_ & (~config_ + 1);
 //}

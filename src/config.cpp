@@ -199,7 +199,7 @@ const std::vector<Option>& Configurator::global_options()
 }
 
 
-const std::vector<std::pair<Option, OptionValue>>&
+const std::vector<std::pair<Option, OptionCode>>&
 	Configurator::supported_options() const
 {
 	return this->do_supported_options();
@@ -451,10 +451,10 @@ std::unique_ptr<Options> Configurator::do_configure_options(
 // DefaultConfigurator
 
 
-const std::vector<std::pair<Option, OptionValue>>&
+const std::vector<std::pair<Option, OptionCode>>&
 	DefaultConfigurator::do_supported_options() const
 {
-	const static std::vector<std::pair<Option, OptionValue>> empty = {};
+	const static std::vector<std::pair<Option, OptionCode>> empty = {};
 	return empty;
 }
 

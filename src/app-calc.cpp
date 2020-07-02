@@ -74,30 +74,30 @@ using arcsdec::TOCParser;
 
 // CALCBASE
 
-constexpr OptionValue CALCBASE::LIST_TOC_FORMATS;
-constexpr OptionValue CALCBASE::LIST_AUDIO_FORMATS;
-constexpr OptionValue CALCBASE::METAFILE;
-constexpr OptionValue CALCBASE::NOTRACKS;
-constexpr OptionValue CALCBASE::NOFILENAMES;
-constexpr OptionValue CALCBASE::NOOFFSETS;
-constexpr OptionValue CALCBASE::NOLENGTHS;
-constexpr OptionValue CALCBASE::NOLABELS;
-constexpr OptionValue CALCBASE::COLDELIM;
-constexpr OptionValue CALCBASE::PRINTID;
-constexpr OptionValue CALCBASE::PRINTURL;
+constexpr OptionCode CALCBASE::LIST_TOC_FORMATS;
+constexpr OptionCode CALCBASE::LIST_AUDIO_FORMATS;
+constexpr OptionCode CALCBASE::METAFILE;
+constexpr OptionCode CALCBASE::NOTRACKS;
+constexpr OptionCode CALCBASE::NOFILENAMES;
+constexpr OptionCode CALCBASE::NOOFFSETS;
+constexpr OptionCode CALCBASE::NOLENGTHS;
+constexpr OptionCode CALCBASE::NOLABELS;
+constexpr OptionCode CALCBASE::COLDELIM;
+constexpr OptionCode CALCBASE::PRINTID;
+constexpr OptionCode CALCBASE::PRINTURL;
 
-constexpr OptionValue CALCBASE::MAX_CONSTANT;
+constexpr OptionCode CALCBASE::MAX_CONSTANT;
 
 
 // CALC
 
-constexpr OptionValue CALC::FIRST;
-constexpr OptionValue CALC::LAST;
-constexpr OptionValue CALC::ALBUM;
-constexpr OptionValue CALC::NOV1;
-constexpr OptionValue CALC::NOV2;
-constexpr OptionValue CALC::SUMSONLY;
-constexpr OptionValue CALC::TRACKSASCOLS;
+constexpr OptionCode CALC::FIRST;
+constexpr OptionCode CALC::LAST;
+constexpr OptionCode CALC::ALBUM;
+constexpr OptionCode CALC::NOV1;
+constexpr OptionCode CALC::NOV2;
+constexpr OptionCode CALC::SUMSONLY;
+constexpr OptionCode CALC::TRACKSASCOLS;
 
 
 // ARCalcConfiguratorBase
@@ -158,10 +158,10 @@ std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 // ARCalcConfigurator
 
 
-const std::vector<std::pair<Option, OptionValue>>&
+const std::vector<std::pair<Option, OptionCode>>&
 	ARCalcConfigurator::do_supported_options() const
 {
-	const static std::vector<std::pair<Option, OptionValue>> local_options =
+	const static std::vector<std::pair<Option, OptionCode>> local_options =
 	{
 		// Calculation Input Options
 

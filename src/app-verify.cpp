@@ -85,14 +85,14 @@ using arcsdec::ARCSCalculator;
 // VERIFY
 
 
-constexpr OptionValue VERIFY::NOFIRST;
-constexpr OptionValue VERIFY::NOLAST;
-constexpr OptionValue VERIFY::NOALBUM;
-constexpr OptionValue VERIFY::RESPONSEFILE;
-constexpr OptionValue VERIFY::REFVALUES;
-constexpr OptionValue VERIFY::PRINTALL;
-constexpr OptionValue VERIFY::BOOLEAN;
-constexpr OptionValue VERIFY::NOOUTPUT;
+constexpr OptionCode VERIFY::NOFIRST;
+constexpr OptionCode VERIFY::NOLAST;
+constexpr OptionCode VERIFY::NOALBUM;
+constexpr OptionCode VERIFY::RESPONSEFILE;
+constexpr OptionCode VERIFY::REFVALUES;
+constexpr OptionCode VERIFY::PRINTALL;
+constexpr OptionCode VERIFY::BOOLEAN;
+constexpr OptionCode VERIFY::NOOUTPUT;
 
 
 /**
@@ -120,10 +120,10 @@ std::vector<Checksum> sums_in_block(const ARResponse response, const int block)
 // ARVerifyConfigurator
 
 
-const std::vector<std::pair<Option, OptionValue>>&
+const std::vector<std::pair<Option, OptionCode>>&
 	ARVerifyConfigurator::do_supported_options() const
 {
-	const static std::vector<std::pair<Option, OptionValue>> local_options =
+	const static std::vector<std::pair<Option, OptionCode>> local_options =
 	{
 		// calculation input options
 

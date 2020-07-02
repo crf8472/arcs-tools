@@ -24,7 +24,7 @@ namespace arcsapp
 /**
  * \brief ID for a supported option
  */
-using OptionValue = uint64_t;
+using OptionCode = uint64_t;
 
 
 /**
@@ -180,7 +180,7 @@ public:
 	 *
 	 * \return TRUE iff the option is set, otherwise FALSE
 	 */
-	bool is_set(const OptionValue &option) const;
+	bool is_set(const OptionCode &option) const;
 
 	/**
 	 * \brief Set the option to TRUE.
@@ -189,7 +189,7 @@ public:
 	 *
 	 * \param[in] option The option to be set to TRUE
 	 */
-	void set(const OptionValue &option);
+	void set(const OptionCode &option);
 
 	/**
 	 * \brief Set the option to FALSE.
@@ -198,7 +198,7 @@ public:
 	 *
 	 * \param[in] option The option to be set to FALSE
 	 */
-	void unset(const OptionValue &option);
+	void unset(const OptionCode &option);
 
 	/**
 	 * \brief Get option value by key.
@@ -207,7 +207,7 @@ public:
 	 *
 	 * \return The value of the option passed
 	 */
-	std::string get(const OptionValue &option) const;
+	std::string get(const OptionCode &option) const;
 
 	/**
 	 * \brief Set option value for key.
@@ -215,7 +215,7 @@ public:
 	 * \param[in] option The option to put in
 	 * \param[in] value  The value for the option to put in
 	 */
-	void put(const OptionValue &option, const std::string &value);
+	void put(const OptionCode &option, const std::string &value);
 
 	/**
 	 * \brief Get all input arguments.
@@ -233,7 +233,7 @@ public:
 	 *
 	 * \return Argument
 	 */
-	std::string const get_argument(const OptionValue &i) const;
+	std::string const get_argument(const OptionCode &i) const;
 
 	/**
 	 * \brief Returns TRUE iff no arguments are present.
@@ -277,7 +277,7 @@ private:
 	/**
 	 * \brief Valued options' values
 	 */
-	std::map<OptionValue, std::string> values_;
+	std::map<OptionCode, std::string> values_;
 
 	/**
 	 * \brief Arguments (non-option values)

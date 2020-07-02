@@ -51,10 +51,10 @@ using arcsdec::ARIdCalculator;
 // ARIdConfigurator
 
 
-const std::vector<std::pair<Option, OptionValue>>&
+const std::vector<std::pair<Option, OptionCode>>&
 	ARIdConfigurator::do_supported_options() const
 {
-	const static std::vector<std::pair<Option, OptionValue>> local_options = {
+	const static std::vector<std::pair<Option, OptionCode>> local_options = {
 			{{      "cddb_id",  false,
 					"FALSE", "print the CDDB id" },
 					ARIdOptions::CDDBID },
