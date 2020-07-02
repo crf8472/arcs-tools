@@ -12,115 +12,16 @@
  * A single Option instance represents a supported command line option.
  */
 
-#include <cstdint>   // for uint16_t
 #include <map>       // for map
 #include <string>    // for string
 #include <vector>    // for vector
 
+#ifndef __ARCSTOOLS_CLITOKENS_HPP__
+#include "clitokens.hpp"           // for OptionCode
+#endif
+
 namespace arcsapp
 {
-
-
-/**
- * \brief ID for a supported option
- */
-using OptionCode = uint64_t;
-
-
-/**
- * \brief Descriptor for a single command line option.
- *
- * An Option has a symbol and may or may not have a shorthand symbol. It may
- * or may not expect a value and most options have some default. An option also
- * has a short description.
- */
-class Option
-{
-public:
-
-	/**
-	 * \brief Constructor
-	 *
-	 * \param[in] shorthand   The shorthand symbol for the option
-	 * \param[in] symbol      The outwritten symbol for the option
-	 * \param[in] needs_value Indicate whether the option requires a value
-	 * \param[in] default_arg Default argument as a string
-	 * \param[in] desc        Option description
-	 */
-	Option(const char shorthand, const std::string &symbol,
-		const bool needs_value, const std::string &default_arg,
-		const std::string &desc);
-
-	/**
-	 * \brief Constructor
-	 *
-	 * \param[in] symbol      The outwritten symbol for the option
-	 * \param[in] needs_value Indicate whether the option requires a value
-	 * \param[in] default_arg Default argument as a string
-	 * \param[in] desc        Option description
-	 */
-	Option(const std::string &symbol, const bool needs_value,
-		   const std::string &default_arg, const std::string &desc)
-		: Option ('\0', symbol, needs_value, default_arg, desc )
-	{ /* empty */ }
-
-	/**
-	 *  \brief Shorthand symbol of this option or '\0' if none.
-	 *
-	 * \return Shorthand symbol of this option or '\0' if none
-	 */
-	char shorthand_symbol() const;
-
-	/**
-	 * \brief Symbol of this option.
-	 *
-	 * A symbol may never be empty.
-	 *
-	 * \return Symbol of this option or empty string if none.
-	 */
-	std::string symbol() const;
-
-	/**
-	 *  \brief Returns TRUE iff the option requires a value
-	 *
-	 * \return TRUE iff the option requires a value, otherwise FALSE
-	 */
-	bool needs_value() const;
-
-	/**
-	 * \brief Default value of the option
-	 *
-	 * \return Default value of the option
-	 */
-	std::string default_arg() const;
-
-	/**
-	 * \brief Description of the symbol
-	 */
-	std::string description() const;
-
-	/**
-	 * \brief Return command line tokens that represent that option
-	 *
-	 * \return List of tokens
-	 */
-	std::vector<std::string> tokens() const;
-
-	/**
-	 * \brief Return the list of tokens as a comma separated list
-	 *
-	 * \return List of tokens
-	 */
-	std::string tokens_str() const;
-
-private:
-
-	const char        shorthand_;
-	const std::string symbol_;
-	const bool        needs_value_;
-	const std::string default_;
-	const std::string description_;
-};
 
 
 /**
@@ -272,7 +173,7 @@ private:
 	/**
 	 * \brief Boolean and valued options
 	 */
-	std::vector<bool> flags_;
+	std::vector<bool> flags_; // TODO redundant
 
 	/**
 	 * \brief Valued options' values
@@ -283,7 +184,6 @@ private:
 	 * \brief Arguments (non-option values)
 	 */
 	std::vector<std::string> arguments_;
-
 };
 
 } // namespace arcsapp
