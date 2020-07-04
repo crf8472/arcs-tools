@@ -13,7 +13,6 @@
 
 #include <stdint.h>      // for uint8_t
 #include <memory>        // for unique_ptr
-#include <stdexcept>     // for runtime_error
 #include <string>        // for string
 #include <type_traits>   // for underlying_type
 
@@ -34,22 +33,6 @@ namespace arcsapp
 using arcstk::Logging;
 using arcstk::Log;
 using arcstk::LOGLEVEL;
-
-
-/**
- * \brief Reports a syntax error on parsing the command line input.
- */
-class CallSyntaxException : public std::runtime_error
-{
-public:
-
-	/**
-	 * \brief Constructor
-	 *
-	 * \param[in] what_arg What-Message
-	 */
-	CallSyntaxException(const std::string &what_arg);
-};
 
 
 /**
@@ -177,6 +160,22 @@ public:
 	std::unique_ptr<Options> provide_options();
 
 	/**
+	 * \brief Configure options applying configuration logic.
+	 *
+	 * CLI input is checked for semantic validity. It is checked that all valued
+	 * options have legal values and that no illegal combination of options is
+	 * present. Default values to options are applied, if defined. The input
+	 * arguments are validated.
+	 *
+	 * \param[in] argc Number of CLI arguments
+	 * \param[in] argv Array of CLI arguments
+	 *
+	 * \return The options object derived from the CLI arguments
+	 */
+	std::unique_ptr<Options> provide_options(const int argc,
+		const char* const * const argv);
+
+	/**
 	 * \brief Return the list of supported options.
 	 *
 	 * \return List of supported options.
@@ -190,6 +189,16 @@ public:
 	 */
 	const std::vector<std::pair<Option, OptionCode>>& supported_options()
 		const;
+
+	/**
+	 * \brief Returns the minimal code constant to be used by subclasses.
+	 *
+	 * Subclasses my declare their code range starting with this code + 1.
+	 *
+	 * \see ARIdOptions
+	 * \see CALCBASE
+	 */
+	static constexpr OptionCode BASE_CODE() { return 6; /* Size of CONFIG */ };
 
 protected:
 
@@ -324,23 +333,37 @@ protected:
 	std::unique_ptr<Options> parse_input(CLITokens& tokens);
 
 	/**
-	 * \brief Globally managed options
+	 * \brief Globally managed options.
 	 *
-	 * The order MUST match the order in supported_options_.
+	 * The order of symbols MUST match the order in global_options_.
 	 */
-	enum class CONFIG : int
+	enum class CONFIG : OptionCode
 	{
-		VERSION   = 0,
-		VERBOSITY = 1,
-		QUIET     = 2,
-		LOGFILE   = 3,
-		OUTFILE   = 4
+		HELP      = 0,
+		VERSION   = 1,
+		VERBOSITY = 2,
+		QUIET     = 3,
+		LOGFILE   = 4,
+		OUTFILE   = 5
 	};
 
 	/**
-	 * \brief Access a supported option by its index.
+	 *  \brief Enumerable representation of global config options.
+	 */
+	static constexpr std::array<CONFIG, 6> global_id =
+	{
+		CONFIG::HELP,
+		CONFIG::VERSION,
+		CONFIG::VERBOSITY,
+		CONFIG::QUIET,
+		CONFIG::LOGFILE,
+		CONFIG::OUTFILE
+	};
+
+	/**
+	 * \brief Access a global option by its index.
 	 *
-	 * Equivalent to supported()[index].
+	 * Equivalent to global_options()[index].
 	 *
 	 * \param[in] conf Configuration item to get the option for
 	 *

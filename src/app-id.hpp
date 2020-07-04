@@ -33,13 +33,15 @@ class CLITokens;
  */
 struct ARIdOptions
 {
-	static constexpr OptionCode CDDBID    = 1;
-	static constexpr OptionCode URL       = 2;
-	static constexpr OptionCode DBID      = 3;
-	static constexpr OptionCode PROFILE   = 4;
-	static constexpr OptionCode AUDIOFILE = 5;
-	static constexpr OptionCode URLPREFIX = 6;
-	static constexpr OptionCode ID        = 7;
+	static constexpr OptionCode BASE = Configurator::BASE_CODE();
+
+	static constexpr OptionCode CDDBID    = BASE +  1;
+	static constexpr OptionCode URL       = BASE +  2;
+	static constexpr OptionCode DBID      = BASE +  3;
+	static constexpr OptionCode PROFILE   = BASE +  4;
+	static constexpr OptionCode AUDIOFILE = BASE +  5;
+	static constexpr OptionCode URLPREFIX = BASE +  6;
+	static constexpr OptionCode ID        = BASE +  7;
 };
 
 

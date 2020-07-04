@@ -14,7 +14,8 @@ namespace arcsapp
 {
 
 Options::Options()
-	: version_   { false }
+	: help_      { false }
+	, version_   { false }
 	, output_    {}
 	, flags_     {}
 	, values_    {}
@@ -27,7 +28,19 @@ Options::Options()
 Options::~Options() noexcept = default;
 
 
-void Options::set_version(const bool &version)
+void Options::set_help(const bool help)
+{
+	help_ = help;
+}
+
+
+bool Options::is_set_help() const
+{
+	return help_;
+}
+
+
+void Options::set_version(const bool version)
 {
 	version_ = version;
 }

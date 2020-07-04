@@ -43,25 +43,27 @@ class CLITokens;
  */
 struct CALCBASE
 {
+	static constexpr OptionCode BASE = Configurator::BASE_CODE();
+
 	// Info Output Options (no calculation)
 
-	static constexpr OptionCode LIST_TOC_FORMATS   = 1;
-	static constexpr OptionCode LIST_AUDIO_FORMATS = 2;
+	static constexpr OptionCode LIST_TOC_FORMATS   = BASE + 1;
+	static constexpr OptionCode LIST_AUDIO_FORMATS = BASE + 2;
 
 	// Calculation Input Options
 
-	static constexpr OptionCode METAFILE     =  3;
+	static constexpr OptionCode METAFILE     = BASE +  3;
 
 	// Calculation Output Options
 
-	static constexpr OptionCode NOTRACKS     =  4;
-	static constexpr OptionCode NOFILENAMES  =  5;
-	static constexpr OptionCode NOOFFSETS    =  6;
-	static constexpr OptionCode NOLENGTHS    =  7;
-	static constexpr OptionCode NOLABELS     =  8;
-	static constexpr OptionCode COLDELIM     =  9;
-	static constexpr OptionCode PRINTID      = 10;
-	static constexpr OptionCode PRINTURL     = 11;
+	static constexpr OptionCode NOTRACKS     = BASE +  4;
+	static constexpr OptionCode NOFILENAMES  = BASE +  5;
+	static constexpr OptionCode NOOFFSETS    = BASE +  6;
+	static constexpr OptionCode NOLENGTHS    = BASE +  7;
+	static constexpr OptionCode NOLABELS     = BASE +  8;
+	static constexpr OptionCode COLDELIM     = BASE +  9;
+	static constexpr OptionCode PRINTID      = BASE + 10;
+	static constexpr OptionCode PRINTURL     = BASE + 11;
 
 protected:
 

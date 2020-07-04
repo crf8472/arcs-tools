@@ -45,13 +45,29 @@ public:
 	virtual ~Options() noexcept;
 
 	/**
+	 * \brief Set or unset the help flag.
+	 *
+	 * The help flag indicates whether the option HELP was passed.
+	 *
+	 * \param[in] help The flag to set or unset
+	 */
+	void set_help(const bool help);
+
+	/**
+	 * \brief Return the help flag.
+	 *
+	 * \return TRUE iff the help option is set, otherwise FALSE
+	 */
+	bool is_set_help() const;
+
+	/**
 	 * \brief Set or unset the version flag.
 	 *
 	 * The version flag indicates whether the option VERSION was passed.
 	 *
 	 * \param[in] version The flag to set or unset
 	 */
-	void set_version(const bool &version);
+	void set_version(const bool version);
 
 	/**
 	 * \brief Return the version flag.
@@ -159,6 +175,11 @@ public:
 	bool empty() const;
 
 private:
+
+	/**
+	 * \brief Flag to indicate presence of --help option
+	 */
+	bool help_;
 
 	/**
 	 * \brief Flag to indicate presence of --version option

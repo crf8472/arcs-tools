@@ -59,17 +59,8 @@ int ARApplication::run(int argc, char** argv)
 
 	std::unique_ptr<Options> options;
 
-	// Print error message and usage if application call line is ill-formed
-	try
-	{
-		options = this->setup_options(argc, argv);
-
-	} catch (const CallSyntaxException &e)
-	{
-		this->print_usage();
-
-		throw e;
-	}
+	// This may throw a CallSyntaxException
+	options = this->setup_options(argc, argv);
 
 	if (options->is_set_version())
 	{
@@ -150,6 +141,8 @@ std::unique_ptr<Options> ARApplication::setup_options(int argc, char** argv)
 	auto configurator = this->create_configurator(argc, argv);
 
 	configurator->configure_logging();
+
+	auto options = configurator->provide_options(argc, argv);
 
 	return configurator->provide_options();
 }

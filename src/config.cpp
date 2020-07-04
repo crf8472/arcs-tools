@@ -27,16 +27,6 @@ namespace arcsapp
 using arcstk::Appender;
 
 
-// CallSyntaxException
-
-
-CallSyntaxException::CallSyntaxException(const std::string &what_arg)
-	: std::runtime_error(what_arg)
-{
-	// empty
-}
-
-
 // LogManager
 
 
@@ -65,7 +55,7 @@ LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 	using arcstk::LOGLEVEL_MIN;
 	using arcstk::LOGLEVEL_MAX;
 
-	int parsed_level = -1;
+	auto parsed_level = int { -1 };
 
 	try {
 
@@ -140,6 +130,7 @@ LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 
 
 const std::vector<Option> Configurator::global_options_ = {
+	{ 'h', "help",      false, "FALSE", "Get help on usage" },
 	{      "version",   false, "FALSE", "Print version and exit,"
 	                                    " ignoring any other options." },
 	{ 'v', "verbosity", true,  "2",     "Verbosity of output (loglevel 0-8)" },
@@ -153,8 +144,7 @@ Configurator::Configurator(const int argc, const char* const * const argv)
 	: logman_ {
 		LogManager::get_loglevel(global(CONFIG::VERBOSITY).default_arg()),
 		LOGLEVEL::NONE /* quiet */
-
-	}
+	  }
 	, tokens_(argc, argv)
 {
 	// We do not know whether the application is required to run quiet,
@@ -186,6 +176,117 @@ void Configurator::configure_logging()
 std::unique_ptr<Options> Configurator::provide_options()
 {
 	auto options = this->parse_input(tokens_);
+
+	ARCS_LOG_DEBUG << "Command line input successfully parsed";
+
+	return this->do_configure_options(std::move(options));
+}
+
+
+std::unique_ptr<Options> Configurator::provide_options(const int argc,
+		const char* const * const argv)
+{
+	// TODO Implement all_supported_options()
+
+	std::vector<std::pair<Option, OptionCode>> all_supported =
+		supported_options();
+
+	// Add global options to supported options
+	using config_t = std::underlying_type_t<Configurator::CONFIG>;
+
+	for (auto i = config_t { 0 };
+		i < static_cast<config_t>(Configurator::BASE_CODE()); ++i)
+	{
+		all_supported.emplace_back(
+			std::make_pair(
+				global(static_cast<CONFIG>(i)) /* global option i */,
+				static_cast<config_t>(global_id[i]) /* code for option i */ ));
+	}
+
+	// Parse Input and Match Supported Options
+
+	auto input = CLIInput { argc, argv, all_supported, true };
+
+	auto options = std::make_unique<Options>();
+
+	// Process global options
+	// TODO Implement Options process_global_options(const CLIInput &input)
+
+	if (input.contains(static_cast<config_t>(CONFIG::HELP)))
+	{
+		options->set_help(true);
+		return options;
+	}
+
+	if (input.contains(static_cast<config_t>(CONFIG::VERSION)))
+	{
+		options->set_version(true);
+		return options;
+	}
+
+	if (input.contains(static_cast<config_t>(CONFIG::VERBOSITY)))
+	{
+		auto level = logman_.get_loglevel(
+				input.value(static_cast<config_t>(CONFIG::VERBOSITY)));
+
+		Logging::instance().set_level(level);
+		Logging::instance().set_timestamps(false);
+	}
+
+	if (input.contains(static_cast<config_t>(CONFIG::QUIET)))
+	{
+		Logging::instance().set_level(logman_.quiet_loglevel());
+		Logging::instance().set_timestamps(false);
+	}
+
+	if (input.contains(static_cast<config_t>(CONFIG::LOGFILE)))
+	{
+		auto logfile = input.value(static_cast<config_t>(CONFIG::LOGFILE));
+
+		std::unique_ptr<Appender> appender;
+
+		if (logfile.empty())
+		{
+			// This defines the default!
+			appender = std::make_unique<Appender>("stdout", stdout);
+		} else
+		{
+			appender = std::make_unique<Appender>(logfile);
+		}
+
+		auto appender_name = appender->name();
+
+		Logging::instance().add_appender(std::move(appender));
+
+		ARCS_LOG(DEBUG1) << "Set log appender to " << appender_name
+			<< " thereby consuming option "
+			<<  global(CONFIG::LOGFILE).tokens_str();
+	}
+
+	if (input.contains(static_cast<config_t>(CONFIG::OUTFILE)))
+	{
+		auto outfile = input.value(static_cast<config_t>(CONFIG::OUTFILE));
+
+		options->set_output(outfile);
+	}
+
+	// Now process the application specific (local) options
+
+	for (const auto& item : input)
+	{
+		if (Option::NONE == item.id())
+		{
+			options->append(item.value()); // argument
+		} else
+		{
+			options->set(item.id()); // option
+
+			if (not item.value().empty())
+			{
+				options->put(item.id(), item.value());
+			}
+		}
+	}
 
 	ARCS_LOG_DEBUG << "Command line input successfully parsed";
 
@@ -257,7 +358,8 @@ int Configurator::configure_loglevel()
 {
 	// current loglevel is NONE (since QUIET could have been requested)
 
-	const auto& [ is_quiet, noval ] = this->option(tokens_, global(CONFIG::QUIET));
+	const auto& [ is_quiet, noval ] =
+		this->option(tokens_, global(CONFIG::QUIET));
 
 	const auto& [ verbosity_defined, parsed_level ] =
 		this->option(tokens_, global(CONFIG::VERBOSITY));
@@ -331,10 +433,7 @@ std::unique_ptr<Options> Configurator::parse_options(CLITokens& tokens)
 		auto& option = std::get<0>(entry);
 		auto& id     = std::get<1>(entry);
 
-		if (Logging::instance().has_level(LOGLEVEL::DEBUG2))
-		{
-			ARCS_LOG(DEBUG2) << "Check for option: " << option.tokens_str();
-		}
+		ARCS_LOG(DEBUG2) << "Check for option: " << option.tokens_str();
 
 		// Try to consume supported options und assign their ids
 
