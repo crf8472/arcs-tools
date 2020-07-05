@@ -1415,6 +1415,8 @@ std::ostream& operator << (std::ostream &out, const StringTableBase &table)
 
 	const auto label_width = table.optimal_label_width();
 
+	std::ios_base::fmtflags prev_settings = out.flags();
+
 	// Column titles
 	out << std::setw(label_width) << std::left << std::setfill(' ') << ' ';
 	table.print_column_titles(out);
@@ -1431,6 +1433,8 @@ std::ostream& operator << (std::ostream &out, const StringTableBase &table)
 		}
 		out << std::endl;
 	}
+
+	out.flags(prev_settings);
 
 	return out;
 }
