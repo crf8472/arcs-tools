@@ -97,7 +97,11 @@ public:
 	 */
 	void out(std::ostream &outstream)
 	{
+		std::ios_base::fmtflags prev_settings = outstream.flags();
+
 		this->do_out(outstream, this->pointers_);
+
+		outstream.flags(prev_settings);
 	}
 
 protected:
