@@ -2,18 +2,18 @@
 #include "options.hpp"
 #endif
 
-//#include <cstdint>  // for uint64_t
-//#include <cmath>    // for pow
-#include <map>      // for map, operator!=, _Rb_tree_const_iterator, _Rb_tre...
-//#include <sstream>  // for ostringstream
-#include <string>   // for string, basic_string
-#include <utility>  // for pair, make_pair
-#include <vector>   // for vector
+#include <map>       // for map, operator!=, _Rb_tree_const_iterator, _Rb_tre...
+#include <string>    // for string, basic_string
+#include <utility>   // for pair, make_pair
+#include <vector>    // for vector
+
+#include <iomanip>
 
 namespace arcsapp
 {
 
-Options::Options()
+
+Options::Options(const std::size_t size)
 	: help_      { false }
 	, version_   { false }
 	, output_    {}
@@ -21,7 +21,7 @@ Options::Options()
 	, values_    {}
 	, arguments_ {}
 {
-	flags_.resize(64, false); // TODO Magic number
+	flags_.resize(size, false);
 }
 
 
@@ -101,6 +101,18 @@ void Options::put(const OptionCode &option, const std::string &value)
 }
 
 
+std::vector<bool> const Options::get_flags() const
+{
+	return flags_;
+}
+
+
+std::vector<std::string> const Options::get_arguments() const
+{
+	return arguments_;
+}
+
+
 std::string const Options::get_argument(const OptionCode &index) const
 {
 	if (index > arguments_.size())
@@ -109,12 +121,6 @@ std::string const Options::get_argument(const OptionCode &index) const
 	}
 
 	return arguments_.at(index);
-}
-
-
-std::vector<std::string> const Options::get_arguments() const
-{
-	return arguments_;
 }
 
 
@@ -155,6 +161,49 @@ bool Options::empty() const
 //{
 //	return config_ & (~config_ + 1);
 //}
+
+
+std::ostream& operator << (std::ostream& out, const Options &options)
+{
+	std::ios_base::fmtflags prev_settings = out.flags();
+
+	out << "Options:" << std::endl;
+
+	out << "Global: " << std::endl;
+	out << "HELP:    " << std::boolalpha << options.is_set_help() << std::endl;
+	out << "VERSION: " << std::boolalpha << options.is_set_version()
+		<< std::endl;
+
+	if (not options.output().empty())
+	{
+		out << "OUTPUT:  " << std::boolalpha << options.output();
+	}
+
+	out << "Options (w/o value):" << std::endl;
+	auto opts = options.get_flags();
+	for (auto i = std::size_t { 0 }; i < opts.size(); ++i)
+	{
+		out << std::setw(2) << i << ": "
+			<< options.is_set(i) << std::endl;
+
+		if (not options.get(i).empty())
+		{
+			out << "    = '" << options.get(i) << "'" << std::endl;
+		}
+	}
+
+	out << "Arguments:" << std::endl;
+	auto i = int { 0 };
+	for (const auto& arg : options.get_arguments())
+	{
+		out << "Arg " << std::setw(2) << i << ": " << arg << std::endl;
+		++i;
+	}
+
+	out.flags(prev_settings);
+
+	return out;
+}
 
 } // namespace arcsapp
 

@@ -454,13 +454,6 @@ std::unique_ptr<Configurator> ARVerifyApplication::create_configurator() const
 }
 
 
-std::unique_ptr<Configurator> ARVerifyApplication::create_configurator(
-		int argc, char** argv) const
-{
-	return std::make_unique<ARVerifyConfigurator>(argc, argv);
-}
-
-
 int ARVerifyApplication::run_calculation(const Options &options)
 {
 	// Parse reference ARCSs from AccurateRip

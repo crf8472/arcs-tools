@@ -99,13 +99,6 @@ std::unique_ptr<Configurator> ARParseApplication::create_configurator() const
 }
 
 
-std::unique_ptr<Configurator> ARParseApplication::create_configurator(
-		int argc, char** argv) const
-{
-	return std::make_unique<DefaultConfigurator>(argc, argv);
-}
-
-
 int ARParseApplication::do_run(const Options &options)
 {
 	auto content_handler = std::make_unique<ARParserContentPrintHandler>(

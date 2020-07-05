@@ -54,14 +54,14 @@ class VERIFY : public CALCBASE
 	static constexpr auto& BASE = CALCBASE::MAX_CONSTANT;
 
 public:
-	static constexpr OptionCode NOFIRST      = BASE + 1;
+	static constexpr OptionCode NOFIRST      = BASE + 1; // 18
 	static constexpr OptionCode NOLAST       = BASE + 2;
 	static constexpr OptionCode NOALBUM      = BASE + 3;
 	static constexpr OptionCode RESPONSEFILE = BASE + 4;
 	static constexpr OptionCode REFVALUES    = BASE + 5;
 	static constexpr OptionCode PRINTALL     = BASE + 6;
-	static constexpr OptionCode BOOLEAN      = BASE + 7;
-	static constexpr OptionCode NOOUTPUT     = BASE + 8;
+	static constexpr OptionCode BOOLEAN      = BASE + 7; // ...
+	static constexpr OptionCode NOOUTPUT     = BASE + 8; // 25
 };
 
 
@@ -187,9 +187,6 @@ class ARVerifyApplication final : public ARApplication
 	std::string do_call_syntax() const override;
 
 	std::unique_ptr<Configurator> create_configurator() const override;
-
-	std::unique_ptr<Configurator> create_configurator(
-			int argc, char** argv) const override;
 
 	int do_run(const Options &options) override;
 };

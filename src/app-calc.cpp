@@ -217,25 +217,6 @@ const std::vector<std::pair<Option, OptionCode>>&
 }
 
 
-int ARCalcConfigurator::do_parse_arguments(CLITokens& cli, Options &options)
-		const
-{
-	// Respect multiple arguments
-
-	if (auto args = this->arguments(cli); !args.empty())
-	{
-		for (const auto& arg : args)
-		{
-			options.append(arg);
-		}
-
-		return static_cast<int>(args.size());
-	}
-
-	return 0;
-}
-
-
 std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 		std::unique_ptr<Options> coptions)
 {
@@ -471,6 +452,19 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 	// Print formatted results to output stream
 
+	if (options.is_set(CALC::PRINTID) or options.is_set(CALC::PRINTURL))
+	{
+		const std::unique_ptr<ARIdTableFormat> idformat =
+			std::make_unique<ARIdTableFormat>();
+
+		idformat->set_id(options.is_set(CALC::PRINTID));
+		idformat->set_url(options.is_set(CALC::PRINTURL));
+
+		idformat->use(std::make_tuple(&arid, nullptr));
+
+		output(*idformat);
+	}
+
 	auto format = configure_format(options);
 
 	auto filenames = toc
@@ -502,13 +496,6 @@ std::string ARCalcApplication::do_call_syntax() const
 std::unique_ptr<Configurator> ARCalcApplication::create_configurator() const
 {
 	return std::make_unique<ARCalcConfigurator>();
-}
-
-
-std::unique_ptr<Configurator> ARCalcApplication::create_configurator(
-		int argc, char** argv) const
-{
-	return std::make_unique<ARCalcConfigurator>(argc, argv);
 }
 
 

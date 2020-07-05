@@ -12,6 +12,7 @@
  * A single Option instance represents a supported command line option.
  */
 
+#include <climits>   // CHAR_BIT
 #include <map>       // for map
 #include <string>    // for string
 #include <vector>    // for vector
@@ -22,6 +23,9 @@
 
 namespace arcsapp
 {
+
+class Options;
+std::ostream& operator << (std::ostream& out, const Options &options);
 
 
 /**
@@ -34,10 +38,17 @@ class Options
 {
 public:
 
+	friend std::ostream& operator << (std::ostream& out, const Options &options);
+
+	/**
+	 * \brief Options with predefined number of flags.
+	 */
+	Options(const std::size_t size);
+
 	/**
 	 * \brief Default constructor.
 	 */
-	Options();
+	Options() : Options(sizeof(OptionCode) * CHAR_BIT) { /* empty */ };
 
 	/**
 	 * \brief Virtual default destructor.
@@ -133,6 +144,13 @@ public:
 	 * \param[in] value  The value for the option to put in
 	 */
 	void put(const OptionCode &option, const std::string &value);
+
+	/**
+	 * \brief Get all input options.
+	 *
+	 * \return All input arguments
+	 */
+	std::vector<bool> const get_flags() const;
 
 	/**
 	 * \brief Get all input arguments.

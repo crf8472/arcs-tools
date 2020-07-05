@@ -46,9 +46,6 @@ class ARParseApplication final : public ARApplication
 
 	std::unique_ptr<Configurator> create_configurator() const override;
 
-	std::unique_ptr<Configurator> create_configurator(int argc, char** argv)
-		const override;
-
 	int do_run(const Options &options) override;
 };
 

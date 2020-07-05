@@ -35,13 +35,13 @@ struct ARIdOptions
 {
 	static constexpr OptionCode BASE = Configurator::BASE_CODE();
 
-	static constexpr OptionCode CDDBID    = BASE +  1;
+	static constexpr OptionCode CDDBID    = BASE +  1; // 7
 	static constexpr OptionCode URL       = BASE +  2;
 	static constexpr OptionCode DBID      = BASE +  3;
 	static constexpr OptionCode PROFILE   = BASE +  4;
-	static constexpr OptionCode AUDIOFILE = BASE +  5;
-	static constexpr OptionCode URLPREFIX = BASE +  6;
-	static constexpr OptionCode ID        = BASE +  7;
+	static constexpr OptionCode URLPREFIX = BASE +  5;
+	static constexpr OptionCode ID        = BASE +  6; // ...
+	static constexpr OptionCode AUDIOFILE = BASE +  7; // 13
 };
 
 
@@ -71,9 +71,6 @@ class ARIdApplication final : public ARApplication
 	std::string do_call_syntax() const override;
 
 	std::unique_ptr<Configurator> create_configurator() const override;
-
-	std::unique_ptr<Configurator> create_configurator(int argc, char** argv)
-		const override;
 
 	int do_run(const Options &options) override;
 };

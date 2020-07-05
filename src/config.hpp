@@ -132,34 +132,9 @@ public:
 	Configurator();
 
 	/**
-	 * \brief Empty constructor.
-	 *
-	 * \param[in] argc Number of CLI arguments
-	 * \param[in] argv Array of CLI arguments
-	 */
-	Configurator(const int argc, const char* const * const argv);
-
-	/**
 	 * \brief Virtual default destructor.
 	 */
 	virtual ~Configurator() noexcept;
-
-	/**
-	 * \brief Configure global logging using CLI arguments.
-	 */
-	void configure_logging();
-
-	/**
-	 * \brief Configure options applying configuration logic.
-	 *
-	 * CLI input is checked for semantic validity. It is checked that all valued
-	 * options have legal values and that no illegal combination of options is
-	 * present. Default values to options are applied, if defined. The input
-	 * arguments are validated.
-	 *
-	 * \return The options object derived from the CLI arguments
-	 */
-	std::unique_ptr<Options> provide_options();
 
 	/**
 	 * \brief Configure options applying configuration logic.
@@ -193,136 +168,6 @@ public:
 		const;
 
 protected:
-
-	/**
-	 * \brief Worker: consume an option from the command line if present.
-	 *
-	 * \param[in] tokens The command line input to inspect for options
-	 * \param[in] option The option to parse
-	 *
-	 * \return TRUE and the option value if the option was successfully consumed
-	 *
-	 * \throws CallSyntaxException On valued options with empty value
-	 */
-	std::pair<bool, std::string> option(CLITokens &tokens, const Option &option)
-		const;
-
-	/**
-	 * \brief Service: consume a single command line argument if present.
-	 *
-	 * Intended as default implementation of do_parse_arguments() for subclasses
-	 * that wish to support a single argument.
-	 *
-	 * If no argument was present, an empty string will be returned.
-	 *
-	 * This function can be called multiple times and each call will try to
-	 * consume an argument.
-	 *
-	 * \param[in] tokens The command line input to inspect for an argument
-	 *
-	 * \return Argument string iff an argument could be consumed, otherwise
-	 * empty string
-	 */
-	std::string argument(CLITokens &tokens) const;
-
-	/**
-	 * \brief Service: consume all command line arguments.
-	 *
-	 * Intended as default implementation of do_parse_arguments() for subclasses
-	 * that wish to support multiple arguments.
-	 *
-	 * Warning: this consumes every present token as part of an argument list.
-	 * After this function has been called, \tokens.empty() will be TRUE. Use
-	 * this only as last parsing operation.
-	 *
-	 * \param[in] tokens The command line input to inspect for arguments
-	 *
-	 * \return List of arguments consumed
-	 */
-	std::vector<std::string> arguments(CLITokens &tokens) const;
-
-	/**
-	 * \brief Worker: deduce the loglevel value from command line and activate
-	 * it.
-	 *
-	 * This function implements the effect of the VERBOSITY option.
-	 *
-	 * \return The current loglevel
-	 */
-	int configure_loglevel();
-
-	/**
-	 * \brief Configure the log appenders from command line.
-	 *
-	 * This function implements the effect of the LOGFILE option.
-	 *
-	 * If stdout is the only appender, the first element of the tuple will be
-	 * 'stdout' while the second element of the tuple will be an empty string.
-	 * (Giving the default Appender a name would disqualify this name as
-	 * potential name of a concrete logfile.)
-	 *
-	 * \return A tuple of the name of the appender name and the filename
-	 */
-	std::tuple<std::string, std::string> configure_logappender();
-
-	/**
-	 * \brief Worker: called by parse_input() to parse the options
-	 *
-	 * \param[in] tokens The tokens to parse
-	 *
-	 * \return Options parsed from the command line input
-	 *
-	 * \throw CallSyntaxException Iff the options cannot be parsed
-	 */
-	std::unique_ptr<Options> parse_options(CLITokens& tokens);
-
-	/**
-	 * \brief Worker: called by parse_input() to parse the arguments.
-	 *
-	 * The CLITokens passed has the state immediately after parse_options() has
-	 * been finished. Hence, whatever is left unparsed is not a supported
-	 * option.
-	 *
-	 * The arguments parsed by this function can be append()ed to the
-	 * options object passed.
-	 *
-	 * Directly after this method was called, it is checked whether the
-	 * command line has been completely consumed. If tokens were left, after
-	 * parse_arguments() has been finished, a CallSyntaxException will be
-	 * thrown.
-	 *
-	 * Overriding this method can define whether the application supports
-	 * no arguments, a single argument or multiple arguments. It also defines
-	 * whether those arguments are optional or mandatory.
-	 *
-	 * The default implementation consumes exactly one argument.
-	 *
-	 * \param[in] tokens  The command line input to inspect for arguments
-	 * \param[in] options The Options to append the arguments to
-	 *
-	 * \return Number of arguments that have been parsed
-	 *
-	 * \throws CallSyntaxException Iff the arguments are not syntactically ok
-	 */
-	int parse_arguments(CLITokens& tokens, Options &options) const;
-
-	/**
-	 * \brief Worker: parse the command line input to an object representation.
-	 *
-	 * Command line input is checked for syntactic wellformedness. It is checked
-	 * that only legal options are present and that every option is present at
-	 * most once.
-	 *
-	 * If <tt>parse_options()</tt> leaves unconsumed tokens from the command
-	 * line input, this will result in a subsequent <tt>std::runtime_error</tt>.
-	 *
-	 * \param[in] tokens The command line input
-	 *
-	 * \return Options parsed from the command line input
-	 *
-	 * \throw CallSyntaxException if the call command cannot be parsed
-	 */
-	std::unique_ptr<Options> parse_input(CLITokens& tokens);
 
 	/**
 	 * \brief Globally managed options.
@@ -362,7 +207,7 @@ public:
 	 * \see ARIdOptions
 	 * \see CALCBASE
 	 */
-	static constexpr OptionCode BASE_CODE() { return 1 + global_id_.size(); };
+	static constexpr OptionCode BASE_CODE() { return global_id_.size(); };
 
 protected:
 
@@ -376,6 +221,19 @@ protected:
 	 * \return The Option for \c conf
 	 */
 	static const Option& global(const CONFIG conf);
+
+	/**
+	 * \brief Create a list of all application-specific supported options.
+	 *
+	 * \return List of all application-specific supported options
+	 */
+	std::vector<std::pair<Option, OptionCode>> all_supported() const;
+
+	/**
+	 * \brief Process the global options in the parsed input.
+	 */
+	std::unique_ptr<Options> process_global_options(const CLIInput &input)
+		const;
 
 private:
 
@@ -395,20 +253,6 @@ private:
 	virtual const std::vector<std::pair<Option, OptionCode>>&
 		do_supported_options() const
 	= 0;
-
-	/**
-	 * \brief Implements parse_arguments(CLITokens&, Options&) const
-	 *
-	 * Consumes exactly one argument.
-	 *
-	 * \param[in] tokens  The command line input to inspect for arguments
-	 * \param[in] options The Options to append the arguments to
-	 *
-	 * \return Number of arguments that have been parsed
-	 *
-	 * \throws CallSyntaxException Iff the arguments are not syntactically ok
-	 */
-	virtual int do_parse_arguments(CLITokens& tokens, Options &options) const;
 
 	/**
 	 * \brief Called by parse_input() after .
@@ -432,11 +276,6 @@ private:
 	 * Acts as a delegate to assisst the implementation of configure_loglevel().
 	 */
 	LogManager logman_;
-
-	/**
-	 * \brief Internal representation of the CLITokens.
-	 */
-	CLITokens tokens_;
 };
 
 
@@ -448,10 +287,6 @@ class DefaultConfigurator : public Configurator
 public:
 
 	using Configurator::Configurator;
-
-	//DefaultConfigurator(int argc, char** argv)
-	//	: Configurator(argc, argv)
-	//{ /* empty */ }
 
 private:
 

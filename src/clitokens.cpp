@@ -10,7 +10,7 @@
 #include <tuple>      // for tuple, get
 #include <vector>     // for vector
 
-#include <iostream>   // cout (for debugging)
+//#include <iostream>   // cout (for debugging)
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
@@ -263,8 +263,8 @@ void CLIInput::consume_as_symbol(const char * const token,
 		const char * const next,
 		const std::vector<std::pair<Option, OptionCode>> supported, int &pos)
 {
-	std::cout << "Token " << std::setw(2) << pos << ": '"
-		<< token << "' (symbol)" << std::endl;
+	//std::cout << "Token " << std::setw(2) << pos << ": '"
+	//	<< token << "' (symbol)" << std::endl;
 
 	auto name_len = unsigned { 0 };
 
@@ -353,8 +353,8 @@ void CLIInput::consume_as_symbol(const char * const token,
 			throw CallSyntaxException(msg.str());
 		}
 
-		std::cout << "    => Value '" << &token[name_len + 3] << "'"
-			<< std::endl;
+		//std::cout << "    => Value '" << &token[name_len + 3] << "'"
+		//	<< std::endl;
 		items_.back().set_value(&token[name_len + 3]);
 	} else if (option.needs_value()) // Expect syntax '--foo bar'
 	{
@@ -367,7 +367,7 @@ void CLIInput::consume_as_symbol(const char * const token,
 		}
 
 		++pos;
-		std::cout << "    => Value '" << next << "'" << std::endl;
+		//std::cout << "    => Value '" << next << "'" << std::endl;
 		items_.back().set_value(next);
 	}
 }
@@ -377,8 +377,8 @@ void CLIInput::consume_as_shorthand(const char * const token,
 		const char * const next,
 		const std::vector<std::pair<Option, OptionCode>> supported, int &pos)
 {
-	std::cout << "Token " << std::setw(2) << pos << ": '"
-		<< token << "' (short)" << std::endl;
+	//std::cout << "Token " << std::setw(2) << pos << ": '"
+	//	<< token << "' (short)" << std::endl;
 
 	auto cind  = int { 1 };  // Position Index of Character in Token
 	auto index = int { -1 }; // Index of Identified Option in 'supported'
@@ -415,9 +415,9 @@ void CLIInput::consume_as_shorthand(const char * const token,
 
 		items_.emplace_back(code);
 
-		std::cout << "    => Option '"
-			<< supported[index].first.shorthand_symbol()
-			<< "' (" << code << ")" << std::endl;
+		//std::cout << "    => Option '"
+		//	<< supported[index].first.shorthand_symbol()
+		//	<< "' (" << code << ")" << std::endl;
 
 		++cind;
 
@@ -433,8 +433,8 @@ void CLIInput::consume_as_shorthand(const char * const token,
 			{
 				// Option Value is Present in Token
 
-				std::cout << "    => Value '" << &token[cind] << "'"
-					<< std::endl;
+				//std::cout << "    => Value '" << &token[cind] << "'"
+				//	<< std::endl;
 				items_.back().set_value(&token[cind]);
 			} else
 			{
@@ -448,7 +448,7 @@ void CLIInput::consume_as_shorthand(const char * const token,
 					throw CallSyntaxException(msg.str());
 				}
 
-				std::cout << "    => Value '" << next << "'" << std::endl;
+				//std::cout << "    => Value '" << next << "'" << std::endl;
 				items_.back().set_value(next);
 			}
 
@@ -510,124 +510,6 @@ const CLIInput::InputItem* CLIInput::lookup(const OptionCode &option) const
 
 
 const std::string& CLIInput::empty_value() const noexcept
-{
-	static const auto empty_string = std::string{};
-	return empty_string;
-}
-
-
-// CLITokens
-
-
-CLITokens::CLITokens (const int argc, const char* const * const argv)
-	: tokens_ {}
-{
-	if (!argv or !*argv)
-	{
-		return;
-	}
-
-	for (auto i = int { 1 }; i < argc; ++i)
-	{
-		this->tokens_.push_back(std::string(argv[i]));
-	}
-}
-
-
-CLITokens::~CLITokens () noexcept = default;
-
-
-std::tuple<bool, std::string> CLITokens::consume(const std::string &token,
-		const bool value_requested) noexcept
-{
-	if (tokens_.empty())
-	{
-		return std::make_tuple(false, empty_value());
-	}
-
-	auto itr = std::find(tokens_.begin(), tokens_.end(), token);
-
-	if (itr != tokens_.end()) // token found
-	{
-		if (not value_requested)
-		{
-			ARCS_LOG(DEBUG1) << "Consume token '" << token << "'";
-
-			tokens_.erase(itr);
-			return std::make_tuple(true, empty_value());
-		}
-
-		++itr;
-
-		if (itr != tokens_.end())
-		{
-			//  next token is considered option value
-
-			auto ret_val = std::make_tuple(true, std::string(*itr));
-
-			ARCS_LOG(DEBUG1) << "Consume token '" << token << "', value '"
-				<< std::get<1>(ret_val) << "'";
-
-			--itr;
-			itr = tokens_.erase(itr); // erase option switch
-			tokens_.erase(itr);       // erase value
-
-			return ret_val;
-		}
-
-		// value_requested but not present
-
-		--itr;
-		tokens_.erase(itr); // erase token
-
-		ARCS_LOG_WARNING << "Consume token '" << token << "', value missing";
-
-		return std::make_tuple(true, empty_value());
-	}
-
-	return std::make_tuple(false, empty_value());
-}
-
-
-const std::string CLITokens::consume() noexcept
-{
-	if (tokens_.empty())
-	{
-		return empty_value();
-	}
-
-	auto token = tokens_.front();
-	tokens_.pop_front();
-
-	ARCS_LOG(DEBUG1) << "Consume token: '" << token << "'";
-
-	return token;
-}
-
-
-bool CLITokens::contains(const std::string &token) const noexcept
-{
-	auto itr = std::find(tokens_.begin(), tokens_.end(), token);
-
-	ARCS_LOG(DEBUG1) << "Token '" << token << "' is present";
-
-	return itr != tokens_.end();
-}
-
-
-bool CLITokens::empty() noexcept
-{
-	return tokens_.empty();
-}
-
-
-const std::vector<std::string> CLITokens::unconsumed() noexcept
-{
-	return std::vector<std::string>(tokens_.begin(), tokens_.end());
-}
-
-
-const std::string& CLITokens::empty_value() noexcept
 {
 	static const auto empty_string = std::string{};
 	return empty_string;

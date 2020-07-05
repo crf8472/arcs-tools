@@ -147,22 +147,6 @@ Configurator::Configurator()
 		LogManager::get_loglevel(global(CONFIG::VERBOSITY).default_arg()),
 		LOGLEVEL::NONE /* quiet */
 	  }
-	, tokens_(0, nullptr)
-{
-	// We do not know whether the application is required to run quiet,
-	// so initial level is NOT default level but quiet level
-
-	Logging::instance().set_level(logman_.quiet_loglevel());
-	Logging::instance().set_timestamps(false);
-}
-
-
-Configurator::Configurator(const int argc, const char* const * const argv)
-	: logman_ {
-		LogManager::get_loglevel(global(CONFIG::VERBOSITY).default_arg()),
-		LOGLEVEL::NONE /* quiet */
-	  }
-	, tokens_(argc, argv)
 {
 	// We do not know whether the application is required to run quiet,
 	// so initial level is NOT default level but quiet level
@@ -175,124 +159,16 @@ Configurator::Configurator(const int argc, const char* const * const argv)
 Configurator::~Configurator() noexcept = default;
 
 
-void Configurator::configure_logging()
-{
-	auto level    = this->configure_loglevel();
-	auto appender = this->configure_logappender();
-
-	// All supported options regarding logging are now consumed and won't
-	// occurr in the result of parse_options()
-
-	ARCS_LOG(DEBUG1) << "Set loglevel to "
-		<< Log::to_string(Logging::instance().level())
-		<< " (=" << level << ") thereby consuming option "
-		<< global(CONFIG::VERBOSITY).tokens_str();
-}
-
-
-std::unique_ptr<Options> Configurator::provide_options()
-{
-	auto options = this->parse_input(tokens_);
-
-	ARCS_LOG_DEBUG << "Command line input successfully parsed";
-
-	return this->do_configure_options(std::move(options));
-}
-
-
 std::unique_ptr<Options> Configurator::provide_options(const int argc,
 		const char* const * const argv)
 {
-	// TODO Implement all_supported_options()
-
-	std::vector<std::pair<Option, OptionCode>> all_supported =
-		supported_options();
-
-	// Add global options to supported options
-	using config_t = std::underlying_type_t<Configurator::CONFIG>;
-
-	for (auto i = config_t { 1 };
-		i < static_cast<config_t>(Configurator::BASE_CODE()); ++i)
-	{
-		//std::cout << i << " - Global option: --" <<
-		//	global(static_cast<CONFIG>(i)).symbol()
-		//	<< " is encoded with "
-		//	<< static_cast<config_t>(global_id_[i - 1]) << std::endl;
-
-		all_supported.emplace_back(
-			std::make_pair(
-				global(static_cast<CONFIG>(i)) /* global option */,
-				static_cast<config_t>(global_id_[i - 1]) /* option code */));
-	}
+	auto all_supported_options = this->all_supported();
 
 	// Parse Input and Match Supported Options
 
-	auto input = CLIInput { argc, argv, all_supported, true };
+	auto input = CLIInput { argc, argv, all_supported_options, true };
 
-	auto options = std::make_unique<Options>();
-
-	// Process global options
-	// TODO Implement Options process_global_options(const CLIInput &input)
-
-	if (input.contains(static_cast<config_t>(CONFIG::HELP)))
-	{
-		std::cout << "Help" << std::endl;
-		options->set_help(true);
-		return options;
-	}
-
-	if (input.contains(static_cast<config_t>(CONFIG::VERSION)))
-	{
-		std::cout << "Version" << std::endl;
-		options->set_version(true);
-		return options;
-	}
-
-	std::unique_ptr<Appender> appender;
-	auto appender_name = std::string {};
-
-	if (input.contains(static_cast<config_t>(CONFIG::LOGFILE)))
-	{
-		auto logfile = input.value(static_cast<config_t>(CONFIG::LOGFILE));
-		appender = std::make_unique<Appender>(logfile);
-		appender_name = appender->name();
-	} else
-	{
-		appender = std::make_unique<Appender>("stdout", stdout);
-		appender_name = appender->name();
-	}
-
-	Logging::instance().add_appender(std::move(appender));
-
-	std::cout << "Set log appender to " << appender_name << std::endl;
-
-	if (input.contains(static_cast<config_t>(CONFIG::VERBOSITY)))
-	{
-		auto level = logman_.get_loglevel(
-				input.value(static_cast<config_t>(CONFIG::VERBOSITY)));
-
-		Logging::instance().set_level(level);
-		Logging::instance().set_timestamps(false);
-
-		std::cout << "Set loglevel to "
-			<< input.value(static_cast<config_t>(CONFIG::VERBOSITY))
-			<< std::endl;
-	}
-
-	if (input.contains(static_cast<config_t>(CONFIG::QUIET)))
-	{
-		Logging::instance().set_level(logman_.quiet_loglevel());
-		Logging::instance().set_timestamps(false);
-
-		std::cout << "Set quiet loglevel" << std::endl;
-	}
-
-	if (input.contains(static_cast<config_t>(CONFIG::OUTFILE)))
-	{
-		auto outfile = input.value(static_cast<config_t>(CONFIG::OUTFILE));
-
-		options->set_output(outfile);
-	}
+	auto options = this->process_global_options(input);
 
 	// Now process the application specific (local) options
 
@@ -331,234 +207,122 @@ const std::vector<std::pair<Option, OptionCode>>&
 }
 
 
-std::pair<bool, std::string> Configurator::option(CLITokens &tokens,
-		const Option &option) const
-{
-	for (const auto& token : option.tokens())
-	{
-		if (const auto& [ found, value ] =
-			tokens.consume(token, option.needs_value()); found)
-		{
-			if (option.needs_value() and value.empty())
-			{
-				throw CallSyntaxException(
-						"Option " + token + " was passed without argument");
-			}
-
-			return std::make_pair(found, value);
-		}
-	}
-
-	return std::make_pair(false, tokens.empty_value());
-}
-
-
-std::string Configurator::argument(CLITokens &tokens) const
-{
-	return tokens.consume();
-}
-
-
-std::vector<std::string> Configurator::arguments(CLITokens &tokens) const
-{
-	if (tokens.empty())
-	{
-		return std::vector<std::string>{};
-	}
-
-	auto arguments = std::vector<std::string> {};
-	arguments.reserve(tokens.unconsumed().size());
-
-	while (not tokens.empty())
-	{
-		arguments.push_back(this->argument(tokens));
-	}
-
-	return arguments;
-}
-
-
-int Configurator::configure_loglevel()
-{
-	// current loglevel is NONE (since QUIET could have been requested)
-
-	const auto& [ is_quiet, noval ] =
-		this->option(tokens_, global(CONFIG::QUIET));
-
-	const auto& [ verbosity_defined, parsed_level ] =
-		this->option(tokens_, global(CONFIG::VERBOSITY));
-	// quiet overrides verbosity, but verbosity must be consumed, however
-
-	if (is_quiet)
-	{
-		Logging::instance().set_level(logman_.quiet_loglevel());
-	} else if (verbosity_defined)
-	{
-		Logging::instance().set_level(logman_.get_loglevel(parsed_level));
-	} else
-	{
-		Logging::instance().set_level(logman_.default_loglevel());
-	}
-
-	Logging::instance().set_timestamps(false);
-
-	return static_cast<std::underlying_type<LOGLEVEL>::type>(
-				Logging::instance().level());
-}
-
-
-std::tuple<std::string, std::string> Configurator::configure_logappender()
-{
-	const auto& [ found, logfile ] = this->option(tokens_, global(CONFIG::LOGFILE));
-
-	std::unique_ptr<Appender> appender;
-
-	if (logfile.empty())
-	{
-		// This defines the default!
-		appender = std::make_unique<Appender>("stdout", stdout);
-	} else
-	{
-		appender = std::make_unique<Appender>(logfile);
-	}
-
-	auto appender_name = appender->name();
-
-	Logging::instance().add_appender(std::move(appender));
-
-	ARCS_LOG(DEBUG1) << "Set log appender to " << appender_name
-			<< " thereby consuming option "
-			<<  global(CONFIG::LOGFILE).tokens_str();
-
-	return std::make_tuple(appender_name, logfile);
-}
-
-
-std::unique_ptr<Options> Configurator::parse_options(CLITokens& tokens)
-{
-	// The --version flag is magic, the parsing can be stopped because it is
-	// known at this point what the application has to do.
-
-	if (const auto& [ found, value ] =
-			this->option(tokens, global(CONFIG::VERSION)); found)
-	{
-		Options options;
-		options.set_version(true);
-
-		return std::make_unique<Options>(options);
-	}
-
-	std::unique_ptr<Options> parsed_options = std::make_unique<Options>();
-
-	// Consume any supported option
-
-	for (const auto& entry : supported_options())
-	{
-		auto& option = std::get<0>(entry);
-		auto& id     = std::get<1>(entry);
-
-		ARCS_LOG(DEBUG2) << "Check for option: " << option.tokens_str();
-
-		// Try to consume supported options und assign their ids
-
-		if (const auto& [ found, value ] = this->option(tokens, option); found)
-		{
-			parsed_options->set(id);
-
-			if (option.needs_value())
-			{
-				parsed_options->put(id, value);
-			}
-		}
-
-		if (Logging::instance().has_level(LOGLEVEL::DEBUG))
-		{
-			auto print_fragment = std::ostringstream { };
-
-			if (auto utokens = tokens.unconsumed(); not utokens.empty())
-			{
-				std::copy (utokens.begin(), utokens.end() - 1,
-					std::ostream_iterator<std::string>(print_fragment, ",")
-				);
-				print_fragment << utokens.back();
-			} // XXX This trick is duplicated in options.cpp/Options::token_str
-
-			ARCS_LOG(DEBUG2) << "Tokens left: " << print_fragment.str();
-		}
-	}
-
-	// Add builtin option: outfile
-
-	if (const auto& [ found, outfile ] =
-		this->option(tokens, global(CONFIG::OUTFILE)); found)
-	{
-		if (outfile.empty())
-		{
-			throw CallSyntaxException("Option "
-				+ global(CONFIG::OUTFILE).tokens_str() +
-				" requires the name of an outfile");
-		}
-
-		parsed_options->set_output(outfile);
-	}
-
-	return parsed_options;
-}
-
-
-int Configurator::parse_arguments(CLITokens& tokens, Options &options) const
-{
-	return this->do_parse_arguments(tokens, options);
-}
-
-
-std::unique_ptr<Options> Configurator::parse_input(CLITokens& tokens)
-{
-	auto options = this->parse_options(tokens);
-
-	this->parse_arguments(tokens, *options);
-
-	// Finish Processing of the Command Line Input
-
-	if (not tokens.empty())
-	{
-		std::stringstream ss;
-
-		ss << "Unrecognized command line tokens: ";
-
-		for (const auto& token : tokens.unconsumed())
-		{
-			ss << "'" << token << "' ";
-		}
-
-		throw CallSyntaxException(ss.str());
-	}
-
-	return options;
-}
-
-
 const Option& Configurator::global(const CONFIG c)
 {
 	return Configurator::global_options_[std::underlying_type_t<CONFIG>(c) - 1];
 }
 
 
-
-int Configurator::do_parse_arguments(CLITokens& tokens, Options &options) const
+std::vector<std::pair<Option, OptionCode>> Configurator::all_supported() const
 {
-	// allow only single argument
+	std::vector<std::pair<Option, OptionCode>> all_supported =
+		supported_options();
 
-	auto arg = this->argument(tokens);
+	// Add global options to supported options
+	using config_t = std::underlying_type_t<Configurator::CONFIG>;
 
-	if (arg.empty())
+	for (auto i = std::size_t { 0 }; i < global_options_.size(); ++i)
 	{
-		throw CallSyntaxException("Argument expected");
+		auto option = std::make_pair(
+				global(static_cast<CONFIG>(i + 1)),  /* global option */
+				static_cast<config_t>(global_id_[i]) /* option code */);
+
+		//std::cout << i << " - Global option --" << option.first.symbol()
+		//	<< " is encoded with " << option.second << std::endl;
+
+		all_supported.push_back(option);
 	}
 
-	options.append(arg);
+//	std::cout << "Supported options:" << std::endl;
+//	for (auto i = std::size_t { 0 }; i < all_supported.size(); ++i)
+//	{
+//		std::cout << std::setw(2) << i << ": --" <<
+//			all_supported[i].first.symbol()
+//			<< " is encoded with "
+//			<< all_supported[i].second << std::endl;
+//	}
 
-	return 1;
+	return all_supported;
+}
+
+
+std::unique_ptr<Options> Configurator::process_global_options(
+		const CLIInput &input) const
+{
+	auto options = std::make_unique<Options>();
+	using config_t = std::underlying_type_t<Configurator::CONFIG>;
+
+	// --help
+
+	if (input.contains(static_cast<config_t>(CONFIG::HELP)))
+	{
+		std::cout << "Help" << std::endl;
+		options->set_help(true);
+		return options;
+	}
+
+	// --version
+
+	if (input.contains(static_cast<config_t>(CONFIG::VERSION)))
+	{
+		std::cout << "Version" << std::endl;
+		options->set_version(true);
+		return options;
+	}
+
+	// --logfile or stdout
+
+	std::unique_ptr<Appender> appender;
+	auto appender_name = std::string {};
+
+	if (input.contains(static_cast<config_t>(CONFIG::LOGFILE)))
+	{
+		auto logfile = input.value(static_cast<config_t>(CONFIG::LOGFILE));
+		appender = std::make_unique<Appender>(logfile);
+		appender_name = appender->name();
+	} else
+	{
+		appender = std::make_unique<Appender>("stdout", stdout);
+		appender_name = appender->name();
+	}
+
+	Logging::instance().add_appender(std::move(appender));
+
+	//std::cout << "Set log appender to " << appender_name << std::endl;
+
+	// --verbosity
+
+	if (input.contains(static_cast<config_t>(CONFIG::VERBOSITY)))
+	{
+		auto level = logman_.get_loglevel(
+				input.value(static_cast<config_t>(CONFIG::VERBOSITY)));
+
+		Logging::instance().set_level(level);
+		Logging::instance().set_timestamps(false);
+
+		//std::cout << "Set loglevel to "
+		//	<< input.value(static_cast<config_t>(CONFIG::VERBOSITY))
+		//	<< std::endl;
+	}
+
+	// --quiet
+
+	if (input.contains(static_cast<config_t>(CONFIG::QUIET)))
+	{
+		Logging::instance().set_level(logman_.quiet_loglevel());
+		Logging::instance().set_timestamps(false);
+
+		//std::cout << "Set quiet loglevel" << std::endl;
+	}
+
+	if (input.contains(static_cast<config_t>(CONFIG::OUTFILE)))
+	{
+		auto outfile = input.value(static_cast<config_t>(CONFIG::OUTFILE));
+
+		options->set_output(outfile);
+	}
+
+	return options;
 }
 
 

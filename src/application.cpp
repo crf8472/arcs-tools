@@ -87,8 +87,7 @@ void ARApplication::print_usage() const
 	std::cout << "OPTIONS:" << std::endl;
 
 	const auto& goptions { Configurator::global_options() };
-	const auto& soptions {
-		this->create_configurator(0, nullptr)->supported_options() };
+	const auto& soptions { this->create_configurator()->supported_options() };
 
 	StringTable table { static_cast<int>(goptions.size() + soptions.size()),
 		3 };
@@ -138,13 +137,8 @@ void ARApplication::print_usage() const
 std::unique_ptr<Options> ARApplication::setup_options(int argc, char** argv)
 	const
 {
-	//auto configurator = this->create_configurator(argc, argv);
-	//
-	//configurator->configure_logging();
-	//
-	//return configurator->provide_options();
-
 	auto configurator = this->create_configurator();
+
 	return configurator->provide_options(argc, argv);
 }
 
