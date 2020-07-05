@@ -237,9 +237,9 @@ int ARCalcConfigurator::do_parse_arguments(CLITokens& cli, Options &options)
 
 
 std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
-		std::unique_ptr<Options> options)
+		std::unique_ptr<Options> coptions)
 {
-	auto coptions = this->configure_calcbase_options(std::move(options));
+	auto options = this->configure_calcbase_options(std::move(coptions));
 
 	// Determine whether to set ALBUM mode
 
@@ -317,16 +317,16 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 
 	// Printing options
 
-	if (coptions->is_set(CALC::SUMSONLY))
+	if (options->is_set(CALC::SUMSONLY))
 	{
-		coptions->set(CALC::NOTRACKS);
-		coptions->set(CALC::NOFILENAMES);
-		coptions->set(CALC::NOOFFSETS);
-		coptions->set(CALC::NOLENGTHS);
-		coptions->set(CALC::NOLABELS); // Multiple Checksum types?
+		options->set(CALC::NOTRACKS);
+		options->set(CALC::NOFILENAMES);
+		options->set(CALC::NOOFFSETS);
+		options->set(CALC::NOLENGTHS);
+		options->set(CALC::NOLABELS); // Multiple Checksum types?
 	}
 
-	return coptions;
+	return options;
 }
 
 
