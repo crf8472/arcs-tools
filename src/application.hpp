@@ -118,7 +118,7 @@ protected:
 	* results. It is not suited to output errors.
 	*
 	* \param[in] object   The object to output
-	* \param[in] filename Optional filename, default is ""
+	* \param[in] filename Optional filename, default is the empty string
 	*
 	* \return Type void iff object overloads operator << for std::ostream
 	*/
@@ -157,13 +157,9 @@ private:
 	/**
 	 * \brief Create a Configurator for this instance.
 	 *
-	 * \param[in] argc Number of command line input arguments
-	 * \param[in] argv Array of command line input arguments
-	 *
 	 * \return The configurator for this application
 	 */
-	virtual std::unique_ptr<Configurator> create_configurator(
-			int argc, char** argv) const
+	virtual std::unique_ptr<Configurator> create_configurator() const
 	= 0;
 
 	/**

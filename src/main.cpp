@@ -37,6 +37,7 @@ int main(int argc, char** argv)
 	using arcsapp::ARCSTOOLS_BINARY_NAME;
 	using arcsapp::ARCSTOOLS_VERSION_INFO_STRING;
 	using arcsapp::ApplicationFactory;
+	using arcsapp::CallSyntaxException;
 
 	const auto& BINARY = std::string { ARCSTOOLS_BINARY_NAME };
 	const auto  ARGV_0 = std::string { argv[0] };
@@ -65,6 +66,14 @@ int main(int argc, char** argv)
 					// skip first token
 					return application->run(argc - 1, argv + 1);
 				}
+			} catch (const arcsapp::CallSyntaxException &cse)
+			{
+				std::cerr << "ERROR: " << cse.what() << std::endl;
+
+				application->print_usage();
+
+				return EXIT_FAILURE;
+
 			} catch (const std::exception &e)
 			{
 				std::cerr << "ERROR: " << e.what() << std::endl;

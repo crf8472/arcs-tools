@@ -43,32 +43,34 @@ class CLITokens;
  */
 struct CALCBASE
 {
+	static constexpr OptionCode BASE = Configurator::BASE_CODE();
+
 	// Info Output Options (no calculation)
 
-	static constexpr OptionValue LIST_TOC_FORMATS   = 1;
-	static constexpr OptionValue LIST_AUDIO_FORMATS = 2;
+	static constexpr OptionCode LIST_TOC_FORMATS   = BASE + 1; // 7
+	static constexpr OptionCode LIST_AUDIO_FORMATS = BASE + 2;
 
 	// Calculation Input Options
 
-	static constexpr OptionValue METAFILE     =  3;
+	static constexpr OptionCode METAFILE     = BASE +  3;
 
 	// Calculation Output Options
 
-	static constexpr OptionValue NOTRACKS     =  4;
-	static constexpr OptionValue NOFILENAMES  =  5;
-	static constexpr OptionValue NOOFFSETS    =  6;
-	static constexpr OptionValue NOLENGTHS    =  7;
-	static constexpr OptionValue NOLABELS     =  8;
-	static constexpr OptionValue COLDELIM     =  9;
-	static constexpr OptionValue PRINTID      = 10;
-	static constexpr OptionValue PRINTURL     = 11;
+	static constexpr OptionCode NOTRACKS     = BASE +  4;
+	static constexpr OptionCode NOFILENAMES  = BASE +  5;
+	static constexpr OptionCode NOOFFSETS    = BASE +  6;
+	static constexpr OptionCode NOLENGTHS    = BASE +  7;
+	static constexpr OptionCode NOLABELS     = BASE +  8;
+	static constexpr OptionCode COLDELIM     = BASE +  9;
+	static constexpr OptionCode PRINTID      = BASE + 10; // ...
+	static constexpr OptionCode PRINTURL     = BASE + 11; // 17
 
 protected:
 
 	/**
 	 * \brief Max constant occurring in CALC
 	 */
-	static constexpr OptionValue MAX_CONSTANT = 11;
+	static constexpr OptionCode MAX_CONSTANT = BASE + 11;
 };
 
 
@@ -123,16 +125,16 @@ public:
 
 	// Calculation Input Options
 
-	static constexpr OptionValue FIRST        = BASE + 1;
-	static constexpr OptionValue LAST         = BASE + 2;
-	static constexpr OptionValue ALBUM        = BASE + 3;
+	static constexpr OptionCode FIRST        = BASE + 1;  // 18
+	static constexpr OptionCode LAST         = BASE + 2;
+	static constexpr OptionCode ALBUM        = BASE + 3;
 
 	// Calculation Output Options
 
-	static constexpr OptionValue NOV1         = BASE + 4;
-	static constexpr OptionValue NOV2         = BASE + 5;
-	static constexpr OptionValue SUMSONLY     = BASE + 6;
-	static constexpr OptionValue TRACKSASCOLS = BASE + 7;
+	static constexpr OptionCode NOV1         = BASE + 4;
+	static constexpr OptionCode NOV2         = BASE + 5;
+	static constexpr OptionCode SUMSONLY     = BASE + 6; // ...
+	static constexpr OptionCode TRACKSASCOLS = BASE + 7; // 24
 };
 
 
@@ -149,10 +151,8 @@ public:
 
 private:
 
-	const std::vector<std::pair<Option, OptionValue>>& do_supported_options()
+	const std::vector<std::pair<Option, OptionCode>>& do_supported_options()
 		const override;
-
-	int do_parse_arguments(CLITokens& cli, Options &options) const override;
 
 	std::unique_ptr<Options> do_configure_options(
 			std::unique_ptr<Options> options) override;
@@ -221,8 +221,7 @@ private:
 
 	std::string do_call_syntax() const override;
 
-	std::unique_ptr<Configurator> create_configurator(int argc, char** argv)
-		const override;
+	std::unique_ptr<Configurator> create_configurator() const override;
 
 	int do_run(const Options &options) override;
 };

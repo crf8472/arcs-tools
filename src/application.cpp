@@ -59,17 +59,8 @@ int ARApplication::run(int argc, char** argv)
 
 	std::unique_ptr<Options> options;
 
-	// Print error message and usage if application call line is ill-formed
-	try
-	{
-		options = this->setup_options(argc, argv);
-
-	} catch (const CallSyntaxException &e)
-	{
-		this->print_usage();
-
-		throw e;
-	}
+	// This may throw a CallSyntaxException
+	options = this->setup_options(argc, argv);
 
 	if (options->is_set_version())
 	{
@@ -96,8 +87,7 @@ void ARApplication::print_usage() const
 	std::cout << "OPTIONS:" << std::endl;
 
 	const auto& goptions { Configurator::global_options() };
-	const auto& soptions {
-		this->create_configurator(0, nullptr)->supported_options() };
+	const auto& soptions { this->create_configurator()->supported_options() };
 
 	StringTable table { static_cast<int>(goptions.size() + soptions.size()),
 		3 };
@@ -147,11 +137,9 @@ void ARApplication::print_usage() const
 std::unique_ptr<Options> ARApplication::setup_options(int argc, char** argv)
 	const
 {
-	auto configurator = this->create_configurator(argc, argv);
+	auto configurator = this->create_configurator();
 
-	configurator->configure_logging();
-
-	return configurator->provide_options();
+	return configurator->provide_options(argc, argv);
 }
 
 

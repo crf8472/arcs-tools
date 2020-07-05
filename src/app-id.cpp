@@ -51,29 +51,28 @@ using arcsdec::ARIdCalculator;
 // ARIdConfigurator
 
 
-const std::vector<std::pair<Option, OptionValue>>&
+const std::vector<std::pair<Option, OptionCode>>&
 	ARIdConfigurator::do_supported_options() const
 {
-	const static std::vector<std::pair<Option, OptionValue>> local_options = {
-			{{      "cddb_id",  false,
-					"FALSE", "print the CDDB id" },
-					ARIdOptions::CDDBID },
-			{{ 		"db_id",   false, "FALSE",
-					"print the AccurateRip DB ID (filename)" },
-					ARIdOptions::DBID },
-			{{ 		"filename",   false, "FALSE",
-					"print the AccurateRip DB ID (filename)" },
-					ARIdOptions::DBID }, // alias for db_id
-			{{ 		"url",   false, "FALSE",
-					"print the AccurateRip URL" },
-					ARIdOptions::URL },
-			{{ 		"profile",    false, "FALSE", "" },
-					ARIdOptions::PROFILE },
-			{{ 		"url_prefix", true, "none",
-					"use the specified prefix"
-						"instead of the default "
-						"'http://accuraterip.com/accuraterip/'" },
-					ARIdOptions::URLPREFIX },
+	const static std::vector<std::pair<Option, OptionCode>> local_options = {
+			{{  "cddb_id",  false,
+				"FALSE", "print the CDDB id" },
+				ARIdOptions::CDDBID },
+			{{  "db_id",   false, "FALSE",
+				"print the AccurateRip DB ID (filename)" },
+				ARIdOptions::DBID },
+			{{  "filename",   false, "FALSE",
+				"print the AccurateRip DB ID (filename)" },
+				ARIdOptions::DBID }, // alias for db_id
+			{{  "url",   false, "FALSE",
+				"print the AccurateRip URL" },
+				ARIdOptions::URL },
+			{{ "profile",    false, "FALSE", "" },
+				ARIdOptions::PROFILE },
+			{{  "url_prefix", true, "none",
+				"use the specified prefix instead of the default "
+					"'http://accuraterip.com/accuraterip/'" },
+				ARIdOptions::URLPREFIX },
 			{{ 'a', "audiofile",   true, "none",
 					"specify input audio file" },
 					ARIdOptions::AUDIOFILE }
@@ -98,10 +97,9 @@ std::string ARIdApplication::do_call_syntax() const
 }
 
 
-std::unique_ptr<Configurator> ARIdApplication::create_configurator(
-		int argc, char** argv) const
+std::unique_ptr<Configurator> ARIdApplication::create_configurator() const
 {
-	return std::make_unique<ARIdConfigurator>(argc, argv);
+	return std::make_unique<ARIdConfigurator>();
 }
 
 
@@ -143,9 +141,7 @@ int ARIdApplication::do_run(const Options &options)
 			options.is_set(ARIdOptions::CDDBID)
 		);
 	}
-	//format->init();
 
-	//format->use(*id, options.get(ARIdOptions::URLPREFIX));
 	output(*format);
 
 	return EXIT_SUCCESS;

@@ -12,115 +12,20 @@
  * A single Option instance represents a supported command line option.
  */
 
-#include <cstdint>   // for uint16_t
+#include <climits>   // CHAR_BIT
 #include <map>       // for map
 #include <string>    // for string
 #include <vector>    // for vector
 
+#ifndef __ARCSTOOLS_CLITOKENS_HPP__
+#include "clitokens.hpp"           // for OptionCode
+#endif
+
 namespace arcsapp
 {
 
-
-/**
- * \brief ID for a supported option
- */
-using OptionValue = uint64_t;
-
-
-/**
- * \brief Descriptor for a single command line option.
- *
- * An Option has a symbol and may or may not have a shorthand symbol. It may
- * or may not expect a value and most options have some default. An option also
- * has a short description.
- */
-class Option
-{
-public:
-
-	/**
-	 * \brief Constructor
-	 *
-	 * \param[in] shorthand   The shorthand symbol for the option
-	 * \param[in] symbol      The outwritten symbol for the option
-	 * \param[in] needs_value Indicate whether the option requires a value
-	 * \param[in] default_arg Default argument as a string
-	 * \param[in] desc        Option description
-	 */
-	Option(const char shorthand, const std::string &symbol,
-		const bool needs_value, const std::string &default_arg,
-		const std::string &desc);
-
-	/**
-	 * \brief Constructor
-	 *
-	 * \param[in] symbol      The outwritten symbol for the option
-	 * \param[in] needs_value Indicate whether the option requires a value
-	 * \param[in] default_arg Default argument as a string
-	 * \param[in] desc        Option description
-	 */
-	Option(const std::string &symbol, const bool needs_value,
-		   const std::string &default_arg, const std::string &desc)
-		: Option ('\0', symbol, needs_value, default_arg, desc )
-	{ /* empty */ }
-
-	/**
-	 *  \brief Shorthand symbol of this option or '\0' if none.
-	 *
-	 * \return Shorthand symbol of this option or '\0' if none
-	 */
-	char shorthand_symbol() const;
-
-	/**
-	 * \brief Symbol of this option.
-	 *
-	 * A symbol may never be empty.
-	 *
-	 * \return Symbol of this option or empty string if none.
-	 */
-	std::string symbol() const;
-
-	/**
-	 *  \brief Returns TRUE iff the option requires a value
-	 *
-	 * \return TRUE iff the option requires a value, otherwise FALSE
-	 */
-	bool needs_value() const;
-
-	/**
-	 * \brief Default value of the option
-	 *
-	 * \return Default value of the option
-	 */
-	std::string default_arg() const;
-
-	/**
-	 * \brief Description of the symbol
-	 */
-	std::string description() const;
-
-	/**
-	 * \brief Return command line tokens that represent that option
-	 *
-	 * \return List of tokens
-	 */
-	std::vector<std::string> tokens() const;
-
-	/**
-	 * \brief Return the list of tokens as a comma separated list
-	 *
-	 * \return List of tokens
-	 */
-	std::string tokens_str() const;
-
-private:
-
-	const char        shorthand_;
-	const std::string symbol_;
-	const bool        needs_value_;
-	const std::string default_;
-	const std::string description_;
-};
+class Options;
+std::ostream& operator << (std::ostream& out, const Options &options);
 
 
 /**
@@ -133,15 +38,38 @@ class Options
 {
 public:
 
+	friend std::ostream& operator << (std::ostream& out, const Options &options);
+
+	/**
+	 * \brief Options with predefined number of flags.
+	 */
+	Options(const std::size_t size);
+
 	/**
 	 * \brief Default constructor.
 	 */
-	Options();
+	Options() : Options(sizeof(OptionCode) * CHAR_BIT) { /* empty */ };
 
 	/**
 	 * \brief Virtual default destructor.
 	 */
 	virtual ~Options() noexcept;
+
+	/**
+	 * \brief Set or unset the help flag.
+	 *
+	 * The help flag indicates whether the option HELP was passed.
+	 *
+	 * \param[in] help The flag to set or unset
+	 */
+	void set_help(const bool help);
+
+	/**
+	 * \brief Return the help flag.
+	 *
+	 * \return TRUE iff the help option is set, otherwise FALSE
+	 */
+	bool is_set_help() const;
 
 	/**
 	 * \brief Set or unset the version flag.
@@ -150,7 +78,7 @@ public:
 	 *
 	 * \param[in] version The flag to set or unset
 	 */
-	void set_version(const bool &version);
+	void set_version(const bool version);
 
 	/**
 	 * \brief Return the version flag.
@@ -180,7 +108,7 @@ public:
 	 *
 	 * \return TRUE iff the option is set, otherwise FALSE
 	 */
-	bool is_set(const OptionValue &option) const;
+	bool is_set(const OptionCode &option) const;
 
 	/**
 	 * \brief Set the option to TRUE.
@@ -189,7 +117,7 @@ public:
 	 *
 	 * \param[in] option The option to be set to TRUE
 	 */
-	void set(const OptionValue &option);
+	void set(const OptionCode &option);
 
 	/**
 	 * \brief Set the option to FALSE.
@@ -198,7 +126,7 @@ public:
 	 *
 	 * \param[in] option The option to be set to FALSE
 	 */
-	void unset(const OptionValue &option);
+	void unset(const OptionCode &option);
 
 	/**
 	 * \brief Get option value by key.
@@ -207,7 +135,7 @@ public:
 	 *
 	 * \return The value of the option passed
 	 */
-	std::string get(const OptionValue &option) const;
+	std::string get(const OptionCode &option) const;
 
 	/**
 	 * \brief Set option value for key.
@@ -215,7 +143,14 @@ public:
 	 * \param[in] option The option to put in
 	 * \param[in] value  The value for the option to put in
 	 */
-	void put(const OptionValue &option, const std::string &value);
+	void put(const OptionCode &option, const std::string &value);
+
+	/**
+	 * \brief Get all input options.
+	 *
+	 * \return All input arguments
+	 */
+	std::vector<bool> const get_flags() const;
 
 	/**
 	 * \brief Get all input arguments.
@@ -233,7 +168,7 @@ public:
 	 *
 	 * \return Argument
 	 */
-	std::string const get_argument(const OptionValue &i) const;
+	std::string const get_argument(const OptionCode &i) const;
 
 	/**
 	 * \brief Returns TRUE iff no arguments are present.
@@ -260,6 +195,11 @@ public:
 private:
 
 	/**
+	 * \brief Flag to indicate presence of --help option
+	 */
+	bool help_;
+
+	/**
 	 * \brief Flag to indicate presence of --version option
 	 */
 	bool version_;
@@ -272,18 +212,17 @@ private:
 	/**
 	 * \brief Boolean and valued options
 	 */
-	std::vector<bool> flags_;
+	std::vector<bool> flags_; // TODO redundant
 
 	/**
 	 * \brief Valued options' values
 	 */
-	std::map<OptionValue, std::string> values_;
+	std::map<OptionCode, std::string> values_;
 
 	/**
 	 * \brief Arguments (non-option values)
 	 */
 	std::vector<std::string> arguments_;
-
 };
 
 } // namespace arcsapp

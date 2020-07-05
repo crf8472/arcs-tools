@@ -74,30 +74,30 @@ using arcsdec::TOCParser;
 
 // CALCBASE
 
-constexpr OptionValue CALCBASE::LIST_TOC_FORMATS;
-constexpr OptionValue CALCBASE::LIST_AUDIO_FORMATS;
-constexpr OptionValue CALCBASE::METAFILE;
-constexpr OptionValue CALCBASE::NOTRACKS;
-constexpr OptionValue CALCBASE::NOFILENAMES;
-constexpr OptionValue CALCBASE::NOOFFSETS;
-constexpr OptionValue CALCBASE::NOLENGTHS;
-constexpr OptionValue CALCBASE::NOLABELS;
-constexpr OptionValue CALCBASE::COLDELIM;
-constexpr OptionValue CALCBASE::PRINTID;
-constexpr OptionValue CALCBASE::PRINTURL;
+constexpr OptionCode CALCBASE::LIST_TOC_FORMATS;
+constexpr OptionCode CALCBASE::LIST_AUDIO_FORMATS;
+constexpr OptionCode CALCBASE::METAFILE;
+constexpr OptionCode CALCBASE::NOTRACKS;
+constexpr OptionCode CALCBASE::NOFILENAMES;
+constexpr OptionCode CALCBASE::NOOFFSETS;
+constexpr OptionCode CALCBASE::NOLENGTHS;
+constexpr OptionCode CALCBASE::NOLABELS;
+constexpr OptionCode CALCBASE::COLDELIM;
+constexpr OptionCode CALCBASE::PRINTID;
+constexpr OptionCode CALCBASE::PRINTURL;
 
-constexpr OptionValue CALCBASE::MAX_CONSTANT;
+constexpr OptionCode CALCBASE::MAX_CONSTANT;
 
 
 // CALC
 
-constexpr OptionValue CALC::FIRST;
-constexpr OptionValue CALC::LAST;
-constexpr OptionValue CALC::ALBUM;
-constexpr OptionValue CALC::NOV1;
-constexpr OptionValue CALC::NOV2;
-constexpr OptionValue CALC::SUMSONLY;
-constexpr OptionValue CALC::TRACKSASCOLS;
+constexpr OptionCode CALC::FIRST;
+constexpr OptionCode CALC::LAST;
+constexpr OptionCode CALC::ALBUM;
+constexpr OptionCode CALC::NOV1;
+constexpr OptionCode CALC::NOV2;
+constexpr OptionCode CALC::SUMSONLY;
+constexpr OptionCode CALC::TRACKSASCOLS;
 
 
 // ARCalcConfiguratorBase
@@ -158,10 +158,10 @@ std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 // ARCalcConfigurator
 
 
-const std::vector<std::pair<Option, OptionValue>>&
+const std::vector<std::pair<Option, OptionCode>>&
 	ARCalcConfigurator::do_supported_options() const
 {
-	const static std::vector<std::pair<Option, OptionValue>> local_options =
+	const static std::vector<std::pair<Option, OptionCode>> local_options =
 	{
 		// Calculation Input Options
 
@@ -217,29 +217,10 @@ const std::vector<std::pair<Option, OptionValue>>&
 }
 
 
-int ARCalcConfigurator::do_parse_arguments(CLITokens& cli, Options &options)
-		const
-{
-	// Respect multiple arguments
-
-	if (auto args = this->arguments(cli); !args.empty())
-	{
-		for (const auto& arg : args)
-		{
-			options.append(arg);
-		}
-
-		return static_cast<int>(args.size());
-	}
-
-	return 0;
-}
-
-
 std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
-		std::unique_ptr<Options> options)
+		std::unique_ptr<Options> coptions)
 {
-	auto coptions = this->configure_calcbase_options(std::move(options));
+	auto options = this->configure_calcbase_options(std::move(coptions));
 
 	// Determine whether to set ALBUM mode
 
@@ -317,16 +298,16 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 
 	// Printing options
 
-	if (coptions->is_set(CALC::SUMSONLY))
+	if (options->is_set(CALC::SUMSONLY))
 	{
-		coptions->set(CALC::NOTRACKS);
-		coptions->set(CALC::NOFILENAMES);
-		coptions->set(CALC::NOOFFSETS);
-		coptions->set(CALC::NOLENGTHS);
-		coptions->set(CALC::NOLABELS); // Multiple Checksum types?
+		options->set(CALC::NOTRACKS);
+		options->set(CALC::NOFILENAMES);
+		options->set(CALC::NOOFFSETS);
+		options->set(CALC::NOLENGTHS);
+		options->set(CALC::NOLABELS); // Multiple Checksum types?
 	}
 
-	return coptions;
+	return options;
 }
 
 
@@ -471,6 +452,19 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 	// Print formatted results to output stream
 
+	if (options.is_set(CALC::PRINTID) or options.is_set(CALC::PRINTURL))
+	{
+		const std::unique_ptr<ARIdTableFormat> idformat =
+			std::make_unique<ARIdTableFormat>();
+
+		idformat->set_id(options.is_set(CALC::PRINTID));
+		idformat->set_url(options.is_set(CALC::PRINTURL));
+
+		idformat->use(std::make_tuple(&arid, nullptr));
+
+		output(*idformat);
+	}
+
 	auto format = configure_format(options);
 
 	auto filenames = toc
@@ -499,10 +493,9 @@ std::string ARCalcApplication::do_call_syntax() const
 }
 
 
-std::unique_ptr<Configurator> ARCalcApplication::create_configurator(
-		int argc, char** argv) const
+std::unique_ptr<Configurator> ARCalcApplication::create_configurator() const
 {
-	return std::make_unique<ARCalcConfigurator>(argc, argv);
+	return std::make_unique<ARCalcConfigurator>();
 }
 
 
