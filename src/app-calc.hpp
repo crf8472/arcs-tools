@@ -70,7 +70,7 @@ protected:
 	/**
 	 * \brief Max constant occurring in CALC
 	 */
-	static constexpr OptionCode MAX_CONSTANT = 11;
+	static constexpr OptionCode MAX_CONSTANT = BASE + 11;
 };
 
 
