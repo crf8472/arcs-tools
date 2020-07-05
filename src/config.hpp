@@ -129,6 +129,8 @@ class Configurator
 {
 public:
 
+	Configurator();
+
 	/**
 	 * \brief Empty constructor.
 	 *
@@ -189,16 +191,6 @@ public:
 	 */
 	const std::vector<std::pair<Option, OptionCode>>& supported_options()
 		const;
-
-	/**
-	 * \brief Returns the minimal code constant to be used by subclasses.
-	 *
-	 * Subclasses my declare their code range starting with this code + 1.
-	 *
-	 * \see ARIdOptions
-	 * \see CALCBASE
-	 */
-	static constexpr OptionCode BASE_CODE() { return 6; /* Size of CONFIG */ };
 
 protected:
 
@@ -339,18 +331,18 @@ protected:
 	 */
 	enum class CONFIG : OptionCode
 	{
-		HELP      = 0,
-		VERSION   = 1,
-		VERBOSITY = 2,
-		QUIET     = 3,
-		LOGFILE   = 4,
-		OUTFILE   = 5
+		HELP      = 1,
+		VERSION   = 2,
+		VERBOSITY = 3,
+		QUIET     = 4,
+		LOGFILE   = 5,
+		OUTFILE   = 6
 	};
 
 	/**
 	 *  \brief Enumerable representation of global config options.
 	 */
-	static constexpr std::array<CONFIG, 6> global_id =
+	static constexpr std::array<CONFIG, 6> global_id_ =
 	{
 		CONFIG::HELP,
 		CONFIG::VERSION,
@@ -359,6 +351,20 @@ protected:
 		CONFIG::LOGFILE,
 		CONFIG::OUTFILE
 	};
+
+public:
+
+	/**
+	 * \brief Returns the minimal code constant to be used by subclasses.
+	 *
+	 * Subclasses my declare their code range starting with this code + 1.
+	 *
+	 * \see ARIdOptions
+	 * \see CALCBASE
+	 */
+	static constexpr OptionCode BASE_CODE() { return 1 + global_id_.size(); };
+
+protected:
 
 	/**
 	 * \brief Access a global option by its index.
@@ -441,9 +447,11 @@ class DefaultConfigurator : public Configurator
 {
 public:
 
-	DefaultConfigurator(int argc, char** argv)
-		: Configurator(argc, argv)
-	{ /* empty */ }
+	using Configurator::Configurator;
+
+	//DefaultConfigurator(int argc, char** argv)
+	//	: Configurator(argc, argv)
+	//{ /* empty */ }
 
 private:
 

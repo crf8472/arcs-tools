@@ -499,6 +499,12 @@ std::string ARCalcApplication::do_call_syntax() const
 }
 
 
+std::unique_ptr<Configurator> ARCalcApplication::create_configurator() const
+{
+	return std::make_unique<ARCalcConfigurator>();
+}
+
+
 std::unique_ptr<Configurator> ARCalcApplication::create_configurator(
 		int argc, char** argv) const
 {

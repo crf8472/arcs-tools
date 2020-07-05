@@ -10,6 +10,8 @@
 #include <utility>             // for move
 #include <vector>              // for vector
 
+#include <iostream>
+
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
 #endif
@@ -140,6 +142,21 @@ const std::vector<Option> Configurator::global_options_ = {
 };
 
 
+Configurator::Configurator()
+	: logman_ {
+		LogManager::get_loglevel(global(CONFIG::VERBOSITY).default_arg()),
+		LOGLEVEL::NONE /* quiet */
+	  }
+	, tokens_(0, nullptr)
+{
+	// We do not know whether the application is required to run quiet,
+	// so initial level is NOT default level but quiet level
+
+	Logging::instance().set_level(logman_.quiet_loglevel());
+	Logging::instance().set_timestamps(false);
+}
+
+
 Configurator::Configurator(const int argc, const char* const * const argv)
 	: logman_ {
 		LogManager::get_loglevel(global(CONFIG::VERBOSITY).default_arg()),
@@ -194,13 +211,18 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 	// Add global options to supported options
 	using config_t = std::underlying_type_t<Configurator::CONFIG>;
 
-	for (auto i = config_t { 0 };
+	for (auto i = config_t { 1 };
 		i < static_cast<config_t>(Configurator::BASE_CODE()); ++i)
 	{
+		//std::cout << i << " - Global option: --" <<
+		//	global(static_cast<CONFIG>(i)).symbol()
+		//	<< " is encoded with "
+		//	<< static_cast<config_t>(global_id_[i - 1]) << std::endl;
+
 		all_supported.emplace_back(
 			std::make_pair(
-				global(static_cast<CONFIG>(i)) /* global option i */,
-				static_cast<config_t>(global_id[i]) /* code for option i */ ));
+				global(static_cast<CONFIG>(i)) /* global option */,
+				static_cast<config_t>(global_id_[i - 1]) /* option code */));
 	}
 
 	// Parse Input and Match Supported Options
@@ -214,15 +236,35 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 
 	if (input.contains(static_cast<config_t>(CONFIG::HELP)))
 	{
+		std::cout << "Help" << std::endl;
 		options->set_help(true);
 		return options;
 	}
 
 	if (input.contains(static_cast<config_t>(CONFIG::VERSION)))
 	{
+		std::cout << "Version" << std::endl;
 		options->set_version(true);
 		return options;
 	}
+
+	std::unique_ptr<Appender> appender;
+	auto appender_name = std::string {};
+
+	if (input.contains(static_cast<config_t>(CONFIG::LOGFILE)))
+	{
+		auto logfile = input.value(static_cast<config_t>(CONFIG::LOGFILE));
+		appender = std::make_unique<Appender>(logfile);
+		appender_name = appender->name();
+	} else
+	{
+		appender = std::make_unique<Appender>("stdout", stdout);
+		appender_name = appender->name();
+	}
+
+	Logging::instance().add_appender(std::move(appender));
+
+	std::cout << "Set log appender to " << appender_name << std::endl;
 
 	if (input.contains(static_cast<config_t>(CONFIG::VERBOSITY)))
 	{
@@ -231,36 +273,18 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 
 		Logging::instance().set_level(level);
 		Logging::instance().set_timestamps(false);
+
+		std::cout << "Set loglevel to "
+			<< input.value(static_cast<config_t>(CONFIG::VERBOSITY))
+			<< std::endl;
 	}
 
 	if (input.contains(static_cast<config_t>(CONFIG::QUIET)))
 	{
 		Logging::instance().set_level(logman_.quiet_loglevel());
 		Logging::instance().set_timestamps(false);
-	}
 
-	if (input.contains(static_cast<config_t>(CONFIG::LOGFILE)))
-	{
-		auto logfile = input.value(static_cast<config_t>(CONFIG::LOGFILE));
-
-		std::unique_ptr<Appender> appender;
-
-		if (logfile.empty())
-		{
-			// This defines the default!
-			appender = std::make_unique<Appender>("stdout", stdout);
-		} else
-		{
-			appender = std::make_unique<Appender>(logfile);
-		}
-
-		auto appender_name = appender->name();
-
-		Logging::instance().add_appender(std::move(appender));
-
-		ARCS_LOG(DEBUG1) << "Set log appender to " << appender_name
-			<< " thereby consuming option "
-			<<  global(CONFIG::LOGFILE).tokens_str();
+		std::cout << "Set quiet loglevel" << std::endl;
 	}
 
 	if (input.contains(static_cast<config_t>(CONFIG::OUTFILE)))
@@ -516,7 +540,7 @@ std::unique_ptr<Options> Configurator::parse_input(CLITokens& tokens)
 
 const Option& Configurator::global(const CONFIG c)
 {
-	return Configurator::global_options_[std::underlying_type_t<CONFIG>(c)];
+	return Configurator::global_options_[std::underlying_type_t<CONFIG>(c) - 1];
 }
 
 

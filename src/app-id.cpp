@@ -98,6 +98,12 @@ std::string ARIdApplication::do_call_syntax() const
 }
 
 
+std::unique_ptr<Configurator> ARIdApplication::create_configurator() const
+{
+	return std::make_unique<ARIdConfigurator>();
+}
+
+
 std::unique_ptr<Configurator> ARIdApplication::create_configurator(
 		int argc, char** argv) const
 {

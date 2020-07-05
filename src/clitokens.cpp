@@ -2,7 +2,7 @@
 #include "clitokens.hpp"
 #endif
 
-#include <algorithm>  // for find
+#include <algorithm>  // for find, find_if
 #include <cstring>    // for strncmp
 #include <iterator>   // for ostream_iterator
 #include <sstream>    // for ostringstream
@@ -263,8 +263,8 @@ void CLIInput::consume_as_symbol(const char * const token,
 		const char * const next,
 		const std::vector<std::pair<Option, OptionCode>> supported, int &pos)
 {
-	std::cout << "--- Pos: " << pos << "  [symbol]" << std::endl;
-	std::cout << "Token: " << token << std::endl;
+	std::cout << "Token " << std::setw(2) << pos << ": '"
+		<< token << "' (symbol)" << std::endl;
 
 	auto name_len = unsigned { 0 };
 
@@ -353,7 +353,8 @@ void CLIInput::consume_as_symbol(const char * const token,
 			throw CallSyntaxException(msg.str());
 		}
 
-		std::cout << "Value : " << &token[name_len + 3] << std::endl;
+		std::cout << "    => Value '" << &token[name_len + 3] << "'"
+			<< std::endl;
 		items_.back().set_value(&token[name_len + 3]);
 	} else if (option.needs_value()) // Expect syntax '--foo bar'
 	{
@@ -366,7 +367,7 @@ void CLIInput::consume_as_symbol(const char * const token,
 		}
 
 		++pos;
-		std::cout << "Value : " << next << std::endl;
+		std::cout << "    => Value '" << next << "'" << std::endl;
 		items_.back().set_value(next);
 	}
 }
@@ -376,9 +377,8 @@ void CLIInput::consume_as_shorthand(const char * const token,
 		const char * const next,
 		const std::vector<std::pair<Option, OptionCode>> supported, int &pos)
 {
-
-	std::cout << "--- Pos: " << pos << "  [shorthand]" << std::endl;
-	std::cout << "Token: " << token << std::endl;
+	std::cout << "Token " << std::setw(2) << pos << ": '"
+		<< token << "' (short)" << std::endl;
 
 	auto cind  = int { 1 };  // Position Index of Character in Token
 	auto index = int { -1 }; // Index of Identified Option in 'supported'
@@ -413,9 +413,11 @@ void CLIInput::consume_as_shorthand(const char * const token,
 
 		// Supported Option Represented by 'c' is 'supported[index]'
 
-		std::cout << "Option '-" << supported[index].first.shorthand_symbol()
-			<< "' recognized" << std::endl;
 		items_.emplace_back(code);
+
+		std::cout << "    => Option '"
+			<< supported[index].first.shorthand_symbol()
+			<< "' (" << code << ")" << std::endl;
 
 		++cind;
 
@@ -431,7 +433,8 @@ void CLIInput::consume_as_shorthand(const char * const token,
 			{
 				// Option Value is Present in Token
 
-				std::cout << "Value : " << &token[cind] << std::endl;
+				std::cout << "    => Value '" << &token[cind] << "'"
+					<< std::endl;
 				items_.back().set_value(&token[cind]);
 			} else
 			{
@@ -445,7 +448,7 @@ void CLIInput::consume_as_shorthand(const char * const token,
 					throw CallSyntaxException(msg.str());
 				}
 
-				std::cout << "Value : " << next << std::endl;
+				std::cout << "    => Value '" << next << "'" << std::endl;
 				items_.back().set_value(next);
 			}
 

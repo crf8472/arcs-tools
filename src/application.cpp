@@ -138,13 +138,14 @@ void ARApplication::print_usage() const
 std::unique_ptr<Options> ARApplication::setup_options(int argc, char** argv)
 	const
 {
-	auto configurator = this->create_configurator(argc, argv);
+	//auto configurator = this->create_configurator(argc, argv);
+	//
+	//configurator->configure_logging();
+	//
+	//return configurator->provide_options();
 
-	configurator->configure_logging();
-
-	auto options = configurator->provide_options(argc, argv);
-
-	return configurator->provide_options();
+	auto configurator = this->create_configurator();
+	return configurator->provide_options(argc, argv);
 }
 
 

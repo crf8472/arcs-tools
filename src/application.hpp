@@ -157,6 +157,14 @@ private:
 	/**
 	 * \brief Create a Configurator for this instance.
 	 *
+	 * \return The configurator for this application
+	 */
+	virtual std::unique_ptr<Configurator> create_configurator() const
+	= 0;
+
+	/**
+	 * \brief Create a Configurator for this instance.
+	 *
 	 * \param[in] argc Number of command line input arguments
 	 * \param[in] argv Array of command line input arguments
 	 *

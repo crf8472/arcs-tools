@@ -223,6 +223,8 @@ private:
 
 	std::string do_call_syntax() const override;
 
+	std::unique_ptr<Configurator> create_configurator() const override;
+
 	std::unique_ptr<Configurator> create_configurator(int argc, char** argv)
 		const override;
 

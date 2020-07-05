@@ -448,6 +448,12 @@ std::string ARVerifyApplication::do_call_syntax() const
 }
 
 
+std::unique_ptr<Configurator> ARVerifyApplication::create_configurator() const
+{
+	return std::make_unique<ARVerifyConfigurator>();
+}
+
+
 std::unique_ptr<Configurator> ARVerifyApplication::create_configurator(
 		int argc, char** argv) const
 {
