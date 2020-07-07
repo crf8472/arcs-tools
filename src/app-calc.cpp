@@ -34,9 +34,6 @@
 #ifndef __ARCSTOOLS_APPREGISTRY_HPP__
 #include "appregistry.hpp"                 // for RegisterApplicationType
 #endif
-#ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp"            // for CLITokens, __ARCSTOOLS_CLITOKENS_H...
-#endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
 #endif

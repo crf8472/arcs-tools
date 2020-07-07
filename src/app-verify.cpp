@@ -31,17 +31,11 @@
 #ifndef __ARCSTOOLS_APPREGISTRY_HPP__
 #include "appregistry.hpp"          // for RegisterApplicationType
 #endif
-#ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp"            // for CLITokens, __ARCSTOOLS_CLITOKENS_H...
-#endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"               // for CallSyntaxException, Configurator
 #endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"               // for ARId
-#endif
-#ifndef __ARCSTOOLS_OPTIONS_HPP__
-#include "options.hpp"              // for Options, __ARCSTOOLS_OPTIONS_HPP__
 #endif
 #ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
 #include "tools-parse.hpp"          // for ContentHandler

@@ -19,9 +19,6 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"       // for Configurator
 #endif
-#ifndef __ARCSTOOLS_OPTIONS_HPP__
-#include "options.hpp"      // for Options, __ARCSTOOLS_OPTIONS_HPP__
-#endif
 
 namespace arcsapp
 {

@@ -25,9 +25,6 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
 #endif
-#ifndef __ARCSTOOLS_OPTIONS_HPP__
-#include "options.hpp"            // for Options, __ARCSTOOLS_OPTIONS_HPP__
-#endif
 #ifndef __ARCSTOOLS_PRINTERS_HPP__
 #include "printers.hpp"
 #endif

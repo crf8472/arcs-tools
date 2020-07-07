@@ -22,17 +22,18 @@
 #include <arcsdec/descriptors.hpp>  // for FileReaderDescriptor
 #endif
 
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"          // for StringTable
+#ifndef __ARCSTOOLS_CONFIG_HPP__
+#include "config.hpp"        // for CallSyntaxException, Options, Configurator
 #endif
-#ifndef __ARCSTOOLS_OPTIONS_HPP__
-#include "options.hpp"
+#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"       // for StringTable
 #endif
 
 namespace arcsapp
 {
 
 class Configurator;
+class Options;
 
 
 /**

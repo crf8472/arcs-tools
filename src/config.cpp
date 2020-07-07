@@ -2,13 +2,14 @@
 #include "config.hpp"
 #endif
 
-#include <cstdio>              // for stdout
-#include <iterator>            // for ostream_iterator
-#include <sstream>             // for operator<<, basic_ostream::operator<<
-#include <string>              // for char_traits, operator<<, operator+
-#include <type_traits>         // for add_const<>::type, __underlying_type_i...
-#include <utility>             // for move
-#include <vector>              // for vector
+#include <cstdio>        // for stdout
+#include <iterator>      // for ostream_iterator
+#include <map>           // for map
+#include <sstream>       // for operator<<, basic_ostream::operator<<
+#include <string>        // for char_traits, operator<<, operator+
+#include <type_traits>   // for add_const<>::type, __underlying_type_i...
+#include <utility>       // for move
+#include <vector>        // for vector
 
 #include <iostream>
 
@@ -18,9 +19,6 @@
 
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
 #include "clitokens.hpp"
-#endif
-#ifndef __ARCSTOOLS_OPTIONS_HPP__
-#include "options.hpp"         // for Options, __ARCSTOOLS_OPTIONS_HPP__
 #endif
 
 namespace arcsapp
@@ -125,6 +123,202 @@ LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 	}
 
 	return log_level;
+}
+
+
+// Options
+
+
+Options::Options(const std::size_t size)
+	: help_      { false }
+	, version_   { false }
+	, output_    {}
+	, flags_     {}
+	, values_    {}
+	, arguments_ {}
+{
+	flags_.resize(size, false);
+}
+
+
+Options::~Options() noexcept = default;
+
+
+void Options::set_help(const bool help)
+{
+	help_ = help;
+}
+
+
+bool Options::is_set_help() const
+{
+	return help_;
+}
+
+
+void Options::set_version(const bool version)
+{
+	version_ = version;
+}
+
+
+bool Options::is_set_version() const
+{
+	return version_;
+}
+
+
+void Options::set_output(const std::string &output)
+{
+	output_ = output;
+}
+
+
+std::string Options::output() const
+{
+	return output_;
+}
+
+
+bool Options::is_set(const OptionCode &option) const
+{
+	return flags_[option];
+}
+
+
+void Options::set(const OptionCode &option)
+{
+	flags_[option] = true;
+}
+
+
+void Options::unset(const OptionCode &option)
+{
+	flags_[option] = false;
+}
+
+
+std::string Options::get(const OptionCode &option) const
+{
+	auto it = values_.find(option);
+
+	if (it != values_.end())
+	{
+		return it->second;
+	}
+
+	return std::string();
+}
+
+
+void Options::put(const OptionCode &option, const std::string &value)
+{
+	values_.insert(std::make_pair(option, value));
+}
+
+
+std::vector<bool> const Options::get_flags() const
+{
+	return flags_;
+}
+
+
+std::vector<std::string> const Options::get_arguments() const
+{
+	return arguments_;
+}
+
+
+std::string const Options::get_argument(const OptionCode &index) const
+{
+	if (index > arguments_.size())
+	{
+		return std::string();
+	}
+
+	return arguments_.at(index);
+}
+
+
+bool Options::no_arguments() const
+{
+	return arguments_.empty();
+}
+
+
+void Options::append(const std::string &arg)
+{
+	arguments_.push_back(arg);
+}
+
+
+bool Options::empty() const
+{
+	return flags_.empty() and values_.empty() and arguments_.empty();
+}
+
+
+// Commented out but kept for reference
+
+//OptionCode Options::leftmost_flag() const
+//{
+//	auto flags = config_;
+//
+//	if (flags == 0) { return 0; }
+//
+//	OptionCode count = 0;
+//	while (flags > 1) { count++; flags >>= 1; }
+//
+//	return std::pow(2, count);
+//}
+
+
+//OptionCode Options::rightmost_flag() const
+//{
+//	return config_ & (~config_ + 1);
+//}
+
+
+std::ostream& operator << (std::ostream& out, const Options &options)
+{
+	std::ios_base::fmtflags prev_settings = out.flags();
+
+	out << "Options:" << std::endl;
+
+	out << "Global: " << std::endl;
+	out << "HELP:    " << std::boolalpha << options.is_set_help() << std::endl;
+	out << "VERSION: " << std::boolalpha << options.is_set_version()
+		<< std::endl;
+
+	if (not options.output().empty())
+	{
+		out << "OUTPUT:  " << std::boolalpha << options.output();
+	}
+
+	out << "Options (w/o value):" << std::endl;
+	auto opts = options.get_flags();
+	for (auto i = std::size_t { 0 }; i < opts.size(); ++i)
+	{
+		out << std::setw(2) << i << ": "
+			<< options.is_set(i) << std::endl;
+
+		if (not options.get(i).empty())
+		{
+			out << "    = '" << options.get(i) << "'" << std::endl;
+		}
+	}
+
+	out << "Arguments:" << std::endl;
+	auto i = int { 0 };
+	for (const auto& arg : options.get_arguments())
+	{
+		out << "Arg " << std::setw(2) << i << ": " << arg << std::endl;
+		++i;
+	}
+
+	out.flags(prev_settings);
+
+	return out;
 }
 
 

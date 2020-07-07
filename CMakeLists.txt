@@ -205,7 +205,6 @@ add_library ( ${PROJECT_NAME}-objects OBJECT
 	${PROJECT_SOURCE_DIR}/clitokens.cpp
 	${PROJECT_SOURCE_DIR}/config.cpp
 	${PROJECT_SOURCE_DIR}/layouts.cpp
-	${PROJECT_SOURCE_DIR}/options.cpp
 	${PROJECT_SOURCE_DIR}/printers.cpp
 	${PROJECT_SOURCE_DIR}/tools-calc.cpp
 	${PROJECT_SOURCE_DIR}/tools-fs.cpp
