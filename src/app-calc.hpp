@@ -84,7 +84,10 @@ public:
 	using Configurator::Configurator;
 
 	/**
-	 * \brief Worker: returns TRUE iff some real calculation is requested.
+	 * \brief Service: returns TRUE iff some real calculation is requested.
+	 *
+	 * A calculation is requested, iff either --help or --version are absent
+	 * or audiofiles are present or --metafile is present.
 	 *
 	 * This is used to determine whether the optional info options are to be
 	 * ignored in the presence of a calculation request.
