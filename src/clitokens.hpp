@@ -258,9 +258,9 @@ private:
 	const std::string& empty_value() const noexcept;
 
 	/**
-	 * \brief An option with or without a value or an argument.
+	 * \brief An argument or an option with or without a value.
 	 *
-	 * An argument is represented as Option with code 0.
+	 * An argument is represented as Option with code Option::NONE.
 	 */
 	class InputItem
 	{
@@ -270,27 +270,49 @@ private:
 		 * \brief Construct item with specified code.
 		 */
 		InputItem(const OptionCode id)
-			: id_ { id }
-			, value_ { std::string{} }
+			: InputItem { id, std::string{} }
 		{ /* empty */ };
 
 		/**
-		 * \brief Construct item with specified content.
+		 * \brief Construct item with specified value.
 		 */
 		InputItem(const std::string &value)
-			: id_ { Option::NONE }
-			, value_ { value }
+			: InputItem { Option::NONE, value }
 		{ /* empty */ };
 
+		/**
+		 * \brief Get the OptionCode of the InputItem.
+		 *
+		 * \return OptionCode of the InputItem
+		 */
 		OptionCode id() const { return id_; }
 
+		/**
+		 * \brief Set the value of the InputItem.
+		 *
+		 * \param[in] value New value of the InputItem
+		 */
 		void set_value(const std::string &value) { value_ = value; }
 
+		/**
+		 * \brief Get the value of the InputItem.
+		 *
+		 * \return Value of the InputItem
+		 */
 		const std::string& value() const { return value_; }
 
 	private:
 
+		/**
+		 * \brief Construct item with specified code and value.
+		 */
+		InputItem(const OptionCode id, const std::string &value)
+			: id_ { id }
+			, value_ { value }
+		{ /* empty */ }
+
 		OptionCode id_;
+
 		std::string value_;
 	};
 
