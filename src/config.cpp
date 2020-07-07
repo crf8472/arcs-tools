@@ -144,7 +144,7 @@ const std::vector<Option> Configurator::global_options_ = {
 
 Configurator::Configurator()
 	: logman_ {
-		LogManager::get_loglevel(global(CONFIG::VERBOSITY).default_arg()),
+		LogManager::get_loglevel(global(OPTION::VERBOSITY).default_arg()),
 		LOGLEVEL::NONE /* quiet */
 	  }
 {
@@ -207,9 +207,9 @@ const std::vector<std::pair<Option, OptionCode>>&
 }
 
 
-const Option& Configurator::global(const CONFIG c)
+const Option& Configurator::global(const OPTION c)
 {
-	return Configurator::global_options_[std::underlying_type_t<CONFIG>(c) - 1];
+	return Configurator::global_options_[std::underlying_type_t<OPTION>(c) - 1];
 }
 
 
@@ -219,12 +219,12 @@ std::vector<std::pair<Option, OptionCode>> Configurator::all_supported() const
 		supported_options();
 
 	// Add global options to supported options
-	using config_t = std::underlying_type_t<Configurator::CONFIG>;
+	using config_t = std::underlying_type_t<Configurator::OPTION>;
 
 	for (auto i = std::size_t { 0 }; i < global_options_.size(); ++i)
 	{
 		auto option = std::make_pair(
-				global(static_cast<CONFIG>(i + 1)),  /* global option */
+				global(static_cast<OPTION>(i + 1)),  /* global option */
 				static_cast<config_t>(global_id_[i]) /* option code */);
 
 		//std::cout << i << " - Global option --" << option.first.symbol()
@@ -250,11 +250,11 @@ std::unique_ptr<Options> Configurator::process_global_options(
 		const CLIInput &input) const
 {
 	auto options = std::make_unique<Options>();
-	using config_t = std::underlying_type_t<Configurator::CONFIG>;
+	using config_t = std::underlying_type_t<Configurator::OPTION>;
 
 	// --help
 
-	if (input.contains(static_cast<config_t>(CONFIG::HELP)))
+	if (input.contains(static_cast<config_t>(OPTION::HELP)))
 	{
 		std::cout << "Help" << std::endl;
 		options->set_help(true);
@@ -263,21 +263,21 @@ std::unique_ptr<Options> Configurator::process_global_options(
 
 	// --version
 
-	if (input.contains(static_cast<config_t>(CONFIG::VERSION)))
+	if (input.contains(static_cast<config_t>(OPTION::VERSION)))
 	{
 		std::cout << "Version" << std::endl;
 		options->set_version(true);
 		return options;
 	}
 
-	// --logfile or stdout
+	// --logfile (or stdout)
 
 	std::unique_ptr<Appender> appender;
 	auto appender_name = std::string {};
 
-	if (input.contains(static_cast<config_t>(CONFIG::LOGFILE)))
+	if (input.contains(static_cast<config_t>(OPTION::LOGFILE)))
 	{
-		auto logfile = input.value(static_cast<config_t>(CONFIG::LOGFILE));
+		auto logfile = input.value(static_cast<config_t>(OPTION::LOGFILE));
 		appender = std::make_unique<Appender>(logfile);
 		appender_name = appender->name();
 	} else
@@ -292,22 +292,22 @@ std::unique_ptr<Options> Configurator::process_global_options(
 
 	// --verbosity
 
-	if (input.contains(static_cast<config_t>(CONFIG::VERBOSITY)))
+	if (input.contains(static_cast<config_t>(OPTION::VERBOSITY)))
 	{
 		auto level = logman_.get_loglevel(
-				input.value(static_cast<config_t>(CONFIG::VERBOSITY)));
+				input.value(static_cast<config_t>(OPTION::VERBOSITY)));
 
 		Logging::instance().set_level(level);
 		Logging::instance().set_timestamps(false);
 
 		//std::cout << "Set loglevel to "
-		//	<< input.value(static_cast<config_t>(CONFIG::VERBOSITY))
+		//	<< input.value(static_cast<config_t>(OPTION::VERBOSITY))
 		//	<< std::endl;
 	}
 
 	// --quiet
 
-	if (input.contains(static_cast<config_t>(CONFIG::QUIET)))
+	if (input.contains(static_cast<config_t>(OPTION::QUIET)))
 	{
 		Logging::instance().set_level(logman_.quiet_loglevel());
 		Logging::instance().set_timestamps(false);
@@ -315,9 +315,11 @@ std::unique_ptr<Options> Configurator::process_global_options(
 		//std::cout << "Set quiet loglevel" << std::endl;
 	}
 
-	if (input.contains(static_cast<config_t>(CONFIG::OUTFILE)))
+	// --outfile,-o
+
+	if (input.contains(static_cast<config_t>(OPTION::OUTFILE)))
 	{
-		auto outfile = input.value(static_cast<config_t>(CONFIG::OUTFILE));
+		auto outfile = input.value(static_cast<config_t>(OPTION::OUTFILE));
 
 		options->set_output(outfile);
 	}
@@ -329,7 +331,7 @@ std::unique_ptr<Options> Configurator::process_global_options(
 std::unique_ptr<Options> Configurator::do_configure_options(
 		std::unique_ptr<Options> options)
 {
-	// default implementation does nothing
+	// Default Implementation does Nothing
 
 	return options;
 }
