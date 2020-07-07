@@ -28,6 +28,9 @@ namespace arcsapp
 using OptionCode = uint64_t;
 
 
+class Option;
+bool operator == (const Option &lhs, const Option &rhs) noexcept;
+
 /**
  * \brief Descriptor for a single command line option.
  *
@@ -38,6 +41,8 @@ using OptionCode = uint64_t;
 class Option
 {
 public:
+
+	friend bool operator == (const Option &lhs, const Option &rhs) noexcept;
 
 	/**
 	 * \brief Option Id for non-options.

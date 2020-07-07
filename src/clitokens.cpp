@@ -10,7 +10,7 @@
 #include <tuple>      // for tuple, get
 #include <vector>     // for vector
 
-//#include <iostream>   // cout (for debugging)
+#include <iostream>   // cout (for debugging)
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
@@ -108,6 +108,14 @@ std::string Option::tokens_str() const
 }
 
 
+bool operator == (const Option &lhs, const Option &rhs) noexcept
+{
+	return lhs.symbol() == rhs.symbol()
+		&& lhs.shorthand_symbol() == rhs.shorthand_symbol()
+		&& lhs.needs_value() == rhs.needs_value();
+}
+
+
 // CallSyntaxException
 
 
@@ -136,7 +144,7 @@ CLIInput::CLIInput(const int argc, const char* const * const argv,
 	unsigned char first_ch  = 0;
 	unsigned char second_ch = 0;
 
-	auto non_options = std::vector<const char*>{}; // Tokens but Not Options
+	auto non_options = std::vector<const char*>{}; // Tokens Not Options
 
 	while (pos < argc)
 	{
@@ -263,72 +271,87 @@ void CLIInput::consume_as_symbol(const char * const token,
 		const char * const next,
 		const std::vector<std::pair<Option, OptionCode>> supported, int &pos)
 {
-	//std::cout << "Token " << std::setw(2) << pos << ": '"
-	//	<< token << "' (symbol)" << std::endl;
+	// Determine Length of Option Symbol in Token
+	auto sym_len = unsigned { 0 };
+	while (token[sym_len + 2] && token[sym_len + 2] != '=') { ++sym_len; }
 
-	auto name_len = unsigned { 0 };
+	// Position of identified Option in 'supported'
+	auto option_pos = int { -1 };
 
-	// determine length of option name
-	while (token[name_len + 2] && token[name_len + 2] != '=') { ++name_len; }
+	auto exact    = bool { false }; // Indicates Exact Match
+	auto is_alias = bool { false }; // Indicates an Alias for an Other Option
 
-	auto index = int { -1 };
-	bool exact = false;
-	bool is_substring = false;
-
-	// Test supported options for a match
+	// Traverse Supported Options for a Match of the Symbol
 	auto i = int { 0 };
 	auto code = OptionCode { Option::NONE };
 	for (const auto& entry : supported)
 	{
 		const auto& option { entry.first };
 
-		if (std::strncmp(option.symbol().c_str(), &token[2], name_len) == 0)
+		if (std::strncmp(option.symbol().c_str(), &token[2], sym_len) == 0)
 		{
-			if (option.symbol().length() == name_len)
+			if (option.symbol().length() == sym_len)
 			{
-				index = i;
+				option_pos = i;
 				code = entry.second;
 				exact = true;
+
+				// Exact Match: Stop Search
 				break;
-			} else if (index < 0)
-			{
-				index = i;
+
 			} else
 			{
-				const auto& s_option = supported[index].first;
+				// Substring Match:
+				// 'token[2]' is a substring of 'option', but may be a valid
+				// option itself.
 
-				is_substring = s_option.symbol() != option.symbol()
-					   || s_option.needs_value() != option.needs_value();
+				if (option_pos < 0)
+				{
+					// First Substring Match: memorize.
+					// If no Second Substring Match follows, the name of the
+					// option is just a substring of an other option name.
+					option_pos = i;
+				} else
+				{
+					// Second Substring Match: Check whether this is an Alias
+					// for the Memorized First Match ("abbreviated option").
+					is_alias = (option == supported[option_pos].first);
+				}
 			}
 		}
 
 		++i;
 	}
 
-	if (is_substring && not exact)
-	{
-		std::ostringstream msg;
-		msg << "Option " << token << " is ambigous";
-		throw CallSyntaxException(msg.str());
-	}
-
-	if (index < 0)
+	if (option_pos < 0)
 	{
 		std::ostringstream msg;
 		msg << "Invalid option '" << token << "'";
 		throw CallSyntaxException(msg.str());
 	}
 
+	if (not exact and not is_alias)
+	{
+		std::ostringstream msg;
+		msg << "Option '--" << &token[2] << "' is unknown, did you mean '--"
+			<< supported[option_pos].first.symbol() << "'?";
+		throw CallSyntaxException(msg.str());
+	}
+
+	// Move Token Pointer for Caller
 	++pos;
+
 	items_.emplace_back(code);
 
-	const auto& option = supported[index].first;
+	const auto& option = supported[option_pos].first;
 
-	if (token[name_len + 2]) // Expect syntax '--some-option=foo'
+	if (token[sym_len + 2]) // Expect syntax '--some-option=foo'
 	{
 		if (option.needs_value())
 		{
-			if (!token[name_len + 3])
+			// Value required, but nothing after the '='
+
+			if (!token[sym_len + 3])
 			{
 				std::ostringstream msg;
 				msg << "Option --" << option.symbol()
@@ -340,22 +363,20 @@ void CLIInput::consume_as_symbol(const char * const token,
 			std::ostringstream msg;
 			msg << "Option --" << option.symbol();
 
-			if (!token[name_len + 3])
+			if (!token[sym_len + 3])
 			{
 				msg << " has an unexpected trailing character '"
-					<< token[name_len + 2] << "'";
+					<< token[sym_len + 2] << "'";
 			} else
 			{
 				msg << " is assigned an unexpected argument: '"
-					<< &token[name_len + 3] << "'";
+					<< &token[sym_len + 3] << "'";
 			}
 
 			throw CallSyntaxException(msg.str());
 		}
 
-		//std::cout << "    => Value '" << &token[name_len + 3] << "'"
-		//	<< std::endl;
-		items_.back().set_value(&token[name_len + 3]);
+		items_.back().set_value(&token[sym_len + 3]);
 	} else if (option.needs_value()) // Expect syntax '--foo bar'
 	{
 		if (!next or !next[0])
@@ -366,8 +387,8 @@ void CLIInput::consume_as_symbol(const char * const token,
 			throw CallSyntaxException(msg.str());
 		}
 
+		// Move Token Pointer for Caller
 		++pos;
-		//std::cout << "    => Value '" << next << "'" << std::endl;
 		items_.back().set_value(next);
 	}
 }
@@ -377,18 +398,21 @@ void CLIInput::consume_as_shorthand(const char * const token,
 		const char * const next,
 		const std::vector<std::pair<Option, OptionCode>> supported, int &pos)
 {
-	//std::cout << "Token " << std::setw(2) << pos << ": '"
-	//	<< token << "' (short)" << std::endl;
+	// Position Index of Character in Token
+	auto cind  = int { 1 };
 
-	auto cind  = int { 1 };  // Position Index of Character in Token
-	auto index = int { -1 }; // Index of Identified Option in 'supported'
+	// Position of identified Option in 'supported'
+	auto option_pos = int { -1 };
+
 	auto code  = OptionCode { Option::NONE };
 
+	// We may have concatenated options like '-lsbn':
+	// Traverse all characters in token as separate options.
 	while (cind > 0)
 	{
-		const unsigned char c = token[cind];
+		const unsigned char c = token[cind]; // Consider Next Character
+		option_pos = -1; // Flag "nothing found"
 
-		index = -1;
 		if (c != 0)
 		{
 			auto i = int { 0 };
@@ -396,7 +420,7 @@ void CLIInput::consume_as_shorthand(const char * const token,
 			{
 				if (c == option.first.shorthand_symbol())
 				{
-					index = i;
+					option_pos = i;
 					code = option.second;
 					break;
 				}
@@ -404,43 +428,39 @@ void CLIInput::consume_as_shorthand(const char * const token,
 			}
 		}
 
-		if (index < 0)
+		if (option_pos < 0)
 		{
 			std::ostringstream msg;
 			msg << "Invalid option '-" << c << "'";
 			throw CallSyntaxException(msg.str());
 		}
 
-		// Supported Option Represented by 'c' is 'supported[index]'
+		// Supported Option Represented by 'c' is 'supported[option_pos].first'
 
 		items_.emplace_back(code);
 
-		//std::cout << "    => Option '"
-		//	<< supported[index].first.shorthand_symbol()
-		//	<< "' (" << code << ")" << std::endl;
-
 		++cind;
 
-		if (token[cind] == 0)
+		if (token[cind] == 0) // Token is Completely Processed
 		{
+			cind = 0;
+
+			// Move Token Pointer for Caller
 			++pos;
-			cind = 0; // Token is Completely Processed
 		}
 
-		if (supported[index].first.needs_value())
+		if (supported[option_pos].first.needs_value())
 		{
-			if (cind > 0 && token[cind])
+			if (cind > 0 and token[cind])
 			{
-				// Option Value is Present in Token
+				// Consume Trailing Part as Option Value
 
-				//std::cout << "    => Value '" << &token[cind] << "'"
-				//	<< std::endl;
 				items_.back().set_value(&token[cind]);
 			} else
 			{
-				// No Value in Token found, consider Next Token
+				// No trailing part, consider Next Token as Value
 
-				if (!next || !next[0])
+				if (!next or !next[0])
 				{
 					std::ostringstream msg;
 					msg << "Option '-" << token
@@ -448,14 +468,14 @@ void CLIInput::consume_as_shorthand(const char * const token,
 					throw CallSyntaxException(msg.str());
 				}
 
-				//std::cout << "    => Value '" << next << "'" << std::endl;
 				items_.back().set_value(next);
 			}
-
-			++pos;
 			cind = 0;
+
+			// Move Token Pointer for Caller
+			++pos;
 		}
-	}
+	} // while
 }
 
 
