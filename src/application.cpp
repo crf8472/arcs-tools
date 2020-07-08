@@ -54,12 +54,17 @@ int ARApplication::run(int argc, char** argv)
 		return EXIT_SUCCESS;
 	}
 
-	std::unique_ptr<Options> options;
-
 	// This may throw a CallSyntaxException
-	options = this->setup_options(argc, argv);
+	auto options = this->setup_options(argc, argv);
 
-	if (options->is_set_version())
+	if (options->is_set(OPTION::HELP))
+	{
+		this->print_usage();
+
+		return EXIT_SUCCESS;
+	}
+
+	if (options->is_set(OPTION::VERSION))
 	{
 		std::cout << this->name() << " " << ARCSTOOLS_VERSION_INFO << std::endl;
 

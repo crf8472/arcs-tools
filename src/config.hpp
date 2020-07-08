@@ -300,6 +300,24 @@ private:
 
 
 /**
+ * \brief \link OptionCode OptionCodes\endlink for global options.
+ *
+ * The order of symbols MUST match the order in global_options_.
+ * The symbols must be positive (minimal numerical value is 1).
+ */
+struct OPTION
+{
+	static constexpr OptionCode NONE = Option::NONE; // NONE MUST be 0 for this
+	static constexpr OptionCode HELP      = 1;
+	static constexpr OptionCode VERSION   = 2;
+	static constexpr OptionCode VERBOSITY = 3;
+	static constexpr OptionCode QUIET     = 4;
+	static constexpr OptionCode LOGFILE   = 5;
+	static constexpr OptionCode OUTFILE   = 6;
+};
+
+
+/**
  * \brief Abstract base class for Configurators.
  *
  * A Configurator carries out every step that is necessary to provide the
@@ -386,25 +404,9 @@ public:
 protected:
 
 	/**
-	 * \brief \link OptionCode OptionCodes\endlink for global options.
-	 *
-	 * The order of symbols MUST match the order in global_options_.
-	 * The symbols must be positive (minimal numerical value is 1).
-	 */
-	enum class OPTION : OptionCode
-	{
-		HELP      = 1,
-		VERSION   = 2,
-		VERBOSITY = 3,
-		QUIET     = 4,
-		LOGFILE   = 5,
-		OUTFILE   = 6
-	};
-
-	/**
 	 *  \brief Enumerable representation of global config options.
 	 */
-	static constexpr std::array<OPTION, 6> global_id_ =
+	static constexpr std::array<OptionCode, 6> global_id_ =
 	{
 		OPTION::HELP,
 		OPTION::VERSION,
@@ -435,7 +437,7 @@ protected:
 	 *
 	 * \return The Option corresponding to \c conf
 	 */
-	static const Option& global(const OPTION conf);
+	static const Option& global(const OptionCode conf);
 
 	/**
 	 * \brief Create a list of all supported options of this Configurator.

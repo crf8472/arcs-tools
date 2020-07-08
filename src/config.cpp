@@ -401,9 +401,9 @@ const std::vector<std::pair<Option, OptionCode>>&
 }
 
 
-const Option& Configurator::global(const OPTION c)
+const Option& Configurator::global(const OptionCode c)
 {
-	return Configurator::global_options_[std::underlying_type_t<OPTION>(c) - 1];
+	return Configurator::global_options_[c - 1];
 }
 
 
@@ -413,13 +413,12 @@ std::vector<std::pair<Option, OptionCode>> Configurator::all_supported() const
 		supported_options();
 
 	// Add global options to supported options
-	using config_t = std::underlying_type_t<Configurator::OPTION>;
 
 	for (auto i = std::size_t { 0 }; i < global_options_.size(); ++i)
 	{
 		auto option = std::make_pair(
-				global(static_cast<OPTION>(i + 1)),  /* global option */
-				static_cast<config_t>(global_id_[i]) /* option code */);
+				global(static_cast<OptionCode>(i + 1)),  /* global option */
+				global_id_[i] /* option code */);
 
 		//std::cout << i << " - Global option --" << option.first.symbol()
 		//	<< " is encoded with " << option.second << std::endl;
@@ -444,23 +443,20 @@ std::unique_ptr<Options> Configurator::process_global_options(
 		const CLIInput &input) const
 {
 	auto options = std::make_unique<Options>();
-	using config_t = std::underlying_type_t<Configurator::OPTION>;
 
 	// --help
 
-	if (input.contains(static_cast<config_t>(OPTION::HELP)))
+	if (input.contains(OPTION::HELP))
 	{
-		std::cout << "Help" << std::endl;
-		options->set_help(true);
+		options->set(OPTION::HELP);
 		return options;
 	}
 
 	// --version
 
-	if (input.contains(static_cast<config_t>(OPTION::VERSION)))
+	if (input.contains(OPTION::VERSION))
 	{
-		std::cout << "Version" << std::endl;
-		options->set_version(true);
+		options->set(OPTION::VERSION);
 		return options;
 	}
 
@@ -469,9 +465,9 @@ std::unique_ptr<Options> Configurator::process_global_options(
 	std::unique_ptr<Appender> appender;
 	auto appender_name = std::string {};
 
-	if (input.contains(static_cast<config_t>(OPTION::LOGFILE)))
+	if (input.contains(OPTION::LOGFILE))
 	{
-		auto logfile = input.value(static_cast<config_t>(OPTION::LOGFILE));
+		auto logfile = input.value(OPTION::LOGFILE);
 		appender = std::make_unique<Appender>(logfile);
 		appender_name = appender->name();
 	} else
@@ -486,22 +482,22 @@ std::unique_ptr<Options> Configurator::process_global_options(
 
 	// --verbosity
 
-	if (input.contains(static_cast<config_t>(OPTION::VERBOSITY)))
+	if (input.contains(OPTION::VERBOSITY))
 	{
 		auto level = logman_.get_loglevel(
-				input.value(static_cast<config_t>(OPTION::VERBOSITY)));
+				input.value(OPTION::VERBOSITY));
 
 		Logging::instance().set_level(level);
 		Logging::instance().set_timestamps(false);
 
 		//std::cout << "Set loglevel to "
-		//	<< input.value(static_cast<config_t>(OPTION::VERBOSITY))
+		//	<< input.value(OPTION::VERBOSITY)
 		//	<< std::endl;
 	}
 
 	// --quiet
 
-	if (input.contains(static_cast<config_t>(OPTION::QUIET)))
+	if (input.contains(OPTION::QUIET))
 	{
 		Logging::instance().set_level(logman_.quiet_loglevel());
 		Logging::instance().set_timestamps(false);
@@ -511,11 +507,11 @@ std::unique_ptr<Options> Configurator::process_global_options(
 
 	// --outfile,-o
 
-	if (input.contains(static_cast<config_t>(OPTION::OUTFILE)))
+	if (input.contains(OPTION::OUTFILE))
 	{
-		auto outfile = input.value(static_cast<config_t>(OPTION::OUTFILE));
+		auto outfile = input.value(OPTION::OUTFILE);
 
-		options->set_output(outfile);
+		options->set(OPTION::OUTFILE);
 	}
 
 	return options;
