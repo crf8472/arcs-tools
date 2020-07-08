@@ -130,10 +130,7 @@ LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 
 
 Options::Options(const std::size_t size)
-	: help_      { false }
-	, version_   { false }
-	, output_    {}
-	, flags_     {}
+	: flags_     {}
 	, values_    {}
 	, arguments_ {}
 {
@@ -142,42 +139,6 @@ Options::Options(const std::size_t size)
 
 
 Options::~Options() noexcept = default;
-
-
-void Options::set_help(const bool help)
-{
-	help_ = help;
-}
-
-
-bool Options::is_set_help() const
-{
-	return help_;
-}
-
-
-void Options::set_version(const bool version)
-{
-	version_ = version;
-}
-
-
-bool Options::is_set_version() const
-{
-	return version_;
-}
-
-
-void Options::set_output(const std::string &output)
-{
-	output_ = output;
-}
-
-
-std::string Options::output() const
-{
-	return output_;
-}
 
 
 bool Options::is_set(const OptionCode &option) const
@@ -284,16 +245,6 @@ std::ostream& operator << (std::ostream& out, const Options &options)
 	std::ios_base::fmtflags prev_settings = out.flags();
 
 	out << "Options:" << std::endl;
-
-	out << "Global: " << std::endl;
-	out << "HELP:    " << std::boolalpha << options.is_set_help() << std::endl;
-	out << "VERSION: " << std::boolalpha << options.is_set_version()
-		<< std::endl;
-
-	if (not options.output().empty())
-	{
-		out << "OUTPUT:  " << std::boolalpha << options.output();
-	}
 
 	out << "Options (w/o value):" << std::endl;
 	auto opts = options.get_flags();
@@ -503,6 +454,10 @@ std::unique_ptr<Options> Configurator::process_global_options(
 		Logging::instance().set_timestamps(false);
 
 		//std::cout << "Set quiet loglevel" << std::endl;
+	} else
+	{
+		Logging::instance().set_level(logman_.default_loglevel());
+		Logging::instance().set_timestamps(false);
 	}
 
 	// --outfile,-o
@@ -512,6 +467,7 @@ std::unique_ptr<Options> Configurator::process_global_options(
 		auto outfile = input.value(OPTION::OUTFILE);
 
 		options->set(OPTION::OUTFILE);
+		options->put(OPTION::OUTFILE, outfile);
 	}
 
 	return options;

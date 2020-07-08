@@ -99,7 +99,7 @@ std::unique_ptr<Configurator> ARParseApplication::create_configurator() const
 int ARParseApplication::do_run(const Options &options)
 {
 	auto content_handler = std::make_unique<ARParserContentPrintHandler>(
-		options.output());
+		options.get(OPTION::OUTFILE));
 
 	auto arguments = options.get_arguments();
 

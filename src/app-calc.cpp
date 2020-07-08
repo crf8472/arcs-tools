@@ -459,7 +459,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 		idformat->use(std::make_tuple(&arid, nullptr));
 
-		output(*idformat);
+		output(*idformat, options.get(OPTION::OUTFILE));
 	}
 
 	auto format = configure_format(options);
@@ -472,7 +472,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 	format->use(std::make_tuple(&checksums, &filenames, toc.get(), &arid,
 				&album_mode));
-	output(*format);
+	output(*format, options.get(OPTION::OUTFILE));
 
 	return EXIT_SUCCESS;
 }
@@ -507,12 +507,12 @@ int ARCalcApplication::do_run(const Options &options)
 
 	if (options.is_set(CALC::LIST_TOC_FORMATS))
 	{
-		output(SupportedFormats::toc(), options.output());
+		output(SupportedFormats::toc(), options.get(OPTION::OUTFILE));
 	}
 
 	if (options.is_set(CALC::LIST_AUDIO_FORMATS))
 	{
-		output(SupportedFormats::audio(), options.output());
+		output(SupportedFormats::audio(), options.get(OPTION::OUTFILE));
 	}
 
 	return EXIT_SUCCESS;

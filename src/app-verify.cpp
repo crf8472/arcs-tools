@@ -587,7 +587,7 @@ void ARVerifyApplication::print_result(const Options &options,
 			auto arid = response->at(diff.best_match()).id();
 			idformat->use(std::make_tuple(&arid, nullptr));
 
-			output(*idformat);
+			output(*idformat, options.get(OPTION::OUTFILE));
 		}
 	}
 
@@ -605,7 +605,7 @@ void ARVerifyApplication::print_result(const Options &options,
 					&std::get<1>(reference_sums) /* refvals */,
 					match, &only_block, print_v1_and_v2, toc, &arid));
 
-			output(*format);
+			output(*format, options.get(OPTION::OUTFILE));
 
 		} else // Use ARResponse
 		{
@@ -621,7 +621,7 @@ void ARVerifyApplication::print_result(const Options &options,
 						&block_sums, match, &curr_block, print_v1_and_v2,
 						toc, &arid));
 
-				output(*format);
+				output(*format, options.get(OPTION::OUTFILE));
 			}
 		}
 	} else // print only best match
@@ -635,7 +635,7 @@ void ARVerifyApplication::print_result(const Options &options,
 					&std::get<1>(reference_sums) /* refvals */,
 					match, &best_block, &matching_version, toc, &arid));
 
-			output(*format);
+			output(*format, options.get(OPTION::OUTFILE));
 		} else // Use ARResponse
 		{
 			const auto ref_sums = sums_in_block(std::get<0>(reference_sums),
@@ -644,7 +644,8 @@ void ARVerifyApplication::print_result(const Options &options,
 			format->use(std::make_tuple(&actual_sums, &filenames, &ref_sums,
 				match, &best_block, &matching_version, toc, &arid));
 
-			output(*format); // &ref_sums must be in scope
+			output(*format, options.get(OPTION::OUTFILE));
+			// &ref_sums must be in scope
 		}
 	}
 }
@@ -661,12 +662,12 @@ int ARVerifyApplication::do_run(const Options &options)
 
 	if (options.is_set(VERIFY::LIST_TOC_FORMATS))
 	{
-		output(SupportedFormats::toc(), options.output());
+		output(SupportedFormats::toc(), options.get(OPTION::OUTFILE));
 	}
 
 	if (options.is_set(VERIFY::LIST_AUDIO_FORMATS))
 	{
-		output(SupportedFormats::audio(), options.output());
+		output(SupportedFormats::audio(), options.get(OPTION::OUTFILE));
 	}
 
 	return EXIT_SUCCESS;

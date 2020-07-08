@@ -136,7 +136,7 @@ int ARIdApplication::do_run(const Options &options)
 		);
 	}
 
-	output(*format);
+	output(*format, options.get(OPTION::OUTFILE));
 
 	return EXIT_SUCCESS;
 }

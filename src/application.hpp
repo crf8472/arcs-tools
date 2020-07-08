@@ -132,8 +132,18 @@ protected:
 			std::cout << object;
 		} else
 		{
+			// If file exists, append to it, otherwise create it
+
 			std::ofstream out_file_stream;
-			out_file_stream.open(filename);
+			out_file_stream.open(filename,
+					std::fstream::in | std::fstream::out | std::fstream::app );
+
+			if (!out_file_stream)
+			{
+				// File does not exist, create it
+				out_file_stream.open(filename,
+					std::fstream::in | std::fstream::out | std::fstream::trunc);
+			}
 
 			out_file_stream << object;
 		}
