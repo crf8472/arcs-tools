@@ -124,7 +124,9 @@ protected:
 	* \return Type void iff object overloads operator << for std::ostream
 	*/
 	template <typename T>
-	auto output(T&& object, const std::string &filename = std::string{}) const
+	auto output(T&& object,
+			const std::string &filename = std::string{},
+			const bool overwrite = true) const
 		-> decltype( std::cout << object, void() )
 	{
 		if (filename.empty()) // THIS defines the default behaviour!
@@ -135,14 +137,18 @@ protected:
 			// If file exists, append to it, otherwise create it
 
 			std::ofstream out_file_stream;
-			out_file_stream.open(filename,
-					std::fstream::in | std::fstream::out | std::fstream::app );
+
+			auto mode = std::ios_base::openmode { overwrite
+				? std::fstream::out | std::fstream::trunc
+				: std::fstream::out | std::fstream::app };
+
+			out_file_stream.open(filename, mode);
 
 			if (!out_file_stream)
 			{
 				// File does not exist, create it
 				out_file_stream.open(filename,
-					std::fstream::in | std::fstream::out | std::fstream::trunc);
+					std::fstream::out | std::fstream::trunc);
 			}
 
 			out_file_stream << object;

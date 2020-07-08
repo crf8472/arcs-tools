@@ -449,6 +449,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 	// Print formatted results to output stream
 
+	auto dont_overwrite = bool { true };
 	if (options.is_set(CALC::PRINTID) or options.is_set(CALC::PRINTURL))
 	{
 		const std::unique_ptr<ARIdTableFormat> idformat =
@@ -460,6 +461,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 		idformat->use(std::make_tuple(&arid, nullptr));
 
 		output(*idformat, options.get(OPTION::OUTFILE));
+		dont_overwrite = false;
 	}
 
 	auto format = configure_format(options);
@@ -472,7 +474,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 	format->use(std::make_tuple(&checksums, &filenames, toc.get(), &arid,
 				&album_mode));
-	output(*format, options.get(OPTION::OUTFILE));
+	output(*format, options.get(OPTION::OUTFILE), dont_overwrite);
 
 	return EXIT_SUCCESS;
 }
@@ -505,14 +507,18 @@ int ARCalcApplication::do_run(const Options &options)
 
 	// If only info options are present, handle info request
 
+	auto dont_overwrite = bool { true };
+
 	if (options.is_set(CALC::LIST_TOC_FORMATS))
 	{
 		output(SupportedFormats::toc(), options.get(OPTION::OUTFILE));
+		dont_overwrite = false;
 	}
 
 	if (options.is_set(CALC::LIST_AUDIO_FORMATS))
 	{
-		output(SupportedFormats::audio(), options.get(OPTION::OUTFILE));
+		output(SupportedFormats::audio(), options.get(OPTION::OUTFILE),
+				dont_overwrite);
 	}
 
 	return EXIT_SUCCESS;

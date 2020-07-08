@@ -571,6 +571,7 @@ void ARVerifyApplication::print_result(const Options &options,
 		: (toc ? arcstk::toc::get_filenames(*toc) : std::vector<std::string>{});
 
 	const auto match = diff.match();
+	auto dont_overwrite = bool { true };
 
 	if (options.is_set(VERIFY::PRINTID) or options.is_set(VERIFY::PRINTURL))
 	{
@@ -587,7 +588,8 @@ void ARVerifyApplication::print_result(const Options &options,
 			auto arid = response->at(diff.best_match()).id();
 			idformat->use(std::make_tuple(&arid, nullptr));
 
-			output(*idformat, options.get(OPTION::OUTFILE));
+			output(*idformat, options.get(OPTION::OUTFILE)); // overwrites
+			dont_overwrite = false;
 		}
 	}
 
@@ -605,7 +607,7 @@ void ARVerifyApplication::print_result(const Options &options,
 					&std::get<1>(reference_sums) /* refvals */,
 					match, &only_block, print_v1_and_v2, toc, &arid));
 
-			output(*format, options.get(OPTION::OUTFILE));
+			output(*format, options.get(OPTION::OUTFILE), dont_overwrite);
 
 		} else // Use ARResponse
 		{
@@ -621,7 +623,7 @@ void ARVerifyApplication::print_result(const Options &options,
 						&block_sums, match, &curr_block, print_v1_and_v2,
 						toc, &arid));
 
-				output(*format, options.get(OPTION::OUTFILE));
+				output(*format, options.get(OPTION::OUTFILE), dont_overwrite);
 			}
 		}
 	} else // print only best match
@@ -635,7 +637,7 @@ void ARVerifyApplication::print_result(const Options &options,
 					&std::get<1>(reference_sums) /* refvals */,
 					match, &best_block, &matching_version, toc, &arid));
 
-			output(*format, options.get(OPTION::OUTFILE));
+			output(*format, options.get(OPTION::OUTFILE), dont_overwrite);
 		} else // Use ARResponse
 		{
 			const auto ref_sums = sums_in_block(std::get<0>(reference_sums),
@@ -644,7 +646,7 @@ void ARVerifyApplication::print_result(const Options &options,
 			format->use(std::make_tuple(&actual_sums, &filenames, &ref_sums,
 				match, &best_block, &matching_version, toc, &arid));
 
-			output(*format, options.get(OPTION::OUTFILE));
+			output(*format, options.get(OPTION::OUTFILE), dont_overwrite);
 			// &ref_sums must be in scope
 		}
 	}
@@ -660,14 +662,18 @@ int ARVerifyApplication::do_run(const Options &options)
 
 	// If only info options are present, handle info request
 
+	auto dont_overwrite = bool { true };
+
 	if (options.is_set(VERIFY::LIST_TOC_FORMATS))
 	{
 		output(SupportedFormats::toc(), options.get(OPTION::OUTFILE));
+		dont_overwrite = false;
 	}
 
 	if (options.is_set(VERIFY::LIST_AUDIO_FORMATS))
 	{
-		output(SupportedFormats::audio(), options.get(OPTION::OUTFILE));
+		output(SupportedFormats::audio(), options.get(OPTION::OUTFILE),
+				dont_overwrite);
 	}
 
 	return EXIT_SUCCESS;
