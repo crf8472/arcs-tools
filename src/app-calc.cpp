@@ -424,7 +424,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 	// both the types-requested ARCS1 as well as ARCS2).
 
 	auto [ checksums, arid, toc ] = this->calculate(
-			options.get(CALC::METAFILE), options.get_arguments(),
+			options.get(CALC::METAFILE), options.arguments(),
 			options.is_set(CALC::FIRST), options.is_set(CALC::LAST),
 			requested_types);
 
@@ -468,7 +468,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 	auto filenames = toc
 		? arcstk::toc::get_filenames(toc)
-		: options.get_arguments();
+		: options.arguments();
 
 	auto album_mode = options.is_set(CALC::ALBUM);
 

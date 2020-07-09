@@ -101,7 +101,7 @@ int ARParseApplication::do_run(const Options &options)
 	auto content_handler = std::make_unique<ARParserContentPrintHandler>(
 		options.get(OPTION::OUTFILE));
 
-	auto arguments = options.get_arguments();
+	auto arguments = options.arguments();
 
 	if (not arguments.empty()) // read from file(s)
 	{

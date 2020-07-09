@@ -26,7 +26,7 @@
 #endif
 
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp"           // for CLITokens
+#include "clitokens.hpp" // for CLITokens
 #endif
 
 namespace arcsapp
@@ -111,7 +111,8 @@ class Options
 {
 public:
 
-	friend std::ostream& operator << (std::ostream& out, const Options &options);
+	friend std::ostream& operator << (std::ostream& out,
+			const Options &options);
 
 	/**
 	 * \brief Options with predefined number of flags.
@@ -129,7 +130,7 @@ public:
 	virtual ~Options() noexcept;
 
 	/**
-	 * \brief Inherited worker to implement getters for option checks.
+	 * \brief Returns TRUE iff the option is set, otherwise FALSE.
 	 *
 	 * \param[in] option The option to check for
 	 *
@@ -173,18 +174,11 @@ public:
 	void put(const OptionCode &option, const std::string &value);
 
 	/**
-	 * \brief Get all input options.
-	 *
-	 * \return All input arguments
-	 */
-	std::vector<bool> const get_flags() const;
-
-	/**
 	 * \brief Get all input arguments.
 	 *
 	 * \return All input arguments
 	 */
-	std::vector<std::string> const get_arguments() const;
+	std::vector<std::string> const arguments() const;
 
 	/**
 	 * \brief Get an input argument by index.
@@ -195,7 +189,7 @@ public:
 	 *
 	 * \return Argument
 	 */
-	std::string const get_argument(const OptionCode &i) const;
+	std::string const argument(const OptionCode &i) const;
 
 	/**
 	 * \brief Returns TRUE iff no arguments are present.
@@ -222,12 +216,15 @@ public:
 private:
 
 	/**
-	 * \brief Boolean and valued options
+	 * \brief All options flags.
+	 *
+	 * Each option, regardless if its value is boolean or string is
+	 * set by a flag.
 	 */
-	std::vector<bool> flags_; // TODO redundant
+	std::vector<bool> options_; // TODO redundant
 
 	/**
-	 * \brief Valued options' values
+	 * \brief Valued options' values.
 	 */
 	std::map<OptionCode, std::string> values_;
 

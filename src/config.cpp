@@ -130,11 +130,11 @@ LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 
 
 Options::Options(const std::size_t size)
-	: flags_     {}
+	: options_   {}
 	, values_    {}
 	, arguments_ {}
 {
-	flags_.resize(size, false);
+	options_.resize(size, false);
 }
 
 
@@ -143,19 +143,19 @@ Options::~Options() noexcept = default;
 
 bool Options::is_set(const OptionCode &option) const
 {
-	return flags_[option];
+	return options_[option];
 }
 
 
 void Options::set(const OptionCode &option)
 {
-	flags_[option] = true;
+	options_[option] = true;
 }
 
 
 void Options::unset(const OptionCode &option)
 {
-	flags_[option] = false;
+	options_[option] = false;
 }
 
 
@@ -178,19 +178,13 @@ void Options::put(const OptionCode &option, const std::string &value)
 }
 
 
-std::vector<bool> const Options::get_flags() const
-{
-	return flags_;
-}
-
-
-std::vector<std::string> const Options::get_arguments() const
+std::vector<std::string> const Options::arguments() const
 {
 	return arguments_;
 }
 
 
-std::string const Options::get_argument(const OptionCode &index) const
+std::string const Options::argument(const OptionCode &index) const
 {
 	if (index > arguments_.size())
 	{
@@ -215,7 +209,7 @@ void Options::append(const std::string &arg)
 
 bool Options::empty() const
 {
-	return flags_.empty() and values_.empty() and arguments_.empty();
+	return options_.empty() and values_.empty() and arguments_.empty();
 }
 
 
@@ -247,8 +241,7 @@ std::ostream& operator << (std::ostream& out, const Options &options)
 	out << "Options:" << std::endl;
 
 	out << "Options (w/o value):" << std::endl;
-	auto opts = options.get_flags();
-	for (auto i = std::size_t { 0 }; i < opts.size(); ++i)
+	for (auto i = std::size_t { 0 }; i < options.options_.size(); ++i)
 	{
 		out << std::setw(2) << i << ": "
 			<< options.is_set(i) << std::endl;
@@ -261,7 +254,7 @@ std::ostream& operator << (std::ostream& out, const Options &options)
 
 	out << "Arguments:" << std::endl;
 	auto i = int { 0 };
-	for (const auto& arg : options.get_arguments())
+	for (const auto& arg : options.arguments())
 	{
 		out << "Arg " << std::setw(2) << i << ": " << arg << std::endl;
 		++i;

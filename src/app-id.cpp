@@ -101,7 +101,7 @@ int ARIdApplication::do_run(const Options &options)
 {
 	// Compute requested values
 
-	const auto metafilename  = options.get_argument(0);
+	const auto metafilename  = options.argument(0);
 	const auto audiofilename = options.get(ARIdOptions::AUDIOFILE);
 
 	std::unique_ptr<ARId> id = nullptr;

@@ -458,7 +458,7 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(
 			options.get(VERIFY::METAFILE),
-			options.get_arguments(),
+			options.arguments(),
 			not options.is_set(VERIFY::NOFIRST),
 			not options.is_set(VERIFY::NOLAST),
 			{ arcstk::checksum::type::ARCS2 } /* force ARCSv1 + ARCSv2 */);
@@ -567,7 +567,7 @@ void ARVerifyApplication::print_result(const Options &options,
 			const bool print_filenames) const
 {
 	const auto filenames = not options.no_arguments()
-		? options.get_arguments()
+		? options.arguments()
 		: (toc ? arcstk::toc::get_filenames(*toc) : std::vector<std::string>{});
 
 	const auto match = diff.match();
