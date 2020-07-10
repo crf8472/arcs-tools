@@ -5,13 +5,13 @@
 #include <cstdio>        // for stdout
 #include <iterator>      // for ostream_iterator
 #include <map>           // for map
-#include <sstream>       // for operator<<, basic_ostream::operator<<
+#include <sstream>       // for ostringstream, operator<<
 #include <string>        // for char_traits, operator<<, operator+
 #include <type_traits>   // for add_const<>::type, __underlying_type_i...
 #include <utility>       // for move
 #include <vector>        // for vector
 
-#include <iostream>
+#include <iostream> // debug
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
@@ -126,15 +126,24 @@ LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 }
 
 
+// ConfigurationException
+
+
+ConfigurationException::ConfigurationException(const std::string &what_arg)
+	: std::runtime_error(what_arg)
+{
+	// empty
+}
+
+
 // Options
 
 
-Options::Options(const std::size_t size)
+Options::Options()
 	: options_   {}
-	, values_    {}
 	, arguments_ {}
 {
-	options_.resize(size, false);
+	// empty
 }
 
 
@@ -143,38 +152,59 @@ Options::~Options() noexcept = default;
 
 bool Options::is_set(const OptionCode &option) const
 {
-	return options_[option];
+	return options_.find(option) != options_.end();
 }
 
 
 void Options::set(const OptionCode &option)
 {
-	options_[option] = true;
+	this->set(option, std::string{});
+}
+
+
+void Options::set(const OptionCode &option, const std::string &value)
+{
+	auto rc = options_.insert(std::make_pair(option, value));
+
+	if (not rc.second) // Insertion failed
+	{
+		std::ostringstream msg;
+		msg << "Option '" << option << "' with value '" << value
+			<< "' could not be stored in configuration instance"
+			<< ", prevented by option '" << rc.first->first
+			<< "' with value '" << rc.first->second << "'." << std::endl;
+		throw ConfigurationException(msg.str());
+	}
 }
 
 
 void Options::unset(const OptionCode &option)
 {
-	options_[option] = false;
+	auto o = options_.find(option);
+
+	if (o != options_.end())
+	{
+		options_.erase(o);
+	}
 }
 
 
-std::string Options::get(const OptionCode &option) const
+std::string Options::value(const OptionCode &option) const
 {
-	auto it = values_.find(option);
+	auto o = options_.find(option);
 
-	if (it != values_.end())
+	if (o != options_.end())
 	{
-		return it->second;
+		return o->second;
 	}
 
 	return std::string();
 }
 
 
-void Options::put(const OptionCode &option, const std::string &value)
+void Options::put_argument(const std::string &argument)
 {
-	values_.insert(std::make_pair(option, value));
+	arguments_.push_back(argument);
 }
 
 
@@ -184,11 +214,11 @@ std::vector<std::string> const Options::arguments() const
 }
 
 
-std::string const Options::argument(const OptionCode &index) const
+std::string const Options::argument(const std::size_t index) const
 {
-	if (index > arguments_.size())
+	if (index >= arguments_.size())
 	{
-		return std::string();
+		return std::string{};
 	}
 
 	return arguments_.at(index);
@@ -201,15 +231,9 @@ bool Options::no_arguments() const
 }
 
 
-void Options::append(const std::string &arg)
-{
-	arguments_.push_back(arg);
-}
-
-
 bool Options::empty() const
 {
-	return options_.empty() and values_.empty() and arguments_.empty();
+	return options_.empty() and arguments_.empty();
 }
 
 
@@ -241,15 +265,9 @@ std::ostream& operator << (std::ostream& out, const Options &options)
 	out << "Options:" << std::endl;
 
 	out << "Options (w/o value):" << std::endl;
-	for (auto i = std::size_t { 0 }; i < options.options_.size(); ++i)
+	for (const auto& entry : options.options_)
 	{
-		out << std::setw(2) << i << ": "
-			<< options.is_set(i) << std::endl;
-
-		if (not options.get(i).empty())
-		{
-			out << "    = '" << options.get(i) << "'" << std::endl;
-		}
+		out << "Option: " << entry.first << " = " << entry.second << std::endl;
 	}
 
 	out << "Arguments:" << std::endl;
@@ -281,7 +299,7 @@ const std::vector<Option> Configurator::global_options_ = {
 
 
 Configurator::Configurator()
-	: logman_ {
+	: logman_ { /* Define the default log level and the quiet log level */
 		LogManager::get_loglevel(global(OPTION::VERBOSITY).default_arg()),
 		LOGLEVEL::NONE /* quiet */
 	  }
@@ -306,23 +324,23 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 
 	auto input = CLIInput { argc, argv, all_supported_options, true };
 
-	auto options = this->process_global_options(input);
+	// The log options --logfile, --verbosity and --quiet are
+	// immediately
 
-	// Now process the application specific (local) options
+	this->activate_logging(input);
+
+	// Convert input to Options object
+
+	auto options = std::make_unique<Options>();
 
 	for (const auto& item : input)
 	{
 		if (Option::NONE == item.id())
 		{
-			options->append(item.value()); // argument
+			options->put_argument(item.value());
 		} else
 		{
-			options->set(item.id()); // option
-
-			if (not item.value().empty())
-			{
-				options->put(item.id(), item.value());
-			}
+			options->set(item.id(), item.value());
 		}
 	}
 
@@ -353,6 +371,9 @@ const Option& Configurator::global(const OptionCode c)
 
 std::vector<std::pair<Option, OptionCode>> Configurator::all_supported() const
 {
+	// TODO Find a way not to copy the statically stored options.
+	// It's all internal data and should be accessible without copy.
+
 	std::vector<std::pair<Option, OptionCode>> all_supported =
 		supported_options();
 
@@ -361,109 +382,50 @@ std::vector<std::pair<Option, OptionCode>> Configurator::all_supported() const
 	for (auto i = std::size_t { 0 }; i < global_options_.size(); ++i)
 	{
 		auto option = std::make_pair(
-				global(static_cast<OptionCode>(i + 1)),  /* global option */
+				global(static_cast<OptionCode>(i + 1)), /* global option */
 				global_id_[i] /* option code */);
-
-		//std::cout << i << " - Global option --" << option.first.symbol()
-		//	<< " is encoded with " << option.second << std::endl;
 
 		all_supported.push_back(option);
 	}
-
-//	std::cout << "Supported options:" << std::endl;
-//	for (auto i = std::size_t { 0 }; i < all_supported.size(); ++i)
-//	{
-//		std::cout << std::setw(2) << i << ": --" <<
-//			all_supported[i].first.symbol()
-//			<< " is encoded with "
-//			<< all_supported[i].second << std::endl;
-//	}
 
 	return all_supported;
 }
 
 
-std::unique_ptr<Options> Configurator::process_global_options(
-		const CLIInput &input) const
+void Configurator::activate_logging(const CLIInput &input) const
 {
-	auto options = std::make_unique<Options>();
-
-	// --help
-
-	if (input.contains(OPTION::HELP))
-	{
-		options->set(OPTION::HELP);
-		return options;
-	}
-
-	// --version
-
-	if (input.contains(OPTION::VERSION))
-	{
-		options->set(OPTION::VERSION);
-		return options;
-	}
-
 	// --logfile (or stdout)
 
 	std::unique_ptr<Appender> appender;
-	auto appender_name = std::string {};
 
-	if (input.contains(OPTION::LOGFILE))
+	if (input.contains(OPTION::LOGFILE)
+			and not input.value(OPTION::LOGFILE).empty())
 	{
-		auto logfile = input.value(OPTION::LOGFILE);
-		appender = std::make_unique<Appender>(logfile);
-		appender_name = appender->name();
+		appender = std::make_unique<Appender>(input.value(OPTION::LOGFILE));
 	} else
 	{
 		appender = std::make_unique<Appender>("stdout", stdout);
-		appender_name = appender->name();
 	}
 
 	Logging::instance().add_appender(std::move(appender));
 
-	//std::cout << "Set log appender to " << appender_name << std::endl;
-
-	// --verbosity
-
-	if (input.contains(OPTION::VERBOSITY))
-	{
-		auto level = logman_.get_loglevel(
-				input.value(OPTION::VERBOSITY));
-
-		Logging::instance().set_level(level);
-		Logging::instance().set_timestamps(false);
-
-		//std::cout << "Set loglevel to "
-		//	<< input.value(OPTION::VERBOSITY)
-		//	<< std::endl;
-	}
-
-	// --quiet
+	// --quiet, --verbosity
 
 	if (input.contains(OPTION::QUIET))
 	{
 		Logging::instance().set_level(logman_.quiet_loglevel());
-		Logging::instance().set_timestamps(false);
 
-		//std::cout << "Set quiet loglevel" << std::endl;
+	} else if (input.contains(OPTION::VERBOSITY))
+	{
+		Logging::instance().set_level(logman_.get_loglevel(
+					input.value(OPTION::VERBOSITY)));
 	} else
 	{
 		Logging::instance().set_level(logman_.default_loglevel());
-		Logging::instance().set_timestamps(false);
 	}
 
-	// --outfile,-o
-
-	if (input.contains(OPTION::OUTFILE))
-	{
-		auto outfile = input.value(OPTION::OUTFILE);
-
-		options->set(OPTION::OUTFILE);
-		options->put(OPTION::OUTFILE, outfile);
-	}
-
-	return options;
+	// TODO Make configurable
+	Logging::instance().set_timestamps(false);
 }
 
 

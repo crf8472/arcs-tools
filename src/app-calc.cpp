@@ -136,7 +136,7 @@ std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 
 	if (options->is_set(CALCBASE::METAFILE))
 	{
-		if (options->get(CALCBASE::METAFILE).empty())
+		if (options->value(CALCBASE::METAFILE).empty())
 		{
 			// No Metadata File Specified
 
@@ -338,7 +338,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 std::unique_ptr<ChecksumsResultPrinter> ARCalcApplication::configure_format(
 		const Options &options) const
 {
-	const bool has_toc = !options.get(CALC::METAFILE).empty();
+	const bool has_toc = !options.value(CALC::METAFILE).empty();
 
 	// Print track number if they are not forbidden and a TOC is present
 	const bool prints_tracks = options.is_set(CALC::NOTRACKS)
@@ -360,7 +360,7 @@ std::unique_ptr<ChecksumsResultPrinter> ARCalcApplication::configure_format(
 
 	// Set column delimiter
 	const std::string coldelim = options.is_set(CALC::COLDELIM)
-		? options.get(CALC::COLDELIM)
+		? options.value(CALC::COLDELIM)
 		: " ";
 
 	// Decide which implementation
@@ -424,7 +424,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 	// both the types-requested ARCS1 as well as ARCS2).
 
 	auto [ checksums, arid, toc ] = this->calculate(
-			options.get(CALC::METAFILE), options.arguments(),
+			options.value(CALC::METAFILE), options.arguments(),
 			options.is_set(CALC::FIRST), options.is_set(CALC::LAST),
 			requested_types);
 
@@ -460,7 +460,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 		idformat->use(std::make_tuple(&arid, nullptr));
 
-		output(*idformat, options.get(OPTION::OUTFILE));
+		output(*idformat, options.value(OPTION::OUTFILE));
 		dont_overwrite = false;
 	}
 
@@ -474,7 +474,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 	format->use(std::make_tuple(&checksums, &filenames, toc.get(), &arid,
 				&album_mode));
-	output(*format, options.get(OPTION::OUTFILE), dont_overwrite);
+	output(*format, options.value(OPTION::OUTFILE), dont_overwrite);
 
 	return EXIT_SUCCESS;
 }
@@ -511,13 +511,13 @@ int ARCalcApplication::do_run(const Options &options)
 
 	if (options.is_set(CALC::LIST_TOC_FORMATS))
 	{
-		output(SupportedFormats::toc(), options.get(OPTION::OUTFILE));
+		output(SupportedFormats::toc(), options.value(OPTION::OUTFILE));
 		dont_overwrite = false;
 	}
 
 	if (options.is_set(CALC::LIST_AUDIO_FORMATS))
 	{
-		output(SupportedFormats::audio(), options.get(OPTION::OUTFILE),
+		output(SupportedFormats::audio(), options.value(OPTION::OUTFILE),
 				dont_overwrite);
 	}
 

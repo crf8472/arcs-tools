@@ -252,7 +252,7 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
 		const Options &options, const bool with_filenames) const
 {
-	const bool with_toc = !options.get(VERIFY::METAFILE).empty();
+	const bool with_toc = !options.value(VERIFY::METAFILE).empty();
 
 	// Print track number if they are not forbidden and a TOC is present
 	const bool prints_tracks = options.is_set(VERIFY::NOTRACKS)
@@ -274,7 +274,7 @@ std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
 
 	// Set column delimiter
 	const std::string coldelim = options.is_set(CALC::COLDELIM)
-		? options.get(CALC::COLDELIM)
+		? options.value(CALC::COLDELIM)
 		: " ";
 
 	auto format = std::make_unique<AlbumMatchTableFormat>(
@@ -312,7 +312,7 @@ ARResponse ARVerifyApplication::parse_response(const Options &options) const
 
 	std::unique_ptr<ARStreamParser> parser;
 
-	std::string responsefile { options.get(VERIFY::RESPONSEFILE) };
+	std::string responsefile { options.value(VERIFY::RESPONSEFILE) };
 
 	if (responsefile.empty())
 	{
@@ -355,7 +355,7 @@ ARResponse ARVerifyApplication::parse_response(const Options &options) const
 std::vector<Checksum> ARVerifyApplication::parse_refvalues(
 		const Options &options) const
 {
-	auto refvals = parse_refvalues_sequence(options.get(VERIFY::REFVALUES));
+	auto refvals = parse_refvalues_sequence(options.value(VERIFY::REFVALUES));
 
 	// Log the parsing result
 
@@ -457,7 +457,7 @@ int ARVerifyApplication::run_calculation(const Options &options)
 	// Calculate the actual ARCSs from input files
 
 	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(
-			options.get(VERIFY::METAFILE),
+			options.value(VERIFY::METAFILE),
 			options.arguments(),
 			not options.is_set(VERIFY::NOFIRST),
 			not options.is_set(VERIFY::NOLAST),
@@ -588,7 +588,7 @@ void ARVerifyApplication::print_result(const Options &options,
 			auto arid = response->at(diff.best_match()).id();
 			idformat->use(std::make_tuple(&arid, nullptr));
 
-			output(*idformat, options.get(OPTION::OUTFILE)); // overwrites
+			output(*idformat, options.value(OPTION::OUTFILE)); // overwrites
 			dont_overwrite = false;
 		}
 	}
@@ -607,7 +607,7 @@ void ARVerifyApplication::print_result(const Options &options,
 					&std::get<1>(reference_sums) /* refvals */,
 					match, &only_block, print_v1_and_v2, toc, &arid));
 
-			output(*format, options.get(OPTION::OUTFILE), dont_overwrite);
+			output(*format, options.value(OPTION::OUTFILE), dont_overwrite);
 
 		} else // Use ARResponse
 		{
@@ -623,7 +623,7 @@ void ARVerifyApplication::print_result(const Options &options,
 						&block_sums, match, &curr_block, print_v1_and_v2,
 						toc, &arid));
 
-				output(*format, options.get(OPTION::OUTFILE), dont_overwrite);
+				output(*format, options.value(OPTION::OUTFILE), dont_overwrite);
 			}
 		}
 	} else // print only best match
@@ -637,7 +637,7 @@ void ARVerifyApplication::print_result(const Options &options,
 					&std::get<1>(reference_sums) /* refvals */,
 					match, &best_block, &matching_version, toc, &arid));
 
-			output(*format, options.get(OPTION::OUTFILE), dont_overwrite);
+			output(*format, options.value(OPTION::OUTFILE), dont_overwrite);
 		} else // Use ARResponse
 		{
 			const auto ref_sums = sums_in_block(std::get<0>(reference_sums),
@@ -646,7 +646,7 @@ void ARVerifyApplication::print_result(const Options &options,
 			format->use(std::make_tuple(&actual_sums, &filenames, &ref_sums,
 				match, &best_block, &matching_version, toc, &arid));
 
-			output(*format, options.get(OPTION::OUTFILE), dont_overwrite);
+			output(*format, options.value(OPTION::OUTFILE), dont_overwrite);
 			// &ref_sums must be in scope
 		}
 	}
@@ -666,13 +666,13 @@ int ARVerifyApplication::do_run(const Options &options)
 
 	if (options.is_set(VERIFY::LIST_TOC_FORMATS))
 	{
-		output(SupportedFormats::toc(), options.get(OPTION::OUTFILE));
+		output(SupportedFormats::toc(), options.value(OPTION::OUTFILE));
 		dont_overwrite = false;
 	}
 
 	if (options.is_set(VERIFY::LIST_AUDIO_FORMATS))
 	{
-		output(SupportedFormats::audio(), options.get(OPTION::OUTFILE),
+		output(SupportedFormats::audio(), options.value(OPTION::OUTFILE),
 				dont_overwrite);
 	}
 

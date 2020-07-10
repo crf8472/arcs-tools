@@ -102,7 +102,7 @@ int ARIdApplication::do_run(const Options &options)
 	// Compute requested values
 
 	const auto metafilename  = options.argument(0);
-	const auto audiofilename = options.get(ARIdOptions::AUDIOFILE);
+	const auto audiofilename = options.value(ARIdOptions::AUDIOFILE);
 
 	std::unique_ptr<ARId> id = nullptr;
 
@@ -120,12 +120,12 @@ int ARIdApplication::do_run(const Options &options)
 	if (options.is_set(ARIdOptions::PROFILE))
 	{
 		format = std::make_unique<ARIdTableFormat>(*id,
-			options.get(ARIdOptions::URLPREFIX),
+			options.value(ARIdOptions::URLPREFIX),
 			true, true, true, true, true, true, true);
 	} else
 	{
 		format = std::make_unique<ARIdTableFormat>(*id,
-			options.get(ARIdOptions::URLPREFIX),
+			options.value(ARIdOptions::URLPREFIX),
 			options.is_set(ARIdOptions::ID),
 			options.is_set(ARIdOptions::URL),
 			options.is_set(ARIdOptions::DBID),
@@ -136,7 +136,7 @@ int ARIdApplication::do_run(const Options &options)
 		);
 	}
 
-	output(*format, options.get(OPTION::OUTFILE));
+	output(*format, options.value(OPTION::OUTFILE));
 
 	return EXIT_SUCCESS;
 }

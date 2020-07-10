@@ -97,6 +97,22 @@ private:
 };
 
 
+/**
+ * \brief Reports a problem with the OptionsObject.
+ */
+class ConfigurationException : public std::runtime_error
+{
+public:
+
+	/**
+	 * \brief Constructor
+	 *
+	 * \param[in] what_arg What-Message
+	 */
+	ConfigurationException(const std::string &what_arg);
+};
+
+
 class Options;
 std::ostream& operator << (std::ostream& out, const Options &options);
 
@@ -104,8 +120,8 @@ std::ostream& operator << (std::ostream& out, const Options &options);
 /**
  * \brief Base class for configuration options.
  *
- * An Options object contains the complete configuration information for an
- * ARApplication.
+ * An Options object contains the boolean as well as the valued options and
+ * arguments for an ARApplication.
  */
 class Options
 {
@@ -115,14 +131,9 @@ public:
 			const Options &options);
 
 	/**
-	 * \brief Options with predefined number of flags.
+	 * \brief Constructor.
 	 */
-	Options(const std::size_t size);
-
-	/**
-	 * \brief Default constructor.
-	 */
-	Options() : Options(sizeof(OptionCode) * CHAR_BIT) { /* empty */ };
+	Options();
 
 	/**
 	 * \brief Virtual default destructor.
@@ -139,49 +150,67 @@ public:
 	bool is_set(const OptionCode &option) const;
 
 	/**
-	 * \brief Set the option to TRUE.
+	 * \brief Set the option to TRUE with an empty value.
 	 *
 	 * If the option is currently set, the call has no effect.
 	 *
+	 * If \c option is OPTION::NONE or the setting of the option fails for some
+	 * reason, an exception is thrown.
+	 *
+	 * Equivalent to set(option, std::string{}).
+	 *
 	 * \param[in] option The option to be set to TRUE
+	 *
+	 * \throws ConfigurationException Iff passed OPTION::NONE or on failure
 	 */
 	void set(const OptionCode &option);
 
 	/**
+	 * \brief Set the option to TRUE and add the specified value to it.
+	 *
+	 * If \c option is currently set, the value will be added.
+	 *
+	 * If \c option is OPTION::NONE or the setting of the option fails for some
+	 * reason, an exception is thrown.
+	 *
+	 * \param[in] option The option to be set to TRUE
+	 * \param[in] value  The value for the option to put in
+	 *
+	 * \throws ConfigurationException Iff passed OPTION::NONE or on failure
+	 */
+	void set(const OptionCode &option, const std::string &value);
+
+	/**
 	 * \brief Set the option to FALSE.
 	 *
-	 * If the option is currently unset, the call has no effect.
+	 * If the option is currently unset, the call has no effect. If the option
+	 * is currently set and has a value, the value is erased.
 	 *
 	 * \param[in] option The option to be set to FALSE
 	 */
 	void unset(const OptionCode &option);
 
 	/**
-	 * \brief Get option value by key.
+	 * \brief Get the value for a specified option.
+	 *
+	 * If the option is currently unset, the resulting value is empty.
 	 *
 	 * \param[in] option The option whose value to get
+	 * \param[in] option The 1-based index of the value to get
 	 *
-	 * \return The value of the option passed
+	 * \return The n-th value of the option passed
 	 */
-	std::string get(const OptionCode &option) const;
+	std::string value(const OptionCode &option) const;
 
 	/**
-	 * \brief Set option value for key.
+	 * \brief Puts an argument to the end of the argument list.
 	 *
-	 * \param[in] option The option to put in
-	 * \param[in] value  The value for the option to put in
+	 * \param[in] argument The argument to be appended to the list of arguments
 	 */
-	void put(const OptionCode &option, const std::string &value);
+	void put_argument(const std::string &argument);
 
 	/**
-	 * \brief Get all input arguments.
-	 *
-	 * \return All input arguments
-	 */
-	std::vector<std::string> const arguments() const;
-
-	/**
-	 * \brief Get an input argument by index.
+	 * \brief Get an input argument by 0-based index.
 	 *
 	 * Will return the \c i-th argument inserted on command line.
 	 *
@@ -189,7 +218,14 @@ public:
 	 *
 	 * \return Argument
 	 */
-	std::string const argument(const OptionCode &i) const;
+	std::string const argument(const std::size_t i) const;
+
+	/**
+	 * \brief Get all input arguments in order of occurrence.
+	 *
+	 * \return All input arguments
+	 */
+	std::vector<std::string> const arguments() const;
 
 	/**
 	 * \brief Returns TRUE iff no arguments are present.
@@ -197,13 +233,6 @@ public:
 	 * \return TRUE iff no arguments are present otherwise FALSE
 	 */
 	bool no_arguments() const;
-
-	/**
-	 * \brief Puts an argument to the end of the argument list.
-	 *
-	 * \param[in] arg The argument to be appended to the list of arguments
-	 */
-	void append(const std::string &arg);
 
 	/**
 	 * \brief Returns TRUE iff no information is contained in this Options
@@ -216,20 +245,12 @@ public:
 private:
 
 	/**
-	 * \brief All options flags.
-	 *
-	 * Each option, regardless if its value is boolean or string is
-	 * set by a flag.
+	 * \brief Options with their respective values.
 	 */
-	std::vector<bool> options_; // TODO redundant
+	std::map<OptionCode, std::string> options_;
 
 	/**
-	 * \brief Valued options' values.
-	 */
-	std::map<OptionCode, std::string> values_;
-
-	/**
-	 * \brief Arguments (non-option values)
+	 * \brief Arguments.
 	 */
 	std::vector<std::string> arguments_;
 };
@@ -385,12 +406,11 @@ protected:
 	std::vector<std::pair<Option, OptionCode>> all_supported() const;
 
 	/**
-	 * \brief Worker: process the global options in the parsed input.
+	 * \brief Worker: get VERBOSITY and LOGFILE and activate logging.
 	 *
-	 * \return The Options after processing the global options
+	 * \param[in] input The command line input
 	 */
-	std::unique_ptr<Options> process_global_options(const CLIInput &input)
-		const;
+	void activate_logging(const CLIInput &input) const;
 
 private:
 
