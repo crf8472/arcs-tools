@@ -36,7 +36,7 @@ class CLITokens;
 
 
 /**
- * \brief Options to configure ARApplication instances that do ARCS calculation.
+ * \brief Options to configure Application instances that do ARCS calculation.
  */
 struct CALCBASE
 {
@@ -72,7 +72,7 @@ protected:
 
 
 /**
- * \brief Base clase for ARApplication instances that support CALCBASE options.
+ * \brief Base clase for Application instances that support CALCBASE options.
  */
 class ARCalcConfiguratorBase : public Configurator
 {
@@ -162,7 +162,7 @@ private:
 /**
  * \brief Application to calculate AccurateRip checksums.
  */
-class ARCalcApplication final : public ARApplication
+class ARCalcApplication final : public Application
 {
 public:
 

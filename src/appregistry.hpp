@@ -6,7 +6,7 @@
  *
  * \brief Interface for application registry.
  *
- * Provides the facility to associate ARApplication types with names such that
+ * Provides the facility to associate Application types with names such that
  * instances of the types can be requested by this name.
  */
 
@@ -32,7 +32,7 @@ namespace details
  * \tparam Args The constructor arguments
  */
 template <class T, typename... Args>
-std::unique_ptr<ARApplication> instantiateApplication(Args&&... args)
+std::unique_ptr<Application> instantiateApplication(Args&&... args)
 {
 	return std::make_unique<T>(std::forward<Args>(args)...);
 }
@@ -76,7 +76,7 @@ class ApplicationFactory
 {
 public:
 
-	using MapType = std::map<std::string, FunctionReturning<ARApplication>>;
+	using MapType = std::map<std::string, FunctionReturning<Application>>;
 
 	/**
 	 * \brief Return first match for a key name with \c callstr
@@ -85,7 +85,7 @@ public:
 	 *
 	 * \return Instance of the first application type matching the input
 	 */
-	static std::unique_ptr<ARApplication> lookup(std::string const &callstr)
+	static std::unique_ptr<Application> lookup(std::string const &callstr)
 	{
 		for (const auto& entry : *get_map())
 		{
@@ -105,7 +105,7 @@ public:
 	 *
 	 * \return Instance of the requested application type
 	 */
-	static std::unique_ptr<ARApplication> instantiate(std::string const &name)
+	static std::unique_ptr<Application> instantiate(std::string const &name)
 	{
 		MapType::iterator it = get_map()->find(name);
 
@@ -142,8 +142,8 @@ protected:
 	 *
 	 * \return Instance returned by \c create
 	 */
-	static std::unique_ptr<ARApplication> instantiate(std::string const &,
-			FunctionReturning<ARApplication> create)
+	static std::unique_ptr<Application> instantiate(std::string const &,
+			FunctionReturning<Application> create)
 	{
 		return create();
 	}

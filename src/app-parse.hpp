@@ -25,7 +25,7 @@
 #endif
 
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
-#include "application.hpp"     // for ARApplication
+#include "application.hpp"     // for Application
 #endif
 
 namespace arcsapp
@@ -38,7 +38,7 @@ class Options;
 /**
  * \brief AccurateRip Response Parsing Application.
  */
-class ARParseApplication final : public ARApplication
+class ARParseApplication final : public Application
 {
 	std::string do_name() const override;
 

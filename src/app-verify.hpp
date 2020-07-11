@@ -25,7 +25,7 @@
 #include "app-calc.hpp"          // for ARCalcConfigurator, CALC
 #endif
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
-#include "application.hpp"       // for ARApplication
+#include "application.hpp"       // for Application
 #endif
 #ifndef __ARCSTOOLS_PRINTERS_HPP__
 #include "printers.hpp"          // for ARResponse, Checksums, Match
@@ -89,7 +89,7 @@ private:
 /**
  * \brief Application to verify AccurateRip checksums.
  */
-class ARVerifyApplication final : public ARApplication
+class ARVerifyApplication final : public Application
 {
 	/**
 	 * \brief Configure an output format for the result.

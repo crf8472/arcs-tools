@@ -30,22 +30,22 @@ namespace arcsapp
 class Options;
 
 
-// ARApplication
+// Application
 
 
-ARApplication::ARApplication() = default;
+Application::Application() = default;
 
 
-ARApplication::~ARApplication() noexcept = default;
+Application::~Application() noexcept = default;
 
 
-std::string ARApplication::name() const
+std::string Application::name() const
 {
 	return this->do_name();
 }
 
 
-int ARApplication::run(int argc, char** argv)
+int Application::run(int argc, char** argv)
 {
 	if (argc == 1)
 	{
@@ -75,7 +75,7 @@ int ARApplication::run(int argc, char** argv)
 }
 
 
-void ARApplication::print_usage() const
+void Application::print_usage() const
 {
 	std::cout << "Usage:" << std::endl;
 
@@ -136,7 +136,7 @@ void ARApplication::print_usage() const
 }
 
 
-std::unique_ptr<Options> ARApplication::setup_options(int argc, char** argv)
+std::unique_ptr<Options> Application::setup_options(int argc, char** argv)
 	const
 {
 	auto configurator = this->create_configurator();
@@ -145,7 +145,7 @@ std::unique_ptr<Options> ARApplication::setup_options(int argc, char** argv)
 }
 
 
-void ARApplication::fatal_error(const std::string &message) const
+void Application::fatal_error(const std::string &message) const
 {
 	//ARCS_LOG_ERROR << message;
 	throw std::runtime_error(message);

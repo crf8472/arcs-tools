@@ -10,31 +10,17 @@
  * command line input.
  */
 
-#include <array>                    // for array
-#include <cstdlib>                  // for EXIT_FAILURE
 #include <iostream>                 // for cout, basic_ostream, endl, cerr
 #include <fstream>                  // for ofstream
 #include <memory>                   // for unique_ptr, allocator
 #include <string>                   // for string
-#include <vector>                   // for vector
-
-#ifndef __LIBARCSDEC_DESCRIPTORS_HPP__
-#include <arcsdec/descriptors.hpp>  // for FileReaderDescriptor
-#endif
 
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"        // for CallSyntaxException, Options, Configurator
 #endif
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"       // for StringTable
-#endif
 
 namespace arcsapp
 {
-
-class Configurator;
-class Options;
-
 
 /**
  * \brief Abstract base class for command line applications.
@@ -46,24 +32,24 @@ class Options;
  * configuration of logging and the core \c run() function. Provides workers
  * for fatal_error() and output() as well as printing the usage info.
  */
-class ARApplication
+class Application
 {
 public:
 
 	/**
 	 * \brief Default constructor.
 	 */
-	ARApplication();
+	Application();
 
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	virtual ~ARApplication() noexcept;
+	virtual ~Application() noexcept;
 
 	/**
 	 * \brief Return the name of the application.
 	 *
-	 * \return Name of this ARApplication
+	 * \return Name of this Application
 	 */
 	std::string name() const;
 
@@ -160,7 +146,7 @@ private:
 	/**
 	 * \brief Implements name().
 	 *
-	 * \return Name of this ARApplication
+	 * \return Name of this Application
 	 */
 	virtual std::string do_name() const
 	= 0;

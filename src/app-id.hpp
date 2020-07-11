@@ -14,7 +14,7 @@
 #include <string>           // for string
 
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
-#include "application.hpp"  // for ARApplication
+#include "application.hpp"  // for Application
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"       // for Configurator
@@ -61,7 +61,7 @@ private:
 /**
  * \brief AccurateRip Identifier Calculation Application
  */
-class ARIdApplication final : public ARApplication
+class ARIdApplication final : public Application
 {
 	std::string do_name() const override;
 

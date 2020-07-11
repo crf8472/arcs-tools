@@ -121,7 +121,7 @@ std::ostream& operator << (std::ostream& out, const Options &options);
  * \brief Base class for configuration options.
  *
  * An Options object contains the boolean as well as the valued options and
- * arguments for an ARApplication.
+ * arguments for an Application.
  */
 class Options
 {
