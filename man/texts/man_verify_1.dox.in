@@ -89,10 +89,10 @@ Suppress output of any row labels and column titles.
 Set the column delimiter for table output
 
 \par --print-id
-(NOT YET IMPLEMENTED) Print it AccurateRip id of the album to be verified.
+Print the AccurateRip id of the album to be verified.
 
 \par --print-url
-(NOT YET IMPLEMENTED) Print the AccurateRip URL of the album to be verified.
+Print the AccurateRip URL of the album to be verified.
 
 \par --print-all-matches
 Print each match trial for each reference block regardless of the result. This
