@@ -261,6 +261,36 @@ const std::string& CLIInput::value(const OptionCode &option) const
 }
 
 
+const std::string& CLIInput::argument(const std::size_t &i) const
+{
+	if (i >= size())
+	{
+		return empty_value();
+	}
+
+	std::size_t counter = 0;
+	auto token = items_.begin();
+
+	while (counter < i)
+	{
+		token = std::find_if(items_.begin() + counter, items_.end(),
+				[i](const InputItem &item)
+				{
+					return item.id() == Option::NONE;
+				});
+
+		if (token == items_.end())
+		{
+			return empty_value();
+		}
+
+		++counter;
+	}
+
+	return token->value();
+}
+
+
 CLIInput::size_type CLIInput::size() const
 {
 	return items_.size();

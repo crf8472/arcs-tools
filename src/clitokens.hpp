@@ -34,9 +34,9 @@ bool operator == (const Option &lhs, const Option &rhs) noexcept;
 /**
  * \brief Descriptor for a single command line option.
  *
- * An Option has a symbol and may or may not have a shorthand symbol. It may
- * or may not expect a value and most options have some default. An option also
- * has a short description.
+ * An Option has a symbol (e.g. '--print-all', '--boolean') and may or may not
+ * have a shorthand symbol (e.g. '-r'). It may or may not expect a value and
+ * most options have some default. An option also has a short description.
  */
 class Option
 {
@@ -151,13 +151,31 @@ public:
 
 
 /**
- * \brief Represents command line input as options (w/o values) and arguments.
+ * \brief Parses command line input in a POSIX-style.
  *
- * The callers responsibility is to consume everything legal and if this
- * succeeds without errors, empty() must be TRUE thereafter. If it
- * returns TRUE instead, the command line call was not syntactically wellformed.
- * Thus, with the API of this class, complete syntax check of the CLI input is
- * possible.
+ * Parses the argc/argv command line input to a sequence of input tokens. A
+ * token is either an option along with its respective value or a non-option
+ * (i.e. an argument). Arguments are represented as options of type
+ * Option::NONE.
+ *
+ *  - Syntactically, an option is a hyphen '-' followed by a single alphanumeric
+ *    character, like this: \c -v.
+ *  - An option may require a value. If a value is expected, it must appear
+ *    immediately after the option token. A blank ' ' may or may not separate
+ *    the option from its value. Example: \c -i \c <argument> or
+ *    \c -i<argument>.
+ *  - Options that do not require values can be grouped after a single hyphen,
+ *    so, for example, -tbn is equivalent to -t -b -n.
+ *  - Options can appear in any order, thus -tbn is equivalent to -ntb.
+ *  - Options can appear multiple times.
+ *  - Options typically precede other nonoption arguments: -ltr <nonoption>.
+ *  - The '--' argument terminates options.
+ *
+ * This intends to obey the POSIX conventions.
+ *
+ * CLIInput will never modify any command line input, neither will tokens be
+ * erased nor added. CLIInput does not perform any semantic validation of the
+ * input.
  */
 class CLIInput final
 {
@@ -165,6 +183,9 @@ public:
 
 	/**
 	 * \brief Constructor for token view on the command line input.
+	 *
+	 * The supported options are represented as a sequence of pairs of the
+	 * actual option and the numerical code for this option.
 	 *
 	 * \param[in] argc      Number of command line arguments
 	 * \param[in] argv      Command line arguments
@@ -176,9 +197,9 @@ public:
 			const bool preserve_order);
 
 	/**
-	 * \brief Virtual default destructor.
+	 * \brief Default destructor.
 	 */
-	virtual ~CLIInput() noexcept;
+	~CLIInput() noexcept;
 
 	/**
 	 * \brief The i-th input option.
@@ -219,13 +240,26 @@ public:
 	/**
 	 * \brief Returns the parsed value for the specified code.
 	 *
-	 * If \c contains(code) is \c FALSE, the result will be an empty string.
+	 * If \c contains(code) is \c FALSE or \c option is \c Option::NONE, the
+	 * result will be an empty string.
 	 *
 	 * \param[in] option The option to get the value for
 	 *
 	 * \return Parsed value for the specified code
 	 */
 	const std::string& value(const OptionCode &option) const;
+
+	/**
+	 * \brief Returns the i-th argument.
+	 *
+	 * If \c preserve_order is TRUE, this will correspond to the i-th input
+	 * argument. If the total number of arguments is less than i, an empty
+	 * string will be returned. If \c i is greater or equal than the total
+	 * number of arguments, or \c i is 0, an empty string is returned.
+	 *
+	 * \return Argument with index \c i or empty string if \c i >= size().
+	 */
+	const std::string& argument(const std::size_t &i) const;
 
 private:
 
@@ -263,7 +297,9 @@ private:
 	const std::string& empty_value() const noexcept;
 
 	/**
-	 * \brief An argument or an option with or without a value.
+	 * \brief Uniform representation of an input token.
+	 *
+	 * An InputToken can be an argument or an option with or without a value.
 	 *
 	 * An argument is represented as Option with code Option::NONE.
 	 */
@@ -272,21 +308,25 @@ private:
 	public:
 
 		/**
-		 * \brief Construct item with specified code.
+		 * \brief Construct option item with specified code.
+		 *
+		 * \param[in] id Code for this option
 		 */
 		InputItem(const OptionCode id)
 			: InputItem { id, std::string{} }
 		{ /* empty */ };
 
 		/**
-		 * \brief Construct item with specified value.
+		 * \brief Construct argument item with specified value.
+		 *
+		 * \param[in] value Argument value
 		 */
 		InputItem(const std::string &value)
 			: InputItem { Option::NONE, value }
 		{ /* empty */ };
 
 		/**
-		 * \brief Get the OptionCode of the InputItem.
+		 * \brief OptionCode of the InputItem.
 		 *
 		 * \return OptionCode of the InputItem
 		 */
@@ -310,6 +350,9 @@ private:
 
 		/**
 		 * \brief Construct item with specified code and value.
+		 *
+		 * \param[in] id    Code for this InputItem
+		 * \param[in] value Value for this InputItem
 		 */
 		InputItem(const OptionCode id, const std::string &value)
 			: id_ { id }
