@@ -18,7 +18,7 @@
 #endif
 
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp"
+#include "clitokens.hpp" // for CLITokens
 #endif
 
 namespace arcsapp
@@ -322,12 +322,43 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 
 	// Parse Input and Match Supported Options
 
-	auto input = CLIInput { argc, argv, all_supported_options, true };
+	auto input = CLITokens { argc, argv, all_supported_options, true };
 
-	// The log options --logfile, --verbosity and --quiet are
-	// immediately
+	// Activate logging:
+	// The log options --logfile, --verbosity and --quiet take immediate effect
+	// to have logging available as soon as possible, if requested.
+	{
+		// --logfile (or stdout)
 
-	this->activate_logging(input);
+		std::unique_ptr<Appender> appender;
+
+		if (input.contains(OPTION::LOGFILE))
+		{
+			appender = std::make_unique<Appender>(input.value(OPTION::LOGFILE));
+		} else
+		{
+			appender = std::make_unique<Appender>("stdout", stdout);
+		}
+
+		Logging::instance().add_appender(std::move(appender));
+
+		// --quiet, --verbosity
+
+		if (not input.contains(OPTION::QUIET))
+		{
+			if (input.contains(OPTION::VERBOSITY))
+			{
+				Logging::instance().set_level(logman_.get_loglevel(
+							input.value(OPTION::VERBOSITY)));
+			} else
+			{
+				Logging::instance().set_level(logman_.default_loglevel());
+			}
+		} // ... else the already active quiet loglevel will persist.
+
+		// TODO Make configurable
+		Logging::instance().set_timestamps(false);
+	}
 
 	// Convert input to Options object
 
@@ -389,43 +420,6 @@ std::vector<std::pair<Option, OptionCode>> Configurator::all_supported() const
 	}
 
 	return all_supported;
-}
-
-
-void Configurator::activate_logging(const CLIInput &input) const
-{
-	// --logfile (or stdout)
-
-	std::unique_ptr<Appender> appender;
-
-	if (input.contains(OPTION::LOGFILE)
-			and not input.value(OPTION::LOGFILE).empty())
-	{
-		appender = std::make_unique<Appender>(input.value(OPTION::LOGFILE));
-	} else
-	{
-		appender = std::make_unique<Appender>("stdout", stdout);
-	}
-
-	Logging::instance().add_appender(std::move(appender));
-
-	// --quiet, --verbosity
-
-	if (input.contains(OPTION::QUIET))
-	{
-		Logging::instance().set_level(logman_.quiet_loglevel());
-
-	} else if (input.contains(OPTION::VERBOSITY))
-	{
-		Logging::instance().set_level(logman_.get_loglevel(
-					input.value(OPTION::VERBOSITY)));
-	} else
-	{
-		Logging::instance().set_level(logman_.default_loglevel());
-	}
-
-	// TODO Make configurable
-	Logging::instance().set_timestamps(false);
 }
 
 

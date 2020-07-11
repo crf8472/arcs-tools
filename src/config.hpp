@@ -26,7 +26,7 @@
 #endif
 
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp" // for CLITokens
+#include "clitokens.hpp" // for OptionCode
 #endif
 
 namespace arcsapp
@@ -404,13 +404,6 @@ protected:
 	 * \return List of options supported by this Configurator
 	 */
 	std::vector<std::pair<Option, OptionCode>> all_supported() const;
-
-	/**
-	 * \brief Worker: get VERBOSITY and LOGFILE and activate logging.
-	 *
-	 * \param[in] input The command line input
-	 */
-	void activate_logging(const CLIInput &input) const;
 
 private:
 

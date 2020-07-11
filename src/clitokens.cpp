@@ -126,10 +126,10 @@ CallSyntaxException::CallSyntaxException(const std::string &what_arg)
 }
 
 
-// CLIInput
+// CLITokens
 
 
-CLIInput::CLIInput(const int argc, const char* const * const argv,
+CLITokens::CLITokens(const int argc, const char* const * const argv,
 		const std::vector<std::pair<Option, OptionCode>> &supported,
 		const bool preserve_order)
 	: items_ () // TODO reserve sensible capacity
@@ -216,10 +216,10 @@ CLIInput::CLIInput(const int argc, const char* const * const argv,
 }
 
 
-CLIInput::~CLIInput() noexcept = default;
+CLITokens::~CLITokens() noexcept = default;
 
 
-OptionCode CLIInput::option_code(const int i) const
+OptionCode CLITokens::option_code(const int i) const
 {
 	if (i >= 0 && static_cast<decltype( items_.size() )>(i) < items_.size())
 	{
@@ -230,7 +230,7 @@ OptionCode CLIInput::option_code(const int i) const
 }
 
 
-const std::string& CLIInput::option_value(const int i) const
+const std::string& CLITokens::option_value(const int i) const
 {
 	if (i >= 0 && static_cast<decltype( items_.size() )>(i) < items_.size())
 	{
@@ -241,19 +241,19 @@ const std::string& CLIInput::option_value(const int i) const
 }
 
 
-bool CLIInput::empty() const
+bool CLITokens::empty() const
 {
 	return items_.empty();
 }
 
 
-bool CLIInput::contains(const OptionCode &option) const noexcept
+bool CLITokens::contains(const OptionCode &option) const noexcept
 {
 	return lookup(option) ? true : false;
 }
 
 
-const std::string& CLIInput::value(const OptionCode &option) const
+const std::string& CLITokens::value(const OptionCode &option) const
 {
 	auto element = lookup(option);
 
@@ -261,7 +261,7 @@ const std::string& CLIInput::value(const OptionCode &option) const
 }
 
 
-const std::string& CLIInput::argument(const std::size_t &i) const
+const std::string& CLITokens::argument(const std::size_t &i) const
 {
 	if (i >= size())
 	{
@@ -291,13 +291,13 @@ const std::string& CLIInput::argument(const std::size_t &i) const
 }
 
 
-CLIInput::size_type CLIInput::size() const
+CLITokens::size_type CLITokens::size() const
 {
 	return items_.size();
 }
 
 
-void CLIInput::consume_as_symbol(const char * const token,
+void CLITokens::consume_as_symbol(const char * const token,
 		const char * const next,
 		const std::vector<std::pair<Option, OptionCode>> supported, int &pos)
 {
@@ -424,7 +424,7 @@ void CLIInput::consume_as_symbol(const char * const token,
 }
 
 
-void CLIInput::consume_as_shorthand(const char * const token,
+void CLITokens::consume_as_shorthand(const char * const token,
 		const char * const next,
 		const std::vector<std::pair<Option, OptionCode>> supported, int &pos)
 {
@@ -509,43 +509,43 @@ void CLIInput::consume_as_shorthand(const char * const token,
 }
 
 
-CLIInput::iterator CLIInput::begin()
+CLITokens::iterator CLITokens::begin()
 {
 	return items_.begin();
 }
 
 
-CLIInput::iterator CLIInput::end()
+CLITokens::iterator CLITokens::end()
 {
 	return items_.end();
 }
 
 
-CLIInput::const_iterator CLIInput::begin() const
+CLITokens::const_iterator CLITokens::begin() const
 {
 	return items_.begin();
 }
 
 
-CLIInput::const_iterator CLIInput::end() const
+CLITokens::const_iterator CLITokens::end() const
 {
 	return items_.end();
 }
 
 
-CLIInput::const_iterator CLIInput::cbegin() const
+CLITokens::const_iterator CLITokens::cbegin() const
 {
 	return items_.cbegin();
 }
 
 
-CLIInput::const_iterator CLIInput::cend() const
+CLITokens::const_iterator CLITokens::cend() const
 {
 	return items_.cend();
 }
 
 
-const CLIInput::InputItem* CLIInput::lookup(const OptionCode &option) const
+const CLITokens::InputItem* CLITokens::lookup(const OptionCode &option) const
 {
 	auto element = std::find_if(items_.begin(), items_.end(),
 			[option](const InputItem &i){ return i.id() == option; } );
@@ -559,7 +559,7 @@ const CLIInput::InputItem* CLIInput::lookup(const OptionCode &option) const
 }
 
 
-const std::string& CLIInput::empty_value() const noexcept
+const std::string& CLITokens::empty_value() const noexcept
 {
 	static const auto empty_string = std::string{};
 	return empty_string;

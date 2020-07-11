@@ -173,11 +173,11 @@ public:
  *
  * This intends to obey the POSIX conventions.
  *
- * CLIInput will never modify any command line input, neither will tokens be
- * erased nor added. CLIInput does not perform any semantic validation of the
+ * CLITokens will never modify any command line input, neither will tokens be
+ * erased nor added. CLITokens does not perform any semantic validation of the
  * input.
  */
-class CLIInput final
+class CLITokens final
 {
 public:
 
@@ -192,14 +192,14 @@ public:
 	 * \param[in] supported Supported options
 	 * \param[in] preserve_order TRUE if order of occurrences is to be preserved
 	 */
-	CLIInput(const int argc, const char* const * const argv,
+	CLITokens(const int argc, const char* const * const argv,
 			const std::vector<std::pair<Option, OptionCode>> &supported,
 			const bool preserve_order);
 
 	/**
 	 * \brief Default destructor.
 	 */
-	~CLIInput() noexcept;
+	~CLITokens() noexcept;
 
 	/**
 	 * \brief The i-th input option.
