@@ -1,4 +1,5 @@
 #include <arcstk/identifier.hpp>
+#include <sstream>
 #include <tuple>
 #ifndef __ARCSTOOLS_PRINTERS_HPP__
 #include "printers.hpp"
@@ -158,7 +159,8 @@ ARIdTableFormat::ARIdTableFormat(const ARId &arid,
 		const bool cddb_id)
 	: ARIdLayout(id, url, filename, track_count, disc_id_1, disc_id_2, cddb_id)
 	, StringTableStructure(
-			url + filename + track_count + disc_id_1 + disc_id_2 + cddb_id, 1)
+			id + url + filename + track_count + disc_id_1 + disc_id_2 + cddb_id,
+			1)
 	, ARIdPrinter(std::make_tuple(&arid, &alt_prefix))
 	, show_flags_ { ARID_FLAG::ID, ARID_FLAG::URL, ARID_FLAG::FILENAME,
 		ARID_FLAG::TRACKS, ARID_FLAG::ID1, ARID_FLAG::ID2, ARID_FLAG::CDDBID }
@@ -174,7 +176,9 @@ ARIdTableFormat::ARIdTableFormat(const ARId &arid,
 		{
 			set_row_label(i, labels[i]);
 		}
-	}
+	} // FIXME Bug: later calls of set_id() etc. will not alter the row labels!
+	// If you call some setter after construction and try to print, this will
+	// crash
 }
 
 
@@ -209,10 +213,10 @@ std::string ARIdTableFormat::do_format(const ARId &arid,
 	const int total_labels = id() + url() + filename() + track_count() +
 		disc_id_1() + disc_id_2() + cddb_id();
 
-	std::stringstream stream;
-	stream << std::left;
+	auto stream = std::stringstream {};
+	//stream << std::left;
 
-	std::string value;
+	auto value = std::string {};
 
 	for (const auto& sflag : show_flags_)
 	{

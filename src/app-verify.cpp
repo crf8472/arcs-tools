@@ -580,12 +580,18 @@ void ARVerifyApplication::print_result(const Options &options,
 		if (auto response = &std::get<0>(reference_sums); response)
 		{
 			const std::unique_ptr<ARIdTableFormat> idformat =
-				std::make_unique<ARIdTableFormat>();
+				std::make_unique<ARIdTableFormat>(
+					response->at(diff.best_match()).id(),
+					std::string{},
+					options.is_set(CALC::PRINTID),
+					options.is_set(CALC::PRINTURL),
+					false, /* no filenames */
+					false, /* no tracks */
+					false, /* no id 1 */
+					false, /* no id 2 */
+					false /* no cddb id */
+				);
 
-			idformat->set_id(options.is_set(VERIFY::PRINTID));
-			idformat->set_url(options.is_set(VERIFY::PRINTURL));
-
-			auto arid = response->at(diff.best_match()).id();
 			idformat->use(std::make_tuple(&arid, nullptr));
 
 			output(*idformat, options.value(OPTION::OUTFILE)); // overwrites

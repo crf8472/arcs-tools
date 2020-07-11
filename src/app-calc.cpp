@@ -453,10 +453,17 @@ int ARCalcApplication::run_calculation(const Options &options)
 	if (options.is_set(CALC::PRINTID) or options.is_set(CALC::PRINTURL))
 	{
 		const std::unique_ptr<ARIdTableFormat> idformat =
-			std::make_unique<ARIdTableFormat>();
-
-		idformat->set_id(options.is_set(CALC::PRINTID));
-		idformat->set_url(options.is_set(CALC::PRINTURL));
+			std::make_unique<ARIdTableFormat>(
+				arid,
+				std::string{},
+				options.is_set(CALC::PRINTID),
+				options.is_set(CALC::PRINTURL),
+				false, /* no filenames */
+				false, /* no tracks */
+				false, /* no id 1 */
+				false, /* no id 2 */
+				false /* no cddb id */
+			);
 
 		idformat->use(std::make_tuple(&arid, nullptr));
 
