@@ -152,120 +152,18 @@ void ARTripletFormat::do_out(std::ostream &out,
 // ARIdTableFormat
 
 
-ARIdTableFormat::ARIdTableFormat(const ARId &arid,
-		const std::string &alt_prefix,
-		const bool id, const bool url, const bool filename,
-		const bool track_count, const bool disc_id_1, const bool disc_id_2,
-		const bool cddb_id)
-	: ARIdLayout(id, url, filename, track_count, disc_id_1, disc_id_2, cddb_id)
-	, StringTableStructure(
-			id + url + filename + track_count + disc_id_1 + disc_id_2 + cddb_id,
-			1)
-	, ARIdPrinter(std::make_tuple(&arid, &alt_prefix))
-	, show_flags_ { ARID_FLAG::ID, ARID_FLAG::URL, ARID_FLAG::FILENAME,
-		ARID_FLAG::TRACKS, ARID_FLAG::ID1, ARID_FLAG::ID2, ARID_FLAG::CDDBID }
-{
-	const std::vector<std::string> labels =
-		{ "ID", "URL", "Filename", "Tracks", "ID1", "ID2", "CDDB ID" };
-
-	int i = 0;
-	for (const auto& sflag : show_flags_) // TODO Do this non-dynamically!
-	{
-		i = to_underlying(sflag);
-		if (static_cast<std::size_t>(i) < rows())
-		{
-			set_row_label(i, labels[i]);
-		}
-	} // FIXME Bug: later calls of set_id() etc. will not alter the row labels!
-	// If you call some setter after construction and try to print, this will
-	// crash
-}
-
-
-ARIdTableFormat::~ARIdTableFormat() noexcept = default;
-
-
-std::string ARIdTableFormat::hex_id(const uint32_t id) const
-{
-	std::ostringstream out;
-
-	out << std::hex << std::uppercase << std::setfill('0')
-		<< std::setw(8) << id;
-
-	return out.str();
-}
-
-
-void ARIdTableFormat::do_init(const int /* rows */, const int /* cols */)
+ARIdTableFormat::ARIdTableFormat(const bool id, const bool url,
+		const bool filename, const bool track_count, const bool disc_id_1,
+		const bool disc_id_2, const bool cddb_id)
+	: WithARId(std::make_unique<ARIdTableLayout>(
+				id, url, filename, track_count, disc_id_1, disc_id_2, cddb_id))
+	, ARIdPrinter(std::make_tuple(&arcstk::EmptyARId, nullptr))
 {
 	// empty
 }
 
 
-std::string ARIdTableFormat::do_format(const ARId &arid,
-			const std::string &alt_prefix) const
-{
-	if (no_flags()) // return ARId as default, ignore any Hex layout settings
-	{
-		return arid.to_string();
-	}
-
-	const int total_labels = id() + url() + filename() + track_count() +
-		disc_id_1() + disc_id_2() + cddb_id();
-
-	auto stream = std::stringstream {};
-	//stream << std::left;
-
-	auto value = std::string {};
-
-	for (const auto& sflag : show_flags_)
-	{
-		if (not flag(to_underlying(sflag))) { continue; }
-
-		if (total_labels > 1)
-		{
-			if (!stream.str().empty()) { stream << std::endl; }
-
-			print_label(stream, to_underlying(sflag));
-		}
-
-		switch (sflag)
-		{
-			case ARID_FLAG::ID:
-				value = arid.to_string();
-				break;
-			case ARID_FLAG::URL:
-				value = arid.url();
-				if (not alt_prefix.empty())
-				{
-					value.replace(0, arid.prefix().length(), alt_prefix);
-					// FIXME If alt_prefix does not end with '/' ?
-				}
-				break;
-			case ARID_FLAG::FILENAME:
-				value = arid.filename();
-				break;
-			case ARID_FLAG::TRACKS:
-				value = std::to_string(arid.track_count());
-				break;
-			case ARID_FLAG::ID1:
-				value = hex_id(arid.disc_id_1());
-				break;
-			case ARID_FLAG::ID2:
-				value = hex_id(arid.disc_id_2());
-				break;
-			case ARID_FLAG::CDDBID:
-				value = hex_id(arid.cddb_id());
-				break;
-			default:
-				break;
-		}
-
-		stream << std::setw(value.length()) << value;
-	}
-
-	return stream.str();
-}
+ARIdTableFormat::~ARIdTableFormat() noexcept = default;
 
 
 void ARIdTableFormat::assertions(const std::tuple<const ARId*,
@@ -292,10 +190,10 @@ void ARIdTableFormat::do_out(std::ostream &o,
 
 	if (!alt_prefix)
 	{
-		o << format(*id, std::string{}) << std::endl;
+		o << arid_layout()->format(*id, std::string{}) << std::endl;
 	} else
 	{
-		o << format(*id, *alt_prefix) << std::endl;
+		o << arid_layout()->format(*id, *alt_prefix) << std::endl;
 	}
 }
 

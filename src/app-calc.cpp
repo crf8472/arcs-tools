@@ -454,8 +454,6 @@ int ARCalcApplication::run_calculation(const Options &options)
 	{
 		const std::unique_ptr<ARIdTableFormat> idformat =
 			std::make_unique<ARIdTableFormat>(
-				arid,
-				std::string{},
 				options.is_set(CALC::PRINTID),
 				options.is_set(CALC::PRINTURL),
 				false, /* no filenames */

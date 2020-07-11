@@ -428,6 +428,38 @@ public:
 private:
 
 	/**
+	 * \brief Iterable aggregate of the defined flags.
+	 *
+	 * Order matches definition order in ARID_FLAG.
+	 */
+	const std::array<ARID_FLAG, to_underlying(ARID_FLAG::COUNT)> show_flags_
+	{
+		ARID_FLAG::ID,
+		ARID_FLAG::URL,
+		ARID_FLAG::FILENAME,
+		ARID_FLAG::TRACKS,
+		ARID_FLAG::ID1,
+		ARID_FLAG::ID2,
+		ARID_FLAG::CDDBID
+	};
+
+	/**
+	 * \brief Row label for the defined flags.
+	 *
+	 * Order matches definition order in ARID_FLAG.
+	 */
+	const std::array<std::string, to_underlying(ARID_FLAG::COUNT)> labels_
+	{
+		"ID",
+		"URL",
+		"Filename",
+		"Tracks",
+		"ID1",
+		"ID2",
+		"CDDB ID"
+	};
+
+	/**
 	 * \brief Implements format().
 	 *
 	 * \param[in] id The ARId to format
@@ -436,6 +468,43 @@ private:
 	virtual std::string do_format(const ARId &id, const std::string &alt_prefix)
 		const
 	= 0;
+
+protected:
+
+	/**
+	 * \brief Getter for the show flags.
+	 */
+	auto show_flags() const -> decltype( show_flags_ );
+
+	/**
+	 * \brief Getter for the flag labels.
+	 */
+	auto labels() const -> decltype( labels_ );
+};
+
+
+/**
+ * \brief Table-style layout for ARId information.
+ */
+class ARIdTableLayout : public ARIdLayout
+{
+public:
+
+	using ARIdLayout::ARIdLayout;
+
+private:
+
+	/**
+	 * \brief Worker: print the the sub-ids as part of an ARId.
+	 *
+	 * \param[in] id Id to print as part of an ARId
+	 *
+	 * \return Hexadecimal ARId-conforming representation of an 32bit unsigned.
+	 */
+	std::string hex_id(const uint32_t id) const;
+
+	std::string do_format(const ARId &id, const std::string &alt_prefix) const
+		override;
 };
 
 

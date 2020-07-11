@@ -333,10 +333,105 @@ bool ARIdLayout::has_only(const ARID_FLAG flag) const
 }
 
 
+auto ARIdLayout::show_flags() const -> decltype( show_flags_ )
+{
+	return show_flags_;
+}
+
+
+auto ARIdLayout::labels() const -> decltype( labels_ )
+{
+	return labels_;
+}
+
+
 std::string ARIdLayout::format(const ARId &id, const std::string &alt_prefix)
 	const
 {
 	return this->do_format(id, alt_prefix);
+}
+
+
+// ARIdTableLayout
+
+
+std::string ARIdTableLayout::hex_id(const uint32_t id) const
+{
+	std::ostringstream out;
+
+	out << std::hex << std::uppercase << std::setfill('0')
+		<< std::setw(8) << id;
+
+	return out.str();
+}
+
+
+std::string ARIdTableLayout::do_format(const ARId &arid,
+		const std::string &alt_prefix) const
+{
+	if (no_flags()) // return ARId as default, ignore any Hex layout settings
+	{
+		return arid.to_string();
+	}
+
+	const int total_labels = id() + url() + filename() + track_count() +
+		disc_id_1() + disc_id_2() + cddb_id();
+
+	auto stream = std::stringstream {};
+	//stream << std::left;
+
+	auto value = std::string {};
+
+	for (const auto& sflag : show_flags())
+	{
+		if (not flag(to_underlying(sflag))) { continue; }
+
+		if (total_labels > 1)
+		{
+			if (!stream.str().empty()) { stream << std::endl; }
+
+			stream << std::setw(8 /* length of 'Filename', longest label */)
+				<< std::left
+				<< labels()[to_underlying(sflag)]
+				<< " ";
+		}
+
+		switch (sflag)
+		{
+			case ARID_FLAG::ID:
+				value = arid.to_string();
+				break;
+			case ARID_FLAG::URL:
+				value = arid.url();
+				if (not alt_prefix.empty())
+				{
+					value.replace(0, arid.prefix().length(), alt_prefix);
+					// FIXME If alt_prefix does not end with '/' ?
+				}
+				break;
+			case ARID_FLAG::FILENAME:
+				value = arid.filename();
+				break;
+			case ARID_FLAG::TRACKS:
+				value = std::to_string(arid.track_count());
+				break;
+			case ARID_FLAG::ID1:
+				value = hex_id(arid.disc_id_1());
+				break;
+			case ARID_FLAG::ID2:
+				value = hex_id(arid.disc_id_2());
+				break;
+			case ARID_FLAG::CDDBID:
+				value = hex_id(arid.cddb_id());
+				break;
+			default:
+				break;
+		}
+
+		stream << std::setw(value.length()) << value;
+	}
+
+	return stream.str();
 }
 
 

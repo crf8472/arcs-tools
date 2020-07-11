@@ -166,29 +166,10 @@ using ARIdPrinter = Print<ARId, std::string>;
 /**
  * \brief Simple table format for ARId.
  */
-class ARIdTableFormat final : public ARIdLayout
-							, public StringTableStructure
+class ARIdTableFormat final : public WithARId
 							, public ARIdPrinter
 {
 public:
-
-	/**
-	 * \brief Constructor setting all flags.
-	 *
-	 * \param[in] arid        ARId to print
-	 * \param[in] alt_prefix  Alternative URL prefix
-	 * \param[in] id          Set to TRUE for printing the ID
-	 * \param[in] url         Set to TRUE for printing the URL
-	 * \param[in] filename    Set to TRUE for printing the filename
-	 * \param[in] track_count Set to TRUE for printing the track_count
-	 * \param[in] disc_id_1   Set to TRUE for printing the disc id1
-	 * \param[in] disc_id_2   Set to TRUE for printing the disc id2
-	 * \param[in] cddb_id     Set to TRUE for printing the cddb id
-	 */
-	ARIdTableFormat(const ARId &arid, const std::string &alt_prefix,
-			const bool id, const bool url, const bool filename,
-			const bool track_count, const bool disc_id_1,
-			const bool disc_id_2, const bool cddb_id);
 
 	/**
 	 * \brief Constructor setting all flags with empty ARId and no prefix.
@@ -203,17 +184,15 @@ public:
 	 */
 	ARIdTableFormat(const bool id, const bool url, const bool filename,
 			const bool track_count, const bool disc_id_1, const bool disc_id_2,
-			const bool cddb_id)
-		: ARIdTableFormat (arcstk::EmptyARId, std::string(), id, url, filename,
-			track_count, disc_id_1, disc_id_2, cddb_id ) { /* empty */ };
+			const bool cddb_id);
 
 	/**
 	 * \brief Default constructor.
 	 *
 	 * Sets empty ARId, no prefix and all formatting flags to FALSE except URL.
 	 */
-	ARIdTableFormat() : ARIdTableFormat(arcstk::EmptyARId, std::string(), false,
-			true, false, false, false, false, false)
+	ARIdTableFormat() : ARIdTableFormat(true,
+			false, false, false, false, false, false)
 	{ /* empty */ };
 
 	/**
@@ -223,18 +202,6 @@ public:
 
 private:
 
-	/**
-	 * \brief Hexadecimal representation of the contained ids.
-	 *
-	 * \param[in] id Id to format
-	 *
-	 * \return Formatted id
-	 */
-	std::string hex_id(const uint32_t id) const;
-
-	void do_init(const int rows, const int cols) override;
-	// from StringTableStructure
-
 	void assertions(const std::tuple<const ARId*, const std::string*> &t) const
 		override;
 	// from Print
@@ -242,14 +209,6 @@ private:
 	void do_out(std::ostream &o, const std::tuple<const ARId*,
 			const std::string*> &t)
 		override; // from Print
-
-	std::string do_format(const ARId &id, const std::string &alt_prefix) const
-		override; // from ARIdLayout
-
-	/**
-	 * \brief Iterable array of show flags
-	 */
-	const std::array<ARID_FLAG, to_underlying(ARID_FLAG::COUNT)> show_flags_;
 };
 
 

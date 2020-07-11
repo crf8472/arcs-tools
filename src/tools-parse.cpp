@@ -32,7 +32,7 @@ ARParserContentPrintHandler::ARParserContentPrintHandler(
 		const std::string &filename)
 	: block_counter_(0)
 	, track_(0)
-	, arid_format_(std::make_unique<ARIdTableFormat>(
+	, arid_format_(std::make_unique<ARIdTableLayout>(
 				false, false, false, false, false, false, false))
 	, triplet_format_(std::make_unique<ARTripletFormat>())
 	, out_file_stream_(filename)
