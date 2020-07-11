@@ -132,7 +132,7 @@ CallSyntaxException::CallSyntaxException(const std::string &what_arg)
 CLITokens::CLITokens(const int argc, const char* const * const argv,
 		const std::vector<std::pair<Option, OptionCode>> &supported,
 		const bool preserve_order)
-	: items_ () // TODO reserve sensible capacity
+	: tokens_ () // TODO reserve sensible capacity
 {
 	if (argc < 2 or !argv)
 	{
@@ -193,7 +193,7 @@ CLITokens::CLITokens(const int argc, const char* const * const argv,
 			if (preserve_order)
 			{
 				// preserve order of occurrences
-				items_.push_back(InputItem(argv[pos]));
+				tokens_.push_back(Token(argv[pos]));
 			} else
 			{
 				// handle arguments separately
@@ -205,12 +205,12 @@ CLITokens::CLITokens(const int argc, const char* const * const argv,
 
 	for (auto i = std::size_t { 0 }; i < non_options.size(); ++i)
 	{
-		items_.push_back(InputItem(non_options[i]));
+		tokens_.push_back(Token(non_options[i]));
 	}
 
 	while (pos < argc)
 	{
-		items_.push_back(InputItem(argv[pos]));
+		tokens_.push_back(Token(argv[pos]));
 		++pos;
 	}
 }
@@ -221,9 +221,9 @@ CLITokens::~CLITokens() noexcept = default;
 
 OptionCode CLITokens::option_code(const int i) const
 {
-	if (i >= 0 && static_cast<decltype( items_.size() )>(i) < items_.size())
+	if (i >= 0 && static_cast<decltype( tokens_.size() )>(i) < tokens_.size())
 	{
-		return items_[i].id();
+		return tokens_[i].code();
 	}
 
 	return 0;
@@ -232,9 +232,9 @@ OptionCode CLITokens::option_code(const int i) const
 
 const std::string& CLITokens::option_value(const int i) const
 {
-	if (i >= 0 && static_cast<decltype( items_.size() )>(i) < items_.size())
+	if (i >= 0 && static_cast<decltype( tokens_.size() )>(i) < tokens_.size())
 	{
-		return items_[i].value();
+		return tokens_[i].value();
 	}
 
 	return empty_value();
@@ -243,7 +243,7 @@ const std::string& CLITokens::option_value(const int i) const
 
 bool CLITokens::empty() const
 {
-	return items_.empty();
+	return tokens_.empty();
 }
 
 
@@ -269,17 +269,17 @@ const std::string& CLITokens::argument(const std::size_t &i) const
 	}
 
 	std::size_t counter = 0;
-	auto token = items_.begin();
+	auto token = tokens_.begin();
 
 	while (counter < i)
 	{
-		token = std::find_if(items_.begin() + counter, items_.end(),
-				[i](const InputItem &item)
+		token = std::find_if(tokens_.begin() + counter, tokens_.end(),
+				[i](const Token &item)
 				{
-					return item.id() == Option::NONE;
+					return item.code() == Option::NONE;
 				});
 
-		if (token == items_.end())
+		if (token == tokens_.end())
 		{
 			return empty_value();
 		}
@@ -293,7 +293,7 @@ const std::string& CLITokens::argument(const std::size_t &i) const
 
 CLITokens::size_type CLITokens::size() const
 {
-	return items_.size();
+	return tokens_.size();
 }
 
 
@@ -371,7 +371,7 @@ void CLITokens::consume_as_symbol(const char * const token,
 	// Move Token Pointer for Caller
 	++pos;
 
-	items_.emplace_back(code);
+	tokens_.emplace_back(code);
 
 	const auto& option = supported[option_pos].first;
 
@@ -406,7 +406,7 @@ void CLITokens::consume_as_symbol(const char * const token,
 			throw CallSyntaxException(msg.str());
 		}
 
-		items_.back().set_value(&token[sym_len + 3]);
+		tokens_.back().set_value(&token[sym_len + 3]);
 	} else if (option.needs_value()) // Expect syntax '--foo bar'
 	{
 		if (!next or !next[0])
@@ -419,7 +419,7 @@ void CLITokens::consume_as_symbol(const char * const token,
 
 		// Move Token Pointer for Caller
 		++pos;
-		items_.back().set_value(next);
+		tokens_.back().set_value(next);
 	}
 }
 
@@ -467,7 +467,7 @@ void CLITokens::consume_as_shorthand(const char * const token,
 
 		// Supported Option Represented by 'c' is 'supported[option_pos].first'
 
-		items_.emplace_back(code);
+		tokens_.emplace_back(code);
 
 		++cind;
 
@@ -485,7 +485,7 @@ void CLITokens::consume_as_shorthand(const char * const token,
 			{
 				// Consume Trailing Part as Option Value
 
-				items_.back().set_value(&token[cind]);
+				tokens_.back().set_value(&token[cind]);
 			} else
 			{
 				// No trailing part, consider Next Token as Value
@@ -498,7 +498,7 @@ void CLITokens::consume_as_shorthand(const char * const token,
 					throw CallSyntaxException(msg.str());
 				}
 
-				items_.back().set_value(next);
+				tokens_.back().set_value(next);
 			}
 			cind = 0;
 
@@ -511,46 +511,46 @@ void CLITokens::consume_as_shorthand(const char * const token,
 
 CLITokens::iterator CLITokens::begin()
 {
-	return items_.begin();
+	return tokens_.begin();
 }
 
 
 CLITokens::iterator CLITokens::end()
 {
-	return items_.end();
+	return tokens_.end();
 }
 
 
 CLITokens::const_iterator CLITokens::begin() const
 {
-	return items_.begin();
+	return tokens_.begin();
 }
 
 
 CLITokens::const_iterator CLITokens::end() const
 {
-	return items_.end();
+	return tokens_.end();
 }
 
 
 CLITokens::const_iterator CLITokens::cbegin() const
 {
-	return items_.cbegin();
+	return tokens_.cbegin();
 }
 
 
 CLITokens::const_iterator CLITokens::cend() const
 {
-	return items_.cend();
+	return tokens_.cend();
 }
 
 
-const CLITokens::InputItem* CLITokens::lookup(const OptionCode &option) const
+const CLITokens::Token* CLITokens::lookup(const OptionCode &option) const
 {
-	auto element = std::find_if(items_.begin(), items_.end(),
-			[option](const InputItem &i){ return i.id() == option; } );
+	auto element = std::find_if(tokens_.begin(), tokens_.end(),
+			[option](const Token &i){ return i.code() == option; } );
 
-	if (element != items_.end())
+	if (element != tokens_.end())
 	{
 		return &(*element);
 	}

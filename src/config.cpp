@@ -237,27 +237,6 @@ bool Options::empty() const
 }
 
 
-// Commented out but kept for reference
-
-//OptionCode Options::leftmost_flag() const
-//{
-//	auto flags = config_;
-//
-//	if (flags == 0) { return 0; }
-//
-//	OptionCode count = 0;
-//	while (flags > 1) { count++; flags >>= 1; }
-//
-//	return std::pow(2, count);
-//}
-
-
-//OptionCode Options::rightmost_flag() const
-//{
-//	return config_ & (~config_ + 1);
-//}
-
-
 std::ostream& operator << (std::ostream& out, const Options &options)
 {
 	std::ios_base::fmtflags prev_settings = out.flags();
@@ -364,14 +343,14 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 
 	auto options = std::make_unique<Options>();
 
-	for (const auto& item : input)
+	for (const auto& token : input)
 	{
-		if (Option::NONE == item.id())
+		if (Option::NONE == token.code())
 		{
-			options->put_argument(item.value());
+			options->put_argument(token.value());
 		} else
 		{
-			options->set(item.id(), item.value());
+			options->set(token.code(), token.value());
 		}
 	}
 

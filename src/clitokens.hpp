@@ -303,17 +303,17 @@ private:
 	 *
 	 * An argument is represented as Option with code Option::NONE.
 	 */
-	class InputItem
+	class Token
 	{
 	public:
 
 		/**
 		 * \brief Construct option item with specified code.
 		 *
-		 * \param[in] id Code for this option
+		 * \param[in] code Code for this option
 		 */
-		InputItem(const OptionCode id)
-			: InputItem { id, std::string{} }
+		Token(const OptionCode code)
+			: Token { code, std::string{} }
 		{ /* empty */ };
 
 		/**
@@ -321,28 +321,28 @@ private:
 		 *
 		 * \param[in] value Argument value
 		 */
-		InputItem(const std::string &value)
-			: InputItem { Option::NONE, value }
+		Token(const std::string &value)
+			: Token { Option::NONE, value }
 		{ /* empty */ };
 
 		/**
-		 * \brief OptionCode of the InputItem.
+		 * \brief OptionCode of the Token.
 		 *
-		 * \return OptionCode of the InputItem
+		 * \return OptionCode of the Token
 		 */
-		OptionCode id() const { return id_; }
+		OptionCode code() const { return code_; }
 
 		/**
-		 * \brief Set the value of the InputItem.
+		 * \brief Set the value of the Token.
 		 *
-		 * \param[in] value New value of the InputItem
+		 * \param[in] value New value of the Token
 		 */
 		void set_value(const std::string &value) { value_ = value; }
 
 		/**
-		 * \brief Get the value of the InputItem.
+		 * \brief Get the value of the Token.
 		 *
-		 * \return Value of the InputItem
+		 * \return Value of the Token
 		 */
 		const std::string& value() const { return value_; }
 
@@ -351,15 +351,15 @@ private:
 		/**
 		 * \brief Construct item with specified code and value.
 		 *
-		 * \param[in] id    Code for this InputItem
-		 * \param[in] value Value for this InputItem
+		 * \param[in] code  Code for this Token
+		 * \param[in] value Value for this Token
 		 */
-		InputItem(const OptionCode id, const std::string &value)
-			: id_ { id }
+		Token(const OptionCode code, const std::string &value)
+			: code_ { code }
 			, value_ { value }
 		{ /* empty */ }
 
-		OptionCode id_;
+		OptionCode code_;
 
 		std::string value_;
 	};
@@ -371,18 +371,18 @@ private:
 	 *
 	 * \return The specified option token, if present, otherwise nullptr.
 	 */
-	const InputItem* lookup(const OptionCode &option) const;
+	const Token* lookup(const OptionCode &option) const;
 
 private:
 
 	/**
 	 * \brief Parsed items.
 	 */
-	std::vector<InputItem> items_;
+	std::vector<Token> tokens_;
 
 public:
 
-	using size_type = decltype( items_ )::size_type;
+	using size_type = decltype( tokens_ )::size_type;
 
 	/**
 	 * \brief Return number of input tokens.
@@ -393,9 +393,9 @@ public:
 	 */
 	size_type size() const;
 
-	using iterator = decltype( items_ )::iterator;
+	using iterator = decltype( tokens_ )::iterator;
 
-	using const_iterator = decltype( items_ )::const_iterator;
+	using const_iterator = decltype( tokens_ )::const_iterator;
 
 	iterator begin();
 	iterator end();
