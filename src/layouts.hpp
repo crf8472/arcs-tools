@@ -52,14 +52,20 @@ public:
 
 	/**
 	 * \brief Format objects.
+	 *
+	 * \param[in] t Tuple of the objects to format
 	 */
-	std::string format(ArgsRefTuple args) const
+	std::string format(ArgsRefTuple t) const
 	{
-		return this->do_format(args);
+		return this->do_format(t);
 	}
 
 	/**
 	 * \brief Format objects.
+	 *
+	 * Convenience for not having to turn anything explicitly into tuples.
+	 *
+	 * \param[in] args The objects to format
 	 */
 	std::string format(const Args&... args) const
 	{
@@ -172,21 +178,23 @@ private:
  *
  * Provides 32 boolean states with accessors.
  */
-class WithInternalFlags
+class InternalFlags
 {
 public:
 
 	/**
-	 * \brief Constructor
+	 * \brief Constructor.
 	 *
 	 * \param[in] flags Initial internal state
 	 */
-	WithInternalFlags(const uint32_t flags);
+	explicit InternalFlags(const uint32_t flags);
 
 	/**
-	 * \brief Default Constructor
+	 * \brief Default Constructor.
+	 *
+	 * Initializes every flag to FALSE.
 	 */
-	WithInternalFlags() : WithInternalFlags(0) { /* empty */ };
+	InternalFlags() : InternalFlags(0) { /* empty */ };
 
 	/**
 	 * \brief Set the specified flag to the specified value.
@@ -238,10 +246,39 @@ private:
 
 
 /**
+ * \brief Provides internal settings as member.
+ */
+class WithInternalFlags
+{
+public:
+
+	explicit WithInternalFlags(const uint32_t flags) : settings_ { flags }
+		{ /* empty */ }
+
+	/**
+	 * \brief Default constructor.
+	 *
+	 * Initializes any internal setting with FALSE.
+	 */
+	WithInternalFlags() : WithInternalFlags(0) { /* empty */ }
+
+protected:
+
+	InternalFlags& settings() { return settings_; }
+
+	const InternalFlags& settings() const { return settings_; }
+
+private:
+
+	InternalFlags settings_;
+};
+
+
+/**
  * \brief Format numbers in hexadecimal representation
  */
-class HexLayout : public ChecksumLayout
-				, private WithInternalFlags
+class HexLayout : protected WithInternalFlags
+				, public ChecksumLayout
 {
 public:
 
@@ -331,6 +368,7 @@ private:
  */
 class ARIdLayout : protected WithInternalFlags
 				 , public WithChecksumLayout
+				 , public Layout<ARId, std::string> // TODO Do also Settings!
 {
 public:
 
@@ -483,17 +521,6 @@ public:
 	 */
 	bool has_only(const ARID_FLAG flag) const;
 
-	/**
-	 * \brief Format the ARId passed.
-	 *
-	 * The default URL prefix 'http://www.accuraterip.com/accuraterip/' can
-	 * be overriden for output.
-	 *
-	 * \param[in] id         The ARId to format
-	 * \param[in] alt_prefix Override the default URL prefix
-	 */
-	std::string format(const ARId &id, const std::string &alt_prefix) const;
-
 private:
 
 	/**
@@ -528,17 +555,19 @@ private:
 		"CDDB ID"
 	};
 
-	/**
-	 * \brief Implements format().
-	 *
-	 * \param[in] id The ARId to format
-	 * \param[in] alt_prefix Override the default URL prefix
-	 */
-	virtual std::string do_format(const ARId &id, const std::string &alt_prefix)
-		const
+	virtual std::string do_format(ArgsRefTuple t) const
 	= 0;
 
 protected:
+
+	/**
+	 * \brief Worker: print the the sub-ids as part of an ARId.
+	 *
+	 * \param[in] id Id to print as part of an ARId
+	 *
+	 * \return Hexadecimal ARId-conforming representation of an 32bit unsigned.
+	 */
+	std::string hex_id(const uint32_t id) const;
 
 	/**
 	 * \brief Getter for the show flags.
@@ -563,17 +592,7 @@ public:
 
 private:
 
-	/**
-	 * \brief Worker: print the the sub-ids as part of an ARId.
-	 *
-	 * \param[in] id Id to print as part of an ARId
-	 *
-	 * \return Hexadecimal ARId-conforming representation of an 32bit unsigned.
-	 */
-	std::string hex_id(const uint32_t id) const;
-
-	std::string do_format(const ARId &id, const std::string &alt_prefix) const
-		override;
+	std::string do_format(ArgsRefTuple t) const override;
 };
 
 

@@ -71,26 +71,17 @@ CELL_TYPE convert_to(const int type)
 }
 
 
-// ChecksumLayout
+// InternalFlags
 
 
-//std::string ChecksumLayout::format(const Checksum &c, const int width) const
-//{
-//	return Layout<Checksum, int>::format(std::make_tuple(&c, &width));
-//}
-
-
-// WithInternalFlags
-
-
-WithInternalFlags::WithInternalFlags(const uint32_t flags)
+InternalFlags::InternalFlags(const uint32_t flags)
 	: flags_(flags)
 {
 	// empty
 }
 
 
-void WithInternalFlags::set_flag(const int idx, const bool value)
+void InternalFlags::set_flag(const int idx, const bool value)
 {
 	if (value)
 	{
@@ -102,25 +93,25 @@ void WithInternalFlags::set_flag(const int idx, const bool value)
 }
 
 
-bool WithInternalFlags::flag(const int idx) const
+bool InternalFlags::flag(const int idx) const
 {
 	return flags_ & (1 << idx);
 }
 
 
-bool WithInternalFlags::no_flags() const
+bool InternalFlags::no_flags() const
 {
 	return flags_ == 0;
 }
 
 
-bool WithInternalFlags::only_one_flag() const
+bool InternalFlags::only_one_flag() const
 {
 	return flags_ && !(flags_ & (flags_ - 1));
 }
 
 
-bool WithInternalFlags::only(const int idx) const
+bool InternalFlags::only(const int idx) const
 {
 	return flag(idx) && only_one_flag();
 }
@@ -130,6 +121,7 @@ bool WithInternalFlags::only(const int idx) const
 
 
 HexLayout::HexLayout()
+	: WithInternalFlags()
 {
 	set_show_base(false);
 	set_uppercase(true);
@@ -138,32 +130,32 @@ HexLayout::HexLayout()
 
 void HexLayout::set_show_base(const bool base)
 {
-	set_flag(0, base);
+	settings().set_flag(0, base);
 }
 
 
 bool HexLayout::shows_base() const
 {
-	return flag(0);
+	return settings().flag(0);
 }
 
 
 void HexLayout::set_uppercase(const bool uppercase)
 {
-	set_flag(1, uppercase);
+	settings().set_flag(1, uppercase);
 }
 
 
 bool HexLayout::is_uppercase() const
 {
-	return flag(1);
+	return settings().flag(1);
 }
 
 
 std::string HexLayout::do_format(ArgsRefTuple t) const
 {
-	auto checksum = std::get<0>(t);
-	auto width    = std::get<1>(t);
+	auto checksum = *std::get<0>(t);
+	auto width    = *std::get<1>(t);
 
 	std::ostringstream ss;
 
@@ -177,13 +169,7 @@ std::string HexLayout::do_format(ArgsRefTuple t) const
 		ss << std::uppercase;
 	}
 
-	// ss_flags  =  ss.flags();
-	// ss_flags &= ~ss.basefield;
-	// ss_flags &= ~ss.adjustfield;
-	// ss.flags(ss_flags);
-
-	ss  << std::hex << std::setw(*width)
-		<< std::setfill('0') << checksum->value();
+	ss << std::hex << std::setw(width) << std::setfill('0') << checksum.value();
 
 	return ss.str();
 }
@@ -219,7 +205,7 @@ const ChecksumLayout& WithChecksumLayout::checksum_layout() const
 
 
 ARIdLayout::ARIdLayout()
-	: WithInternalFlags(0xFFFFFFFF) // all flags true
+	: WithInternalFlags { 0xFFFFFFFF } // all flags true
 {
 	// empty
 }
@@ -248,91 +234,91 @@ ARIdLayout::~ARIdLayout() noexcept = default;
 
 bool ARIdLayout::id() const
 {
-	return flag(to_underlying(ARID_FLAG::ID));
+	return settings().flag(to_underlying(ARID_FLAG::ID));
 }
 
 
 void ARIdLayout::set_id(const bool id)
 {
-	this->set_flag(to_underlying(ARID_FLAG::ID), id);
+	settings().set_flag(to_underlying(ARID_FLAG::ID), id);
 }
 
 
 bool ARIdLayout::url() const
 {
-	return flag(to_underlying(ARID_FLAG::URL));
+	return settings().flag(to_underlying(ARID_FLAG::URL));
 }
 
 
 void ARIdLayout::set_url(const bool url)
 {
-	this->set_flag(to_underlying(ARID_FLAG::URL), url);
+	settings().set_flag(to_underlying(ARID_FLAG::URL), url);
 }
 
 
 bool ARIdLayout::filename() const
 {
-	return flag(to_underlying(ARID_FLAG::FILENAME));
+	return settings().flag(to_underlying(ARID_FLAG::FILENAME));
 }
 
 
 void ARIdLayout::set_filename(const bool filename)
 {
-	this->set_flag(to_underlying(ARID_FLAG::FILENAME), filename);
+	settings().set_flag(to_underlying(ARID_FLAG::FILENAME), filename);
 }
 
 
 bool ARIdLayout::track_count() const
 {
-	return flag(to_underlying(ARID_FLAG::TRACKS));
+	return settings().flag(to_underlying(ARID_FLAG::TRACKS));
 }
 
 
 void ARIdLayout::set_trackcount(const bool trackcount)
 {
-	this->set_flag(to_underlying(ARID_FLAG::TRACKS), trackcount);
+	settings().set_flag(to_underlying(ARID_FLAG::TRACKS), trackcount);
 }
 
 
 bool ARIdLayout::disc_id_1() const
 {
-	return flag(to_underlying(ARID_FLAG::ID1));
+	return settings().flag(to_underlying(ARID_FLAG::ID1));
 }
 
 
 void ARIdLayout::set_disc_id_1(const bool disc_id_1)
 {
-	this->set_flag(to_underlying(ARID_FLAG::ID1), disc_id_1);
+	settings().set_flag(to_underlying(ARID_FLAG::ID1), disc_id_1);
 }
 
 
 bool ARIdLayout::disc_id_2() const
 {
-	return flag(to_underlying(ARID_FLAG::ID2));
+	return settings().flag(to_underlying(ARID_FLAG::ID2));
 }
 
 
 void ARIdLayout::set_disc_id_2(const bool disc_id_2)
 {
-	this->set_flag(to_underlying(ARID_FLAG::ID2), disc_id_2);
+	settings().set_flag(to_underlying(ARID_FLAG::ID2), disc_id_2);
 }
 
 
 bool ARIdLayout::cddb_id() const
 {
-	return flag(to_underlying(ARID_FLAG::CDDBID));
+	return settings().flag(to_underlying(ARID_FLAG::CDDBID));
 }
 
 
 void ARIdLayout::set_cddb_id(const bool cddb_id)
 {
-	this->set_flag(to_underlying(ARID_FLAG::CDDBID), cddb_id);
+	settings().set_flag(to_underlying(ARID_FLAG::CDDBID), cddb_id);
 }
 
 
 bool ARIdLayout::has_only(const ARID_FLAG flag) const
 {
-	return only(to_underlying(flag));
+	return settings().only(to_underlying(flag));
 }
 
 
@@ -348,17 +334,7 @@ auto ARIdLayout::labels() const -> decltype( labels_ )
 }
 
 
-std::string ARIdLayout::format(const ARId &id, const std::string &alt_prefix)
-	const
-{
-	return this->do_format(id, alt_prefix);
-}
-
-
-// ARIdTableLayout
-
-
-std::string ARIdTableLayout::hex_id(const uint32_t id) const
+std::string ARIdLayout::hex_id(const uint32_t id) const
 {
 	std::ostringstream out;
 
@@ -369,10 +345,15 @@ std::string ARIdTableLayout::hex_id(const uint32_t id) const
 }
 
 
-std::string ARIdTableLayout::do_format(const ARId &arid,
-		const std::string &alt_prefix) const
+// ARIdTableLayout
+
+
+std::string ARIdTableLayout::do_format(ArgsRefTuple t) const
 {
-	if (no_flags()) // return ARId as default, ignore any Hex layout settings
+	auto arid       = *std::get<0>(t);
+	auto alt_prefix = *std::get<1>(t);
+
+	if (settings().no_flags()) // return ARId as default, ignore any Hex layout settings
 	{
 		return arid.to_string();
 	}
@@ -381,13 +362,12 @@ std::string ARIdTableLayout::do_format(const ARId &arid,
 		disc_id_1() + disc_id_2() + cddb_id();
 
 	auto stream = std::stringstream {};
-	//stream << std::left;
 
 	auto value = std::string {};
 
 	for (const auto& sflag : show_flags())
 	{
-		if (not flag(to_underlying(sflag))) { continue; }
+		if (not settings().flag(to_underlying(sflag))) { continue; }
 
 		if (total_labels > 1)
 		{
@@ -500,61 +480,61 @@ WithMetadataFlagMethods::~WithMetadataFlagMethods() noexcept = default;
 
 bool WithMetadataFlagMethods::label() const
 {
-	return this->flag(0);
+	return settings().flag(0);
 }
 
 
 void WithMetadataFlagMethods::set_label(const bool &label)
 {
-	this->set_flag(0, label);
+	settings().set_flag(0, label);
 }
 
 
 bool WithMetadataFlagMethods::track() const
 {
-	return this->flag(1);
+	return settings().flag(1);
 }
 
 
 void WithMetadataFlagMethods::set_track(const bool &track)
 {
-	this->set_flag(1, track);
+	settings().set_flag(1, track);
 }
 
 
 bool WithMetadataFlagMethods::offset() const
 {
-	return this->flag(2);
+	return settings().flag(2);
 }
 
 
 void WithMetadataFlagMethods::set_offset(const bool &offset)
 {
-	this->set_flag(2, offset);
+	settings().set_flag(2, offset);
 }
 
 
 bool WithMetadataFlagMethods::length() const
 {
-	return this->flag(3);
+	return settings().flag(3);
 }
 
 
 void WithMetadataFlagMethods::set_length(const bool &length)
 {
-	this->set_flag(3, length);
+	settings().set_flag(3, length);
 }
 
 
 bool WithMetadataFlagMethods::filename() const
 {
-	return this->flag(4);
+	return settings().flag(4);
 }
 
 
 void WithMetadataFlagMethods::set_filename(const bool &filename)
 {
-	this->set_flag(4, filename);
+	settings().set_flag(4, filename);
 }
 
 
