@@ -155,7 +155,7 @@ void ARTripletFormat::do_out(std::ostream &out,
 ARIdFormat::ARIdFormat(const bool id, const bool url,
 		const bool filename, const bool track_count, const bool disc_id_1,
 		const bool disc_id_2, const bool cddb_id)
-	: WithARId(std::make_unique<ARIdTableLayout>(
+	: WithARIdLayout(std::make_unique<ARIdTableLayout>(
 				id, url, filename, track_count, disc_id_1, disc_id_2, cddb_id))
 	, ARIdPrinter(std::make_tuple(&arcstk::EmptyARId, nullptr))
 {

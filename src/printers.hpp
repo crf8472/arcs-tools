@@ -166,7 +166,7 @@ using ARIdPrinter = Print<ARId, std::string>;
 /**
  * \brief Prints ARId in specified layout.
  */
-class ARIdFormat final  : public WithARId
+class ARIdFormat final  : public WithARIdLayout
 						, public ARIdPrinter
 {
 public:
