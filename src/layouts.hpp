@@ -1611,6 +1611,13 @@ public:
 		: TypedRowsTableBase(rows, columns, true, true, true, true, true)
 	{ /* empty */ };
 
+	/**
+	 * \brief Constructor.
+	 */
+	TypedRowsTableBase()
+		: TypedRowsTableBase(0, 0, true, true, true, true, true)
+	{ /* empty */ };
+
 	// FIXME Make abstract!
 };
 
@@ -1655,6 +1662,13 @@ public:
 	 */
 	TypedColsTableBase(const int rows, const int columns)
 		: TypedColsTableBase(rows, columns, true, true, true, true, true)
+	{ /* empty */ };
+
+	/**
+	 * \brief Constructor.
+	 */
+	TypedColsTableBase()
+		: TypedColsTableBase(0, 0, true, true, true, true, true)
 	{ /* empty */ };
 
 	/**
@@ -1721,19 +1735,14 @@ private:
 
 
 /**
- * \brief Interface for formatting the results of the CALC application.
+ * \brief Base class for users of a StringTableStructure.
  */
-class CalcResultLayout : public WithMetadataFlagMethods
-					   , public Layout < Checksums,
-										 std::vector<std::string>,
-										 TOC,
-										 ARId,
-										 bool >
+class TableUser : public WithMetadataFlagMethods
 {
 public:
 
 	/**
-	 * \brief Constructor.
+	 * \brief Common constructor.
 	 *
 	 * \param[in] label    Set to TRUE for printing column titles
 	 * \param[in] track    Set to TRUE for printing track number (if any)
@@ -1742,16 +1751,48 @@ public:
 	 * \param[in] filename Set to TRUE for printing filename (if any)
 	 * \param[in] coldelim Set column delimiter
 	 */
-	CalcResultLayout(const bool label, const bool track,
+	TableUser(const bool label, const bool track,
 			const bool offset, const bool length, const bool filename,
 			const std::string &coldelim);
+
+	/**
+	 * \brief Returns the column delimiter.
+	 *
+	 * \return Delimiter for columns
+	 */
+	std::string column_delimiter() const;
+
+	/**
+	 * \brief Set the column delimiter.
+	 *
+	 * \param[in] coldelim New column delimiter
+	 */
+	void set_column_delimiter(const std::string &coldelim);
+
+private:
+
+	std::string coldelim_;
+};
+
+
+/**
+ * \brief Interface for formatting the results of the CALC application.
+ */
+class CalcResultLayout : public TableUser
+					   , public Layout < Checksums,
+										 std::vector<std::string>,
+										 TOC,
+										 ARId,
+										 bool >
+{
+public:
+
+	using TableUser::TableUser;
 
 private:
 
 	virtual std::string do_format(ArgsRefTuple t) const
 	= 0;
-
-	std::string coldelim_; // TODO Redundant in VerifyResultLayout
 };
 
 
@@ -1792,7 +1833,7 @@ private:
 /**
  * \brief Interface for formatting the results of the CALC application.
  */
-class CalcTracksTableLayout : public CalcResultLayout
+class CalcTracksTableLayout : public CalcResultLayout // TODO Redundant?
 {
 public:
 
@@ -1823,7 +1864,7 @@ private:
 /**
  * \brief Interface for formatting the results of the CALC application.
  */
-class VerifyResultLayout : public WithMetadataFlagMethods
+class VerifyResultLayout : public TableUser
 						 , public Layout < Checksums,
 										   std::vector<std::string>,
 										   std::vector<Checksum>,
@@ -1847,7 +1888,10 @@ public:
 	 */
 	VerifyResultLayout(const bool label, const bool track,
 			const bool offset, const bool length, const bool filename,
-			const std::string &coldelim);
+			const std::string &coldelim)
+		: TableUser(label, track, offset, length, filename, coldelim)
+		, match_symbol_ { "   ==   " }
+	{ /* empty */ }
 
 	/**
 	 * \brief Set the symbol to be printed on identity of two checksum values.
@@ -1876,8 +1920,6 @@ private:
 	 * \brief The symbol to be printed on identity of two checksum values.
 	 */
 	std::string match_symbol_;
-
-	std::string coldelim_;
 };
 
 

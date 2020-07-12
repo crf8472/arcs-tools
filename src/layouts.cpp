@@ -1719,21 +1719,28 @@ int TypedColsTableBase::columns_apply_md_settings()
 }
 
 
-// CalcResultLayout
+// TableUser
 
 
-CalcResultLayout::CalcResultLayout(
-		const bool show_labels,
-		const bool show_track,
-		const bool show_offset,
-		const bool show_length,
-		const bool show_filename,
-		const std::string &coldelim)
-	: WithMetadataFlagMethods {
-			show_labels, show_track, show_offset, show_length, show_filename }
+TableUser::TableUser(const bool label, const bool track,
+			const bool offset, const bool length, const bool filename,
+			const std::string &coldelim)
+	: WithMetadataFlagMethods(label, track, offset, length, filename)
 	, coldelim_ { coldelim }
 {
 	// empty
+}
+
+
+std::string TableUser::column_delimiter() const
+{
+	return coldelim_;
+}
+
+
+void TableUser::set_column_delimiter(const std::string &coldelim)
+{
+	coldelim_ = coldelim;
 }
 
 
@@ -1784,6 +1791,7 @@ std::string CalcAlbumTableLayout::do_format(ArgsRefTuple t) const
 	// Configure table layout
 
 	TableLayout lyt { 0, 0, label(), track(), offset(), length(), filename() };
+	//lyt.set_column_delimiter(coldelim_);
 
 	if (!toc) { lyt.set_offset(false); }
 	if (filenames->empty()) { lyt.set_filename(false); }
@@ -1877,6 +1885,7 @@ std::string CalcTracksTableLayout::do_format(ArgsRefTuple t) const
 	// Configure table
 
 	TableLayout lyt { 0, 0, label(), track(), offset(), length(), filename() };
+	//lyt.set_column_delimiter(coldelim_);
 
 	if (is_album) { lyt.set_track(true); }
 	if (!toc) { lyt.set_offset(false); }
@@ -2014,16 +2023,6 @@ std::string CalcTracksTableLayout::do_format(ArgsRefTuple t) const
 // VerifyResultLayout
 
 
-VerifyResultLayout::VerifyResultLayout(const bool label, const bool track,
-			const bool offset, const bool length, const bool filename,
-			const std::string &coldelim)
-	: WithMetadataFlagMethods(label, track, offset, length, filename)
-	, match_symbol_ { "   ==   " }
-	, coldelim_ { coldelim }
-{
-	// empty
-}
-
 
 void VerifyResultLayout::set_match_symbol(const std::string &match_symbol)
 {
@@ -2111,6 +2110,7 @@ std::string VerifyTableLayout::do_format(ArgsRefTuple t) const
 	// Configure table layout
 
 	TableLayout lyt { 0, 0, label(), track(), offset(), length(), filename() };
+	//lyt.set_column_delimiter(coldelim_);
 
 	// Determine number of rows
 	const int total_entries = 1 /* col titles */
