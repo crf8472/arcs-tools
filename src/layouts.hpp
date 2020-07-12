@@ -61,10 +61,10 @@ public:
 	/**
 	 * \brief Format objects.
 	 */
-	//std::string format(const Args&... args) const
-	//{
-	//	return this->format(std::make_tuple(args...));
-	//}
+	std::string format(const Args&... args) const
+	{
+		return this->format(std::make_tuple(&args...));
+	}
 
 private:
 
@@ -160,17 +160,6 @@ inline int optimal_width(Container&& list)
  */
 class ChecksumLayout : public Layout<Checksum, int>
 {
-public:
-
-	/**
-	 * \brief Layout a Checksum with specified width.
-	 *
-	 * \param[in] number  Number to format
-	 * \param[in] width   Width to format
-	 */
-	std::string format(const Checksum &checksum, const int width) const;
-	// convenience to not require always call make_tuple
-
 private:
 
 	virtual std::string do_format(ArgsRefTuple t) const
@@ -291,9 +280,6 @@ public:
 
 private:
 
-	//std::string do_format(const uint32_t &number, const int width) const
-	//	override;
-
 	std::string do_format(ArgsRefTuple t) const override;
 };
 
@@ -301,7 +287,7 @@ private:
 /**
  * \brief Property to set or use a layout for printing checksums.
  */
-class WithChecksumLayout
+class WithChecksumLayout // TODO With<Layout<foo, bar>>
 {
 public:
 

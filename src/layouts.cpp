@@ -74,10 +74,10 @@ CELL_TYPE convert_to(const int type)
 // ChecksumLayout
 
 
-std::string ChecksumLayout::format(const Checksum &c, const int width) const
-{
-	return Layout<Checksum, int>::format(std::make_tuple(&c, &width));
-}
+//std::string ChecksumLayout::format(const Checksum &c, const int width) const
+//{
+//	return Layout<Checksum, int>::format(std::make_tuple(&c, &width));
+//}
 
 
 // WithInternalFlags
