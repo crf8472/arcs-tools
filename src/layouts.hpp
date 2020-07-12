@@ -19,11 +19,14 @@
 #include <string>                 // for string
 #include <type_traits>            // for underlying_type_t
 
+#ifndef __LIBARCSTK_IDENTIFIER_HPP__
+#include <arcstk/identifier.hpp>
+#endif
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>
 #endif
-#ifndef __LIBARCSTK_IDENTIFIER_HPP__
-#include <arcstk/identifier.hpp>
+#ifndef __LIBARCSTK_MATCH_HPP__
+#include <arcstk/match.hpp>
 #endif
 #ifndef __LIBARCSTK_PARSE_HPP__
 #include <arcstk/parse.hpp>
@@ -36,6 +39,8 @@ using arcstk::ARId;
 using arcstk::ARTriplet;
 using arcstk::Checksum;
 using arcstk::Checksums;
+using arcstk::Match;
+using arcstk::TOC;
 
 
 /**
@@ -275,6 +280,22 @@ protected:
 private:
 
 	InternalFlags settings_;
+};
+
+
+/**
+ * \brief Abstract base class for output formats of ARTriplet.
+ */
+class ARTripletLayout : protected WithInternalFlags
+					  , public Layout<int, ARTriplet>
+{
+public:
+
+	using Layout<int, ARTriplet>::Layout;
+
+private:
+
+	std::string do_format(ArgsRefTuple t) const override;
 };
 
 
@@ -1698,19 +1719,199 @@ private:
 	= 0;
 };
 
+
 /**
- * \brief Abstract base class for output formats of ARTriplet.
+ * \brief Interface for formatting the results of the CALC application.
  */
-class ARTripletLayout : protected WithInternalFlags
-					  , public Layout<int, ARTriplet>
+class CalcResultLayout : public WithMetadataFlagMethods
+					   , public Layout < Checksums,
+										 std::vector<std::string>,
+										 TOC,
+										 ARId,
+										 bool >
 {
 public:
 
-	using Layout<int, ARTriplet>::Layout;
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] label    Set to TRUE for printing column titles
+	 * \param[in] track    Set to TRUE for printing track number (if any)
+	 * \param[in] offset   Set to TRUE for printing offset (if any)
+	 * \param[in] length   Set to TRUE for printing length (if any)
+	 * \param[in] filename Set to TRUE for printing filename (if any)
+	 * \param[in] coldelim Set column delimiter
+	 */
+	CalcResultLayout(const bool label, const bool track,
+			const bool offset, const bool length, const bool filename,
+			const std::string &coldelim);
 
 private:
 
-	std::string do_format(ArgsRefTuple t) const override;
+	virtual std::string do_format(ArgsRefTuple t) const
+	= 0;
+
+	std::string coldelim_; // TODO Redundant in VerifyResultLayout
+};
+
+
+/**
+ * \brief Interface for formatting the results of the CALC application.
+ */
+class CalcAlbumTableLayout : public CalcResultLayout
+{
+public:
+
+	using CalcResultLayout::CalcResultLayout;
+
+private:
+
+	/**
+	 * \brief Internal table class.
+	 */
+	class TableLayout : public TypedColsTableBase
+	{
+	public:
+
+		friend CalcAlbumTableLayout;
+
+		using TypedColsTableBase::TypedColsTableBase;
+
+	private:
+
+		void do_init(const int, const int) override { /* empty */ };
+
+		int columns_apply_cs_settings(
+			const std::vector<arcstk::checksum::type> &types) override;
+	};
+
+	virtual std::string do_format(ArgsRefTuple t) const override;
+};
+
+
+/**
+ * \brief Interface for formatting the results of the CALC application.
+ */
+class CalcTracksTableLayout : public CalcResultLayout
+{
+public:
+
+	using CalcResultLayout::CalcResultLayout;
+
+private:
+
+	/**
+	 * \brief Internal table class.
+	 */
+	class TableLayout : public TypedRowsTableBase
+	{
+	public:
+
+		friend CalcTracksTableLayout;
+
+		using TypedRowsTableBase::TypedRowsTableBase;
+
+	private:
+
+		void do_init(const int, const int) override { /* empty */ };
+	};
+
+	virtual std::string do_format(ArgsRefTuple t) const override;
+};
+
+
+/**
+ * \brief Interface for formatting the results of the CALC application.
+ */
+class VerifyResultLayout : public WithMetadataFlagMethods
+						 , public Layout < Checksums,
+										   std::vector<std::string>,
+										   std::vector<Checksum>,
+										   Match*,
+										   int,
+										   bool,
+										   TOC,
+										   ARId >
+{
+public:
+
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] label    Set to TRUE for printing column titles
+	 * \param[in] track    Set to TRUE for printing track number (if any)
+	 * \param[in] offset   Set to TRUE for printing offset (if any)
+	 * \param[in] length   Set to TRUE for printing length (if any)
+	 * \param[in] filename Set to TRUE for printing filename (if any)
+	 * \param[in] coldelim Set column delimiter
+	 */
+	VerifyResultLayout(const bool label, const bool track,
+			const bool offset, const bool length, const bool filename,
+			const std::string &coldelim);
+
+	/**
+	 * \brief Set the symbol to be printed on identity of two checksum values.
+	 *
+	 * When some values do not match, the respective values are printed.
+	 *
+	 * \param[in] match_symbol The symbol to represent a match
+	 */
+	void set_match_symbol(const std::string &match_symbol);
+
+	/**
+	 * \brief The symbol to be printed on identity of two checksum values.
+	 *
+	 * When some values do not match, the respective values are printed.
+	 *
+	 * \return Match symbol
+	 */
+	const std::string& match_symbol() const;
+
+private:
+
+	virtual std::string do_format(ArgsRefTuple t) const
+	= 0;
+
+	/**
+	 * \brief The symbol to be printed on identity of two checksum values.
+	 */
+	std::string match_symbol_;
+
+	std::string coldelim_;
+};
+
+
+/**
+ * \brief Interface for formatting the results of the CALC application.
+ */
+class VerifyTableLayout : public VerifyResultLayout
+{
+public:
+
+	using VerifyResultLayout::VerifyResultLayout;
+
+private:
+
+	/**
+	 * \brief Internal table class.
+	 */
+	class TableLayout : public TypedColsTableBase
+	{
+	public:
+
+		friend VerifyTableLayout;
+
+		using TypedColsTableBase::TypedColsTableBase;
+
+	private:
+
+		void do_init(const int, const int) override { /* empty */ };
+
+		int columns_apply_cs_settings(
+			const std::vector<arcstk::checksum::type> &types) override;
+	};
+
+	virtual std::string do_format(ArgsRefTuple t) const override;
 };
 
 } // namespace arcsapp

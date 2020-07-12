@@ -27,8 +27,8 @@
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"       // for Application
 #endif
-#ifndef __ARCSTOOLS_PRINTERS_HPP__
-#include "printers.hpp"          // for ARResponse, Checksums, Match
+#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"           // for VerifyResultLayout, ...
 #endif
 
 namespace arcsapp
@@ -38,7 +38,7 @@ class CLITokens;
 class Configurator;
 class Options;
 
-
+using arcstk::ARResponse;
 using arcstk::Checksum;
 using arcstk::Checksums;
 using arcstk::Match;
@@ -97,7 +97,7 @@ class ARVerifyApplication final : public Application
 	 * \param[in] options        The options to run the application
 	 * \param[in] with_filenames Flag to indicate whether to print filenames
 	 */
-	std::unique_ptr<MatchResultPrinter> configure_format(const Options &options,
+	std::unique_ptr<VerifyResultLayout> configure_layout(const Options &options,
 		const bool with_filenames) const;
 
 	/**

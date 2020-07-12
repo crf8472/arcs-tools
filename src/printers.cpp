@@ -68,13 +68,6 @@ std::vector<arcstk::checksum::type> ordered_typelist(const Checksums &checksums)
 // ARTripletFormat
 
 
-//ARTripletFormat::ARTripletFormat()
-//	: Print<int, ARTriplet> { std::make_tuple(nullptr, nullptr) }
-//{
-//	// empty
-//}
-//
-//
 //void ARTripletFormat::assertions(const std::tuple<const int*,
 //		const ARTriplet*> &t) const
 //{
@@ -97,20 +90,6 @@ std::vector<arcstk::checksum::type> ordered_typelist(const Checksums &checksums)
 // ARIdFormat
 
 
-//ARIdFormat::ARIdFormat(const bool id, const bool url,
-//		const bool filename, const bool track_count, const bool disc_id_1,
-//		const bool disc_id_2, const bool cddb_id)
-//	: WithARIdLayout(std::make_unique<ARIdTableLayout>(
-//				id, url, filename, track_count, disc_id_1, disc_id_2, cddb_id))
-//	, ARIdPrinter(std::make_tuple(&arcstk::EmptyARId, nullptr))
-//{
-//	// empty
-//}
-//
-//
-//ARIdFormat::~ARIdFormat() noexcept = default;
-//
-//
 //void ARIdFormat::assertions(const std::tuple<const ARId*,
 //		const std::string*> &t) const
 //{
@@ -122,24 +101,6 @@ std::vector<arcstk::checksum::type> ordered_typelist(const Checksums &checksums)
 //	}
 //
 //	// alt_prefix is allowed to be nullptr
-//}
-//
-//
-//void ARIdFormat::do_out(std::ostream &out,
-//		const std::tuple<const ARId*, const std::string*> &t)
-//{
-//	assertions(t);
-//
-//	const auto id         = std::get<0>(t);
-//	const auto alt_prefix = std::get<1>(t);
-//
-//	if (!alt_prefix)
-//	{
-//		out << arid_layout()->format(*id, std::string{}) << std::endl;
-//	} else
-//	{
-//		out << arid_layout()->format(*id, *alt_prefix) << std::endl;
-//	}
 //}
 
 

@@ -25,9 +25,10 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
 #endif
-#ifndef __ARCSTOOLS_PRINTERS_HPP__
-#include "printers.hpp"
+#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"           // for CalcResultLayout, CalcTableResultLayout
 #endif
+
 
 namespace arcsapp
 {
@@ -194,8 +195,8 @@ private:
 	 * \param[in] options   The options parsed from command line
 	 * \param[in] checksums The checksums to format
 	 */
-	std::unique_ptr<ChecksumsResultPrinter> configure_format(
-			const Options &options) const;
+	std::unique_ptr<CalcResultLayout> configure_layout(const Options &options)
+		const;
 
 	/**
 	 * \brief Worker: Determine the requested checksum types for calculation.

@@ -15,8 +15,41 @@
 #include <utility>             // for move
 #include <vector>              // for vector, vector<>::reference, _Bit_refe...
 
+
 namespace arcsapp
 {
+
+
+/**
+ * \brief Generate a list of the types used in \c checksums in the order they
+ * appear in arcstk::checksum::types.
+ *
+ * \param[in] checksums The Checksums to inspect for checksums::types
+ *
+ * \return List of occurring checksum::type in the order libarcstk defines them
+ */
+std::vector<arcstk::checksum::type> ordered_typelist(const Checksums &checksums)
+{
+	// Assume identical type sets in each track
+	const auto& used_types    = checksums[0].types();
+	const auto& defined_types = arcstk::checksum::types;
+
+	// Construct a list of all used types in the order they
+	// appear in arcstk::checksum::types
+
+	std::vector<arcstk::checksum::type> types_to_print { };
+	types_to_print.reserve(defined_types.size());
+
+	std::copy_if(defined_types.begin(), defined_types.end(),
+			std::back_inserter(types_to_print),
+			[used_types](const arcstk::checksum::type& t)
+			{
+				return used_types.find(t) != used_types.end();
+			});
+
+	return types_to_print;
+}
+
 
 namespace defaults
 {
@@ -114,6 +147,67 @@ bool InternalFlags::only_one_flag() const
 bool InternalFlags::only(const int idx) const
 {
 	return flag(idx) && only_one_flag();
+}
+
+
+// ARTripletLayout
+
+
+std::string ARTripletLayout::do_format(ArgsRefTuple t) const
+{
+	//assertions(t);
+
+	const auto track   = *std::get<0>(t);
+	const auto triplet = *std::get<1>(t);
+
+	HexLayout hex; // TODO Make this configurable, inherit from WithChecksums...
+	hex.set_show_base(false);
+	hex.set_uppercase(true);
+
+	const int width_arcs = 8;
+	const int width_conf = 2;
+
+	const auto unparsed_value = std::string { "????????" };
+
+	std::ostringstream out;
+
+	// TODO Make label configurable
+	out << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
+
+	if (triplet.arcs_valid())
+	{
+		out << std::setw(width_arcs)
+			<< hex.format(Checksum { triplet.arcs() }, width_arcs);
+	} else
+	{
+		out << std::setw(width_arcs) << unparsed_value;
+	}
+
+	out << " ";
+
+	out << "(";
+	if (triplet.confidence_valid())
+	{
+		out << std::setw(width_conf) << std::setfill('0')
+			<< static_cast<unsigned int>(triplet.confidence());
+	} else
+	{
+		out << "??";
+	}
+	out << ") ";
+
+	if (triplet.frame450_arcs_valid())
+	{
+		out << std::setw(width_arcs)
+			<< hex.format(Checksum { triplet.frame450_arcs() }, width_arcs);
+	} else
+	{
+		out << std::setw(width_arcs) << unparsed_value;
+	}
+
+	out << std::endl;
+
+	return out.str();
 }
 
 
@@ -351,7 +445,7 @@ std::string ARIdLayout::hex_id(const uint32_t id) const
 std::string ARIdTableLayout::do_format(ArgsRefTuple t) const
 {
 	auto arid       = *std::get<0>(t);
-	auto alt_prefix = *std::get<1>(t);
+	auto alt_prefix = std::get<1>(t) ? *std::get<1>(t) : std::string{};
 
 	if (settings().no_flags()) // return ARId as default, ignore any Hex layout settings
 	{
@@ -413,6 +507,8 @@ std::string ARIdTableLayout::do_format(ArgsRefTuple t) const
 
 		stream << std::setw(value.length()) << value;
 	}
+
+	if (true) { stream << std::endl; } // TODO Make configurable
 
 	return stream.str();
 }
@@ -1623,62 +1719,475 @@ int TypedColsTableBase::columns_apply_md_settings()
 }
 
 
-// ARTripletLayout
+// CalcResultLayout
 
 
-std::string ARTripletLayout::do_format(ArgsRefTuple t) const
+CalcResultLayout::CalcResultLayout(
+		const bool show_labels,
+		const bool show_track,
+		const bool show_offset,
+		const bool show_length,
+		const bool show_filename,
+		const std::string &coldelim)
+	: WithMetadataFlagMethods {
+			show_labels, show_track, show_offset, show_length, show_filename }
+	, coldelim_ { coldelim }
+{
+	// empty
+}
+
+
+// CalcAlbumTableLayout
+
+
+int CalcAlbumTableLayout::TableLayout::columns_apply_cs_settings(
+		const std::vector<arcstk::checksum::type> &types)
+{
+	// Type each column to the "right" of the metadata columns as 'CHECKSUM'
+	// and apply defaults
+
+	std::size_t col = total_metadata_columns();
+	auto type_to_print = types.cbegin();
+	while (col < columns() and type_to_print != types.cend())
+	{
+		assign_type(col, CELL_TYPE::CHECKSUM);
+		set_title(col, arcstk::checksum::type_name(*type_to_print));
+		set_width(col, defaults::width(CELL_TYPE::CHECKSUM));
+
+		++col;
+		++type_to_print;
+	}
+
+	return col - total_metadata_columns();
+}
+
+
+std::string CalcAlbumTableLayout::do_format(ArgsRefTuple t) const
 {
 	//assertions(t);
 
-	const auto track   = *std::get<0>(t);
-	const auto triplet = *std::get<1>(t);
+	const auto checksums = std::get<0>(t);
+	const auto filenames = std::get<1>(t);
+	const auto toc       = std::get<2>(t);
+	//const auto arid      = std::get<3>(t); // TODO Implement printing
+	//const auto is_album  = std::get<4>(t);
 
-	HexLayout hex; // TODO Make this configurable, inherit from WithChecksums...
-	hex.set_show_base(false);
-	hex.set_uppercase(true);
+	const auto types_to_print = ordered_typelist(*checksums);
 
-	const int width_arcs = 8;
-	const int width_conf = 2;
+	if (types_to_print.empty())
+	{
+		throw std::invalid_argument("Missing value: "
+				"Checksums seem to hold no checksums");
+	}
 
-	const auto unparsed_value = std::string { "????????" };
+
+	// Configure table layout
+
+	TableLayout lyt { 0, 0, label(), track(), offset(), length(), filename() };
+
+	if (!toc) { lyt.set_offset(false); }
+	if (filenames->empty()) { lyt.set_filename(false); }
+	// assertion is fulfilled that either not filenames.empty() or non-null toc
+
+	// TODO Use init() instead
+	lyt.resize(checksums->size() + label(),
+			lyt.total_metadata_columns() + types_to_print.size());
+	// assertion is fulfilled that rows >= 1 as well as columns >= 1
+
+	const auto md_offset = lyt.columns_apply_md_settings();
+	lyt.columns_apply_cs_settings(types_to_print);
+	lyt.set_widths(CELL_TYPE::FILENAME, optimal_width(*filenames));
+
+
+	// Print table
 
 	std::ostringstream out;
 
-	// TODO Make label configurable
-	out << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
+	if (label()) { lyt.print_column_titles(out); }
 
-	if (triplet.arcs_valid())
+	arcstk::checksum::type cstype = arcstk::checksum::type::ARCS2; // default
+	std::string cell{};
+	int trackno = 1;;
+
+	for (std::size_t row = 0; row < lyt.rows() - 1; ++row, ++trackno) // print row
 	{
-		out << std::setw(width_arcs)
-			<< hex.format(Checksum { triplet.arcs() }, width_arcs);
-	} else
-	{
-		out << std::setw(width_arcs) << unparsed_value;
+		for (std::size_t col = 0; col < lyt.columns(); ++col) // print cell
+		{
+			switch (lyt.type_of(col))
+			{
+				case CELL_TYPE::TRACK    :
+					if (track())
+						{ cell = std::to_string(trackno); }
+					break;
+
+				case CELL_TYPE::FILENAME :
+					if (filename())
+						{ cell = filenames->at(row); }
+					break;
+
+				case CELL_TYPE::OFFSET   :
+					if (offset())
+						{ cell = std::to_string(toc->offset(trackno)); }
+					break;
+
+				case CELL_TYPE::LENGTH   :
+					if (length())
+						{ cell = std::to_string((*checksums)[row].length()); }
+					break;
+
+				case CELL_TYPE::CHECKSUM :
+					cstype = types_to_print[col - md_offset];
+					cell = lyt.checksum_layout().format(
+							(*checksums)[row].get(cstype), lyt.width(col));
+					break;
+
+				case CELL_TYPE::MATCH    : break;
+			}
+
+			lyt.print_cell(out, col, cell, col < lyt.columns() - 1);
+		}
+		out << std::endl;
 	}
 
-	out << " ";
+	return out.str();
+}
 
-	out << "(";
-	if (triplet.confidence_valid())
+
+// CalcTracksTableLayout
+
+
+std::string CalcTracksTableLayout::do_format(ArgsRefTuple t) const
+{
+	//assertions(t);
+
+	const auto checksums = std::get<0>(t);
+	const auto filenames = std::get<1>(t);
+	const auto toc       = std::get<2>(t);
+	//const auto arid      = std::get<3>(t); // TODO Implement printing
+	const auto is_album  = std::get<4>(t);
+
+	const auto types_to_print = ordered_typelist(*checksums);
+
+	if (types_to_print.empty())
 	{
-		out << std::setw(width_conf) << std::setfill('0')
-			<< static_cast<unsigned int>(triplet.confidence());
+		throw std::invalid_argument("Missing value: "
+				"Checksums seem to hold no checksums");
+	}
+
+	// Configure table
+
+	TableLayout lyt { 0, 0, label(), track(), offset(), length(), filename() };
+
+	if (is_album) { lyt.set_track(true); }
+	if (!toc) { lyt.set_offset(false); }
+	if (!filenames or filenames->empty()) { lyt.set_filename(false); }
+	// assertion is fulfilled that either not filenames.empty() or non-null toc
+
+	const bool show_input = filename(); // Overrides --no-track-nos
+
+	// TODO Use init() instead
+	lyt.resize(show_input + offset() + length() + types_to_print.size(),
+				checksums->size());
+
+	// Assign row labels
+	if (label())
+	{
+		// Determine row labels (we must know the optimal width when printing)
+		// XXX TypedColsTableBase does this kind of stuff in apply_md_settings()
+
+		int row = 0;
+		if (show_input)
+		{
+			// track() is interpreted differently when --tracks-as-cols:
+			// Print either track number or file input number if tracks are
+			// not available. Conversely, ignore filename().
+
+			const std::string input_label = is_album
+				? defaults::label(CELL_TYPE::TRACK)
+				: defaults::label(CELL_TYPE::FILENAME);
+
+			lyt.set_row_label(row, input_label);
+			++row;
+		}
+		for (const auto& type : types_to_print)
+		{
+			lyt.set_row_label(row, arcstk::checksum::type_name(type));
+			++row;
+		}
+		if (offset())
+			{ lyt.set_row_label(row, defaults::label(CELL_TYPE::OFFSET));
+				++row; }
+		if (length())
+			{ lyt.set_row_label(row, defaults::label(CELL_TYPE::LENGTH));
+				++row; }
+		// ... skip filename ...
+	}
+
+	// Assign column widths
+	for (std::size_t col = 0; col < lyt.columns(); ++col) // print cell
+	{
+		lyt.set_width(col, 8); // TODO Magic number, only ok while no filenames
+		lyt.set_alignment(col, false);
+	}
+
+	// Print table rows
+
+	std::ostringstream o;
+	int row = 0;
+
+	if (show_input)
+	{
+		if (label()) { lyt.print_label(o, row); }
+
+		int trackno = 1;
+		for (std::size_t col = 0; col < lyt.columns() - 1; ++col)
+		{
+			lyt.print_cell(o, col, std::to_string(trackno), true);
+			++trackno;
+		}
+		lyt.print_cell(o, lyt.columns() - 1, std::to_string(trackno), false);
+
+		o << std::endl;
+		++row;
+	}
+
+	for (const auto& type : types_to_print)
+	{
+		if (label()) { lyt.print_label(o, row); }
+
+		int index = 0;
+		for (std::size_t col = 0; col < lyt.columns() - 1; ++col, ++index)
+		{
+			lyt.print_cell(o, col,
+				lyt.checksum_layout().format(checksums->at(index).get(type), 8),
+				true);
+		}
+
+		lyt.print_cell(o, lyt.columns() - 1,
+				lyt.checksum_layout().format(checksums->at(index).get(type), 8),
+				false);
+
+		o << std::endl;
+		++row;
+	}
+
+	if (offset())
+	{
+		if (label()) { lyt.print_label(o, row); }
+
+		int trackno = 1;
+		for (std::size_t col = 0; col < lyt.columns() - 1; ++col)
+		{
+			lyt.print_cell(o, col, std::to_string(toc->offset(trackno)), true);
+			++trackno;
+		}
+		lyt.print_cell(o, lyt.columns() - 1,
+			std::to_string(toc->offset(trackno)), false);
+
+		o << std::endl;
+		++row;
+	}
+
+	if (length())
+	{
+		if (label()) { lyt.print_label(o, row); }
+
+		int index = 0;
+		for (std::size_t col = 0; col < lyt.columns() - 1; ++col, ++index)
+		{
+			lyt.print_cell(o, col,
+				std::to_string(checksums->at(index).length()),
+				true);
+		}
+		lyt.print_cell(o, lyt.columns() - 1,
+				std::to_string(checksums->at(index).length()),
+				false);
+
+		o << std::endl;
+		++row;
+	}
+
+	return o.str();
+}
+
+
+// VerifyResultLayout
+
+
+VerifyResultLayout::VerifyResultLayout(const bool label, const bool track,
+			const bool offset, const bool length, const bool filename,
+			const std::string &coldelim)
+	: WithMetadataFlagMethods(label, track, offset, length, filename)
+	, match_symbol_ { "   ==   " }
+	, coldelim_ { coldelim }
+{
+	// empty
+}
+
+
+void VerifyResultLayout::set_match_symbol(const std::string &match_symbol)
+{
+	match_symbol_ = match_symbol;
+}
+
+
+const std::string& VerifyResultLayout::match_symbol() const
+{
+	return match_symbol_;
+}
+
+
+// VerifyTableLayout
+
+
+int VerifyTableLayout::TableLayout::columns_apply_cs_settings(
+		const std::vector<arcstk::checksum::type> &types)
+{
+	// Type each column on the "right" as 'CHECKSUM' and 'MATCH' in
+	// alternating order and apply defaults
+
+	auto type_to_print = types.cbegin();
+	std::size_t col_idx = total_metadata_columns();
+
+	// Add the column with reference values ("Theirs")
+
+	assign_type(col_idx, CELL_TYPE::CHECKSUM);
+	set_title(col_idx, "Theirs");
+	set_width(col_idx, defaults::width(CELL_TYPE::CHECKSUM));
+
+	++col_idx;
+
+	// Add the columns with my values
+
+	using TYPE = arcstk::checksum::type;
+
+	while (col_idx < columns() and type_to_print != types.cend())
+	{
+		assign_type(col_idx, CELL_TYPE::MATCH);
+		set_title(col_idx,
+				"Mine v" + std::to_string(1 + (*type_to_print == TYPE::ARCS2)));
+		set_width(col_idx, defaults::width(CELL_TYPE::MATCH));
+
+		++col_idx;
+
+		++type_to_print;
+	}
+
+	return col_idx - total_metadata_columns();
+}
+
+
+std::string VerifyTableLayout::do_format(ArgsRefTuple t) const
+{
+	//assertions(t);
+
+	const auto checksums = std::get<0>(t);
+	const auto filenames = std::get<1>(t);
+	const auto refsums   = std::get<2>(t);
+	const auto match     = *std::get<3>(t);
+	const auto block     = std::get<4>(t);
+	const auto version   = std::get<5>(t);
+	const auto toc       = std::get<6>(t);
+	//const auto arid      = std::get<7>(t);
+
+	using TYPE = arcstk::checksum::type;
+
+	std::vector<TYPE> types_to_print;
+	if (!version)
+	{
+		types_to_print = std::vector<TYPE>{ TYPE::ARCS2, TYPE::ARCS1 };
 	} else
 	{
-		out << "??";
+		if (*version)
+		{
+			types_to_print.push_back(TYPE::ARCS2);
+		} else
+		{
+			types_to_print.push_back(TYPE::ARCS1);
+		}
 	}
-	out << ") ";
+	types_to_print.shrink_to_fit();
 
-	if (triplet.frame450_arcs_valid())
+	// Configure table layout
+
+	TableLayout lyt { 0, 0, label(), track(), offset(), length(), filename() };
+
+	// Determine number of rows
+	const int total_entries = 1 /* col titles */
+		+ (toc ? checksums->size()
+			   : std::max(checksums->size(), refsums->size()));
+
+	if (!toc) { lyt.set_offset(false); }
+
+	// TODO Use init() instead
+	lyt.resize(total_entries,
+			lyt.total_metadata_columns() + types_to_print.size() + 1);
+
+	const auto md_offset = lyt.columns_apply_md_settings();
+	lyt.set_widths(CELL_TYPE::FILENAME, optimal_width(*filenames));
+
+	lyt.columns_apply_cs_settings(types_to_print);
+
+	// Print contents
+
+	std::ostringstream out;
+
+	if (label()) { lyt.print_column_titles(out); }
+
+	TYPE cstype = TYPE::ARCS2; // default
+	std::string cell{};
+	int trackno = 1;
+
+	for (std::size_t row = 0; row < lyt.rows() - 1; ++row, ++trackno) // print row
 	{
-		out << std::setw(width_arcs)
-			<< hex.format(Checksum { triplet.frame450_arcs() }, width_arcs);
-	} else
-	{
-		out << std::setw(width_arcs) << unparsed_value;
+		for (std::size_t col = 0; col < lyt.columns(); ++col) // print cell
+		{
+			switch (lyt.type_of(col))
+			{
+				case CELL_TYPE::TRACK    :
+					if (track())
+						{ cell = std::to_string(trackno); }
+					break;
+
+				case CELL_TYPE::FILENAME :
+					if (filename())
+						{ cell = filenames->at(row); }
+					break;
+
+				case CELL_TYPE::OFFSET   :
+					if (offset())
+						{ cell = std::to_string(toc->offset(trackno)); }
+					break;
+
+				case CELL_TYPE::LENGTH   :
+					if (length())
+						{ cell = std::to_string(checksums->at(row).length()); }
+					break;
+
+				case CELL_TYPE::CHECKSUM : // "Theirs" column
+					cell = lyt.checksum_layout().format((*refsums)[row],
+							lyt.width(col));
+					break;
+
+				case CELL_TYPE::MATCH    : // "Mine" columns (may be one or two)
+					cstype = types_to_print[col - md_offset - 1];
+					if (match->track(*block, row, cstype == TYPE::ARCS2))
+					{
+						cell = match_symbol();
+					} else
+					{
+						cell = lyt.checksum_layout().format(
+							checksums->at(row).get(cstype),
+							lyt.width(col));
+					}
+					break;
+			}
+
+			lyt.print_cell(out, col, cell, col < lyt.columns() - 1);
+		}
+
+		out << std::endl;
 	}
-
-	out << std::endl;
 
 	return out.str();
 }

@@ -40,9 +40,6 @@
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"               // for operator<<
 #endif
-#ifndef __ARCSTOOLS_PRINTERS_HPP__
-#include "printers.hpp"
-#endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"           // for ARCSMultifileAlbumCalculator
 #endif
@@ -335,7 +332,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 }
 
 
-std::unique_ptr<ChecksumsResultPrinter> ARCalcApplication::configure_format(
+std::unique_ptr<CalcResultLayout> ARCalcApplication::configure_layout(
 		const Options &options) const
 {
 	const bool has_toc = !options.value(CALC::METAFILE).empty();
@@ -365,23 +362,23 @@ std::unique_ptr<ChecksumsResultPrinter> ARCalcApplication::configure_format(
 
 	// Decide which implementation
 
-	std::unique_ptr<ChecksumsResultPrinter> format;
+	std::unique_ptr<CalcResultLayout> layout;
 
 	if (options.is_set(CALC::TRACKSASCOLS))
 	{
-		format = std::make_unique<AlbumTracksTableFormat>(
+		layout = std::make_unique<CalcTracksTableLayout>(
 			not options.is_set(CALC::NOLABELS),
 			prints_tracks, prints_offsets, prints_lengths, prints_filenames,
 			coldelim);
 	} else
 	{
-		format = std::make_unique<AlbumChecksumsTableFormat>(
+		layout = std::make_unique<CalcAlbumTableLayout>(
 			not options.is_set(CALC::NOLABELS),
 			prints_tracks, prints_offsets, prints_lengths, prints_filenames,
 			coldelim);
 	}
 
-	return format;
+	return layout;
 }
 
 
@@ -469,7 +466,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 		dont_overwrite = false;
 	}
 
-	auto format = configure_format(options);
+	auto layout = configure_layout(options);
 
 	auto filenames = toc
 		? arcstk::toc::get_filenames(toc)
@@ -477,9 +474,9 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 	auto album_mode = options.is_set(CALC::ALBUM);
 
-	format->use(std::make_tuple(&checksums, &filenames, toc.get(), &arid,
-				&album_mode));
-	output(*format, options.value(OPTION::OUTFILE), dont_overwrite);
+	auto result = layout->format(std::make_tuple(&checksums, &filenames,
+				toc.get(), &arid, &album_mode));
+	output(result, options.value(OPTION::OUTFILE), dont_overwrite);
 
 	return EXIT_SUCCESS;
 }

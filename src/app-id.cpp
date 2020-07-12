@@ -25,8 +25,8 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
 #endif
-#ifndef __ARCSTOOLS_PRINTERS_HPP__
-#include "printers.hpp"
+#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"      // for ARIdLayout, ...
 #endif
 
 namespace arcsapp

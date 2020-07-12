@@ -6,15 +6,13 @@
 #include <iostream>               // for cout
 #include <ostream>                // for operator<<, basic_ostream<>::__ostr...
 #include <utility>                // for move
-#include "layouts.hpp"             // for ARIdLayout
-#include "printers.hpp"      // for ARTripletFormat, ARIdFormat
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
 
-#ifndef __ARCSTOOLS_PRINTERS_HPP__
-#include "printers.hpp"
+#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"            // for ARTripletLayout
 #endif
 
 namespace arcsapp

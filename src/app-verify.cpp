@@ -1,4 +1,3 @@
-#include "printers.hpp"
 #ifndef __ARCSTOOLS_APPARVERIFY_HPP__
 #include "app-verify.hpp"
 #endif
@@ -35,7 +34,7 @@
 #include "config.hpp"               // for CallSyntaxException, Configurator
 #endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"               // for ARId
+#include "layouts.hpp"              // for ARIdLayout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
 #include "tools-parse.hpp"          // for ContentHandler
@@ -249,7 +248,7 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 // ARVerifyApplication
 
 
-std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
+std::unique_ptr<VerifyResultLayout> ARVerifyApplication::configure_layout(
 		const Options &options, const bool with_filenames) const
 {
 	const bool with_toc = !options.value(VERIFY::METAFILE).empty();
@@ -277,12 +276,12 @@ std::unique_ptr<MatchResultPrinter> ARVerifyApplication::configure_format(
 		? options.value(CALC::COLDELIM)
 		: " ";
 
-	auto format = std::make_unique<AlbumMatchTableFormat>(
+	auto layout = std::make_unique<VerifyTableLayout>(
 			not options.is_set(VERIFY::NOLABELS),
 			prints_tracks, prints_offsets, prints_lengths, prints_filenames,
 			coldelim);
 
-	return format;
+	return layout;
 }
 
 
@@ -570,7 +569,9 @@ void ARVerifyApplication::print_result(const Options &options,
 		? options.arguments()
 		: (toc ? arcstk::toc::get_filenames(*toc) : std::vector<std::string>{});
 
-	const auto match = diff.match();
+	auto diffmatch = const_cast<Match*>(diff.match()); // FIXME constness
+	const auto match = &diffmatch;
+
 	auto dont_overwrite = bool { true };
 
 	if (options.is_set(VERIFY::PRINTID) or options.is_set(VERIFY::PRINTURL))
@@ -598,7 +599,7 @@ void ARVerifyApplication::print_result(const Options &options,
 		}
 	}
 
-	const auto format = configure_format(options, print_filenames);
+	const auto layout = configure_layout(options, print_filenames);
 
 	if (options.is_set(VERIFY::PRINTALL))
 	{
@@ -608,11 +609,12 @@ void ARVerifyApplication::print_result(const Options &options,
 		{
 			const int only_block = 0;
 
-			format->use(std::make_tuple(&actual_sums, &filenames,
+			auto result = layout->format(
+					std::make_tuple(&actual_sums, &filenames,
 					&std::get<1>(reference_sums) /* refvals */,
 					match, &only_block, print_v1_and_v2, toc, &arid));
 
-			output(*format, options.value(OPTION::OUTFILE), dont_overwrite);
+			output(result, options.value(OPTION::OUTFILE), dont_overwrite);
 
 		} else // Use ARResponse
 		{
@@ -624,11 +626,11 @@ void ARVerifyApplication::print_result(const Options &options,
 				curr_block = b;
 				auto block_sums = sums_in_block(response, curr_block);
 
-				format->use(std::make_tuple(&actual_sums, &filenames,
-						&block_sums, match, &curr_block, print_v1_and_v2,
-						toc, &arid));
+				auto result = layout->format(std::make_tuple(&actual_sums,
+						&filenames, &block_sums, match, &curr_block,
+						print_v1_and_v2, toc, &arid));
 
-				output(*format, options.value(OPTION::OUTFILE), dont_overwrite);
+				output(result, options.value(OPTION::OUTFILE), dont_overwrite);
 			}
 		}
 	} else // print only best match
@@ -638,20 +640,22 @@ void ARVerifyApplication::print_result(const Options &options,
 
 		if (options.is_set(VERIFY::REFVALUES)) // Use refvals
 		{
-			format->use(std::make_tuple(&actual_sums, &filenames,
+			auto result = layout->format(std::make_tuple(
+					&actual_sums, &filenames,
 					&std::get<1>(reference_sums) /* refvals */,
 					match, &best_block, &matching_version, toc, &arid));
 
-			output(*format, options.value(OPTION::OUTFILE), dont_overwrite);
+			output(result, options.value(OPTION::OUTFILE), dont_overwrite);
 		} else // Use ARResponse
 		{
 			const auto ref_sums = sums_in_block(std::get<0>(reference_sums),
 					diff.best_match());
 
-			format->use(std::make_tuple(&actual_sums, &filenames, &ref_sums,
+			auto result = layout->format(std::make_tuple(
+				&actual_sums, &filenames, &ref_sums,
 				match, &best_block, &matching_version, toc, &arid));
 
-			output(*format, options.value(OPTION::OUTFILE), dont_overwrite);
+			output(result, options.value(OPTION::OUTFILE), dont_overwrite);
 			// &ref_sums must be in scope
 		}
 	}
