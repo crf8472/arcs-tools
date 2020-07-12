@@ -10,6 +10,7 @@
 
 #include <algorithm>           // for copy_if
 #include <iomanip>             // for operator<<, setw, setfill
+#include <sstream>             // for ostringstream
 #include <stdexcept>           // for out_of_range
 #include <utility>             // for move
 #include <vector>              // for vector, vector<>::reference, _Bit_refe...
@@ -73,12 +74,9 @@ CELL_TYPE convert_to(const int type)
 // ChecksumLayout
 
 
-ChecksumLayout::~ChecksumLayout() noexcept = default;
-
-
 std::string ChecksumLayout::format(const Checksum &c, const int width) const
 {
-	return this->do_format(c.value(), width);
+	return Layout<Checksum, int>::format(std::make_tuple(&c, &width));
 }
 
 
@@ -162,9 +160,12 @@ bool HexLayout::is_uppercase() const
 }
 
 
-std::string HexLayout::do_format(const uint32_t &number, const int width) const
+std::string HexLayout::do_format(ArgsRefTuple t) const
 {
-	std::stringstream ss;
+	auto checksum = std::get<0>(t);
+	auto width    = std::get<1>(t);
+
+	std::ostringstream ss;
 
 	if (shows_base())
 	{
@@ -181,7 +182,9 @@ std::string HexLayout::do_format(const uint32_t &number, const int width) const
 	// ss_flags &= ~ss.adjustfield;
 	// ss.flags(ss_flags);
 
-	ss << std::hex << std::setw(width) << std::setfill('0') << number;
+	ss  << std::hex << std::setw(*width)
+		<< std::setfill('0') << checksum->value();
+
 	return ss.str();
 }
 

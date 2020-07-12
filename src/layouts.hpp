@@ -35,6 +35,97 @@ using arcstk::Checksums;
 
 
 /**
+ * \brief Specialization of template Layout with arguments only.
+ */
+template <typename ...Args>
+class Layout
+{
+public:
+
+	using ArgsTuple     = std::tuple<Args...>;
+	using ArgsRefTuple  = std::tuple<const Args*...>;
+
+	/**
+	 * \brief Virtual default destructor
+	 */
+	virtual ~Layout() = default;
+
+	/**
+	 * \brief Format objects.
+	 */
+	std::string format(ArgsRefTuple args) const
+	{
+		return this->do_format(args);
+	}
+
+	/**
+	 * \brief Format objects.
+	 */
+	//std::string format(const Args&... args) const
+	//{
+	//	return this->format(std::make_tuple(args...));
+	//}
+
+private:
+
+	virtual std::string do_format(ArgsRefTuple args) const
+	= 0;
+};
+
+
+/**
+ * \brief Specialization of template Layout with arguments and settings.
+ */
+template <typename ...Settings, typename ...Args>
+class Layout<std::tuple<Settings...>, std::tuple<Args...>>
+{
+public:
+
+	using SettingsTuple = std::tuple<Settings...>;
+	using ArgsTuple     = std::tuple<Args...>;
+	using ArgsRefTuple  = std::tuple<const Args*...>;
+
+	/**
+	 * \brief Constructor.
+	 *
+	 * Applies settings.
+	 */
+	Layout(SettingsTuple settings)
+		: settings_ { settings }
+	{
+		// empty
+	}
+
+	/**
+	 * \brief Virtual default destructor
+	 */
+	virtual ~Layout() = default;
+
+	/**
+	 * \brief Format objects.
+	 */
+	std::string format(ArgsRefTuple args) const
+	{
+		return this->do_format(args);
+	}
+
+protected:
+
+	SettingsTuple settings() const
+	{
+		return settings_;
+	}
+
+private:
+
+	virtual std::string do_format(ArgsRefTuple args) const
+	= 0;
+
+	SettingsTuple settings_;
+};
+
+
+/**
  * \brief Return underlying value of an integral enum
  */
 template <typename E>
@@ -67,32 +158,22 @@ inline int optimal_width(Container&& list)
 /**
  * \brief Interface for formatting numbers
  */
-class ChecksumLayout
+class ChecksumLayout : public Layout<Checksum, int>
 {
 public:
 
 	/**
-	 * \brief Virtual default destructor
-	 */
-	virtual ~ChecksumLayout() noexcept;
-
-	/**
-	 * \brief Layout an unsigned 32 bit integer
+	 * \brief Layout a Checksum with specified width.
 	 *
 	 * \param[in] number  Number to format
 	 * \param[in] width   Width to format
 	 */
 	std::string format(const Checksum &checksum, const int width) const;
+	// convenience to not require always call make_tuple
 
 private:
 
-	/**
-	 * \brief Implements ChecksumLayout::(const uint32_t &, const int) const
-	 *
-	 * \param[in] number  Number to format
-	 * \param[in] width   Width to format
-	 */
-	virtual std::string do_format(const uint32_t &number, const int width) const
+	virtual std::string do_format(ArgsRefTuple t) const
 	= 0;
 };
 
@@ -210,8 +291,10 @@ public:
 
 private:
 
-	std::string do_format(const uint32_t &number, const int width) const
-		override;
+	//std::string do_format(const uint32_t &number, const int width) const
+	//	override;
+
+	std::string do_format(ArgsRefTuple t) const override;
 };
 
 
