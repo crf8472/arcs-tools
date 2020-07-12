@@ -418,27 +418,27 @@ std::string ARIdTableLayout::do_format(ArgsRefTuple t) const
 }
 
 
-// WithARId
+// WithARIdLayout
 
 
-WithARId::WithARId()
+WithARIdLayout::WithARIdLayout()
 	: arid_layout_(nullptr)
 {
 	// empty
 }
 
 
-WithARId::WithARId(std::unique_ptr<ARIdLayout> arid_layout)
+WithARIdLayout::WithARIdLayout(std::unique_ptr<ARIdLayout> arid_layout)
 	: arid_layout_(std::move(arid_layout))
 {
 	// empty
 }
 
 
-WithARId::~WithARId() noexcept = default;
+WithARIdLayout::~WithARIdLayout() noexcept = default;
 
 
-void WithARId::set_arid_layout(std::unique_ptr<ARIdLayout> format)
+void WithARIdLayout::set_arid_layout(std::unique_ptr<ARIdLayout> format)
 {
 	if (arid_layout_)
 	{
@@ -449,7 +449,7 @@ void WithARId::set_arid_layout(std::unique_ptr<ARIdLayout> format)
 }
 
 
-ARIdLayout* WithARId::arid_layout()
+ARIdLayout* WithARIdLayout::arid_layout()
 {
 	return arid_layout_ ? arid_layout_.get() : nullptr;
 }
@@ -1538,7 +1538,7 @@ TypedRowsTableBase::TypedRowsTableBase(
 		const bool offset,
 		const bool length,
 		const bool filename)
-	: WithARId()
+	: WithARIdLayout()
 	, WithChecksumLayout()
 	, StringTableStructure(rows, columns)
 	, WithMetadataFlagMethods(label, track, offset, length, filename)
@@ -1558,7 +1558,7 @@ TypedColsTableBase::TypedColsTableBase(
 		const bool offset,
 		const bool length,
 		const bool filename)
-	: WithARId()
+	: WithARIdLayout()
 	, WithChecksumLayout()
 	, StringTableStructure(rows, columns)
 	, WithMetadataFlagMethods(label, track, offset, length, filename)

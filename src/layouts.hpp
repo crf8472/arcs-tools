@@ -601,26 +601,26 @@ private:
  *
  * \todo Make a template from this (also see WithChecksums)
  */
-class WithARId
+class WithARIdLayout
 {
 public:
 
 	/**
 	 * \brief Constructor.
 	 */
-	WithARId();
+	WithARIdLayout();
 
 	/**
 	 * \brief Constructor.
 	 *
 	 * \param[in] arid_layout The ARIdLayout to set
 	 */
-	explicit WithARId(std::unique_ptr<ARIdLayout> arid_layout);
+	explicit WithARIdLayout(std::unique_ptr<ARIdLayout> arid_layout);
 
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	virtual ~WithARId() noexcept;
+	virtual ~WithARIdLayout() noexcept;
 
 	/**
 	 * \brief Set the format to use for formatting the ARId.
@@ -1555,7 +1555,7 @@ CELL_TYPE convert_to(const int type);
  * A layout can be set to format the cells in columns holding checksums.
  */
 class TypedRowsTableBase	: public WithMetadataFlagMethods
-							, virtual public WithARId
+							, virtual public WithARIdLayout
 							, virtual public WithChecksumLayout
 							, virtual public StringTableStructure
 {
@@ -1601,7 +1601,7 @@ public:
  * match flags.
  */
 class TypedColsTableBase	: public WithMetadataFlagMethods
-							, virtual public WithARId
+							, virtual public WithARIdLayout
 							, virtual public WithChecksumLayout
 							, virtual public StringTableStructure
 {
