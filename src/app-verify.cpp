@@ -579,8 +579,8 @@ void ARVerifyApplication::print_result(const Options &options,
 		// ARId computed locally)
 		if (auto response = &std::get<0>(reference_sums); response)
 		{
-			const std::unique_ptr<ARIdFormat> idformat =
-				std::make_unique<ARIdFormat>(
+			const std::unique_ptr<ARIdLayout> layout =
+				std::make_unique<ARIdTableLayout>(
 					options.is_set(CALC::PRINTID),
 					options.is_set(CALC::PRINTURL),
 					false, /* no filenames */
@@ -591,9 +591,9 @@ void ARVerifyApplication::print_result(const Options &options,
 				);
 
 			auto* arid = &response->at(diff.best_match()).id();
-			idformat->use(std::make_tuple(arid, nullptr));
+			auto result = layout->format(std::make_tuple(arid, nullptr));
 
-			output(*idformat, options.value(OPTION::OUTFILE)); // overwrites
+			output(result, options.value(OPTION::OUTFILE)); // overwrites
 			dont_overwrite = false;
 		}
 	}

@@ -68,134 +68,79 @@ std::vector<arcstk::checksum::type> ordered_typelist(const Checksums &checksums)
 // ARTripletFormat
 
 
-ARTripletFormat::ARTripletFormat()
-	: Print<int, ARTriplet> { std::make_tuple(nullptr, nullptr) }
-{
-	// empty
-}
-
-
-void ARTripletFormat::assertions(const std::tuple<const int*,
-		const ARTriplet*> &t) const
-{
-	const auto track   = std::get<0>(t);
-
-	if (!track)
-	{
-		throw std::invalid_argument("Cannot print a nullptr as track");
-	}
-
-	const auto triplet = std::get<1>(t);
-
-	if (!triplet)
-	{
-		throw std::invalid_argument("Cannot print a nullptr as triplet");
-	}
-}
-
-
-void ARTripletFormat::do_out(std::ostream &out,
-		const std::tuple<const int*, const ARTriplet*> &t)
-{
-	assertions(t);
-
-	const auto track   = std::get<0>(t);
-	const auto triplet = std::get<1>(t);
-
-	HexLayout hex; // TODO Make this configurable, inherit from WithChecksums...
-	hex.set_show_base(false);
-	hex.set_uppercase(true);
-
-	const int width_arcs = 8;
-	const int width_conf = 2;
-
-	const auto unparsed_value = std::string { "????????" };
-
-	// TODO Make label configurable
-	out << "Track " << std::setw(2) << std::setfill('0') << *track << ": ";
-
-	if (triplet->arcs_valid())
-	{
-		out << std::setw(width_arcs)
-			<< hex.format(Checksum { triplet->arcs() }, width_arcs);
-	} else
-	{
-		out << std::setw(width_arcs) << unparsed_value;
-	}
-
-	out << " ";
-
-	out << "(";
-	if (triplet->confidence_valid())
-	{
-		out << std::setw(width_conf) << std::setfill('0')
-			<< static_cast<unsigned int>(triplet->confidence());
-	} else
-	{
-		out << "??";
-	}
-	out << ") ";
-
-	if (triplet->frame450_arcs_valid())
-	{
-		out << std::setw(width_arcs)
-			<< hex.format(Checksum { triplet->frame450_arcs() }, width_arcs);
-	} else
-	{
-		out << std::setw(width_arcs) << unparsed_value;
-	}
-
-	out << std::endl;
-}
+//ARTripletFormat::ARTripletFormat()
+//	: Print<int, ARTriplet> { std::make_tuple(nullptr, nullptr) }
+//{
+//	// empty
+//}
+//
+//
+//void ARTripletFormat::assertions(const std::tuple<const int*,
+//		const ARTriplet*> &t) const
+//{
+//	const auto track   = std::get<0>(t);
+//
+//	if (!track)
+//	{
+//		throw std::invalid_argument("Cannot print a nullptr as track");
+//	}
+//
+//	const auto triplet = std::get<1>(t);
+//
+//	if (!triplet)
+//	{
+//		throw std::invalid_argument("Cannot print a nullptr as triplet");
+//	}
+//}
 
 
 // ARIdFormat
 
 
-ARIdFormat::ARIdFormat(const bool id, const bool url,
-		const bool filename, const bool track_count, const bool disc_id_1,
-		const bool disc_id_2, const bool cddb_id)
-	: WithARIdLayout(std::make_unique<ARIdTableLayout>(
-				id, url, filename, track_count, disc_id_1, disc_id_2, cddb_id))
-	, ARIdPrinter(std::make_tuple(&arcstk::EmptyARId, nullptr))
-{
-	// empty
-}
-
-
-ARIdFormat::~ARIdFormat() noexcept = default;
-
-
-void ARIdFormat::assertions(const std::tuple<const ARId*,
-		const std::string*> &t) const
-{
-	const auto arid = std::get<0>(t);
-
-	if (!arid)
-	{
-		throw std::invalid_argument("Cannot print a null pointer for an ARId");
-	}
-
-	// alt_prefix is allowed to be nullptr
-}
-
-
-void ARIdFormat::do_out(std::ostream &out,
-		const std::tuple<const ARId*, const std::string*> &t)
-{
-	assertions(t);
-
-	const auto id         = std::get<0>(t);
-	const auto alt_prefix = std::get<1>(t);
-
-	if (!alt_prefix)
-	{
-		out << arid_layout()->format(*id, std::string{}) << std::endl;
-	} else
-	{
-		out << arid_layout()->format(*id, *alt_prefix) << std::endl;
-	}
-}
+//ARIdFormat::ARIdFormat(const bool id, const bool url,
+//		const bool filename, const bool track_count, const bool disc_id_1,
+//		const bool disc_id_2, const bool cddb_id)
+//	: WithARIdLayout(std::make_unique<ARIdTableLayout>(
+//				id, url, filename, track_count, disc_id_1, disc_id_2, cddb_id))
+//	, ARIdPrinter(std::make_tuple(&arcstk::EmptyARId, nullptr))
+//{
+//	// empty
+//}
+//
+//
+//ARIdFormat::~ARIdFormat() noexcept = default;
+//
+//
+//void ARIdFormat::assertions(const std::tuple<const ARId*,
+//		const std::string*> &t) const
+//{
+//	const auto arid = std::get<0>(t);
+//
+//	if (!arid)
+//	{
+//		throw std::invalid_argument("Cannot print a null pointer for an ARId");
+//	}
+//
+//	// alt_prefix is allowed to be nullptr
+//}
+//
+//
+//void ARIdFormat::do_out(std::ostream &out,
+//		const std::tuple<const ARId*, const std::string*> &t)
+//{
+//	assertions(t);
+//
+//	const auto id         = std::get<0>(t);
+//	const auto alt_prefix = std::get<1>(t);
+//
+//	if (!alt_prefix)
+//	{
+//		out << arid_layout()->format(*id, std::string{}) << std::endl;
+//	} else
+//	{
+//		out << arid_layout()->format(*id, *alt_prefix) << std::endl;
+//	}
+//}
 
 
 // ChecksumsResultPrinter

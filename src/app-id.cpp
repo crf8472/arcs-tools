@@ -104,26 +104,26 @@ int ARIdApplication::do_run(const Options &options)
 	const auto metafilename  = options.argument(0);
 	const auto audiofilename = options.value(ARIdOptions::AUDIOFILE);
 
-	std::unique_ptr<ARId> id = nullptr;
+	std::unique_ptr<ARId> arid = nullptr;
 
 	{
 		ARIdCalculator calculator;
-		id = calculator.calculate(audiofilename, metafilename);
+		arid = calculator.calculate(audiofilename, metafilename);
 	}
 
-	if (!id) { this->fatal_error("Could not compute AccurateRip id."); }
+	if (!arid) { this->fatal_error("Could not compute AccurateRip id."); }
 
 	// Adjust format and print information
 
-	std::unique_ptr<ARIdPrinter> format;
+	std::unique_ptr<ARIdLayout> layout;
 
 	if (options.is_set(ARIdOptions::PROFILE))
 	{
-		format = std::make_unique<ARIdFormat>(
+		layout = std::make_unique<ARIdTableLayout>(
 			true, true, true, true, true, true, true);
 	} else
 	{
-		format = std::make_unique<ARIdFormat>(
+		layout = std::make_unique<ARIdTableLayout>(
 			options.is_set(ARIdOptions::ID),
 			options.is_set(ARIdOptions::URL),
 			options.is_set(ARIdOptions::DBID),
@@ -135,9 +135,9 @@ int ARIdApplication::do_run(const Options &options)
 	}
 
 	auto prefix = options.value(ARIdOptions::URLPREFIX);
-	format->use(std::make_tuple(id.get(), &prefix));
+	auto result = layout->format(std::make_tuple(arid.get(), &prefix));
 
-	output(*format, options.value(OPTION::OUTFILE));
+	output(result, options.value(OPTION::OUTFILE));
 
 	return EXIT_SUCCESS;
 }

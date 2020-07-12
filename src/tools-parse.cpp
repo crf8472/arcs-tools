@@ -32,9 +32,9 @@ ARParserContentPrintHandler::ARParserContentPrintHandler(
 		const std::string &filename)
 	: block_counter_(0)
 	, track_(0)
-	, arid_format_(std::make_unique<ARIdTableLayout>(
+	, arid_layout_(std::make_unique<ARIdTableLayout>(
 				false, false, false, false, false, false, false))
-	, triplet_format_(std::make_unique<ARTripletFormat>())
+	, triplet_layout_(std::make_unique<ARTripletLayout>())
 	, out_file_stream_(filename)
 	, out_stream_(
 			filename.empty() ? std::cout.rdbuf() : out_file_stream_.rdbuf())
@@ -47,41 +47,41 @@ ARParserContentPrintHandler::~ARParserContentPrintHandler() noexcept
 = default;
 
 
-void ARParserContentPrintHandler::set_arid_format(
+void ARParserContentPrintHandler::set_arid_layout(
 		std::unique_ptr<ARIdLayout> format)
 {
-	arid_format_ = std::move(format);
+	arid_layout_ = std::move(format);
 }
 
 
-const ARIdLayout& ARParserContentPrintHandler::arid_format() const
+const ARIdLayout& ARParserContentPrintHandler::arid_layout() const
 {
-	return *arid_format_;
+	return *arid_layout_;
 }
 
 
-void ARParserContentPrintHandler::set_triplet_format(
-		std::unique_ptr<ARTripletFormat> format)
+void ARParserContentPrintHandler::set_triplet_layout(
+		std::unique_ptr<ARTripletLayout> format)
 {
-	triplet_format_ = std::move(format);
+	triplet_layout_ = std::move(format);
 }
 
 
-const ARTripletFormat& ARParserContentPrintHandler::triplet_format() const
+const ARTripletLayout& ARParserContentPrintHandler::triplet_layout() const
 {
-	return *triplet_format_;
+	return *triplet_layout_;
 }
 
 
 ARIdLayout* ARParserContentPrintHandler::arid_layout()
 {
-	return arid_format_.get();
+	return arid_layout_.get();
 }
 
 
-ARTripletFormat* ARParserContentPrintHandler::triplet_format()
+ARTripletLayout* ARParserContentPrintHandler::triplet_layout()
 {
-	return triplet_format_.get();
+	return triplet_layout_.get();
 }
 
 
@@ -117,8 +117,7 @@ void ARParserContentPrintHandler::do_triplet(const uint32_t arcs,
 	++track_;
 	const ARTriplet triplet(arcs, confidence, frame450_arcs);
 
-	triplet_format()->use(std::make_tuple(&track_, &triplet));
-	triplet_format()->out(out_stream_);
+	out_stream_ << triplet_layout()->format(std::make_tuple(&track_, &triplet));
 }
 
 
@@ -131,8 +130,7 @@ void ARParserContentPrintHandler::do_triplet(const uint32_t arcs,
 	const ARTriplet triplet(arcs, confidence, frame450_arcs, arcs_valid,
 			confidence_valid, frame450_arcs_valid);
 
-	triplet_format()->use(std::make_tuple(&track_, &triplet));
-	triplet_format()->out(out_stream_);
+	out_stream_ << triplet_layout()->format(std::make_tuple(&track_, &triplet));
 }
 
 

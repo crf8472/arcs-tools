@@ -452,8 +452,8 @@ int ARCalcApplication::run_calculation(const Options &options)
 	auto dont_overwrite = bool { true };
 	if (options.is_set(CALC::PRINTID) or options.is_set(CALC::PRINTURL))
 	{
-		const std::unique_ptr<ARIdFormat> idformat =
-			std::make_unique<ARIdFormat>(
+		const std::unique_ptr<ARIdLayout> layout =
+			std::make_unique<ARIdTableLayout>(
 				options.is_set(CALC::PRINTID),
 				options.is_set(CALC::PRINTURL),
 				false, /* no filenames */
@@ -463,9 +463,9 @@ int ARCalcApplication::run_calculation(const Options &options)
 				false /* no cddb id */
 			);
 
-		idformat->use(std::make_tuple(&arid, nullptr));
+		auto result = layout->format(std::make_tuple(&arid, nullptr));
 
-		output(*idformat, options.value(OPTION::OUTFILE));
+		output(result, options.value(OPTION::OUTFILE));
 		dont_overwrite = false;
 	}
 

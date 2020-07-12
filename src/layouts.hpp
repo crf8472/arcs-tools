@@ -25,11 +25,15 @@
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>
 #endif
+#ifndef __LIBARCSTK_PARSE_HPP__
+#include <arcstk/parse.hpp>
+#endif
 
 namespace arcsapp
 {
 
 using arcstk::ARId;
+using arcstk::ARTriplet;
 using arcstk::Checksum;
 using arcstk::Checksums;
 
@@ -1692,6 +1696,21 @@ private:
 	virtual int columns_apply_cs_settings(
 			const std::vector<arcstk::checksum::type> &types)
 	= 0;
+};
+
+/**
+ * \brief Abstract base class for output formats of ARTriplet.
+ */
+class ARTripletLayout : protected WithInternalFlags
+					  , public Layout<int, ARTriplet>
+{
+public:
+
+	using Layout<int, ARTriplet>::Layout;
+
+private:
+
+	std::string do_format(ArgsRefTuple t) const override;
 };
 
 } // namespace arcsapp

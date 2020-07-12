@@ -1622,5 +1622,66 @@ int TypedColsTableBase::columns_apply_md_settings()
 	return md_cols;
 }
 
+
+// ARTripletLayout
+
+
+std::string ARTripletLayout::do_format(ArgsRefTuple t) const
+{
+	//assertions(t);
+
+	const auto track   = *std::get<0>(t);
+	const auto triplet = *std::get<1>(t);
+
+	HexLayout hex; // TODO Make this configurable, inherit from WithChecksums...
+	hex.set_show_base(false);
+	hex.set_uppercase(true);
+
+	const int width_arcs = 8;
+	const int width_conf = 2;
+
+	const auto unparsed_value = std::string { "????????" };
+
+	std::ostringstream out;
+
+	// TODO Make label configurable
+	out << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
+
+	if (triplet.arcs_valid())
+	{
+		out << std::setw(width_arcs)
+			<< hex.format(Checksum { triplet.arcs() }, width_arcs);
+	} else
+	{
+		out << std::setw(width_arcs) << unparsed_value;
+	}
+
+	out << " ";
+
+	out << "(";
+	if (triplet.confidence_valid())
+	{
+		out << std::setw(width_conf) << std::setfill('0')
+			<< static_cast<unsigned int>(triplet.confidence());
+	} else
+	{
+		out << "??";
+	}
+	out << ") ";
+
+	if (triplet.frame450_arcs_valid())
+	{
+		out << std::setw(width_arcs)
+			<< hex.format(Checksum { triplet.frame450_arcs() }, width_arcs);
+	} else
+	{
+		out << std::setw(width_arcs) << unparsed_value;
+	}
+
+	out << std::endl;
+
+	return out.str();
+}
+
 } // namespace arcsapp
 

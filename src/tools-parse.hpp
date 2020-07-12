@@ -22,7 +22,7 @@ namespace arcsapp
 {
 
 class ARIdLayout;
-class ARTripletFormat;
+class ARTripletLayout;
 
 using arcstk::ContentHandler;
 
@@ -60,28 +60,28 @@ public:
 	 *
 	 * \param[in] format The print format to use
 	 */
-	void set_arid_format(std::unique_ptr<ARIdLayout> format);
+	void set_arid_layout(std::unique_ptr<ARIdLayout> layout);
 
 	/**
 	 * \brief Read-access to the print format used for ARIds.
 	 *
 	 * \return The print format used for ARIds
 	 */
-	const ARIdLayout& arid_format() const;
+	const ARIdLayout& arid_layout() const;
 
 	/**
 	 * \brief Sets the format for printing track information.
 	 *
 	 * \param[in] format The print format to use
 	 */
-	void set_triplet_format(std::unique_ptr<ARTripletFormat> format);
+	void set_triplet_layout(std::unique_ptr<ARTripletLayout> layout);
 
 	/**
 	 * \brief Read-access to the print format used for track information.
 	 *
 	 * \return The print format used for track information
 	 */
-	const ARTripletFormat& triplet_format() const;
+	const ARTripletLayout& triplet_layout() const;
 
 	/**
 	 * \brief Specify a file as print target.
@@ -104,7 +104,7 @@ protected:
 	 *
 	 * \return The print format used
 	 */
-	ARTripletFormat* triplet_format();
+	ARTripletLayout* triplet_layout();
 
 private:
 
@@ -145,12 +145,12 @@ private:
 	/**
 	 * \brief Internal format used for printing the ARIds.
 	 */
-	std::unique_ptr<ARIdLayout> arid_format_;
+	std::unique_ptr<ARIdLayout> arid_layout_;
 
 	/**
 	 * \brief Internal format used for printing the triplets.
 	 */
-	std::unique_ptr<ARTripletFormat> triplet_format_;
+	std::unique_ptr<ARTripletLayout> triplet_layout_;
 
 	/**
 	 * \brief Internal print file stream.
