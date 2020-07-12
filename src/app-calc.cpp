@@ -452,8 +452,8 @@ int ARCalcApplication::run_calculation(const Options &options)
 	auto dont_overwrite = bool { true };
 	if (options.is_set(CALC::PRINTID) or options.is_set(CALC::PRINTURL))
 	{
-		const std::unique_ptr<ARIdTableFormat> idformat =
-			std::make_unique<ARIdTableFormat>(
+		const std::unique_ptr<ARIdFormat> idformat =
+			std::make_unique<ARIdFormat>(
 				options.is_set(CALC::PRINTID),
 				options.is_set(CALC::PRINTURL),
 				false, /* no filenames */

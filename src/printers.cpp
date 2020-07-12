@@ -149,10 +149,10 @@ void ARTripletFormat::do_out(std::ostream &out,
 }
 
 
-// ARIdTableFormat
+// ARIdFormat
 
 
-ARIdTableFormat::ARIdTableFormat(const bool id, const bool url,
+ARIdFormat::ARIdFormat(const bool id, const bool url,
 		const bool filename, const bool track_count, const bool disc_id_1,
 		const bool disc_id_2, const bool cddb_id)
 	: WithARId(std::make_unique<ARIdTableLayout>(
@@ -163,10 +163,10 @@ ARIdTableFormat::ARIdTableFormat(const bool id, const bool url,
 }
 
 
-ARIdTableFormat::~ARIdTableFormat() noexcept = default;
+ARIdFormat::~ARIdFormat() noexcept = default;
 
 
-void ARIdTableFormat::assertions(const std::tuple<const ARId*,
+void ARIdFormat::assertions(const std::tuple<const ARId*,
 		const std::string*> &t) const
 {
 	const auto arid = std::get<0>(t);
@@ -180,7 +180,7 @@ void ARIdTableFormat::assertions(const std::tuple<const ARId*,
 }
 
 
-void ARIdTableFormat::do_out(std::ostream &o,
+void ARIdFormat::do_out(std::ostream &out,
 		const std::tuple<const ARId*, const std::string*> &t)
 {
 	assertions(t);
@@ -190,10 +190,10 @@ void ARIdTableFormat::do_out(std::ostream &o,
 
 	if (!alt_prefix)
 	{
-		o << arid_layout()->format(*id, std::string{}) << std::endl;
+		out << arid_layout()->format(*id, std::string{}) << std::endl;
 	} else
 	{
-		o << arid_layout()->format(*id, *alt_prefix) << std::endl;
+		out << arid_layout()->format(*id, *alt_prefix) << std::endl;
 	}
 }
 

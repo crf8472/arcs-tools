@@ -119,11 +119,11 @@ int ARIdApplication::do_run(const Options &options)
 
 	if (options.is_set(ARIdOptions::PROFILE))
 	{
-		format = std::make_unique<ARIdTableFormat>(
+		format = std::make_unique<ARIdFormat>(
 			true, true, true, true, true, true, true);
 	} else
 	{
-		format = std::make_unique<ARIdTableFormat>(
+		format = std::make_unique<ARIdFormat>(
 			options.is_set(ARIdOptions::ID),
 			options.is_set(ARIdOptions::URL),
 			options.is_set(ARIdOptions::DBID),

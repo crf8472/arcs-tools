@@ -7,7 +7,7 @@
 #include <ostream>                // for operator<<, basic_ostream<>::__ostr...
 #include <utility>                // for move
 #include "layouts.hpp"             // for ARIdLayout
-#include "printers.hpp"      // for ARTripletFormat, ARIdTableFormat
+#include "printers.hpp"      // for ARTripletFormat, ARIdFormat
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>  // for ARId

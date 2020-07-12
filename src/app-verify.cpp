@@ -579,8 +579,8 @@ void ARVerifyApplication::print_result(const Options &options,
 		// ARId computed locally)
 		if (auto response = &std::get<0>(reference_sums); response)
 		{
-			const std::unique_ptr<ARIdTableFormat> idformat =
-				std::make_unique<ARIdTableFormat>(
+			const std::unique_ptr<ARIdFormat> idformat =
+				std::make_unique<ARIdFormat>(
 					options.is_set(CALC::PRINTID),
 					options.is_set(CALC::PRINTURL),
 					false, /* no filenames */

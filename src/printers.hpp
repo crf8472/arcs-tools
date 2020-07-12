@@ -164,10 +164,10 @@ using ARIdPrinter = Print<ARId, std::string>;
 
 
 /**
- * \brief Simple table format for ARId.
+ * \brief Prints ARId in specified layout.
  */
-class ARIdTableFormat final : public WithARId
-							, public ARIdPrinter
+class ARIdFormat final  : public WithARId
+						, public ARIdPrinter
 {
 public:
 
@@ -182,7 +182,7 @@ public:
 	 * \param[in] disc_id_2   Set to TRUE for printing the disc id2
 	 * \param[in] cddb_id     Set to TRUE for printing the cddb id
 	 */
-	ARIdTableFormat(const bool id, const bool url, const bool filename,
+	ARIdFormat(const bool id, const bool url, const bool filename,
 			const bool track_count, const bool disc_id_1, const bool disc_id_2,
 			const bool cddb_id);
 
@@ -191,14 +191,14 @@ public:
 	 *
 	 * Sets empty ARId, no prefix and all formatting flags to FALSE except URL.
 	 */
-	ARIdTableFormat() : ARIdTableFormat(true,
+	ARIdFormat() : ARIdFormat(true,
 			false, false, false, false, false, false)
 	{ /* empty */ };
 
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	virtual ~ARIdTableFormat() noexcept;
+	virtual ~ARIdFormat() noexcept;
 
 private:
 
