@@ -39,14 +39,14 @@ int main(int argc, char** argv)
 	using arcsapp::ApplicationFactory;
 	using arcsapp::CallSyntaxException;
 
-	const auto& BINARY = std::string { ARCSTOOLS_BINARY_NAME };
-	const auto  ARGV_0 = std::string { argv[0] };
+	const auto& BINARY_NAME = std::string { ARCSTOOLS_BINARY_NAME };
+	const auto  ARGV_0      = std::string { &argv[0] ? argv[0] : "" };
 
 	// Was binary called by some alias?
 	const bool is_call_by_alias =
-		ARGV_0.length() >= BINARY.length()
+		ARGV_0.length() >= BINARY_NAME.length()
 		and
-		ARGV_0.substr(ARGV_0.length() - BINARY.length()) != BINARY;
+		ARGV_0.substr(ARGV_0.length() - BINARY_NAME.length()) != BINARY_NAME;
 
 	if (argc > 1 or is_call_by_alias)
 	{
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 				}
 			} catch (const arcsapp::CallSyntaxException &cse)
 			{
-				std::cerr << "ERROR: " << cse.what() << std::endl;
+				std::cerr << "Syntax error: " << cse.what() << std::endl;
 
 				application->print_usage();
 
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 
 			} catch (const std::exception &e)
 			{
-				std::cerr << "ERROR: " << e.what() << std::endl;
+				std::cerr << "Error: " << e.what() << std::endl;
 
 				return EXIT_FAILURE;
 			}
