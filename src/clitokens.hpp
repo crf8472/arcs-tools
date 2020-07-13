@@ -159,16 +159,17 @@ public:
  * Option::NONE.
  *
  *  - Syntactically, an option is a hyphen '-' followed by a single alphanumeric
- *    character, like this: \c -v.
+ *    character, like this: <tt>-v</tt>.
  *  - An option may require a value. If a value is expected, it must appear
  *    immediately after the option token. A blank ' ' may or may not separate
- *    the option from its value. Example: \c -i \c <argument> or
- *    \c -i<argument>.
+ *    the option from its value. Example: <tt>-i argument</tt> or
+ *    <tt>-iargument</tt>.
  *  - Options that do not require values can be grouped after a single hyphen,
- *    so, for example, -tbn is equivalent to -t -b -n.
- *  - Options can appear in any order, thus -tbn is equivalent to -ntb.
+ *    so, for example, <tt>-tbn</tt> is equivalent to <tt>-t -b -n</tt>.
+ *  - Options can appear in any order, thus -tbn is equivalent to <tt>-ntb</tt>.
  *  - Options can appear multiple times.
- *  - Options typically precede other nonoption arguments: -ltr <nonoption>.
+ *  - Options typically precede other nonoption arguments:
+ *    <tt>-ltr nonoption</tt>.
  *  - The '--' argument terminates options.
  *
  * This intends to obey the POSIX conventions.

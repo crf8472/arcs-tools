@@ -142,7 +142,7 @@ inline int optimal_width(Container&& list)
 
 
 /**
- * \brief Interface for formatting \link Checksum Checksums\endlink.
+ * \brief Interface for formatting Checksums.
  */
 class ChecksumLayout : public Layout<Checksum, int>
 {
@@ -500,7 +500,7 @@ public:
 	/**
 	 * \brief Set to TRUE to print the second disc id.
 	 *
-	 * \param[in] disc_id_1 TRUE indicates to print disc id 2
+	 * \param[in] disc_id_2 TRUE indicates to print disc id 2
 	 */
 	void set_disc_id_2(const bool disc_id_2);
 
@@ -697,7 +697,7 @@ public:
 	 *
 	 * Intended to control the printing of column titles and row labels.
 	 *
-	 * \param[in] filename Flag to set for printing the filename
+	 * \param[in] label Flag to set for printing the labels
 	 */
 	void set_label(const bool &label);
 
@@ -1043,11 +1043,11 @@ protected:
 	void bounds_check_row(const int row) const;
 
 	/**
-	 * \brief Throws if \c legal_col(col) is FALSE
+	 * \brief Throws if <tt>legal_col(col)</tt> is FALSE
 	 *
 	 * \param[in] col Column index to check
 	 *
-	 * \thcols std::out_of_range If not \c legal_col(col)
+	 * \throws std::out_of_range If not <tt>legal_col(col)</tt>
 	 */
 	void bounds_check_col(const int col) const;
 

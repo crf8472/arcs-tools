@@ -196,7 +196,6 @@ public:
 	 * If the option is currently unset, the resulting value is empty.
 	 *
 	 * \param[in] option The option whose value to get
-	 * \param[in] option The 1-based index of the value to get
 	 *
 	 * \return The n-th value of the option passed
 	 */
@@ -257,7 +256,7 @@ private:
 
 
 /**
- * \brief \link OptionCode OptionCodes\endlink for global options.
+ * \brief OptionCode for global options.
  *
  * The order of symbols MUST match the order in global_options_.
  * The symbols must be positive (minimal numerical value is 1).

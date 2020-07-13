@@ -117,7 +117,7 @@ public:
 	 * album since the exact offsets are missing. The ARId returned will be
 	 * therefore be empty, the TOC pointer will be nullptr.
 	 *
-	 * \param[in] audiofilename  Name  of the audiofile
+	 * \param[in] audiofilenames Names of the audiofiles
 	 * \param[in] skip_front     Skip front samples of first track
 	 * \param[in] skip_back      Skip back samples of last track
 	 *

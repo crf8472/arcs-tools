@@ -1,5 +1,5 @@
 /**
- * \file tools_calc.cpp Combine ARCS calculation with file handling
+ * \file tools-calc.cpp Combine ARCS calculation with file handling
  */
 
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__

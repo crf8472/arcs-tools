@@ -56,30 +56,30 @@ public:
 	virtual ~ARParserContentPrintHandler() noexcept;
 
 	/**
-	 * \brief Sets the format for printing ARIds.
+	 * \brief Sets the layout for printing ARIds.
 	 *
-	 * \param[in] format The print format to use
+	 * \param[in] layout The print layout to use
 	 */
 	void set_arid_layout(std::unique_ptr<ARIdLayout> layout);
 
 	/**
-	 * \brief Read-access to the print format used for ARIds.
+	 * \brief Read-access to the print layout used for ARIds.
 	 *
-	 * \return The print format used for ARIds
+	 * \return The print layout used for ARIds
 	 */
 	const ARIdLayout& arid_layout() const;
 
 	/**
-	 * \brief Sets the format for printing track information.
+	 * \brief Sets the layout for printing track information.
 	 *
-	 * \param[in] format The print format to use
+	 * \param[in] layout The print layout to use
 	 */
 	void set_triplet_layout(std::unique_ptr<ARTripletLayout> layout);
 
 	/**
-	 * \brief Read-access to the print format used for track information.
+	 * \brief Read-access to the print layout used for track information.
 	 *
-	 * \return The print format used for track information
+	 * \return The print layout used for track information
 	 */
 	const ARTripletLayout& triplet_layout() const;
 
@@ -93,16 +93,16 @@ public:
 protected:
 
 	/**
-	 * \brief Non-const-access to the print format for subclasses.
+	 * \brief Non-const-access to the print layout for subclasses.
 	 *
-	 * \return The print format used
+	 * \return The print layout used
 	 */
 	ARIdLayout* arid_layout();
 
 	/**
-	 * \brief Non-const-access to the print format for subclasses.
+	 * \brief Non-const-access to the print layout for subclasses.
 	 *
-	 * \return The print format used
+	 * \return The print layout used
 	 */
 	ARTripletLayout* triplet_layout();
 
@@ -143,12 +143,12 @@ private:
 	int track_;
 
 	/**
-	 * \brief Internal format used for printing the ARIds.
+	 * \brief Internal layout used for printing the ARIds.
 	 */
 	std::unique_ptr<ARIdLayout> arid_layout_;
 
 	/**
-	 * \brief Internal format used for printing the triplets.
+	 * \brief Internal layout used for printing the triplets.
 	 */
 	std::unique_ptr<ARTripletLayout> triplet_layout_;
 

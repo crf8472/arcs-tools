@@ -90,7 +90,7 @@ protected:
 	void fatal_error(const std::string &message) const;
 
 	/**
-	* \brief Worker: output a result object
+	* \brief Worker: output a result object to file or stdout.
 	*
 	* The object musst overload operator << for std::ostream or a compile error
 	* will occurr.
@@ -99,13 +99,16 @@ protected:
 	* specified name. The default value for \c filename is an empty string which
 	* means that the output goes to std::cout.
 	*
-	* If an existing file is specified, the file be reopened and appended to.
+	* If an existing file is specified, the file is overwritten by default. If
+	* TRUE is passed for parameter \c overwrite, the existing file will be
+	* reopened and appended to.
 	*
 	* This function is intended to be used in \c do_run() implementations for
-	* results. It is not suited to output errors.
+	* results. It is not suited to output errors or log messages.
 	*
-	* \param[in] object   The object to output
-	* \param[in] filename Optional filename, default is the empty string
+	* \param[in] object    The object to output
+	* \param[in] filename  Optional filename, default is the empty string
+	* \param[in] overwrite Iff TRUE, existing files will be overwritten
 	*
 	* \return Type void iff object overloads operator << for std::ostream
 	*/
@@ -115,14 +118,15 @@ protected:
 			const bool overwrite = true) const
 		-> decltype( std::cout << object, void() )
 	{
-		if (filename.empty()) // THIS defines the default behaviour!
+		if (filename.empty())
 		{
 			std::cout << object;
 		} else
 		{
-			// If file exists, append to it, otherwise create it
-
 			std::ofstream out_file_stream;
+
+			//  overwrite: If file exists, delete it and create new one
+			// !overwrite: If file exists, append to it, otherwise create it
 
 			auto mode = std::ios_base::openmode { overwrite
 				? std::fstream::out | std::fstream::trunc

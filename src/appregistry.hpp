@@ -81,7 +81,7 @@ public:
 	/**
 	 * \brief Return first match for a key name with \c callstr
 	 *
-	 * \param[in] name Name of an application type or call string
+	 * \param[in] callstr Name of an application type or call string
 	 *
 	 * \return Instance of the first application type matching the input
 	 */
@@ -135,9 +135,10 @@ protected:
 	}
 
 	/**
-	 * \brief Instantiate the application type with the given name
+	 * \brief Instantiate the application type with the given name.
 	 *
-	 * \param[in]
+	 * The string parameter is ignored.
+	 *
 	 * \param[in] create Function pointer to create the instance
 	 *
 	 * \return Instance returned by \c create
