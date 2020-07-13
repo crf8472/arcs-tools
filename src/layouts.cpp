@@ -461,13 +461,15 @@ std::string ARIdTableLayout::do_format(ArgsRefTuple t) const
 	auto arid       = std::get<0>(t);
 	auto alt_prefix = std::get<1>(t);
 
-	if (settings().no_flags()) // return ARId as default, ignore any Hex layout settings
+	if (settings().no_flags()) // return ARId as default
 	{
 		return arid.to_string();
 	}
 
 	auto stream = std::ostringstream {};
 	auto value = std::string {};
+
+	auto label_width = fieldlabels() ? optimal_width(labels()) : 0;
 
 	for (const auto& sflag : show_flags())
 	{
@@ -477,7 +479,7 @@ std::string ARIdTableLayout::do_format(ArgsRefTuple t) const
 
 		if (fieldlabels())
 		{
-			stream << std::setw(8 /* length of 'Filename', longest label */)
+			stream << std::setw(label_width)
 				<< std::left
 				<< labels()[to_underlying(sflag)]
 				<< " ";
