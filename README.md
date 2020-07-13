@@ -31,30 +31,30 @@ least smoke-tested.)
 
 Calculate the AccurateRip URL of a local CD image (audiofile must be in the
 path):
-
-	$ arcstk-id --url <filename.cue>
-
+```console
+$ arcstk-id --url <filename.cue>
+```
 Calculate AccurateRip checksums from local CD images:
-
-	$ arcstk-calc -m <filename.cue> <audiofilename>
-
+```console
+$ arcstk-calc -m <filename.cue> <audiofilename>
+```
 Fetch AccurateRip data for a CD and save it in binary format (requires curl):
-
-	$ curl -o response.bin "$(arcstk-id --url /path/to/cuefile.cue)"
-
+```console
+$ curl -o response.bin "$(arcstk-id --url /path/to/cuefile.cue)"
+```
 Verify AccurateRip checksums from local CD images:
-
-	$ arcstk-verify -r <responsefile.bin> -m <filename.cue> <audiofilename>
-
+```console
+$ arcstk-verify -r <responsefile.bin> -m <filename.cue> <audiofilename>
+```
 Fetch AccurateRip data for a CD and parse it to readable text format (requires
 curl):
-
-	$ curl "$(arcstk-id --url /path/to/cuefile.cue)" | arcstk-parse > response.txt
-
+```console
+$ curl "$(arcstk-id --url /path/to/cuefile.cue)" | arcstk-parse > response.txt
+```
 Fetch AccurateRip data for a CD and verify the local image (requires curl):
-
-	$ curl "$(arcstk-id --url /path/to/cuefile.cue)" | arcstk-verify -m /path/to/cuefile.cue /path/to/audiofile
-
+```console
+$ curl "$(arcstk-id --url /path/to/cuefile.cue)" | arcstk-verify -m /path/to/cuefile.cue /path/to/audiofile
+```
 
 [1]: https://codeberg.org/tristero/libarcstk
 [2]: https://codeberg.org/tristero/libarcsdec
