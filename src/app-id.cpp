@@ -134,8 +134,7 @@ int ARIdApplication::do_run(const Options &options)
 		);
 	}
 
-	auto prefix = options.value(ARIdOptions::URLPREFIX);
-	auto result = layout->format(std::make_tuple(arid.get(), &prefix));
+	auto result = layout->format(*arid, options.value(ARIdOptions::URLPREFIX));
 
 	output(result, options.value(OPTION::OUTFILE));
 

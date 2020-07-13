@@ -54,7 +54,7 @@ class Layout
 public:
 
 	using ArgsTuple     = std::tuple<Args...>;
-	using ArgsRefTuple  = std::tuple<const Args*...>;
+	using ArgsRefTuple  = std::tuple<const Args&...>;
 
 	/**
 	 * \brief Virtual default destructor
@@ -80,7 +80,7 @@ public:
 	 */
 	std::string format(const Args&... args) const
 	{
-		return this->format(std::make_tuple(&args...));
+		return this->format(std::make_tuple(args...));
 	}
 
 private:
@@ -1574,7 +1574,7 @@ private:
 class CalcResultLayout : public TableUser
 					   , public Layout < Checksums,
 										 std::vector<std::string>,
-										 TOC,
+										 const TOC*,
 										 ARId,
 										 bool >
 {
@@ -1656,10 +1656,10 @@ class VerifyResultLayout : public TableUser
 						 , public Layout < Checksums,
 										   std::vector<std::string>,
 										   std::vector<Checksum>,
-										   Match*,
+										   const Match*,
 										   int,
 										   bool,
-										   TOC,
+										   const TOC*,
 										   ARId >
 {
 public:

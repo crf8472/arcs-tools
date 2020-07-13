@@ -460,7 +460,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 				false /* no cddb id */
 			);
 
-		auto result = layout->format(std::make_tuple(&arid, nullptr));
+		auto result = layout->format(arid, std::string{});
 
 		output(result, options.value(OPTION::OUTFILE));
 		dont_overwrite = false;
@@ -474,8 +474,8 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 	auto album_mode = options.is_set(CALC::ALBUM);
 
-	auto result = layout->format(std::make_tuple(&checksums, &filenames,
-				toc.get(), &arid, &album_mode));
+	auto result = layout->format(checksums, filenames, toc.get(), arid,
+			album_mode);
 	output(result, options.value(OPTION::OUTFILE), dont_overwrite);
 
 	return EXIT_SUCCESS;

@@ -569,14 +569,11 @@ void ARVerifyApplication::print_result(const Options &options,
 		? options.arguments()
 		: (toc ? arcstk::toc::get_filenames(*toc) : std::vector<std::string>{});
 
-	auto diffmatch = const_cast<Match*>(diff.match()); // FIXME constness
-	const auto match = &diffmatch;
-
 	auto dont_overwrite = bool { true };
 
 	if (options.is_set(VERIFY::PRINTID) or options.is_set(VERIFY::PRINTURL))
 	{
-		// Do we have an id for "Theirs"? (Otherwise, forget about the actual
+		// Do we have an ARId for "Theirs"? (Otherwise, forget about the actual
 		// ARId computed locally)
 		if (auto response = &std::get<0>(reference_sums); response)
 		{
@@ -591,8 +588,8 @@ void ARVerifyApplication::print_result(const Options &options,
 					false /* no cddb id */
 				);
 
-			auto* arid = &response->at(diff.best_match()).id();
-			auto result = layout->format(std::make_tuple(arid, nullptr));
+			auto r_arid = response->at(diff.best_match()).id();
+			auto result = layout->format(r_arid, std::string{});
 
 			output(result, options.value(OPTION::OUTFILE)); // overwrites
 			dont_overwrite = false;
@@ -603,16 +600,15 @@ void ARVerifyApplication::print_result(const Options &options,
 
 	if (options.is_set(VERIFY::PRINTALL))
 	{
-		const bool* print_v1_and_v2 = nullptr;
+		const bool print_v1_and_v2 = true;
 
 		if (options.is_set(VERIFY::REFVALUES)) // Use refvals
 		{
 			const int only_block = 0;
 
-			auto result = layout->format(
-					std::make_tuple(&actual_sums, &filenames,
-					&std::get<1>(reference_sums) /* refvals */,
-					match, &only_block, print_v1_and_v2, toc, &arid));
+			auto result = layout->format(actual_sums, filenames,
+					std::get<1>(reference_sums) /* refvals */,
+					diff.match(), only_block, print_v1_and_v2, toc, arid);
 
 			output(result, options.value(OPTION::OUTFILE), dont_overwrite);
 
@@ -626,9 +622,9 @@ void ARVerifyApplication::print_result(const Options &options,
 				curr_block = b;
 				auto block_sums = sums_in_block(response, curr_block);
 
-				auto result = layout->format(std::make_tuple(&actual_sums,
-						&filenames, &block_sums, match, &curr_block,
-						print_v1_and_v2, toc, &arid));
+				auto result = layout->format(actual_sums, filenames,
+						block_sums, diff.match(), curr_block,
+						print_v1_and_v2, toc, arid);
 
 				output(result, options.value(OPTION::OUTFILE), dont_overwrite);
 			}
@@ -640,10 +636,9 @@ void ARVerifyApplication::print_result(const Options &options,
 
 		if (options.is_set(VERIFY::REFVALUES)) // Use refvals
 		{
-			auto result = layout->format(std::make_tuple(
-					&actual_sums, &filenames,
-					&std::get<1>(reference_sums) /* refvals */,
-					match, &best_block, &matching_version, toc, &arid));
+			auto result = layout->format(actual_sums, filenames,
+					std::get<1>(reference_sums) /* refvals */,
+					diff.match(), best_block, matching_version, toc, arid);
 
 			output(result, options.value(OPTION::OUTFILE), dont_overwrite);
 		} else // Use ARResponse
@@ -651,9 +646,8 @@ void ARVerifyApplication::print_result(const Options &options,
 			const auto ref_sums = sums_in_block(std::get<0>(reference_sums),
 					diff.best_match());
 
-			auto result = layout->format(std::make_tuple(
-				&actual_sums, &filenames, &ref_sums,
-				match, &best_block, &matching_version, toc, &arid));
+			auto result = layout->format(actual_sums, filenames, ref_sums,
+					diff.match(), best_block, matching_version, toc, arid);
 
 			output(result, options.value(OPTION::OUTFILE), dont_overwrite);
 			// &ref_sums must be in scope
