@@ -4,13 +4,8 @@
 /**
  * \file
  *
- * \brief Interface to output formats for printing.
+ * \brief Interfaces to output layouts.
  *
- * Provides OutputFormat, an abstract base class that encapsulates all actual
- * details for formatting the output. After different format() methods may have
- * been called, the actual output lines can be requested as an instance of
- * Lines, a class that represents a sequence of text lines to be printed to an
- * output stream from first to last.
  */
 
 #include <cstdint>                // for uint32_t, uint8_t
@@ -261,6 +256,9 @@ class WithInternalFlags
 {
 public:
 
+	/**
+	 * \brief Construct with individual flags.
+	 */
 	explicit WithInternalFlags(const uint32_t flags) : settings_ { flags }
 		{ /* empty */ }
 
@@ -273,8 +271,18 @@ public:
 
 protected:
 
+	/**
+	 * \brief Access internal settings.
+	 *
+	 * \return Settings.
+	 */
 	InternalFlags& settings() { return settings_; }
 
+	/**
+	 * \brief Access internal settings.
+	 *
+	 * \return Settings.
+	 */
 	const InternalFlags& settings() const { return settings_; }
 
 private:
@@ -349,7 +357,7 @@ private:
 /**
  * \brief Property to set or use a layout for printing checksums.
  */
-class WithChecksumLayout // TODO With<Layout<foo, bar>>
+class WithChecksumLayout
 {
 public:
 

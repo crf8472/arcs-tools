@@ -455,7 +455,7 @@ std::string ARIdTableLayout::do_format(ArgsRefTuple t) const
 	const int total_labels = id() + url() + filename() + track_count() +
 		disc_id_1() + disc_id_2() + cddb_id();
 
-	auto stream = std::stringstream {};
+	auto stream = std::ostringstream {};
 
 	auto value = std::string {};
 
