@@ -573,14 +573,14 @@ void ARVerifyApplication::print_result(const Options &options,
 
 	if (options.is_set(VERIFY::PRINTID) or options.is_set(VERIFY::PRINTURL))
 	{
-		// Do we have an ARId for "Theirs"? (Otherwise, forget about the actual
-		// ARId computed locally)
+		// Print ARId only, if we have an ARId for "Theirs"
 		if (auto response = &std::get<0>(reference_sums); response)
 		{
 			const std::unique_ptr<ARIdLayout> layout =
 				std::make_unique<ARIdTableLayout>(
-					options.is_set(CALC::PRINTID),
-					options.is_set(CALC::PRINTURL),
+					not options.is_set(VERIFY::NOLABELS),
+					options.is_set(VERIFY::PRINTID),
+					options.is_set(VERIFY::PRINTURL),
 					false, /* no filenames */
 					false, /* no tracks */
 					false, /* no id 1 */
@@ -588,8 +588,9 @@ void ARVerifyApplication::print_result(const Options &options,
 					false /* no cddb id */
 				);
 
-			auto r_arid = response->at(diff.best_match()).id();
-			auto result = layout->format(r_arid, std::string{});
+			const auto result =
+				layout->format(response->at(diff.best_match()).id(),
+						std::string{});
 
 			output(result, options.value(OPTION::OUTFILE)); // overwrites
 			dont_overwrite = false;

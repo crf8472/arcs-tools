@@ -451,6 +451,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 	{
 		const std::unique_ptr<ARIdLayout> layout =
 			std::make_unique<ARIdTableLayout>(
+				not options.is_set(CALC::NOLABELS),
 				options.is_set(CALC::PRINTID),
 				options.is_set(CALC::PRINTURL),
 				false, /* no filenames */

@@ -300,14 +300,15 @@ const ChecksumLayout& WithChecksumLayout::checksum_layout() const
 
 ARIdLayout::ARIdLayout()
 	: WithInternalFlags { 0xFFFFFFFF } // all flags true
+	, field_labels_ { true }
 {
 	// empty
 }
 
 
-ARIdLayout::ARIdLayout(const bool id, const bool url, const bool filename,
-		const bool track_count, const bool disc_id_1, const bool disc_id_2,
-		const bool cddb_id)
+ARIdLayout::ARIdLayout(const bool labels, const bool id, const bool url,
+		const bool filename, const bool track_count, const bool disc_id_1,
+		const bool disc_id_2, const bool cddb_id)
 	: WithInternalFlags(
 			0
 			| (id          << to_underlying(ARID_FLAG::ID))
@@ -318,12 +319,25 @@ ARIdLayout::ARIdLayout(const bool id, const bool url, const bool filename,
 			| (disc_id_2   << to_underlying(ARID_FLAG::ID2))
 			| (cddb_id     << to_underlying(ARID_FLAG::CDDBID))
 		)
+	, field_labels_ { labels }
 {
 	// empty
 }
 
 
 ARIdLayout::~ARIdLayout() noexcept = default;
+
+
+bool ARIdLayout::fieldlabels() const
+{
+	return field_labels_;
+}
+
+
+void ARIdLayout::set_fieldlabels(const bool labels)
+{
+	field_labels_ = labels;
+}
 
 
 bool ARIdLayout::id() const
@@ -452,21 +466,17 @@ std::string ARIdTableLayout::do_format(ArgsRefTuple t) const
 		return arid.to_string();
 	}
 
-	const int total_labels = id() + url() + filename() + track_count() +
-		disc_id_1() + disc_id_2() + cddb_id();
-
 	auto stream = std::ostringstream {};
-
 	auto value = std::string {};
 
 	for (const auto& sflag : show_flags())
 	{
 		if (not settings().flag(to_underlying(sflag))) { continue; }
 
-		if (total_labels > 1)
-		{
-			if (!stream.str().empty()) { stream << std::endl; }
+		if (!stream.str().empty()) { stream << std::endl; }
 
+		if (fieldlabels())
+		{
 			stream << std::setw(8 /* length of 'Filename', longest label */)
 				<< std::left
 				<< labels()[to_underlying(sflag)]

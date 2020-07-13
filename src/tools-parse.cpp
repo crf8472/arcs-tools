@@ -31,7 +31,7 @@ ARParserContentPrintHandler::ARParserContentPrintHandler(
 	: block_counter_(0)
 	, track_(0)
 	, arid_layout_(std::make_unique<ARIdTableLayout>(
-				false, false, false, false, false, false, false))
+				false, false, false, false, false, false, false, false))
 	, triplet_layout_(std::make_unique<ARTripletLayout>())
 	, out_file_stream_(filename)
 	, out_stream_(

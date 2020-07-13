@@ -245,6 +245,9 @@ private:
 
 	/**
 	 * \brief Options with their respective values.
+	 *
+	 * An Option is set iff it is present in this aggregate, otherwise it is
+	 * unset.
 	 */
 	std::map<OptionCode, std::string> options_;
 

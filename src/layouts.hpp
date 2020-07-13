@@ -403,6 +403,7 @@ public:
 	/**
 	 * \brief Constructor setting all flags.
 	 *
+	 * \param[in] labels      Set to TRUE for printing the field labels
 	 * \param[in] id          Set to TRUE for printing the ID
 	 * \param[in] url         Set to TRUE for printing the URL
 	 * \param[in] filename    Set to TRUE for printing the filename
@@ -411,14 +412,28 @@ public:
 	 * \param[in] disc_id_2   Set to TRUE for printing the disc id2
 	 * \param[in] cddb_id     Set to TRUE for printing the cddb id
 	 */
-	ARIdLayout(const bool id, const bool url, const bool filename,
-			const bool track_count, const bool disc_id_1,
+	ARIdLayout(const bool labels, const bool id, const bool url,
+			const bool filename, const bool track_count, const bool disc_id_1,
 			const bool disc_id_2, const bool cddb_id);
 
 	/**
 	 * \brief Virtual default destructor
 	 */
 	virtual ~ARIdLayout() noexcept;
+
+	/**
+	 * \brief Returns TRUE iff instance is configured to print field labels.
+	 *
+	 * \return TRUE iff instance is configured to print field labels
+	 */
+	bool fieldlabels() const;
+
+	/**
+	 * \brief Set to TRUE to print field labels.
+	 *
+	 * \param[in] id Flag to indicate that field labels have to be printed
+	 */
+	void set_fieldlabels(const bool labels);
 
 	/**
 	 * \brief Returns TRUE iff instance is configured to format the ID.
@@ -563,6 +578,8 @@ private:
 
 	virtual std::string do_format(ArgsRefTuple t) const
 	= 0;
+
+	bool field_labels_;
 
 protected:
 
