@@ -4,8 +4,12 @@
 /**
  * \file
  *
- * \brief Interfaces to output layouts.
+ * \brief Output layouts.
  *
+ * The application generates output that is to be formatted as table containing
+ * numbers and strings. This module contains table layouts for ARIds,
+ * ARTriplets and for the results of the CALC and VERIFY applications. It can
+ * also be used to construct new layouts.
  */
 
 #include <cstdint>                // for uint32_t, uint8_t
@@ -39,7 +43,10 @@ using arcstk::TOC;
 
 
 /**
- * \brief Specialization of template Layout with arguments only.
+ * \brief Abstract templatized base class for layouts.
+ *
+ * Each concrete subclass will provide a function \c format() that accepts
+ * exactly the parameters from the template parameter pack as const references.
  */
 template <typename ...Args>
 class Layout
@@ -103,7 +110,9 @@ private:
 
 
 /**
- * \brief Return underlying value of an integral enum
+ * \brief Worker: return underlying value of an integral enum.
+ *
+ * \tparam E Enum to get the underlying type for
  */
 template <typename E>
 inline constexpr auto to_underlying(E e) noexcept
@@ -133,7 +142,7 @@ inline int optimal_width(Container&& list)
 
 
 /**
- * \brief Interface for formatting numbers
+ * \brief Interface for formatting \link Checksum Checksums\endlink.
  */
 class ChecksumLayout : public Layout<Checksum, int>
 {
@@ -1572,16 +1581,11 @@ class CalcResultLayout : public TableUser
 public:
 
 	using TableUser::TableUser;
-
-private:
-
-	virtual std::string do_format(ArgsRefTuple t) const
-	= 0;
 };
 
 
 /**
- * \brief Interface for formatting the results of the CALC application.
+ * \brief Formatting the result of an album-mode calculation as a table.
  */
 class CalcAlbumTableLayout : public CalcResultLayout
 {
@@ -1615,7 +1619,7 @@ private:
 
 
 /**
- * \brief Interface for formatting the results of the CALC application.
+ * \brief Formatting the result of a tracks-mode calculation as a table.
  */
 class CalcTracksTableLayout : public CalcResultLayout // TODO Redundant?
 {
@@ -1646,7 +1650,7 @@ private:
 
 
 /**
- * \brief Interface for formatting the results of the CALC application.
+ * \brief Interface for formatting the results of the VERIFY application.
  */
 class VerifyResultLayout : public TableUser
 						 , public Layout < Checksums,
@@ -1708,7 +1712,7 @@ private:
 
 
 /**
- * \brief Interface for formatting the results of the CALC application.
+ * \brief Formatting the result of a verification as a table.
  */
 class VerifyTableLayout : public VerifyResultLayout
 {
