@@ -634,120 +634,6 @@ void WithMetadataFlagMethods::set_filename(const bool &filename)
 }
 
 
-// TableLayout
-
-
-TableStructure::~TableStructure() noexcept = default;
-
-
-std::size_t TableStructure::rows() const
-{
-	return this->do_rows();
-}
-
-
-std::size_t TableStructure::columns() const
-{
-	return this->do_columns();
-}
-
-
-void TableStructure::set_table_title(const std::string &title)
-{
-	this->do_set_table_title(title);
-}
-
-
-const std::string& TableStructure::table_title() const
-{
-	return this->do_table_title();
-}
-
-
-void TableStructure::set_width(const int col, const int width)
-{
-	this->do_set_width(col, width);
-}
-
-
-int TableStructure::width(const int col) const
-{
-	return this->do_width(col);
-}
-
-
-void TableStructure::set_alignment(const int col, const bool align)
-{
-	this->do_set_alignment(col, align);
-}
-
-
-bool TableStructure::alignment(const int col) const
-{
-	return this->do_alignment(col);
-}
-
-
-void TableStructure::set_type(const int col, const int type)
-{
-	this->do_set_type(col, type);
-}
-
-
-int TableStructure::type(const int col) const
-{
-	return this->do_type(col);
-}
-
-
-void TableStructure::set_title(const int col, const std::string &title)
-{
-	this->do_set_title(col, title);
-}
-
-
-std::string TableStructure::title(const int col) const
-{
-	return this->do_title(col);
-}
-
-
-void TableStructure::set_row_label(const int row, const std::string &label)
-{
-	this->do_set_row_label(row, label);
-}
-
-
-std::string TableStructure::row_label(const int row) const
-{
-	return this->do_row_label(row);
-}
-
-
-void TableStructure::set_column_delimiter(const std::string &delim)
-{
-	this->do_set_column_delimiter(delim);
-}
-
-
-std::string TableStructure::column_delimiter() const
-{
-	return this->do_column_delimiter();
-}
-
-
-void TableStructure::resize(const int rows, const int cols)
-{
-	this->do_resize(rows, cols);
-}
-
-
-void TableStructure::bounds_check(const int row, const int col) const
-{
-	this->do_bounds_check(row, col);
-}
-
-
 /**
  * \brief Private implementation of a StringTableStructure
  */
@@ -1093,6 +979,114 @@ StringTableStructure::StringTableStructure(StringTableStructure &&rhs)
 
 StringTableStructure::~StringTableStructure() noexcept
 = default;
+
+
+std::size_t StringTableStructure::rows() const
+{
+	return this->do_rows();
+}
+
+
+std::size_t StringTableStructure::columns() const
+{
+	return this->do_columns();
+}
+
+
+void StringTableStructure::set_table_title(const std::string &title)
+{
+	this->do_set_table_title(title);
+}
+
+
+const std::string& StringTableStructure::table_title() const
+{
+	return this->do_table_title();
+}
+
+
+void StringTableStructure::set_width(const int col, const int width)
+{
+	this->do_set_width(col, width);
+}
+
+
+int StringTableStructure::width(const int col) const
+{
+	return this->do_width(col);
+}
+
+
+void StringTableStructure::set_alignment(const int col, const bool align)
+{
+	this->do_set_alignment(col, align);
+}
+
+
+bool StringTableStructure::alignment(const int col) const
+{
+	return this->do_alignment(col);
+}
+
+
+void StringTableStructure::set_type(const int col, const int type)
+{
+	this->do_set_type(col, type);
+}
+
+
+int StringTableStructure::type(const int col) const
+{
+	return this->do_type(col);
+}
+
+
+void StringTableStructure::set_title(const int col, const std::string &title)
+{
+	this->do_set_title(col, title);
+}
+
+
+std::string StringTableStructure::title(const int col) const
+{
+	return this->do_title(col);
+}
+
+
+void StringTableStructure::set_row_label(const int row, const std::string &label)
+{
+	this->do_set_row_label(row, label);
+}
+
+
+std::string StringTableStructure::row_label(const int row) const
+{
+	return this->do_row_label(row);
+}
+
+
+void StringTableStructure::set_column_delimiter(const std::string &delim)
+{
+	this->do_set_column_delimiter(delim);
+}
+
+
+std::string StringTableStructure::column_delimiter() const
+{
+	return this->do_column_delimiter();
+}
+
+
+void StringTableStructure::resize(const int rows, const int cols)
+{
+	this->do_resize(rows, cols);
+}
+
+
+void StringTableStructure::bounds_check(const int row, const int col) const
+{
+	this->do_bounds_check(row, col);
+}
 
 
 int StringTableStructure::optimal_label_width() const

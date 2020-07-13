@@ -83,56 +83,23 @@ private:
 };
 
 
-/**
- * \brief Specialization of template Layout with arguments and settings.
- */
-template <typename ...Settings, typename ...Args>
-class Layout<std::tuple<Settings...>, std::tuple<Args...>>
-{
-public:
-
-	using SettingsTuple = std::tuple<Settings...>;
-	using ArgsTuple     = std::tuple<Args...>;
-	using ArgsRefTuple  = std::tuple<const Args*...>;
-
-	/**
-	 * \brief Constructor.
-	 *
-	 * Applies settings.
-	 */
-	Layout(SettingsTuple settings)
-		: settings_ { settings }
-	{
-		// empty
-	}
-
-	/**
-	 * \brief Virtual default destructor
-	 */
-	virtual ~Layout() = default;
-
-	/**
-	 * \brief Format objects.
-	 */
-	std::string format(ArgsRefTuple args) const
-	{
-		return this->do_format(args);
-	}
-
-protected:
-
-	SettingsTuple settings() const
-	{
-		return settings_;
-	}
-
-private:
-
-	virtual std::string do_format(ArgsRefTuple args) const
-	= 0;
-
-	SettingsTuple settings_;
-};
+// Commented out, but left as a note:
+// One could now implement a specialization with two parameter packs:
+//
+//template <typename ...Settings, typename ...Args>
+//class Layout<std::tuple<Settings...>, std::tuple<Args...>>
+//{
+//public:
+//
+//	using SettingsTuple = std::tuple<Settings...>;
+//	using ArgsTuple     = std::tuple<Args...>;
+//	using ArgsRefTuple  = std::tuple<const Args*...>;
+//
+//	...
+//};
+//
+// It could then be used like:
+// Layout<std::tuple<int, bool>, std::<Checksum, const char*>)
 
 
 /**
@@ -389,9 +356,6 @@ public:
 
 private:
 
-	/**
-	 * \brief Layout used for CHECKSUM columns to print the checksums
-	 */
 	std::unique_ptr<ChecksumLayout> checksum_layout_;
 };
 
@@ -499,7 +463,7 @@ public:
 	/**
 	 * \brief Set to TRUE to print the track count.
 	 *
-	 * \param[in] trackcount Flag to indicate that the track count has to be printed
+	 * \param[in] trackcount TRUE indicates to print track count
 	 */
 	void set_trackcount(const bool trackcount);
 
@@ -513,7 +477,7 @@ public:
 	/**
 	 * \brief Set to TRUE to print the first disc id.
 	 *
-	 * \param[in] disc_id_1 Flag to indicate that the first disc id has to be printed
+	 * \param[in] disc_id_1 TRUE indicates to print disc id 1
 	 */
 	void set_disc_id_1(const bool disc_id_1);
 
@@ -527,7 +491,7 @@ public:
 	/**
 	 * \brief Set to TRUE to print the second disc id.
 	 *
-	 * \param[in] disc_id_2 Flag to indicate that the first disc id has to be printed
+	 * \param[in] disc_id_1 TRUE indicates to print disc id 2
 	 */
 	void set_disc_id_2(const bool disc_id_2);
 
@@ -598,7 +562,7 @@ protected:
 	 *
 	 * \param[in] id Id to print as part of an ARId
 	 *
-	 * \return Hexadecimal ARId-conforming representation of an 32bit unsigned.
+	 * \return Hexadecimal ARId-conforming representation of a 32bit unsigned.
 	 */
 	std::string hex_id(const uint32_t id) const;
 
@@ -788,16 +752,43 @@ public:
 
 
 /**
- * \brief A table with formatted columns
+ * \brief Base class for a table of strings layout.
+ *
+ * Implement function \c do_init() in a subclass to get a concrete layout.
+ * The default implementation of do_init() is empty in StringTable.
+ *
+ * \see StringTable
  */
-class TableStructure
+class StringTableStructure
 {
 public:
 
 	/**
-	 * \brief Virtual destructor.
+	 * \brief Constructor
+	 *
+	 * \param[in] rows Number of rows (including header, if any)
+	 * \param[in] cols Number of columns (including label column, if any)
 	 */
-	virtual ~TableStructure() noexcept;
+	StringTableStructure(const int rows, const int cols);
+
+	/**
+	 * \brief Default constructor constructs a table with dimensions 0,0
+	 */
+	StringTableStructure() : StringTableStructure(0, 0) { /* empty */ }
+
+	/**
+	 * \brief Virtual default destructor.
+	 */
+	virtual ~StringTableStructure() noexcept;
+
+	/**
+	 * \brief Initialize the instance with the specified number of
+	 * rows and columns.
+	 *
+	 * \param[in] rows Number of rows
+	 * \param[in] cols Number of columns
+	 */
+	void init(const int rows, const int cols);
 
 	/**
 	 * \brief Returns the number of rows (without header)
@@ -954,221 +945,6 @@ public:
 	 */
 	void bounds_check(const int row, const int col) const;
 
-private:
-
-	/**
-	 * \brief Implements TableStructure::rows()
-	 *
-	 * \return The number of rows
-	 */
-	virtual std::size_t do_rows() const
-	= 0;
-
-	/**
-	 * \brief Implements TableStructure::columns()
-	 *
-	 * \return The number of columns
-	 */
-	virtual std::size_t do_columns() const
-	= 0;
-
-	/**
-	 * \brief Description.
-	 *
-	 * \param[in] title Title of the table
-	 */
-	virtual void do_set_table_title(const std::string &title)
-	= 0;
-
-	/**
-	 * \brief Return the title of the table.
-	 *
-	 * \return Title of the table
-	 */
-	virtual const std::string& do_table_title() const
-	= 0;
-
-	/**
-	 * \brief Implements TableStructure::set_width(const int, const int)
-	 *
-	 * \param[in] col  The column id
-	 * \param[in] width Widht of the column
-	 */
-	virtual void do_set_width(const int col, const int width)
-	= 0;
-
-	/**
-	 * \brief Implements TableStructure::width(const int)
-	 *
-	 * \param[in] col The column to get the width of
-	 *
-	 * \return Width of the column
-	 *
-	 * \throws std::out_of_range If col > columns() or col < 0.
-	 */
-	virtual int do_width(const int col) const
-	= 0;
-
-	/**
-	 * \brief Implements TableStructure::set_alignment(const int, const bool)
-	 *
-	 * \param[in] col   Column index
-	 * \param[in] align Alignment
-	 */
-	virtual void do_set_alignment(const int col, const bool align)
-	= 0;
-
-	/**
-	 * \brief Implements TableStructure::alignment(const int)
-	 *
-	 * \param[in] col   Column index
-	 *
-	 * \return Alignment of this column
-	 */
-	virtual bool do_alignment(const int col) const
-	= 0;
-
-	/**
-	 * \brief Implements TableStructure::set_type(const int, const int)
-	 *
-	 * \param[in] col  Column index
-	 * \param[in] name Column type
-	 */
-	virtual void do_set_type(const int col, const int type)
-	= 0;
-
-	/**
-	 * \brief Implements TableStructure::type(const int)
-	 *
-	 * \param[in] col The column to get the type of
-	 *
-	 * \return Type of the column
-	 *
-	 * \throws std::out_of_range If col > columns or col < 0.
-	 */
-	virtual int do_type(const int col) const
-	= 0;
-
-	/**
-	 * \brief Implements TableStructure::set_title(const int, const std::string&)
-	 *
-	 * \param[in] col   Column index
-	 * \param[in] title Column title
-	 */
-	virtual void do_set_title(const int col, const std::string &title)
-	= 0;
-
-	/**
-	 * \brief Implements TableStructure::title(const int)
-	 *
-	 * \param[in] col The column to get the title of
-	 *
-	 * \return Title of the column
-	 *
-	 * \throws std::out_of_range If col > columns or col < 0.
-	 */
-	virtual std::string do_title(const int col) const
-	= 0;
-
-	/**
-	 * \brief Implements TableStructure::set_row_label(const int, const std::string&)
-	 *
-	 * \param[in] row   Row index
-	 * \param[in] label Row label
-	 */
-	virtual void do_set_row_label(const int row, const std::string &label)
-	= 0;
-
-	/**
-	 * \brief Implements TableStructure::label(const int)
-	 *
-	 * \param[in] row The row to get the label of
-	 *
-	 * \return Label of the row
-	 *
-	 * \throws std::out_of_range If row > rows()
-	 */
-	virtual std::string do_row_label(const int row) const
-	= 0;
-
-	/**
-	 * \brief Implements TableStructure::set_column_delimiter(const std::string&)
-	 *
-	 * \param[in] delim The column delimiter symbol
-	 */
-	virtual void do_set_column_delimiter(const std::string &delim)
-	= 0;
-
-	/**
-	 * \brief Implements TableStructure::column_delimiter()
-	 *
-	 * \return The column delimiter
-	 */
-	virtual std::string do_column_delimiter() const
-	= 0;
-
-	/**
-	 * \brief Implements TableStructure::resize(const int, const int)
-	 *
-	 * \param[in] rows  Number of rows
-	 * \param[in] cols  Number of columns
-	 */
-	virtual void do_resize(const int rows, const int cols)
-	= 0;
-
-	/**
-	 * \brief Perform a bounds check
-	 *
-	 * \param[in] row  Row index
-	 * \param[in] col  Column index
-	 *
-	 * \throws std::out_of_range If col > columns() or col < 0.
-	 * \throws std::out_of_range If row > rows() or row < 0.
-	 */
-	virtual void do_bounds_check(const int row, const int col) const
-	= 0;
-};
-
-
-/**
- * \brief Base class for a table of strings layout.
- *
- * Implement function \c do_init() in a subclass to get a concrete layout.
- * The default implementation of do_init() is empty in StringTable.
- *
- * \see StringTable
- */
-class StringTableStructure : public TableStructure
-{
-public:
-
-	/**
-	 * \brief Constructor
-	 *
-	 * \param[in] rows Number of rows (including header, if any)
-	 * \param[in] cols Number of columns (including label column, if any)
-	 */
-	StringTableStructure(const int rows, const int cols);
-
-	/**
-	 * \brief Default constructor constructs a table with dimensions 0,0
-	 */
-	StringTableStructure() : StringTableStructure(0, 0) { /* empty */ }
-
-	/**
-	 * \brief Virtual default destructor.
-	 */
-	virtual ~StringTableStructure() noexcept;
-
-	/**
-	 * \brief Initialize the instance with the specified number of
-	 * rows and columns.
-	 *
-	 * \param[in] rows Number of rows
-	 * \param[in] cols Number of columns
-	 */
-	void init(const int rows, const int cols);
-
 protected:
 
 	/**
@@ -1276,32 +1052,32 @@ private:
 	virtual void do_init(const int rows, const int cols)
 	= 0;
 
-	std::size_t do_rows() const override;
-	std::size_t do_columns() const override;
+	virtual std::size_t do_rows() const;
+	virtual std::size_t do_columns() const;
 
-	void do_set_table_title(const std::string &title) override;
-	const std::string& do_table_title() const override;
+	virtual void do_set_table_title(const std::string &title);
+	virtual const std::string& do_table_title() const;
 
-	void do_set_width(const int col, const int width) override;
-	int do_width(const int col) const override;
+	virtual void do_set_width(const int col, const int width);
+	virtual int do_width(const int col) const;
 
-	void do_set_alignment(const int col, const bool align) override;
-	bool do_alignment(const int col) const override;
+	virtual void do_set_alignment(const int col, const bool align);
+	virtual bool do_alignment(const int col) const;
 
-	void do_set_type(const int col, const int type) override;
-	int do_type(const int col) const override;
+	virtual void do_set_type(const int col, const int type);
+	virtual int do_type(const int col) const;
 
-	void do_set_title(const int col, const std::string &name) override;
-	std::string do_title(const int col) const override;
+	virtual void do_set_title(const int col, const std::string &name);
+	virtual std::string do_title(const int col) const;
 
-	void do_set_row_label(const int row, const std::string &label) override;
-	std::string do_row_label(const int row) const override;
+	virtual void do_set_row_label(const int row, const std::string &label);
+	virtual std::string do_row_label(const int row) const;
 
-	void do_set_column_delimiter(const std::string &delim) override;
-	std::string do_column_delimiter() const override;
+	virtual void do_set_column_delimiter(const std::string &delim);
+	virtual std::string do_column_delimiter() const;
 
-	void do_resize(const int rows, const int cols) override;
-	void do_bounds_check(const int row, const int col) const override;
+	virtual void do_resize(const int rows, const int cols);
+	virtual void do_bounds_check(const int row, const int col) const;
 
 	// forward declaration
 	class Impl;
