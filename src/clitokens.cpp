@@ -356,7 +356,7 @@ void CLITokens::consume_as_symbol(const char * const token,
 	if (option_pos < 0)
 	{
 		std::ostringstream msg;
-		msg << "Invalid option '" << token << "'";
+		msg << "Invalid option --'" << &token[2] << "'";
 		throw CallSyntaxException(msg.str());
 	}
 
