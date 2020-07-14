@@ -15,24 +15,40 @@
 
 \section DESCRIPTION
 
-Compute the AccurateRip id of a CD by its metadata or by the audio data.
-
+Compute the AccurateRip id of a CD by its metadata or by the audio data. The
+leadout frame offset is necessary to calculate the AccurateRip Id. Some
+metadata formats like CUESheet do not allow to the leadout. If this is the case,
+the actual audio data must be inspected to get this information. If the metadata
+file contains the name of the audio file, this audio file name is used.
+Otherwise, option \b -a allows to specify the audio file explicitly.
 
 \section OPTIONS
 
-\par --cddb_id
+\par --cddb-id
 Print the cddb id.
 
-\par --db_id, --filename
-Print the database id. This id is identical to the filename of the AccurateRip
-re‐ sponse  file  and  has   the   canonical   form   of   38   characters   as
-follows: dBAR-<track_count:3>-<id1:8>-<id2:8>-<cddb_id:8>.bin
+\par --db-id,--filename
+Print the database id. This id is identical to the filename of the
+AccurateRip response  file  and  has   the   canonical   form   of   38
+characters   as follows: dBAR-<track_count:3>-<id1:8>-<id2:8>-<cddb_id:8>.bin
+
+\par --no-labels
+Print no labels when using \b --profile or combining some of \b --cddb-id,
+\b --db-id and \b --url.
 
 \par --url
 Print the AccurateRip request URL.
 
 \par --profile
-Print all information.
+Print all information as a table.
+
+\par --url-prefix=STRING
+Use a custom URL prefix for URL output. The default prefix is
+'http://accuraterip.com/accuraterip/'. The custom prefix should end with a slash
+'/'.
+
+\par -a,--audiofile=FILEPATH
+Specify the audiofile to use explicitly.
 
 \copydoc inc_logfileopt
 

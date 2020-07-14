@@ -40,8 +40,9 @@ struct ARIdOptions
 	static constexpr OptionCode DBID      = BASE +  3;
 	static constexpr OptionCode PROFILE   = BASE +  4;
 	static constexpr OptionCode URLPREFIX = BASE +  5;
-	static constexpr OptionCode ID        = BASE +  6; // ...
-	static constexpr OptionCode AUDIOFILE = BASE +  7; // 13
+	static constexpr OptionCode ID        = BASE +  6;
+	static constexpr OptionCode AUDIOFILE = BASE +  7; // ...
+	static constexpr OptionCode NOLABELS  = BASE +  8; // 14
 };
 
 

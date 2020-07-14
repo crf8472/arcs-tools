@@ -49,21 +49,23 @@ const std::vector<std::pair<Option, OptionCode>>&
 	ARIdConfigurator::do_supported_options() const
 {
 	const static std::vector<std::pair<Option, OptionCode>> local_options = {
-			{{  "cddb_id",  false,
+			{{  "cddb-id",  false,
 				"FALSE", "print the CDDB id" },
 				ARIdOptions::CDDBID },
-			{{  "db_id",   false, "FALSE",
+			{{  "db-id",   false, "FALSE",
 				"print the AccurateRip DB ID (filename)" },
 				ARIdOptions::DBID },
 			{{  "filename",   false, "FALSE",
 				"print the AccurateRip DB ID (filename)" },
-				ARIdOptions::DBID }, // alias for db_id
+				ARIdOptions::DBID }, // alias for --db-id
+			{{ "no-labels",  false, "FALSE", "" },
+				ARIdOptions::NOLABELS },
 			{{  "url",   false, "FALSE",
 				"print the AccurateRip URL" },
 				ARIdOptions::URL },
 			{{ "profile",    false, "FALSE", "" },
 				ARIdOptions::PROFILE },
-			{{  "url_prefix", true, "none",
+			{{  "url-prefix", true, "none",
 				"use the specified prefix instead of the default "
 					"'http://accuraterip.com/accuraterip/'" },
 				ARIdOptions::URLPREFIX },
@@ -123,8 +125,10 @@ int ARIdApplication::do_run(const Options &options)
 			true, true, true, true, true, true, true, true);
 	} else
 	{
-		// Use labels iff more than one property is to be printed
-		const bool print_labels = 1 < options.is_set(ARIdOptions::ID)
+		// Use labels iff allowed and more than one property is to be printed
+		const bool print_labels = !options.is_set(ARIdOptions::NOLABELS)
+			and
+			1 < options.is_set(ARIdOptions::ID)
 			+ options.is_set(ARIdOptions::URL)
 			+ options.is_set(ARIdOptions::DBID)
 			+ options.is_set(ARIdOptions::CDDBID);

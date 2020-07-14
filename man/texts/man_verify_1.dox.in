@@ -46,11 +46,15 @@ in the output, regardless of v2 or v1 or whether a match was found.
 
 \par -r,--response=RESPONSEFILE
 Specify the binary file with the AccurateRip response. Parsed text files will
-not be accepted. If \b --response is absent, references are expected on stdin.
+not be accepted. If \b --response is absent, the binary content as provided
+by AccurateRip is expected on stdin.
 
-\par --refvalues=...,...
+\par --refvalues=0x111,0x222,0x333,...
 Comma-separated list of hexadecimal values (with or without leading base marker
-'0x') that are treated as reference values for verification.
+'0x') that are treated as reference values for verification. When using
+\b --refvalues, any \b --metafile is ignored and therefore, no TOC information
+and no AccurateRip URL or ID is available. Therefore \b --print-id and
+\b --print-url are without effect if \b --refvalues is present.
 
 \par --no-first
 Do not process the first of the audiofiles as first track of an album.
@@ -70,29 +74,13 @@ album are to be verified.
 
 \subsection OUTPUT Options for output
 
-\par --no-track-nos
-Suppress output of track numbers.
-
-\par --no-filenames
-Suppress output of audio filenames.
-
-\par --no-offsets
-Suppress output of track offsets.
-
-\par --no-lengths
-Suppress output of track lengths.
-
-\par --no-labels
-Suppress output of any row labels and column titles.
-
-\par --col-delim
-Set the column delimiter for table output
+\copydoc inc_calcoutoptions
 
 \par --print-id
-Print the AccurateRip id of the album to be verified.
+Print the AccurateRip id of the reference data, if available.
 
 \par --print-url
-Print the AccurateRip URL of the album to be verified.
+Print the AccurateRip URL of the reference data, if available.
 
 \par --print-all-matches
 Print each match trial for each reference block regardless of the result. This

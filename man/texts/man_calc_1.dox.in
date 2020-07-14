@@ -48,12 +48,14 @@ album are represented as single files but no TOC metadata is present.
 
 \subsection OUTPUT Options for output
 
+\copydoc inc_calcoutoptions
+
 \par --no-v1
 Do not output ARCSs v1. Default is OFF which prints ARCSs v1 as well as ARCSs
 v2. Since, however, the ARCSv1 checksum is effectively a subtotal of the ARCSv2
 checksum, ARCSv1 will effectively have to be calculated. Therefore, this switch
 will not result in making the calculation consume less time. Combining this
-switch with --no-v2 will result in doing nothing.
+switch with \b --no-v2 will result in doing nothing.
 
 \par --no-v2
 Do not calculate and output ARCSs v2. Default is OFF which calculates and
@@ -61,11 +63,24 @@ output ARCSs v1 as well as v2. By specifiying \b --no-v2 the calculation of
 ARCSv2 is suppressed. Combining this switch with \b --no-v1 will result in doing
 nothing.
 
+\par --print-id
+Print the calculated AccurateRip id. Effects only album input.
+
+\par --print-sums-only
+Abbreviates --no-labels --no-track-nos --no-filenames --no-offsets --no-lengths.
+Prints the checksums and nothing more. The left output column (or first line in
+case of --tracks-as-cols) will always show ARCSs v1, the right output
+column/second line will always show ARCSs v2.
+
+\par --print-url
+Print the calculated AccurateRip URL. Effects only album input.
+
 \par --tracks-as-cols
 Print the tracks or filenames as columns instead of the track properties. This
-implies --no-filenames. The columns are in the same order from left to right as
-the input filenames. If the columns represent tracks instead of files, the order
-of columns follows the order of track numbers in ascending from left to right.
+implies \b --no-filenames. The columns are in the same order from left to right
+as the input filenames. If the columns represent tracks instead of files, the
+order of columns follows the order of track numbers in ascending from left to
+right.
 
 \copydoc inc_calcinfooptions
 
@@ -83,10 +98,8 @@ of columns follows the order of track numbers in ascending from left to right.
 \subsection ALBUMTOCM 1. Album + TOC, using the audio files specified in the TOC
 
 You have: An album ripped to a single audio file, say fLaC, or a set of files
-and the TOC (as CUESheet). The CUESheet specifies the actual audiofiles, may it
+and the TOC as a CUESheet. The CUESheet specifies the actual audiofiles, may it
 be a single file or one file per track.
-
-You want: The ARCSs of each track.
 
 $ @TOOL_NAME_CALC@ -m myalbum/toc.cue
 
@@ -96,9 +109,9 @@ $ @TOOL_NAME_CALC@ -m myalbum/toc.cue
 
 \par a) Single audio file
 
-You have: An album ripped to a single audio file, say fLaC, and the TOC as
+You have: An album ripped to a single audio file, say fLaC, and the TOC as a
 CUESheet. The CUESheet specifies audio files, but you want to override them with
-\c foo/foo.flac instead.
+\c myalbum/album_rip.flac instead.
 
 $ @TOOL_NAME_CALC@ -m myalbum/toc.cue myalbum/album_rip.flac
 
@@ -124,7 +137,7 @@ $ @TOOL_NAME_CALC@ --album myalbum/track_1.flac myalbum/track_2.flac ...
 \subsection FILES 4. Some audiofiles but no TOC
 
 You have: A set of audiofiles that do not form an album. (Either the album is
-missing the first or last track or the tracks are completely unrelated.)
+missing some tracks or the tracks you intend to pass are completely unrelated.)
 
 
 \par a) Unrelated intermediate tracks or nothing known
@@ -141,7 +154,7 @@ $ @TOOL_NAME_CALC@ myalbum/f1.flac myalbum/f2.flac ...
 
 \par a) First or last track known but album incomplete
 
-For each call you may or may not specifiy exactly one first and one last track.
+For each call you may or may not specify exactly one first and one last track.
 These correspond with the first and last of the audio filenames you pass, but
 only if the switches \b --first or \b --last explicitly declare that either
 first or last position in the audio filename list should be treated

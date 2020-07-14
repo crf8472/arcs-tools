@@ -13,33 +13,36 @@ https://codeberg.org/tristero/arcs-tools/src/branch/master/LICENSE
 
 Accepted input formats for metadata files are the ones listed by \b
 --list-toc-formats. Accepted input formats for audio files are the ones listed
-by \b --list-audio-formats.
+by \b --list-audio-formats. In case of audio file, a "format" is a combination
+of a codec and a container file format. Which input formats are supported
+depends entirely on the underlying instance of libarcsdec that is used.
 
-If a metadata file with the TOC is passed audio files may or may not be passed
-additionally.
+If a metadata file with the TOC is passed, there may or may not be passed audio
+files. The audio input will always be considered to form an album in this case.
 
 If a metadata file and no audio files are specified, the name of the audio files
-must be present in the metadata file. The audio input is supposed to form an
-album.
+must be present in the metadata file.
 
-If audiofiles together with a metadata file are passed, the names of the
-audiofiles will override potentially specified filenames in the metadata file.
-The audio input is supposed to form an album. If a single audiofile is passed
-together with a metadata file, the audiofile is supposed to contain all tracks
-of the album. If multiple audiofiles are passed together with a metadata file,
-the number of the audiofiles passed has to match exactly the number of tracks
-specified in the metadata file, otherwise the input will not be processed. To
-put it simpler, if you override audiofilenames in the metadata file, you either
-have to override them by a single audiofile holding all tracks or you have to
-specify exactly one distinct audiofile for each known track.
+If a metadata file is passed along with a single audio file, the audiofile is
+supposed to contain all tracks of the album. It overrides any filename from the
+metadata file.
+
+If a metadata file is passed along with multiple audiofiles, the total number of
+the audiofiles passed must be identical to the number of tracks specified in the
+metadata file, otherwise the input will not be processed. To put it simpler, if
+you override audiofilenames in the metadata file, you either have to override
+them by a single audiofile holding all tracks or you have to specify exactly one
+distinct audiofile for each known track. The audiofiles will be assigned to
+album tracks in the order they are passed.
 
 If audiofiles are passed without a metadata file, the audiofiles are processed
-in the order their names are passed. (In case of wildcards this may be specific
-to your command line processor.) The audio input is not supposed to form an
-album, but can be declared to do so by using \b --album or a combination of the
-switches \b --first and \b --last to declare the first audio file in the list
-passed to be the first track of the album or the last audio file to be the last
-track.
+in the order their names are passed. When using wildcards the order may be
+specific to your command line processor. The audio input is not supposed to
+form an album, but can be declared to do so by using \b --album or a combination
+of the switches \b --first and \b --last to declare the first audio file in the
+list passed to be the first track of the album or the last audio file to be the
+last track. If no flags are used, each audiofile passed is processed as an
+intermediate track.
 
 
 \page inc_outfileopt
@@ -65,14 +68,30 @@ Suppress any informational message on stdout, just print the result. A failure
 during program run may result in no information. Takes precedence over any
 potentially present \b -v. Takes any effect off of \b -l.
 
-\par -v,--verbosity [n]
-Activate loglevel n. Default loglevel (without any \b -v option) is \b n == 2
-and prints warnings and above. Option \b -v 0 is equivalent to \b -q and prints
-no log messages at all. 1 == errors, 2(default) == warnings, 3 == info, 4 ==
-debug, 5 - 8 == levels of tracing. For any \b n > 8, loglevel 8 will be set.
-Log messages will be printed to stdlog by default. Alternatively, a logfile can
-be specified by option \b --l. If \b -q is present, any loglevel options will be
-ignored.
+\par -v,--verbosity=[0-8]
+Activate loglevel NUMBER. Default loglevel (without any \b -v option) is
+\b n == 2 which prints warnings and above. The following loglevels are
+available:
+\verbatim
+.TS
+tab(@);
+cl.
+Loglevel@Description
+0@Quiet\&. No logs\&. Never\&.
+1@Errors only
+2@Warnings
+3@Information
+4@Debug
+5@More debug
+6@Even more debug
+7@Quite many debug
+8@Too much debug
+
+.TE
+\endverbatim
+For any \b n > 8, loglevel 8 will be set. Log messages will be printed to stdlog
+by default. Alternatively, a logfile can be specified by option \b --l. If \b -q
+is present, any other loglevel options will be ignored.
 
 
 \page inc_versionopt
@@ -94,13 +113,13 @@ Print a list of supported audio readers. Each reader will specify the list of
 any supported audio codecs and any supported container file formats. Each
 reader supports any combination of a supported audio codec and a supported
 container file format. Note that arcs-tools only supports lossless audio
-codecs or the lossless settings of codecs that support lossless encoding. This
-switch is ignored if input files are specified.
+codecs or the lossless settings of codecs that optionally support lossless
+encoding. This switch is ignored if input files are specified.
 
 
 \page inc_calcinoptions
 
-\par -m,--metadata=TOCFILE
+\par -m,--metafile=TOCFILE
 Specify the file with the TOC data of the original medium. Accepted input
 formats are the ones listed by \b --list-toc-formats. The specified file is
 expected to provide the track offsets. It may as well optionally provide the
@@ -108,6 +127,30 @@ total number of samples and the name(s) of the audio file(s). If names of \b
 AUDIOFILE(s) are passed, they will override any names of audio files potentially
 occurring in \b TOCFILE. If TOCFILE is not readable, run stops with an error
 code.
+
+
+\page inc_calcoutoptions
+
+\par --col-delim=STRING
+Set the column delimiter. The default is a blank ' '. By setting semicolon ';'
+as column delimiter, one can achieve CSV output.
+
+\par --no-filenames
+Do not print filenames in the output. Effects only non-album input.
+
+\par --no-labels
+Do not print column labels in the output. If combined with \b --print-id or
+\b --print-url the field labels for AccurateRip ID and AccurateRip URL are also
+skipped.
+
+\par --no-lengths
+Do not print track lengths.
+
+\par --no-offsets
+Do not print track offsets. Effects only album input.
+
+\par --no-track-nos
+Do not print track numbers. Effects only album input.
 
 
 \page inc_buginfo
