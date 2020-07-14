@@ -1,4 +1,4 @@
-#ifndef __ARCSTOOLS_APPARPARSE_HPP__
+#ifndef __ARCSTOOLS_APPPARSE_HPP__
 #include "app-parse.hpp"
 #endif
 

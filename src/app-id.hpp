@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_APPARID_HPP__
-#define __ARCSTOOLS_APPARID_HPP__
+#ifndef __ARCSTOOLS_APPID_HPP__
+#define __ARCSTOOLS_APPID_HPP__
 
 /**
  * \file

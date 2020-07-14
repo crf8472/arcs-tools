@@ -1,5 +1,4 @@
-#include <arcstk/identifier.hpp>
-#ifndef __ARCSTOOLS_ARCALC_HPP__
+#ifndef __ARCSTOOLS_APPCALC_HPP__
 #include "app-calc.hpp"
 #endif
 

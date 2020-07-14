@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_APPARVERIFY_HPP__
-#define __ARCSTOOLS_APPARVERIFY_HPP__
+#ifndef __ARCSTOOLS_APPVERIFY_HPP__
+#define __ARCSTOOLS_APPVERIFY_HPP__
 
 /**
  * \file
@@ -21,7 +21,7 @@
 #include <arcstk/parse.hpp>
 #endif
 
-#ifndef __ARCSTOOLS_ARCALC_HPP__
+#ifndef __ARCSTOOLS_APPCALC_HPP__
 #include "app-calc.hpp"          // for ARCalcConfigurator, CALC
 #endif
 #ifndef __ARCSTOOLS_APPLICATION_HPP__

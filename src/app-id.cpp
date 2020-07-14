@@ -1,4 +1,4 @@
-#ifndef __ARCSTOOLS_APPARID_HPP__
+#ifndef __ARCSTOOLS_APPID_HPP__
 #include "app-id.hpp"
 #endif
 
