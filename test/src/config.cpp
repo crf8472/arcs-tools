@@ -1,53 +1,12 @@
 #include "catch2/catch.hpp"
 
-#ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp"
-#endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
-#endif
-#ifndef __ARCSTOOLS_OPTIONS_HPP__
-#include "options.hpp"
 #endif
 #ifndef __ARCSTOOLS_APPARVERIFY_HPP__
 #include "app-verify.hpp"
 #endif
 
-TEST_CASE ( "CLITokens", "[clitokens]" )
-{
-	using arcsapp::CLITokens;
-
-	SECTION ("CLITokens collects arguments correct")
-	{
-		const int argc = 6;
-		const char* input[] = { "arcstk-verify",
-			"irgendwas", "-m", "foo/foo.cue", "foo/foo.wav", "-r", "foo/foo.bin"
-		};
-
-		auto tokens = CLITokens(argc, input);
-
-		tokens.consume("-m", true);
-		tokens.consume("-r", true);
-
-		CHECK ( "irgendwas" == tokens.consume() );
-		CHECK ( "foo/foo.wav" == tokens.consume() );
-
-		CHECK ( tokens.empty() );
-	}
-
-	SECTION ("Unconsumed tokens will be arguments")
-	{
-		const int argc = 6;
-		const char* input[] = { "arcstk-verify",
-			"-m", "foo/foo.cue", "foo/foo.wav", "-r", "foo/foo.bin"
-		};
-
-		auto tokens = CLITokens(argc, input);
-
-		tokens.consume("-m", true);
-		tokens.consume("-r", true);
-	}
-}
 
 TEST_CASE ( "VERIFY Configurator", "[ARVerifyConfigurator]" )
 {
@@ -62,16 +21,16 @@ TEST_CASE ( "VERIFY Configurator", "[ARVerifyConfigurator]" )
 			"-m", "foo/foo.cue", "foo/foo.wav", "-r", "foo/foo.bin"
 		};
 
-		ARVerifyConfigurator conf1(argc, input);
+		ARVerifyConfigurator conf1;
 
-		auto options1 = conf1.provide_options();
-		auto arguments1 = options1->get_arguments();
+		auto options1 = conf1.provide_options(argc, input);
+		auto arguments1 = options1->arguments();
 
 		CHECK ( options1->is_set(VERIFY::METAFILE) );
-		CHECK ( options1->get(VERIFY::METAFILE) == "foo/foo.cue" );
+		CHECK ( options1->value(VERIFY::METAFILE) == "foo/foo.cue" );
 
 		CHECK ( options1->is_set(VERIFY::RESPONSEFILE) );
-		CHECK ( options1->get(VERIFY::RESPONSEFILE) == "foo/foo.bin" );
+		CHECK ( options1->value(VERIFY::RESPONSEFILE) == "foo/foo.bin" );
 
 		CHECK ( arguments1.size() == 1 );
 		CHECK ( arguments1[0] == "foo/foo.wav" );

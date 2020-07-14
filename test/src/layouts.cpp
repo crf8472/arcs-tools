@@ -3,9 +3,6 @@
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"
 #endif
-#ifndef __ARCSTOOLS_OUTPUTFORMATS_HPP__
-#include "printers.hpp"
-#endif
 
 
 TEST_CASE ( "HexLayout", "[hexlayout]" )
@@ -21,11 +18,11 @@ TEST_CASE ( "HexLayout", "[hexlayout]" )
 }
 
 
-TEST_CASE ( "WithInternalFlags", "" )
+TEST_CASE ( "InternalFlags", "" )
 {
-	using arcsapp::WithInternalFlags;
+	using arcsapp::InternalFlags;
 
-	WithInternalFlags flags(0);
+	InternalFlags flags(0);
 	flags.set_flag(4, true);
 
 	REQUIRE ( not flags.flag(0) );
@@ -70,23 +67,12 @@ TEST_CASE ( "WithMetadataFlagMethods", "" )
 }
 
 
-TEST_CASE ( "ARIdTableFormat", "" )
+TEST_CASE ( "ARIdTableLayout", "" )
 {
-	using arcsapp::ARIdTableFormat;
-	using ARID_FLAG = ARIdTableFormat::ARID_FLAG;
+	using arcsapp::ARIdTableLayout;
+	//using ARID_FLAG = ARIdTableLayout::ARID_FLAG;
 
-	ARIdTableFormat f(false, true, false, false, false, false, false);
-
-	REQUIRE ( f.rows()    == 1 );
-	REQUIRE ( f.columns() == 1 );
-
-	REQUIRE ( not f.has_only(ARID_FLAG::ID) );
-	REQUIRE ( f.has_only(ARID_FLAG::URL) );
-	REQUIRE ( not f.has_only(ARID_FLAG::FILENAME) );
-	REQUIRE ( not f.has_only(ARID_FLAG::TRACKS) );
-	REQUIRE ( not f.has_only(ARID_FLAG::ID1) );
-	REQUIRE ( not f.has_only(ARID_FLAG::ID2) );
-	REQUIRE ( not f.has_only(ARID_FLAG::CDDBID) );
+	ARIdTableLayout lyt(false, false, true, false, false, false, false, false);
 }
 
 
