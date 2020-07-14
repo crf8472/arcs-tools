@@ -5,6 +5,13 @@
 #endif
 
 
+
+TEST_CASE ( "optimal_width()", "TODO" )
+{
+	// TODO
+}
+
+
 TEST_CASE ( "HexLayout", "[hexlayout]" )
 {
 	using arcsapp::Checksum;
@@ -67,26 +74,15 @@ TEST_CASE ( "WithMetadataFlagMethods", "" )
 }
 
 
-TEST_CASE ( "ARIdTableLayout", "" )
+TEST_CASE ( "TypedColsTableBase", "TODO" )
 {
-	using arcsapp::ARIdTableLayout;
-	//using ARID_FLAG = ARIdTableLayout::ARID_FLAG;
-
-	ARIdTableLayout lyt(false, false, true, false, false, false, false, false);
+	// TODO
 }
 
 
-TEST_CASE ( "TypedColsTableBase", "" )
+TEST_CASE ( "TypedRowsTableBase", "TODO" )
 {
-	using arcsapp::WithMetadataFlagMethods; // FIXME Tests wrong type
-
-	WithMetadataFlagMethods table(true, true, true, false, false);
-
-	REQUIRE ( table.label() );
-	REQUIRE ( table.track() );
-	REQUIRE ( table.offset() );
-	REQUIRE ( not table.length() );
-	REQUIRE ( not table.filename() );
+	// TODO
 }
 
 
@@ -162,5 +158,40 @@ TEST_CASE ( "StringTable", "[stringtable]" )
 		CHECK ( table_moved.cell(1, 2) == "quux" );
 		CHECK ( table_moved.cell(1, 3) == "855" );
 	}
+}
+
+
+TEST_CASE ( "ARTripletLayout", "TODO" )
+{
+	using arcsapp::ARTripletLayout;
+
+	ARTripletLayout lyt;
+}
+
+
+TEST_CASE ( "ARIdTableLayout", "TODO" )
+{
+	using arcsapp::ARIdTableLayout;
+	//using ARID_FLAG = ARIdTableLayout::ARID_FLAG;
+
+	ARIdTableLayout lyt(false, false, true, false, false, false, false, false);
+}
+
+
+TEST_CASE ( "CalcAlbumTableLayout", "TODO" )
+{
+	// TODO
+}
+
+
+TEST_CASE ( "CalcTracksTableLayout", "TODO" )
+{
+	// TODO
+}
+
+
+TEST_CASE ( "VerifyTableLayout", "TODO" )
+{
+	// TODO
 }
 

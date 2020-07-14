@@ -17,8 +17,9 @@ set (MAIN_TEST_CPP "${TEST_SOURCE_DIR}/main.test.cpp" )
 ## List of executable tests
 set (TEST_SETS )
 
-list (APPEND TEST_SETS config  )
-list (APPEND TEST_SETS layouts )
+list (APPEND TEST_SETS clitokens )
+list (APPEND TEST_SETS config    )
+list (APPEND TEST_SETS layouts   )
 
 
 ## --- Provide main object file

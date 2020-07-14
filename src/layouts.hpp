@@ -268,22 +268,6 @@ private:
 
 
 /**
- * \brief Abstract base class for output formats of ARTriplet.
- */
-class ARTripletLayout : protected WithInternalFlags
-					  , public Layout<int, ARTriplet>
-{
-public:
-
-	using Layout<int, ARTriplet>::Layout;
-
-private:
-
-	std::string do_format(ArgsRefTuple t) const override;
-};
-
-
-/**
  * \brief Format numbers in hexadecimal representation
  */
 class HexLayout : protected WithInternalFlags
@@ -366,6 +350,22 @@ public:
 private:
 
 	std::unique_ptr<ChecksumLayout> checksum_layout_;
+};
+
+
+/**
+ * \brief Abstract base class for output formats of ARTriplet.
+ */
+class ARTripletLayout : protected WithInternalFlags
+					  , public Layout<int, ARTriplet>
+{
+public:
+
+	using Layout<int, ARTriplet>::Layout;
+
+private:
+
+	std::string do_format(ArgsRefTuple t) const override;
 };
 
 
@@ -1604,7 +1604,7 @@ public:
 /**
  * \brief Formatting the result of an album-mode calculation as a table.
  */
-class CalcAlbumTableLayout : public CalcResultLayout
+class CalcAlbumTableLayout final : public CalcResultLayout
 {
 public:
 
@@ -1638,7 +1638,7 @@ private:
 /**
  * \brief Formatting the result of a tracks-mode calculation as a table.
  */
-class CalcTracksTableLayout : public CalcResultLayout // TODO Redundant?
+class CalcTracksTableLayout final : public CalcResultLayout // TODO Redundant?
 {
 public:
 
@@ -1731,7 +1731,7 @@ private:
 /**
  * \brief Formatting the result of a verification as a table.
  */
-class VerifyTableLayout : public VerifyResultLayout
+class VerifyTableLayout final : public VerifyResultLayout
 {
 public:
 

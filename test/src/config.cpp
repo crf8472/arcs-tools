@@ -3,12 +3,42 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
 #endif
+#ifndef __ARCSTOOLS_APPARID_HPP__
+#include "app-id.hpp"
+#endif
+#ifndef __ARCSTOOLS_APPARCALC_HPP__
+#include "app-calc.hpp"
+#endif
 #ifndef __ARCSTOOLS_APPARVERIFY_HPP__
 #include "app-verify.hpp"
 #endif
 
 
-TEST_CASE ( "VERIFY Configurator", "[ARVerifyConfigurator]" )
+TEST_CASE ( "DefaultConfigurator", "[DefaultConfigurator]" )
+{
+	using arcsapp::DefaultConfigurator;
+
+	// TODO
+}
+
+
+TEST_CASE ( "ARIdConfigurator", "[ARIdConfigurator]" )
+{
+	using arcsapp::ARIdConfigurator;
+
+	// TODO
+}
+
+
+TEST_CASE ( "ARCalcConfigurator", "[ARCalcConfigurator]" )
+{
+	using arcsapp::ARCalcConfigurator;
+
+	// TODO
+}
+
+
+TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 {
 	using arcsapp::ARVerifyConfigurator;
 	using arcsapp::VERIFY;
