@@ -94,7 +94,7 @@ endforeach()
 file (MAKE_DIRECTORY ${PROJECT_MAN_DOXYGEN_OUT_DIR} )
 
 add_custom_command (
-	OUTPUT ${MANPAGES}
+	OUTPUT ${INSTALL_PAGES}
 	COMMAND cmake -E copy ${MANPAGES} "${PROJECT_MAN_BUILD_DIR}"
 	DEPENDS ${GENERATION_STAMP}
 	COMMENT "Copy manpages to build directory"
@@ -152,4 +152,6 @@ if (NOT SKIP_INSTALL_ALL AND NOT SKIP_INSTALL_FILES )
 	install (FILES ${INSTALL_PAGES} DESTINATION "${INSTALL_MAN_DIR}/man1" )
 
 endif()
+
+add_custom_target (man DEPENDS provide_manpages )
 
