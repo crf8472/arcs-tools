@@ -94,11 +94,18 @@ by default. Alternatively, a logfile can be specified by option \b --l. If \b -q
 is present, any other loglevel options will be ignored.
 
 
+\page inc_helpopt
+
+\par --help
+Print usage info and exit. If \b --help is passed, neither of the
+other command line options will be evaluated, including \b --version.
+
+
 \page inc_versionopt
 
 \par --version
 Print version information and exit. If \b --version is passed, neither of the
-other command line options will be evaluated.
+other command line options except \b --help will be evaluated.
 
 
 \page inc_calcinfooptions

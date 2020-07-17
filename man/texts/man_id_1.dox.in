@@ -24,6 +24,8 @@ Otherwise, option \b -a allows to specify the audio file explicitly.
 
 \section OPTIONS
 
+\copydoc inc_helpopt
+
 \par --cddb-id
 Print the cddb id.
 

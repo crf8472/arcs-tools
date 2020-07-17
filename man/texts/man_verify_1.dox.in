@@ -44,6 +44,8 @@ in the output, regardless of v2 or v1 or whether a match was found.
 
 \subsection INPUT Options for processing input
 
+\copydoc inc_helpopt
+
 \par -r,--response=RESPONSEFILE
 Specify the binary file with the AccurateRip response. Parsed text files will
 not be accepted. If \b --response is absent, the binary content as provided

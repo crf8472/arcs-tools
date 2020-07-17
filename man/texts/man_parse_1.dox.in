@@ -22,6 +22,8 @@ the response.
 
 \section OPTIONS
 
+\copydoc inc_helpopt
+
 \copydoc inc_logfileopt
 
 \copydoc inc_outfileopt

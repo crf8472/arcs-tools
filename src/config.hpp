@@ -168,7 +168,7 @@ public:
 	/**
 	 * \brief Set the option to TRUE and add the specified value to it.
 	 *
-	 * If \c option is currently set, the value will be added.
+	 * If \c option is currently set, the value will be updated to \c value.
 	 *
 	 * If \c option is OPTION::NONE or the setting of the option fails for some
 	 * reason, an exception is thrown.

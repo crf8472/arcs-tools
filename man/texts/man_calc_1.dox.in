@@ -50,6 +50,8 @@ album are represented as single files but no TOC metadata is present.
 
 \copydoc inc_calcoutoptions
 
+\copydoc inc_helpopt
+
 \par --no-v1
 Do not output ARCSs v1. Default is OFF which prints ARCSs v1 as well as ARCSs
 v2. Since, however, the ARCSv1 checksum is effectively a subtotal of the ARCSv2

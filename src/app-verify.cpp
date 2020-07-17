@@ -193,6 +193,7 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 		std::unique_ptr<Options> options)
 {
 	auto voptions = configure_calcbase_options(std::move(options));
+	auto no_album_options = std::string {};
 
 	// Album mode
 
@@ -203,14 +204,38 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 
 		ARCS_LOG(DEBUG1) << "Activate option NOLAST due to NOALBUM";
 		voptions->set(VERIFY::NOLAST);
+
+		no_album_options = "--no-album";
 	} else
 	{
+		if (voptions->is_set(VERIFY::NOFIRST))
+		{
+			no_album_options += "--no-first";
+		}
+
+		if (voptions->is_set(VERIFY::NOLAST))
+		{
+			if (no_album_options.empty()) { no_album_options += ","; }
+			no_album_options += "--no-last";
+		}
+
 		if(voptions->is_set(VERIFY::NOFIRST) and
 				voptions->is_set(VERIFY::NOLAST))
 		{
 			ARCS_LOG(DEBUG1) <<
 				"Activate option NOALBUM due to NOFIRST and NOLAST";
 			voptions->set(VERIFY::NOALBUM);
+		}
+	}
+
+	if (voptions->is_set(VERIFY::NOFIRST) or voptions->is_set(VERIFY::NOLAST))
+	{
+		if (voptions->is_set(VERIFY::METAFILE))
+		{
+			ARCS_LOG(WARNING) << "Metadata file "
+				<< voptions->value(VERIFY::METAFILE) << " specifies an album,"
+				" but adding " << no_album_options
+				<< " will probably lead to unwanted results";
 		}
 	}
 
@@ -232,6 +257,13 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 				"and reference values do not provide an URL to print";
 			voptions->unset(VERIFY::PRINTURL);
 		}
+	}
+
+	if (voptions->is_set(VERIFY::RESPONSEFILE)
+			and voptions->is_set(VERIFY::REFVALUES))
+	{
+		throw std::invalid_argument("Cannot process --refvalues along with "
+				" -r/--response, only one of theses options is allowed");
 	}
 
 	// NOOUTPUT implies BOOLEAN

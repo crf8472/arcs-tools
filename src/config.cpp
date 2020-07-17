@@ -164,16 +164,16 @@ void Options::set(const OptionCode &option)
 
 void Options::set(const OptionCode &option, const std::string &value)
 {
+	if (OPTION::NONE == option)
+	{
+		throw ConfigurationException("Cannot set OPTION::NONE");
+	}
+
 	auto rc = options_.insert(std::make_pair(option, value));
 
-	if (not rc.second) // Insertion failed
+	if (not rc.second) // Insertion failed, but option value can be updated
 	{
-		std::ostringstream msg;
-		msg << "Option '" << option << "' with value '" << value
-			<< "' could not be stored in configuration instance"
-			<< ", prevented by option '" << rc.first->first
-			<< "' with value '" << rc.first->second << "'." << std::endl;
-		throw ConfigurationException(msg.str());
+		rc.first->second = value;
 	}
 }
 
@@ -302,6 +302,7 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 	// Parse Input and Match Supported Options
 
 	auto input = CLITokens { argc, argv, all_supported_options, true };
+	auto options = std::make_unique<Options>();
 
 	// Activate logging:
 	// The log options --logfile, --verbosity and --quiet take immediate effect
@@ -333,15 +334,13 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 			{
 				Logging::instance().set_level(logman_.default_loglevel());
 			}
-		} // ... else the already active quiet loglevel will persist.
+		}
 
 		// TODO Make configurable
 		Logging::instance().set_timestamps(false);
 	}
 
 	// Convert input to Options object
-
-	auto options = std::make_unique<Options>();
 
 	for (const auto& token : input)
 	{
@@ -355,6 +354,14 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 	}
 
 	ARCS_LOG_DEBUG << "Command line input successfully parsed";
+
+	// Reset verbosity to actual log level (to maintain consistency)
+	{
+		auto actual_level = static_cast<std::underlying_type_t<LOGLEVEL>>(
+				Logging::instance().level());
+
+		options->set(OPTION::VERBOSITY, std::to_string(actual_level));
+	}
 
 	return this->do_configure_options(std::move(options));
 }
