@@ -2,22 +2,21 @@
 
 PROJECT_NAME           = "@PROJECT_NAME@"
 PROJECT_NUMBER         = "@PROJECT_VERSION_STRING@"
-PROJECT_BRIEF          = "An AccurateRip checksum toolkit"
+PROJECT_BRIEF          = "@PROJECT_BRIEF_DESC@"
 OUTPUT_DIRECTORY       = @PROJECT_BUILD_DOC_DIR@
 
-JAVADOC_AUTOBRIEF      = YES
 TOC_INCLUDE_HEADINGS   = 0
 
-BUILTIN_STL_SUPPORT    = YES
 HIDE_UNDOC_MEMBERS     = YES
 HIDE_UNDOC_CLASSES     = YES
 HIDE_FRIEND_COMPOUNDS  = YES
+#INTERNAL_DOCS          = @DOXYGEN_INTERNAL_DOCS@
+SHOW_GROUPED_MEMB_INC  = YES
 
-INTERNAL_DOCS          = @PROJECT_DOXYGEN_INTERNAL_DOCS@
+SORT_BRIEF_DOCS        = YES
 SORT_MEMBERS_CTORS_1ST = YES
 SORT_GROUP_NAMES       = YES
-ENABLED_SECTIONS       = @PROJECT_DOXYGEN_ENABLED_SECTIONS@
-QUIET                  = YES
+#QUIET                  = YES
 
 WARN_LOGFILE           = @PROJECT_LOG_DIR@/Doxygen_Warnings.log
 
@@ -25,20 +24,19 @@ INPUT                  = @PROJECT_SOURCE_DIR@       \
                          @PROJECT_BUILD_SOURCE_DIR@ \
                          @PROJECT_DOC_TEXTS_DIR@
 
-FILE_PATTERNS          = *.cpp    \
-                         *.hpp    \
+FILE_PATTERNS          = *.hpp    \
                          *.hpp.in \
-                         *.tpp    \
                          *.md
 
 USE_MDFILE_AS_MAINPAGE = @PROJECT_DOC_TEXTS_DIR@/MAINPAGE.md
 VERBATIM_HEADERS       = NO
 
-LATEX_CMD_NAME         = latex
-COMPACT_LATEX          = YES
-LATEX_TIMESTAMP        = YES
+GENERATE_LATEX         = NO
+#LATEX_CMD_NAME         = latex
+#COMPACT_LATEX          = YES
+#LATEX_TIMESTAMP        = YES
 XML_NS_MEMB_FILE_SCOPE = YES
 
-HAVE_DOT               = YES
+#HAVE_DOT               = NO
 GROUP_GRAPHS           = NO
 
