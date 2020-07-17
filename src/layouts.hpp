@@ -431,7 +431,7 @@ public:
 	/**
 	 * \brief Set to TRUE to print field labels.
 	 *
-	 * \param[in] id Flag to indicate that field labels have to be printed
+	 * \param[in] labels Flag to indicate that field labels have to be printed
 	 */
 	void set_fieldlabels(const bool labels);
 
