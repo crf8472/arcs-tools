@@ -29,40 +29,29 @@ namespace file
 std::string path(const std::string &filename);
 
 /**
- * \brief Service method: check whether file exists.
- *
- * \param[in] filename The name of the file to check
- *
- * \return TRUE iff this file exists, otherwise FALSE
- */
-bool file_exists(const std::string &filename);
-
-/**
  * \brief Worker to prepend a path to a filename.
  *
- * \param[in] path     The (absolute or relative) path to prepend
- * \param[in] filename The filename to prepend \c path to
+ * Parameter \c path must end with a file separator or its last part will be
+ * replaced by \c filename.
+ *
+ * \param[in]     path     The (absolute or relative) path to prepend
+ * \param[in,out] filename The filename to prepend \c path to
  *
  * \return The filename with the path prepended
  */
 void prepend_path(const std::string &path, std::string &filename);
 
 /**
- * \brief Service method: check whether a file with given prefix exists with
- * at least one of a list of suffices.
+ * \brief Service method: check whether file exists and is readable.
  *
- * If no file with a different suffix exists, the string returned will be
- * empty.
- * This is helpful to derive the name of the metadata file from the audio
- * file and vice versa.
+ * TRUE, if owner, group and others are allowed to read the file (i.e.
+ * file must at least have 0444).
  *
- * \param[in] filename The original filename (prefix and suffix)
- * \param[in] suffices List of suffices to test for
+ * \param[in] filename The name of the file to check
  *
- * \return Name of the existing related file with the first suffix found
+ * \return TRUE iff this file exists and is readable, otherwise FALSE
  */
-std::string derive_filename(const std::string &filename,
-		const std::vector<std::string> &suffices);
+bool file_is_readable(const std::string &filename);
 
 } // namespace file
 } // namespace arcsapp

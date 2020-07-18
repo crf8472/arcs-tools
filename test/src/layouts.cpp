@@ -6,7 +6,7 @@
 
 
 
-TEST_CASE ( "optimal_width()", "TODO" )
+TEST_CASE ( "optimal_width()", "" )
 {
 	using arcsapp::optimal_width;
 	using std::vector;

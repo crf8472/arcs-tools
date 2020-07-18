@@ -20,6 +20,7 @@ set (TEST_SETS )
 list (APPEND TEST_SETS clitokens )
 list (APPEND TEST_SETS config    )
 list (APPEND TEST_SETS layouts   )
+list (APPEND TEST_SETS tools-fs  )
 
 
 ## --- Provide main object file

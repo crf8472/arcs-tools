@@ -7,22 +7,19 @@ extern "C" {
 #include <unistd.h>   // for stat
 }
 
+#include <filesystem> // for exists, status, perms
+#include <fstream>    // for ifstream
+#include <sstream>    // for ostringstream
+
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>  // for ARCS_LOG_DEBUG
 #endif
+
 
 namespace arcsapp
 {
 namespace file
 {
-
-// Define file separator (quick and dirty)
-// FIXME C++17's filesystem has better facilites to do this
-#ifdef _WIN32
-const std::string file_sep("\\");
-#else
-const std::string file_sep("/");
-#endif
 
 
 std::string path(const std::string &filename)
@@ -32,76 +29,48 @@ std::string path(const std::string &filename)
 		return std::string{};
 	}
 
-	// FIXME C++17's filesystem has better facilites to do this
-	auto pos = filename.find_last_of(file_sep);
-	if (pos == std::string::npos) // no file separator found, no path specified
-	{
-		return std::string{};
-	}
+	namespace fs = std::filesystem;
 
-	return filename.substr(0, pos).append(file_sep);
-}
+	auto filepath = fs::path(filename);
+	filepath.remove_filename();
+	filepath.make_preferred();
 
-
-bool file_exists(const std::string &filename)
-{
-	// FIXME C-style stuff: use C++17's std::filesystem methods
-	// std::filesystem::exists(filename), ...::status and ...::perms
-
-	// Use POSIX stat to check whether file exists
-	struct stat buffer;
-	return stat(filename.c_str(), &buffer) == 0;
+	return filepath.string();
 }
 
 
 void prepend_path(const std::string &path, std::string &filename)
 {
-	std::string filepath { path };
-	auto pos = filepath.find_last_of(file_sep);
-	if (pos == std::string::npos) // add trailing file separator
+	if (filename.empty())
 	{
-		filepath.append(file_sep);
+		filename = path;
+		return;
 	}
 
-	filename.insert(0, path);
+	namespace fs = std::filesystem;
+
+	auto filepath = fs::path(path);
+	filepath.replace_filename(filename);
+	filepath.make_preferred();
+
+	filename = filepath.string();
 }
 
 
-std::string derive_filename(const std::string &filename,
-		const std::vector<std::string> &suffices)
+bool file_is_readable(const std::string &filename)
 {
-	if (suffices.empty())
+	auto open_file = std::ifstream { filename };
+
+	if (open_file)
 	{
-		return std::string();
+		open_file.close();
+		return true;
 	}
+	return false;
 
-	// Get basename of reference file (without (last) suffix)
-
-	std::string filename_prefix =
-		filename.substr(0, filename.find_last_of("."));
-	// TODO C++17 with better alternative?
-
-	std::stringstream ss;
-	ss << filename_prefix;
-
-	// Check file existence for the given suffices
-
-	for (const std::string &suffix : suffices)
-	{
-		ss << '.' << suffix;
-
-		ARCS_LOG_DEBUG << "Check for: '" << ss.str() << "'";
-
-		if (file_exists(ss.str()))
-		{
-			ARCS_LOG_DEBUG << "Found! Will use this file.";
-			return ss.str();
-		}
-
-		ss.str("");
-	}
-
-	return std::string();
+	// Commented out: Use POSIX stat to check whether file exists
+	//struct stat buffer;
+	//return stat(filename.c_str(), &buffer) == 0;
 }
 
 } // namespace file
