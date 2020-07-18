@@ -30,6 +30,7 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile-doc.in ${DOXYFILE} @ONLY )
 
 add_custom_command (
 	OUTPUT "${INDEXFILE}"
+	COMMAND cmake -E rm -r "${DOC_GEN_DIR}/html"
 	COMMAND Doxygen::doxygen "${DOXYFILE}"
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 	DEPENDS ${DOXYFILE} ${DOC_SOURCES}
