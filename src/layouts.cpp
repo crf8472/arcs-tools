@@ -1877,7 +1877,7 @@ std::string CalcTracksTableLayout::do_format(ArgsRefTuple t) const
 	const auto checksums = std::get<0>(t);
 	const auto filenames = std::get<1>(t);
 	const auto toc       = std::get<2>(t);
-	//const auto arid      = std::get<3>(t); // TODO Implement printing
+	//const auto arid      = std::get<3>(t); // unused
 	const auto is_album  = std::get<4>(t);
 
 	const auto types_to_print = ordered_typelist(checksums);
@@ -1891,12 +1891,14 @@ std::string CalcTracksTableLayout::do_format(ArgsRefTuple t) const
 	// Configure table
 
 	TableLayout lyt { 0, 0, label(), track(), offset(), length(), filename() };
-	//lyt.set_column_delimiter(coldelim_);
+	lyt.set_column_delimiter(column_delimiter());
 
 	if (is_album) { lyt.set_track(true); }
+
+	// Usually, we won't have (filenames.empty() and !toc), but we must
+	// deactivate what we cannot access.
 	if (!toc) { lyt.set_offset(false); }
 	if (filenames.empty()) { lyt.set_filename(false); }
-	// assertion is fulfilled that either not filenames.empty() or non-null toc
 
 	const bool show_input = filename(); // Overrides --no-track-nos
 
@@ -1905,7 +1907,7 @@ std::string CalcTracksTableLayout::do_format(ArgsRefTuple t) const
 				checksums.size());
 
 	// Assign row labels
-	if (label())
+	if (lyt.label())
 	{
 		// Determine row labels (we must know the optimal width when printing)
 		// XXX TypedColsTableBase does this kind of stuff in apply_md_settings()
@@ -1939,6 +1941,7 @@ std::string CalcTracksTableLayout::do_format(ArgsRefTuple t) const
 	}
 
 	// Assign column widths
+
 	for (std::size_t col = 0; col < lyt.columns(); ++col) // print cell
 	{
 		lyt.set_width(col, 8); // TODO Magic number, only ok while no filenames
@@ -1986,7 +1989,7 @@ std::string CalcTracksTableLayout::do_format(ArgsRefTuple t) const
 		++row;
 	}
 
-	if (offset())
+	if (lyt.offset()) // Use lyt.offset(), we overwrote it!
 	{
 		if (label()) { lyt.print_label(o, row); }
 
@@ -2003,7 +2006,7 @@ std::string CalcTracksTableLayout::do_format(ArgsRefTuple t) const
 		++row;
 	}
 
-	if (length())
+	if (lyt.length())
 	{
 		if (label()) { lyt.print_label(o, row); }
 
@@ -2116,7 +2119,7 @@ std::string VerifyTableLayout::do_format(ArgsRefTuple t) const
 	// Configure table layout
 
 	TableLayout lyt { 0, 0, label(), track(), offset(), length(), filename() };
-	//lyt.set_column_delimiter(coldelim_);
+	lyt.set_column_delimiter(column_delimiter());
 
 	// Determine number of rows
 	const int total_entries = 1 /* col titles */ + checksums.size();

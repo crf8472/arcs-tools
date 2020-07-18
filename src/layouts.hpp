@@ -621,8 +621,6 @@ private:
 
 /**
  * \brief Abstract base class for output formats that conatin an ARId.
- *
- * \todo Make a template from this (also see WithChecksums)
  */
 class WithARIdLayout
 {

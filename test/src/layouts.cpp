@@ -8,7 +8,14 @@
 
 TEST_CASE ( "optimal_width()", "TODO" )
 {
-	// TODO
+	using arcsapp::optimal_width;
+	using std::vector;
+	using std::string;
+
+	CHECK ( 4 == optimal_width(vector<string>{"foo1", "bar", "quux"}) );
+	CHECK ( 4 == optimal_width(vector<string>{"foo", "bar", "quux"}) );
+	CHECK ( 1 == optimal_width(vector<string>{"a", "b", ""}) );
+	CHECK ( 0 == optimal_width(vector<string>{"", "", ""}) );
 }
 
 
@@ -19,13 +26,14 @@ TEST_CASE ( "HexLayout", "[hexlayout]" )
 
 	auto hex_layout = std::make_unique<HexLayout>();
 
-	auto foo = hex_layout->format(Checksum { 3456 }, 3);
-
-	CHECK ( foo == "D80" );
+	CHECK ( hex_layout->format(Checksum { 3456 }, 2) == "D80" );
+	CHECK ( hex_layout->format(Checksum { 3456 }, 3) == "D80" );
+	CHECK ( hex_layout->format(Checksum { 1023 }, 4) == "03FF" );
+	CHECK ( hex_layout->format(Checksum { 1023 }, 6) == "0003FF" );
 }
 
 
-TEST_CASE ( "InternalFlags", "" )
+TEST_CASE ( "InternalFlags", "[internalflags]" )
 {
 	using arcsapp::InternalFlags;
 
@@ -51,7 +59,7 @@ TEST_CASE ( "InternalFlags", "" )
 }
 
 
-TEST_CASE ( "WithMetadataFlagMethods", "" )
+TEST_CASE ( "WithMetadataFlagMethods", "[withmetadataflagmethods]" )
 {
 	using arcsapp::WithMetadataFlagMethods;
 
@@ -161,37 +169,228 @@ TEST_CASE ( "StringTable", "[stringtable]" )
 }
 
 
-TEST_CASE ( "ARTripletLayout", "TODO" )
+TEST_CASE ( "ARTripletLayout", "[artripletlayout]" )
 {
 	using arcsapp::ARTripletLayout;
 
 	ARTripletLayout lyt;
+
+	CHECK ( not lyt.format(8, { 0xFFAABBCC, 24, 0x12345678 }).empty() );
 }
 
 
-TEST_CASE ( "ARIdTableLayout", "TODO" )
+TEST_CASE ( "ARIdTableLayout", "[aridtablelayout]" )
 {
 	using arcsapp::ARIdTableLayout;
-	//using ARID_FLAG = ARIdTableLayout::ARID_FLAG;
 
 	ARIdTableLayout lyt(false, false, true, false, false, false, false, false);
+
+	CHECK ( not lyt.fieldlabels() );
+	CHECK ( not lyt.id() );
+	CHECK (     lyt.url() );
+	CHECK ( not lyt.filename() );
+	CHECK ( not lyt.track_count() );
+	CHECK ( not lyt.disc_id_1() );
+	CHECK ( not lyt.disc_id_2() );
+	CHECK ( not lyt.cddb_id() );
+
+	CHECK ( not lyt.format({ 15, 0x001b9178, 0x014be24e, 0xb40d2d0f }, "")
+			.empty() );
 }
 
 
-TEST_CASE ( "CalcAlbumTableLayout", "TODO" )
+TEST_CASE ( "CalcAlbumTableLayout", "[calcalbumtablelayout]" )
 {
-	// TODO
+	using arcsapp::CalcAlbumTableLayout;
+
+	using arcstk::ARId;
+	using arcstk::checksum::type;
+	using arcstk::Checksum;
+	using arcstk::Checksums;
+	using arcstk::ChecksumSet;
+	using arcstk::TOC;
+
+	// Checksums
+
+	ChecksumSet track01 { 5192 };
+	track01.insert(type::ARCS2, Checksum(0xB89992E5));
+	track01.insert(type::ARCS1, Checksum(0x98B10E0F));
+
+	ChecksumSet track02 { 2165 };
+	track02.insert(type::ARCS2, Checksum(0x4F77EB03));
+	track02.insert(type::ARCS1, Checksum(0x475F57E9));
+
+	auto checksums = Checksums { track01, track02 };
+
+	// Filenames
+
+	auto filenames = std::vector<std::string> { "foo", "bar", "baz" };
+
+	// TOC (null)
+
+	const TOC* toc = nullptr;
+
+	// ARId
+
+	auto arid = ARId { 15, 0x001b9178, 0x014be24e, 0xb40d2d0f };
+
+	CalcAlbumTableLayout lyt(true, true, true, true, true, ";");
+
+	CHECK ( lyt.label() );
+	CHECK ( lyt.track() );
+	CHECK ( lyt.offset() );
+	CHECK ( lyt.length() );
+	CHECK ( lyt.filename() );
+	CHECK ( lyt.column_delimiter() == ";" );
+
+	CHECK ( not lyt.format(checksums, filenames, toc, arid, true/*is album*/)
+			.empty() );
+
+	CHECK ( lyt.label() );
+	CHECK ( lyt.track() );
+	CHECK ( lyt.offset() );
+	CHECK ( lyt.length() );
+	CHECK ( lyt.filename() );
+	CHECK ( lyt.column_delimiter() == ";" );
 }
 
 
-TEST_CASE ( "CalcTracksTableLayout", "TODO" )
+TEST_CASE ( "CalcTracksTableLayout", "[calctrackstablelayout]" )
 {
-	// TODO
+	using arcsapp::CalcTracksTableLayout;
+
+	using arcstk::ARId;
+	using arcstk::checksum::type;
+	using arcstk::Checksum;
+	using arcstk::Checksums;
+	using arcstk::ChecksumSet;
+	using arcstk::TOC;
+
+	// Checksums
+
+	ChecksumSet track01 { 5192 };
+	track01.insert(type::ARCS2, Checksum(0xB89992E5));
+	track01.insert(type::ARCS1, Checksum(0x98B10E0F));
+
+	ChecksumSet track02 { 2165 };
+	track02.insert(type::ARCS2, Checksum(0x4F77EB03));
+	track02.insert(type::ARCS1, Checksum(0x475F57E9));
+
+	auto checksums = Checksums { track01, track02 };
+
+	// Filenames
+
+	auto filenames = std::vector<std::string> { "foo", "bar", "baz" };
+
+	// TOC (null)
+
+	const TOC* toc = nullptr;
+
+	// ARId
+
+	auto arid = ARId { 15, 0x001b9178, 0x014be24e, 0xb40d2d0f };
+
+	CalcTracksTableLayout lyt(true, true, true, true, true, ";");
+
+	CHECK ( lyt.label() );
+	CHECK ( lyt.track() );
+	CHECK ( lyt.offset() );
+	CHECK ( lyt.length() );
+	CHECK ( lyt.filename() );
+	CHECK ( lyt.column_delimiter() == ";" );
+
+	// All ok (TOC is null)
+
+	CHECK ( not lyt.format(checksums, filenames, toc, arid, true/*is album*/)
+			.empty() );
+
+	CHECK ( lyt.label() );
+	CHECK ( lyt.track() );
+	CHECK ( lyt.offset() );
+	CHECK ( lyt.length() );
+	CHECK ( lyt.filename() );
+	CHECK ( lyt.column_delimiter() == ";" );
+
+	// Usually forbidden: no TOC + no filenames, but must not explode!
+
+	CHECK ( not lyt.format(checksums, std::vector<std::string>{}, toc, arid,
+				true/*is album*/).empty() );
 }
 
 
-TEST_CASE ( "VerifyTableLayout", "TODO" )
+TEST_CASE ( "VerifyTableLayout", "[verifytablelayout]" )
 {
-	// TODO
+	using arcsapp::VerifyTableLayout;
+
+	using arcstk::ARId;
+	using arcstk::checksum::type;
+	using arcstk::Checksum;
+	using arcstk::Checksums;
+	using arcstk::ChecksumSet;
+	using arcstk::Match;
+	using arcstk::TOC;
+	using arcstk::details::create_match;
+
+	// Checksums
+
+	ChecksumSet track01 { 5192 };
+	track01.insert(type::ARCS2, Checksum(0xB89992E5));
+	track01.insert(type::ARCS1, Checksum(0x98B10E0F));
+
+	ChecksumSet track02 { 2165 };
+	track02.insert(type::ARCS2, Checksum(0x4F77EB03));
+	track02.insert(type::ARCS1, Checksum(0x475F57E9));
+
+	auto actual_checksums = Checksums { track01, track02 };
+
+	// Filenames
+
+	auto filenames = std::vector<std::string> { "foo", "bar", "baz" };
+
+	// Reference Checksums
+
+	auto ref_checksums = std::vector<Checksum> {
+		Checksum(0xB89992E5), Checksum(0x4F77EB03) };
+
+	// Match
+
+	auto match = create_match(2, 2); // 2 blocks, 2 tracks/block
+	match->verify_id(0);
+	match->verify_track(0, 0, true);
+	match->verify_track(0, 1, true);
+
+	// TOC (null)
+
+	const TOC* toc = nullptr;
+
+	// ARId
+
+	auto arid = ARId { 15, 0x001b9178, 0x014be24e, 0xb40d2d0f };
+
+	VerifyTableLayout lyt(true, true, true, true, true, ";");
+
+	CHECK ( lyt.label() );
+	CHECK ( lyt.track() );
+	CHECK ( lyt.offset() );
+	CHECK ( lyt.length() );
+	CHECK ( lyt.filename() );
+	CHECK ( lyt.column_delimiter() == ";" );
+
+	// All ok (TOC is null)
+
+	CHECK ( not lyt.format(actual_checksums, filenames, ref_checksums,
+				match.get(), 0/*block*/, true/*v2*/, toc, arid).empty() );
+
+	CHECK ( lyt.label() );
+	CHECK ( lyt.track() );
+	CHECK ( lyt.offset() );
+	CHECK ( lyt.length() );
+	CHECK ( lyt.filename() );
+	CHECK ( lyt.column_delimiter() == ";" );
+
+	// Forbidden: no filenames, but must not explode!
+
+	//CHECK_THROWS ( not lyt.format(actual_checksums, std::vector<std::string>{},
+	//			ref_checksums, match.get(), 0, true, toc, arid).empty() );
 }
 
