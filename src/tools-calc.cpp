@@ -47,11 +47,16 @@ using arcsdec::TOCParser;
 std::tuple<bool,bool,std::vector<std::string>> audiofile_layout(const TOC &toc)
 {
 	auto list { arcstk::toc::get_filenames(toc) };
-	std::unordered_set<std::string> set(list.begin(), list.end());
 
+	if (list.empty())
+	{
+		return std::make_tuple(true, false, std::vector<std::string>{});
+	}
+
+	std::unordered_set<std::string> set(list.begin(), list.end());
 	const bool is_single { set.size() == 1 };
 	return std::make_tuple(is_single, is_single or set.size() == list.size(),
-			list);
+			is_single ? std::vector<std::string>{ *list.cbegin() } : list);
 }
 
 

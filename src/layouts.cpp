@@ -2309,7 +2309,9 @@ std::string VerifyTableLayout::do_format(ArgsRefTuple t) const
 
 				case CELL_TYPE::FILENAME :
 					if (filename())
-						{ cell = filenames.at(row); }
+						{ cell = filenames.size() > 1
+							? filenames.at(row)
+							: *filenames.begin(); }
 					break;
 
 				case CELL_TYPE::OFFSET   :

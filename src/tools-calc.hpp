@@ -33,20 +33,26 @@ using arcstk::Checksums;
 /**
  * \brief Returns the audiofile layout of a TOC.
  *
- * The first value of the returned pair is TRUE iff \c toc references a single
- * audio file, otherwise FALSE.
+ * The first value of the returned tuple is TRUE iff \c toc references either
+ * a single audio file or no audio files at all, otherwise FALSE.
  *
- * The second value of the returned pair is TRUE iff \c toc references a
- * pairwise distinct list of audio files, otherwise FALSE.
+ * The second value of the returned tuple is TRUE iff \c toc references a
+ * non-empty, pairwise distinct list of audio files, otherwise FALSE.
  *
- * <tt><TRUE, TRUE></tt> : only one file
+ * <table>
+ *   <tr><td><tt><TRUE, TRUE></tt></td>
+ *        <td>only one file</td></tr>
+ *   <tr><td><tt><FALSE, TRUE></tt></td>
+ *       <td>multiple files, one per track</td></tr>
+ *   <tr><td><tt><FALSE, FALSE></tt></td>
+ *       <td>multiple files, but some files contain more than 1 track</td></tr>
+ *    <tr><td><tt><TRUE, FALSE></tt></td>
+ *       <td>no audio files at all</td></tr>
+ * </table>
  *
- * <tt><FALSE, TRUE></tt> : multiple files, one per track
- *
- * <tt><FALSE, FALSE></tt> : multiple files, but some files contain more than
- *							one track
- *
- * <tt><TRUE, FALSE></tt> : impossible
+ * The third value is the list of filenames itself. If the TOC contains no
+ * filenames, the list is empty. If the TOC contains multiple occurrences of
+ * exactly one filename, the list will only contain one entry.
  *
  * \param[in] toc The TOC to analyze
  *
