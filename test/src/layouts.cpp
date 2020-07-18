@@ -224,7 +224,7 @@ TEST_CASE ( "CalcAlbumTableLayout", "[calcalbumtablelayout]" )
 
 	// Filenames
 
-	auto filenames = std::vector<std::string> { "foo", "bar", "baz" };
+	auto filenames = std::vector<std::string> { "foo", "bar" };
 
 	// TOC (null)
 
@@ -232,7 +232,7 @@ TEST_CASE ( "CalcAlbumTableLayout", "[calcalbumtablelayout]" )
 
 	// ARId
 
-	auto arid = ARId { 15, 0x001b9178, 0x014be24e, 0xb40d2d0f };
+	auto arid = ARId { 2, 0x001b9178, 0x014be24e, 0xb40d2d0f };
 
 	CalcAlbumTableLayout lyt(true, true, true, true, true, ";");
 
@@ -280,7 +280,7 @@ TEST_CASE ( "CalcTracksTableLayout", "[calctrackstablelayout]" )
 
 	// Filenames
 
-	auto filenames = std::vector<std::string> { "foo", "bar", "baz" };
+	auto filenames = std::vector<std::string> { "foo", "bar" };
 
 	// TOC (null)
 
@@ -288,7 +288,7 @@ TEST_CASE ( "CalcTracksTableLayout", "[calctrackstablelayout]" )
 
 	// ARId
 
-	auto arid = ARId { 15, 0x001b9178, 0x014be24e, 0xb40d2d0f };
+	auto arid = ARId { 2, 0x001b9178, 0x014be24e, 0xb40d2d0f };
 
 	CalcTracksTableLayout lyt(true, true, true, true, true, ";");
 
@@ -311,10 +311,10 @@ TEST_CASE ( "CalcTracksTableLayout", "[calctrackstablelayout]" )
 	CHECK ( lyt.filename() );
 	CHECK ( lyt.column_delimiter() == ";" );
 
-	// Usually forbidden: no TOC + no filenames, but must not explode!
+	// Forbidden: no TOC + no filenames
 
-	CHECK ( not lyt.format(checksums, std::vector<std::string>{}, toc, arid,
-				true/*is album*/).empty() );
+	CHECK_THROWS ( not lyt.format(checksums, std::vector<std::string>{}, toc,
+				arid, true/*is album*/).empty() );
 }
 
 
@@ -345,7 +345,7 @@ TEST_CASE ( "VerifyTableLayout", "[verifytablelayout]" )
 
 	// Filenames
 
-	auto filenames = std::vector<std::string> { "foo", "bar", "baz" };
+	auto filenames = std::vector<std::string> { "foo", "bar" };
 
 	// Reference Checksums
 
@@ -365,7 +365,7 @@ TEST_CASE ( "VerifyTableLayout", "[verifytablelayout]" )
 
 	// ARId
 
-	auto arid = ARId { 15, 0x001b9178, 0x014be24e, 0xb40d2d0f };
+	auto arid = ARId { 2, 0x001b9178, 0x014be24e, 0xb40d2d0f };
 
 	VerifyTableLayout lyt(true, true, true, true, true, ";");
 
@@ -388,9 +388,9 @@ TEST_CASE ( "VerifyTableLayout", "[verifytablelayout]" )
 	CHECK ( lyt.filename() );
 	CHECK ( lyt.column_delimiter() == ";" );
 
-	// Forbidden: no filenames, but must not explode!
+	// Forbidden: no filenames
 
-	//CHECK_THROWS ( not lyt.format(actual_checksums, std::vector<std::string>{},
-	//			ref_checksums, match.get(), 0, true, toc, arid).empty() );
+	CHECK_THROWS ( not lyt.format(actual_checksums, std::vector<std::string>{},
+				ref_checksums, match.get(), 0, true, toc, arid).empty() );
 }
 

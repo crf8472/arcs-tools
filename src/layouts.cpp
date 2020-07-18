@@ -155,8 +155,6 @@ bool InternalFlags::only(const int idx) const
 
 std::string ARTripletLayout::do_format(ArgsRefTuple t) const
 {
-	//assertions(t);
-
 	const auto track   = std::get<0>(t);
 	const auto triplet = std::get<1>(t);
 
@@ -1750,6 +1748,66 @@ void TableUser::set_column_delimiter(const std::string &coldelim)
 }
 
 
+// CalcResultLayout
+
+
+void CalcResultLayout::assertions(ArgsRefTuple t) const
+{
+	const auto checksums = std::get<0>(t);
+	const auto filenames = std::get<1>(t);
+	const auto toc       = std::get<2>(t);
+	const auto arid      = std::get<3>(t);
+	//const auto is_album  = std::get<4>(t); // unused
+
+	const auto total_tracks = checksums.size();
+
+	if (total_tracks == 0)
+	{
+		throw std::invalid_argument("Missing value: "
+				"Need some Checksums to print");
+	}
+
+	if (auto track0 = checksums.at(0);
+		track0.types().empty() or track0.empty())
+	{
+		throw std::invalid_argument("Missing value: "
+				"Checksums seem to hold no checksums");
+	}
+
+	if (!toc and filenames.empty())
+	{
+		throw std::invalid_argument("Missing value: "
+				"Need either TOC data or filenames to print results");
+	}
+
+	if (toc && static_cast<uint16_t>(toc->track_count()) != total_tracks)
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Checksums for " + std::to_string(total_tracks)
+				+ " files/tracks, but TOC specifies "
+				+ std::to_string(toc->track_count()) + " tracks.");
+	}
+
+	if (not (filenames.empty()
+				or filenames.size() == total_tracks or filenames.size() == 1))
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Checksums for " + std::to_string(total_tracks)
+				+ " files/tracks, but " + std::to_string(filenames.size())
+				+ " files.");
+	}
+
+	if (not (arid.empty()
+		or static_cast<uint16_t>(arid.track_count()) == total_tracks))
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Checksums for " + std::to_string(total_tracks)
+				+ " files/tracks, but AccurateRip id specifies "
+				+ std::to_string(arid.track_count()) + " tracks.");
+	}
+}
+
+
 // CalcAlbumTableLayout
 
 
@@ -1777,8 +1835,6 @@ int CalcAlbumTableLayout::TableLayout::columns_apply_cs_settings(
 
 std::string CalcAlbumTableLayout::do_format(ArgsRefTuple t) const
 {
-	//assertions(t);
-
 	const auto checksums = std::get<0>(t);
 	const auto filenames = std::get<1>(t);
 	const auto toc       = std::get<2>(t);
@@ -1872,8 +1928,6 @@ std::string CalcAlbumTableLayout::do_format(ArgsRefTuple t) const
 
 std::string CalcTracksTableLayout::do_format(ArgsRefTuple t) const
 {
-	//assertions(t);
-
 	const auto checksums = std::get<0>(t);
 	const auto filenames = std::get<1>(t);
 	const auto toc       = std::get<2>(t);
@@ -2045,6 +2099,104 @@ const std::string& VerifyResultLayout::match_symbol() const
 }
 
 
+void VerifyResultLayout::assertions(const ArgsRefTuple t) const
+{
+	const auto& checksums = std::get<0>(t);
+	const auto& filenames = std::get<1>(t);
+
+	const auto  toc       = std::get<6>(t);
+	const auto& arid      = std::get<7>(t);
+
+	const auto total_tracks = checksums.size();
+
+	if (total_tracks == 0)
+	{
+		throw std::invalid_argument("Missing value: "
+				"Need some Checksums to print");
+	}
+
+	if (auto track0 = checksums.at(0);
+		track0.types().empty() or track0.empty())
+	{
+		throw std::invalid_argument("Missing value: "
+				"Checksums seem to hold no checksums");
+	}
+
+	if (!toc and filenames.empty())
+	{
+		throw std::invalid_argument("Missing value: "
+				"Need either TOC data or filenames to print results");
+	}
+
+	if (toc && static_cast<uint16_t>(toc->track_count()) != total_tracks)
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Checksums for " + std::to_string(total_tracks)
+				+ " files/tracks, but TOC specifies "
+				+ std::to_string(toc->track_count()) + " tracks.");
+	}
+
+	if (not (filenames.empty()
+			or filenames.size() == total_tracks or filenames.size() == 1))
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Checksums for " + std::to_string(total_tracks)
+				+ " files/tracks, but " + std::to_string(filenames.size())
+				+ " files.");
+	}
+
+	if (not (arid.empty()
+			or static_cast<uint16_t>(arid.track_count()) == total_tracks))
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Checksums for " + std::to_string(total_tracks)
+				+ " files/tracks, but AccurateRip id specifies "
+				+ std::to_string(arid.track_count()) + " tracks.");
+	}
+
+	// Specific for verify
+
+	const auto  refsums   = std::get<2>(t);
+	const auto  match     = std::get<3>(t);
+	const auto  block     = std::get<4>(t);
+	//const auto  version   = std::get<5>(t); // unused
+
+	if (refsums.empty())
+	{
+		throw std::invalid_argument("Missing reference checksums, "
+				"nothing to print.");
+	}
+
+	if (refsums.size() != total_tracks)
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Reference for " + std::to_string(refsums.size())
+				+ " tracks, but Checksums specify "
+				+ std::to_string(total_tracks) + " tracks.");
+	}
+
+	if (!match)
+	{
+		throw std::invalid_argument("Missing match information, "
+				"nothing to print.");
+	}
+
+	if (block < 0)
+	{
+		throw std::invalid_argument(
+			"Index of matching checksum block is negative, nothing to print.");
+	}
+
+	if (block > match->total_blocks())
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Match contains no block " + std::to_string(block)
+				+ " but contains only "
+				+ std::to_string(match->total_blocks()) + " blocks.");
+	}
+}
+
+
 // VerifyTableLayout
 
 
@@ -2087,8 +2239,6 @@ int VerifyTableLayout::TableLayout::columns_apply_cs_settings(
 
 std::string VerifyTableLayout::do_format(ArgsRefTuple t) const
 {
-	//assertions(t);
-
 	const auto checksums = std::get<0>(t);
 	const auto filenames = std::get<1>(t);
 	const auto refsums   = std::get<2>(t);

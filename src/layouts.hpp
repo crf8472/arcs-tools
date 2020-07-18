@@ -68,6 +68,7 @@ public:
 	 */
 	std::string format(ArgsRefTuple t) const
 	{
+		this->assertions(t);
 		return this->do_format(t);
 	}
 
@@ -82,6 +83,10 @@ public:
 	{
 		return this->format(std::make_tuple(args...));
 	}
+
+protected:
+
+	virtual void assertions(ArgsRefTuple) const { /* empty */ };
 
 private:
 
@@ -147,6 +152,8 @@ inline int optimal_width(Container&& list)
 class ChecksumLayout : public Layout<Checksum, int>
 {
 private:
+
+	// no assertions()
 
 	virtual std::string do_format(ArgsRefTuple t) const
 	= 0;
@@ -364,6 +371,8 @@ public:
 	using Layout<int, ARTriplet>::Layout;
 
 private:
+
+	// no assertions()
 
 	std::string do_format(ArgsRefTuple t) const override;
 };
@@ -1596,6 +1605,10 @@ class CalcResultLayout : public TableUser
 public:
 
 	using TableUser::TableUser;
+
+protected:
+
+	void assertions(ArgsRefTuple t) const override;
 };
 
 
@@ -1713,6 +1726,10 @@ public:
 	 * \return Match symbol
 	 */
 	const std::string& match_symbol() const;
+
+protected:
+
+	void assertions(ArgsRefTuple t) const override;
 
 private:
 
