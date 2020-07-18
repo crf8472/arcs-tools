@@ -70,7 +70,7 @@ LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 			<< LOGLEVEL_MIN << "-"
 			<< LOGLEVEL_MAX << ".";
 
-		throw std::runtime_error(ss.str());
+		throw ConfigurationException(ss.str());
 
 	} catch (const std::out_of_range &oor)
 	{
@@ -81,7 +81,7 @@ LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 			<< LOGLEVEL_MIN << "-"
 			<< LOGLEVEL_MAX << "";
 
-		throw std::runtime_error(ss.str());
+		throw ConfigurationException(ss.str());
 	}
 
 	if (parsed_level < LOGLEVEL_MIN or parsed_level > LOGLEVEL_MAX)
@@ -93,7 +93,7 @@ LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 			<< LOGLEVEL_MIN << "-"
 			<< LOGLEVEL_MAX << ").";
 
-		throw std::runtime_error(ss.str());
+		throw ConfigurationException(ss.str());
 	}
 
 	// We could warn about -q overriding -v but we are quiet.
@@ -118,7 +118,7 @@ LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 				<< LOGLEVEL_MIN << "-"
 				<< LOGLEVEL_MAX << ").";
 
-			throw std::runtime_error(ss.str());
+			throw ConfigurationException(ss.str());
 		}
 	}
 

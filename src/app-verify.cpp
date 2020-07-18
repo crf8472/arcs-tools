@@ -262,7 +262,7 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 	if (voptions->is_set(VERIFY::RESPONSEFILE)
 			and voptions->is_set(VERIFY::REFVALUES))
 	{
-		throw std::invalid_argument("Cannot process --refvalues along with "
+		throw ConfigurationException("Cannot process --refvalues along with "
 				" -r/--response, only one of theses options is allowed");
 	}
 
@@ -556,7 +556,7 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 		print_filenames = not single_audio_file;
 
-		if (!diff) // No ListMatcher for some refvals previously set
+		if (!diff) // No ListMatcher for some refvals previously set?
 		{
 			diff = std::make_unique<AlbumMatcher>(checksums, arid,
 				std::get<0>(reference_sums) /* ARResponse */);
