@@ -1436,6 +1436,20 @@ public:
 	{ /* empty */ };
 
 	// FIXME Make abstract!
+
+protected:
+
+	/**
+	 * \brief Apply labels to rows.
+	 *
+	 * The metadata rows are: 'Tracks', 'Filenames', 'Offsets' and 'Lengths'.
+	 * Those are equal for many types of tables.
+	 *
+	 * \param[in] is_album Flag to indicate whether the layout is for an album
+	 *
+	 * \return Number of metadata rows
+	 */
+	int rows_apply_md_settings(const bool is_album);
 };
 
 

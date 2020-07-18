@@ -1647,6 +1647,31 @@ TypedRowsTableBase::TypedRowsTableBase(
 }
 
 
+int TypedRowsTableBase::rows_apply_md_settings(const bool is_album)
+{
+	int row = 0;
+	if (filename())
+	{
+		// track() is interpreted differently when --tracks-as-cols:
+		// Print either track number or file input number if tracks are
+		// not available and ignore filename().
+
+		const std::string input_label = is_album
+			? defaults::label(CELL_TYPE::TRACK)
+			: defaults::label(CELL_TYPE::FILENAME);
+
+		set_row_label(row, input_label);
+		++row;
+	}
+	if (offset())
+		{ set_row_label(row, defaults::label(CELL_TYPE::OFFSET)); ++row; }
+	if (length())
+		{ set_row_label(row, defaults::label(CELL_TYPE::LENGTH)); ++row; }
+
+	return row;
+}
+
+
 // TypedColsTableBase
 
 
@@ -1853,7 +1878,7 @@ std::string CalcAlbumTableLayout::do_format(ArgsRefTuple t) const
 	// Configure table layout
 
 	TableLayout lyt { 0, 0, label(), track(), offset(), length(), filename() };
-	//lyt.set_column_delimiter(coldelim_);
+	lyt.set_column_delimiter(column_delimiter());
 
 	if (!toc) { lyt.set_offset(false); }
 	if (filenames.empty()) { lyt.set_filename(false); }
@@ -1949,56 +1974,32 @@ std::string CalcTracksTableLayout::do_format(ArgsRefTuple t) const
 
 	if (is_album) { lyt.set_track(true); }
 
-	// Usually, we won't have (filenames.empty() and !toc), but we must
-	// deactivate what we cannot access.
+	// Deactivate what we cannot access, overriding requested settings.
 	if (!toc) { lyt.set_offset(false); }
 	if (filenames.empty()) { lyt.set_filename(false); }
 
-	const bool show_input = filename(); // Overrides --no-track-nos
-
 	// TODO Use init() instead
-	lyt.resize(show_input + offset() + length() + types_to_print.size(),
+	lyt.resize(filename() + offset() + length() + types_to_print.size(),
 				checksums.size());
 
 	// Assign row labels
+
 	if (lyt.label())
 	{
-		// Determine row labels (we must know the optimal width when printing)
-		// XXX TypedColsTableBase does this kind of stuff in apply_md_settings()
+		int row = lyt.rows_apply_md_settings(is_album);
 
-		int row = 0;
-		if (show_input)
-		{
-			// track() is interpreted differently when --tracks-as-cols:
-			// Print either track number or file input number if tracks are
-			// not available. Conversely, ignore filename().
-
-			const std::string input_label = is_album
-				? defaults::label(CELL_TYPE::TRACK)
-				: defaults::label(CELL_TYPE::FILENAME);
-
-			lyt.set_row_label(row, input_label);
-			++row;
-		}
 		for (const auto& type : types_to_print)
 		{
 			lyt.set_row_label(row, arcstk::checksum::type_name(type));
 			++row;
 		}
-		if (offset())
-			{ lyt.set_row_label(row, defaults::label(CELL_TYPE::OFFSET));
-				++row; }
-		if (length())
-			{ lyt.set_row_label(row, defaults::label(CELL_TYPE::LENGTH));
-				++row; }
-		// ... skip filename ...
 	}
 
-	// Assign column widths
+	// Assign column widths: all columns have width 8 and alignment LEFT
 
-	for (std::size_t col = 0; col < lyt.columns(); ++col) // print cell
+	for (std::size_t col = 0; col < lyt.columns(); ++col)
 	{
-		lyt.set_width(col, 8); // TODO Magic number, only ok while no filenames
+		lyt.set_width(col, 8);
 		lyt.set_alignment(col, false);
 	}
 
@@ -2007,7 +2008,7 @@ std::string CalcTracksTableLayout::do_format(ArgsRefTuple t) const
 	std::ostringstream o;
 	int row = 0;
 
-	if (show_input)
+	if (lyt.filename())
 	{
 		if (label()) { lyt.print_label(o, row); }
 
@@ -2023,27 +2024,7 @@ std::string CalcTracksTableLayout::do_format(ArgsRefTuple t) const
 		++row;
 	}
 
-	for (const auto& type : types_to_print)
-	{
-		if (label()) { lyt.print_label(o, row); }
-
-		int index = 0;
-		for (std::size_t col = 0; col < lyt.columns() - 1; ++col, ++index)
-		{
-			lyt.print_cell(o, col,
-				lyt.checksum_layout().format(checksums.at(index).get(type), 8),
-				true);
-		}
-
-		lyt.print_cell(o, lyt.columns() - 1,
-				lyt.checksum_layout().format(checksums.at(index).get(type), 8),
-				false);
-
-		o << std::endl;
-		++row;
-	}
-
-	if (lyt.offset()) // Use lyt.offset(), we overwrote it!
+	if (lyt.offset())
 	{
 		if (label()) { lyt.print_label(o, row); }
 
@@ -2073,6 +2054,26 @@ std::string CalcTracksTableLayout::do_format(ArgsRefTuple t) const
 		}
 		lyt.print_cell(o, lyt.columns() - 1,
 				std::to_string(checksums.at(index).length()),
+				false);
+
+		o << std::endl;
+		++row;
+	}
+
+	for (const auto& type : types_to_print)
+	{
+		if (label()) { lyt.print_label(o, row); }
+
+		int index = 0;
+		for (std::size_t col = 0; col < lyt.columns() - 1; ++col, ++index)
+		{
+			lyt.print_cell(o, col,
+				lyt.checksum_layout().format(checksums.at(index).get(type), 8),
+				true);
+		}
+
+		lyt.print_cell(o, lyt.columns() - 1,
+				lyt.checksum_layout().format(checksums.at(index).get(type), 8),
 				false);
 
 		o << std::endl;
