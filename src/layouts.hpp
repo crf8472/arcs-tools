@@ -1143,11 +1143,11 @@ public:
 	 *
 	 * \param[in] rows    Number of rows (including header, if any)
 	 * \param[in] columns Number of columns (including label column, if any)
-	 * \param[in] dyn_column_width  If 'FALSE' cells are truncated on col width
-	 * \param[in] allow_append_rows If 'FALSE' appending rows is forbidden
+	 * \param[in] has_dynamic_widths  If 'FALSE' cells are truncated on col width
+	 * \param[in] has_appending_rows If 'FALSE' appending rows is forbidden
 	 */
 	StringTableBase(const int rows, const int columns,
-			const bool dyn_column_width, const bool allow_append_rows);
+			const bool has_dynamic_widths, const bool has_appending_rows);
 
 	/**
 	 * \brief Constructor
@@ -1317,6 +1317,11 @@ private:
 class StringTable : public StringTableBase
 {
 public:
+
+	//StringTable(const StringTable &rhs) = default;
+	//StringTable(StringTable &&rhs) noexcept = default;
+	//StringTable& operator = (const StringTable &rhs) = default;
+	//StringTable& operator = (StringTable &&rhs) noexcept = default;
 
 	using StringTableBase::StringTableBase;
 	using StringTableBase::operator=;

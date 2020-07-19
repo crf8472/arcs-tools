@@ -1427,9 +1427,9 @@ int StringTableBase::Impl::index(const int row, const int col) const
 
 
 StringTableBase::StringTableBase(const int rows, const int columns,
-			const bool dyn_col_widths, const bool allow_append_rows)
+			const bool has_dynamic_widths, const bool has_appending_rows)
 	: StringTableStructure(rows, columns)
-	, flags_ { dyn_col_widths, allow_append_rows }
+	, flags_ { has_dynamic_widths, has_appending_rows }
 	, impl_(std::make_unique<StringTableBase::Impl>(rows, columns, this))
 {
 	// empty
@@ -1511,7 +1511,7 @@ void StringTableBase::update_cell(const int row, const int col,
 
 	// Handle dynamic column width
 	if (auto curr_width = static_cast<std::size_t>(width(col));
-		has_dynamic_widths() && text.length() > curr_width)
+		has_dynamic_widths() and text.length() > curr_width)
 	{
 		set_width(col, text.length());
 	}

@@ -166,6 +166,36 @@ TEST_CASE ( "StringTable", "[stringtable]" )
 		CHECK ( table_moved.cell(1, 2) == "quux" );
 		CHECK ( table_moved.cell(1, 3) == "855" );
 	}
+
+	SECTION ( "Copy assignment" )
+	{
+		auto table_copy = table;
+
+		CHECK ( table_copy.cell(0, 0) == "foo" );
+		CHECK ( table_copy.cell(0, 1) == "bar" );
+		CHECK ( table_copy.cell(0, 2) == "baz" );
+		CHECK ( table_copy.cell(0, 3) == "357" );
+
+		CHECK ( table_copy.cell(1, 0) == "xyz" );
+		CHECK ( table_copy.cell(1, 1) == "fu~" ); // cut off
+		CHECK ( table_copy.cell(1, 2) == "quux" );
+		CHECK ( table_copy.cell(1, 3) == "855" );
+	}
+
+	SECTION ( "Move assignment" )
+	{
+		auto table_moved = std::move(table);
+
+		CHECK ( table_moved.cell(0, 0) == "foo" );
+		CHECK ( table_moved.cell(0, 1) == "bar" );
+		CHECK ( table_moved.cell(0, 2) == "baz" );
+		CHECK ( table_moved.cell(0, 3) == "357" );
+
+		CHECK ( table_moved.cell(1, 0) == "xyz" );
+		CHECK ( table_moved.cell(1, 1) == "fu~" ); // cut off
+		CHECK ( table_moved.cell(1, 2) == "quux" );
+		CHECK ( table_moved.cell(1, 3) == "855" );
+	}
 }
 
 
