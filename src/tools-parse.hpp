@@ -9,10 +9,17 @@
  * Provides parser handlers for ARParsers.
  */
 
+#include <cerrno>            // for errno
 #include <cstdint>           // for uint32_t, uint8_t
+#include <cstdio>            // for ferror, stdin, feof, freopen, fread, EOF
+#include <cstring>           // for strerror
 #include <fstream>           // for ofstream, ostream
 #include <memory>            // for unique_ptr
+#include <sstream>           // for basic_stringstream
+#include <stdexcept>         // for runtime_error, domain_error
 #include <string>            // for string
+#include <utility>           // for move, swap
+#include <vector>            // for vector
 
 #ifndef __LIBARCSTK_PARSE_HPP__
 #include <arcstk/parse.hpp>
@@ -25,6 +32,69 @@ class ARIdLayout;
 class ARTripletLayout;
 
 using arcstk::ContentHandler;
+
+
+/**
+ * \brief Wrap a vector in an istream.
+ *
+ * For parsing stdin.
+ */
+template<typename CharT, typename TraitsT = std::char_traits<CharT> >
+class VectorIStream : public std::basic_streambuf<CharT, TraitsT>
+{
+public:
+
+	/**
+	 * \brief Constructor
+	 *
+	 * \param[in] v The vector to wrap
+	 */
+	explicit VectorIStream(std::vector<CharT> &v)
+	{
+		this->setg(v.data(), v.data(), v.data() + v.size());
+	}
+};
+
+
+/**
+ * \brief Represents limited access to stdin.
+ *
+ * For parsing stdin.
+ */
+class StdIn final
+{
+public:
+
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] buf_size Buffer size in bytes
+	 */
+	explicit StdIn(const std::size_t buf_size);
+
+	/**
+	 * \brief Reads stdin bytes in binary mode to a vector<char>.
+	 *
+	 * \return Bytes from stdin
+	 */
+	std::vector<char> bytes();
+
+	/**
+	 * \brief Size of read buffer in bytes.
+	 *
+	 * \return Buffer size in bytes
+	 */
+	std::size_t buf_size() const;
+
+
+private:
+
+	/**
+	 * \brief Bytes per read
+	 */
+	const std::size_t buf_size_;
+};
+
 
 /**
  * \brief Content handler that just prints the parsed content immediately.
@@ -161,6 +231,125 @@ private:
 	 * \brief Internal print target stream.
 	 */
 	std::ostream out_stream_;
+};
+
+
+/**
+ * \brief Parser for dBAR-\*.bin files.
+ *
+ * \details
+ *
+ * This class parses dBAR-\*.bin files saved by the actual ripper software
+ * or achieved by an HTTP request to AccurateRip. Those files are just the byte
+ * stream of the AccurateRip response persisted to the file system.
+ *
+ * The parser can be reused to parse multiple files subsequently.
+ */
+class ARFileParser final : public arcstk::ARStreamParser
+{
+public:
+
+	/**
+	 * \brief Constructor.
+	 */
+	ARFileParser();
+
+	/**
+	 * \brief Move Constructor
+	 *
+	 * \param[in] rhs Instance to move
+	 */
+	ARFileParser(ARFileParser &&rhs) noexcept;
+
+	/**
+	 * \brief Constructor for specific file.
+	 *
+	 * \param[in] filename Name of the file to parse
+	 */
+	explicit ARFileParser(const std::string &filename);
+
+	/**
+	 * \brief Set the file to be parsed.
+	 *
+	 * \param[in] filename Name of the file to parse
+	 */
+	void set_file(const std::string &filename);
+
+	/**
+	 * \brief Name of the file to parse.
+	 *
+	 * \return Name of the file that is parsed when
+	 * \link ARStreamParser::parse() parse() \endlink is called.
+	 */
+	std::string file() const noexcept;
+
+
+	ARFileParser& operator = (ARFileParser &&rhs) noexcept;
+
+	friend void swap(ARFileParser &lhs, ARFileParser &rhs)
+	{
+		lhs.swap(rhs);
+	}
+
+	// non-copyable class
+	ARFileParser(const ARFileParser &rhs) = delete;
+	ARFileParser& operator = (const ARFileParser &rhs) = delete;
+
+
+private:
+
+	uint32_t do_parse() final;
+
+	void do_swap(ARStreamParser &rhs) final;
+
+	void on_catched_exception(std::istream &istream,
+			const std::exception &e) const final;
+
+	/**
+	 * \brief Internal filename representation
+	 */
+	std::string filename_;
+};
+
+
+/**
+ * \brief Parser for AccurateRip response as a binary stream on stdin.
+ */
+class ARStdinParser final : public arcstk::ARStreamParser
+{
+public:
+
+	/**
+	 * \brief Default constructor.
+	 */
+	ARStdinParser();
+
+	/**
+	 * \brief Move Constructor
+	 *
+	 * \param[in] rhs Instance to move
+	 */
+	ARStdinParser(ARStdinParser &&rhs) noexcept;
+
+
+	ARStdinParser& operator = (ARStdinParser &&rhs) noexcept;
+
+	friend void swap(ARStdinParser &lhs, ARStdinParser &rhs)
+	{
+		lhs.swap(rhs);
+	}
+
+	// non-copyable class
+	ARStdinParser(const ARStdinParser &rhs) = delete;
+	ARStdinParser& operator = (const ARStdinParser &rhs) = delete;
+
+
+private:
+
+	uint32_t do_parse() final;
+
+	void on_catched_exception(std::istream &istream,
+			const std::exception &e) const final;
 };
 
 } // namespace arcsapp

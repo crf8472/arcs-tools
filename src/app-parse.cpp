@@ -46,8 +46,6 @@ const auto parse = RegisterApplicationType<ARParseApplication>("parse");
 
 class Options;
 
-using arcstk::ARFileParser;
-using arcstk::ARStdinParser;
 using arcstk::DefaultErrorHandler;
 
 

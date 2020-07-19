@@ -10,6 +10,9 @@
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
+#ifndef __LIBARCSTK_LOGGING_HPP__
+#include <arcstk/logging.hpp>
+#endif
 
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"            // for ARTripletLayout
@@ -21,6 +24,85 @@ namespace arcsapp
 using arcstk::ARId;
 using arcstk::ARTriplet;
 using arcstk::ContentHandler;
+
+
+// StdIn
+
+
+StdIn::StdIn(const std::size_t buf_size)
+	: buf_size_ { buf_size }
+{
+	// empty
+}
+
+
+std::vector<char> StdIn::bytes()
+{
+	// Note: all predefined iostreams (like std::cin) are _obligated_ to be
+	// bound to corresponding C streams.
+	// Confer: http://eel.is/c++draft/narrow.stream.objects
+	// Therefore, it seems reasonable to just use freopen/fread for speed but
+	// it feels a little bit odd to fallback to C-style stuff here.
+
+	// Some systems may require to reopen stdin in binary mode. Even if this
+	// maybe not required on some systems, it should be a portable solution to
+	// just do it always:
+
+#ifdef _WIN32
+
+	// Note: freopen is portable by definition but windows may frown about the
+	// nullptr for parameter 'path' as pointed out in the MSDN page on freopen:
+	// https://msdn.microsoft.com/en-us/library/wk2h68td.aspx
+	// We therefore use _setmode for windows. (It's '_setmode', not 'setmode'.)
+
+	_setmode(_fileno(stdin), O_BINARY);
+	// https://msdn.microsoft.com/en-us/library/tw4k6df8.aspx
+#else
+
+	std::freopen(nullptr, "rb", stdin); // ignore returned FILE ptr to stdin
+#endif
+	// binary mode from now on
+
+	// Cancel on error
+	if (std::ferror(stdin))
+	{
+		auto msg = std::stringstream {};
+		msg << "While opening stdin for input: " << std::strerror(errno)
+			<< " (errno " << errno << ")";
+
+		throw std::runtime_error(msg.str());
+	}
+
+	// Commented out version with std::array (lines 149,155 and 167)
+
+	auto bytes = std::vector<char> {}; // collects the input bytes
+	auto len   = std::size_t { 0 }; // number of bytes read from stdin
+	auto buf { std::make_unique<char[]>(buf_size()) }; // input buffer
+
+	// As long as there are any bytes, read them
+
+	while((len = std::fread(buf.get(), sizeof(buf[0]), buf_size(), stdin)) > 0)
+	{
+		if (std::ferror(stdin) and not std::feof(stdin))
+		{
+			auto msg = std::stringstream {};
+			msg << "While reading from stdin: " << std::strerror(errno)
+				<< " (errno " << errno << ")";
+
+			throw std::runtime_error(msg.str());
+		}
+
+		bytes.insert(bytes.end(), buf.get(), buf.get() + len);
+	}
+
+	return bytes;
+}
+
+
+std::size_t StdIn::buf_size() const
+{
+	return buf_size_;
+}
 
 
 // ARParserContentPrintHandler
@@ -144,6 +226,140 @@ void ARParserContentPrintHandler::do_end_input()
 	out_stream_ << "EOF======= Blocks: " <<
 		std::dec << block_counter_ << std::endl;
 	out_stream_.flags(prev_settings);
+}
+
+
+// ARFileParser
+
+
+ARFileParser::ARFileParser()
+	: filename_ {}
+{
+	// empty
+}
+
+
+ARFileParser::ARFileParser(ARFileParser &&rhs) noexcept
+	: filename_ { /* empty */ }
+{
+	this->swap(rhs);
+}
+
+
+ARFileParser::ARFileParser(const std::string &filename)
+	: filename_ { filename }
+{
+	// empty
+}
+
+
+void ARFileParser::set_file(const std::string &filename)
+{
+	filename_ = filename;
+}
+
+
+std::string ARFileParser::file() const noexcept
+{
+	return filename_;
+}
+
+
+uint32_t ARFileParser::do_parse()
+{
+	ARCS_LOG_DEBUG << "Open file: " << this->file();
+
+	std::ifstream file;
+
+	file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+	try
+	{
+		file.open(this->file(), std::ifstream::in | std::ifstream::binary);
+	}
+	catch (const std::ifstream::failure& f)
+	{
+		throw std::runtime_error(
+			std::string("Failed to open file '") + this->file() +
+			std::string("', got: ") + typeid(f).name() +
+			std::string(", message: ") + f.what());
+	}
+
+	return ARStreamParser::parse_stream(file);
+}
+
+
+void ARFileParser::on_catched_exception(std::istream &istream,
+		const std::exception & /* e */) const
+{
+	auto *filestream { dynamic_cast<std::ifstream*>(&istream) };
+
+	if (filestream)
+	{
+		filestream->close();
+		return;
+	}
+
+	ARCS_LOG_WARNING << "Could not close filestream";
+}
+
+
+ARFileParser& ARFileParser::operator = (ARFileParser &&rhs) noexcept
+{
+	this->swap(rhs);
+	return *this;
+}
+
+
+void ARFileParser::do_swap(ARStreamParser &rhs)
+{
+	auto casted_rhs { dynamic_cast<ARFileParser*>(&rhs) };
+
+	if (!casted_rhs)
+	{
+		throw std::domain_error("Type mismatch detected while swapping");
+	}
+
+	using std::swap;
+
+	swap(this->filename_, casted_rhs->filename_);
+}
+
+
+// ARStdinParser
+
+
+ARStdinParser::ARStdinParser() = default;
+
+
+ARStdinParser::ARStdinParser(ARStdinParser &&rhs) noexcept
+{
+	this->swap(rhs);
+}
+
+
+uint32_t ARStdinParser::do_parse()
+{
+	auto response_data { StdIn(1024).bytes() };
+
+	VectorIStream<char> response_data_w(response_data);
+	std::istream stream(&response_data_w);
+
+	return ARStreamParser::parse_stream(stream);
+}
+
+
+ARStdinParser& ARStdinParser::operator = (ARStdinParser &&rhs) noexcept
+{
+	this->swap(rhs);
+	return *this;
+}
+
+
+void ARStdinParser::on_catched_exception(std::istream & /* istream */,
+			const std::exception &/* e */) const
+{
+	// empty
 }
 
 } // namespace arcsapp

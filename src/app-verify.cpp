@@ -58,10 +58,9 @@ const auto verify = RegisterApplicationType<ARVerifyApplication>("verify");
 }
 
 using arcstk::ARStreamParser;
-using arcstk::ARFileParser;
+using arcstk::ARParser;
 using arcstk::ARId;
 using arcstk::ARResponse;
-using arcstk::ARStdinParser;
 using arcstk::Checksum;
 using arcstk::Checksums;
 using arcstk::Logging;
@@ -350,21 +349,21 @@ ARResponse ARVerifyApplication::parse_response(const Options &options) const
 		ARCS_LOG_DEBUG << "Parse response from stdin";
 
 		parser = std::make_unique<ARStdinParser>();
+
 	} else
 	{
 		ARCS_LOG_DEBUG << "Parse response from file " << responsefile;
 
-		auto file_parser { std::make_unique<ARFileParser>() };
-		file_parser->set_file(responsefile);
-
-		parser = std::move(file_parser);
+		parser = std::make_unique<ARFileParser>(responsefile);
 	}
 
 	ARResponse response;
 	auto c_handler { std::make_unique<DefaultContentHandler>() };
 	c_handler->set_object(response);
+	auto e_handler { std::make_unique<DefaultErrorHandler>() };
+
 	parser->set_content_handler(std::move(c_handler));
-	parser->set_error_handler(std::make_unique<DefaultErrorHandler>());
+	parser->set_error_handler(std::move(e_handler));
 
 	try
 	{
