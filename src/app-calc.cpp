@@ -513,12 +513,15 @@ int ARCalcApplication::do_run(const Options &options)
 
 	if (options.is_set(CALC::LIST_TOC_FORMATS))
 	{
-		output(SupportedFormats::toc(), options.value(OPTION::OUTFILE));
+		output("TOC:\n", options.value(OPTION::OUTFILE));
 		dont_overwrite = false;
+		output(SupportedFormats::toc(), options.value(OPTION::OUTFILE),
+				dont_overwrite);
 	}
 
 	if (options.is_set(CALC::LIST_AUDIO_FORMATS))
 	{
+		output("Audio:\n", options.value(OPTION::OUTFILE), dont_overwrite);
 		output(SupportedFormats::audio(), options.value(OPTION::OUTFILE),
 				dont_overwrite);
 	}
