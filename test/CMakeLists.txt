@@ -17,11 +17,12 @@ set (MAIN_TEST_CPP "${TEST_SOURCE_DIR}/main.test.cpp" )
 ## List of executable tests
 set (TEST_SETS )
 
-list (APPEND TEST_SETS clitokens  )
-list (APPEND TEST_SETS config     )
-list (APPEND TEST_SETS layouts    )
-list (APPEND TEST_SETS tools-fs   )
-list (APPEND TEST_SETS tools-calc )
+list (APPEND TEST_SETS clitokens   )
+list (APPEND TEST_SETS config      )
+list (APPEND TEST_SETS layouts     )
+list (APPEND TEST_SETS tools-fs    )
+list (APPEND TEST_SETS tools-calc  )
+list (APPEND TEST_SETS tools-parse )
 
 
 ## --- Provide main object file
@@ -61,6 +62,7 @@ foreach (_testcase ${TEST_SETS} )
 		COMMAND ${_testcase}_test
 			-o "${PROJECT_LOG_DIR}/report.${_testcase}.xml"
 			-r junit
+			WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data"
 	)
 
 endforeach()
