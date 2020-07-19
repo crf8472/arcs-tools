@@ -30,6 +30,7 @@ namespace arcsapp
 
 class ARIdLayout;
 class ARTripletLayout;
+class Application;
 
 using arcstk::ContentHandler;
 
@@ -117,7 +118,7 @@ public:
 	/**
 	 * \brief Constructor.
 	 */
-	ARParserContentPrintHandler() : ARParserContentPrintHandler("")
+	ARParserContentPrintHandler() : ARParserContentPrintHandler(std::string{})
 	{ /* empty */ };
 
 	/**
@@ -221,16 +222,6 @@ private:
 	 * \brief Internal layout used for printing the triplets.
 	 */
 	std::unique_ptr<ARTripletLayout> triplet_layout_;
-
-	/**
-	 * \brief Internal print file stream.
-	 */
-	std::ofstream out_file_stream_;
-
-	/**
-	 * \brief Internal print target stream.
-	 */
-	std::ostream out_stream_;
 };
 
 

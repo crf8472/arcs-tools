@@ -4,7 +4,8 @@
 
 #include <fstream>                // for ostream, dec, ios_base, ios_base::f...
 #include <iostream>               // for cout
-#include <ostream>                // for operator<<, basic_ostream<>::__ostr...
+//#include <ostream>                // for operator<<, basic_ostream<>::__ostr...
+#include <sstream>                // for ostringstream
 #include <utility>                // for move
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
@@ -14,6 +15,9 @@
 #include <arcstk/logging.hpp>
 #endif
 
+#ifndef __ARCSTOOLS_APPLICATION_HPP__
+#include "application.hpp"
+#endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"            // for ARTripletLayout
 #endif
@@ -115,11 +119,8 @@ ARParserContentPrintHandler::ARParserContentPrintHandler(
 	, arid_layout_(std::make_unique<ARIdTableLayout>(
 				false, false, false, false, false, false, false, false))
 	, triplet_layout_(std::make_unique<ARTripletLayout>())
-	, out_file_stream_(filename)
-	, out_stream_(
-			filename.empty() ? std::cout.rdbuf() : out_file_stream_.rdbuf())
 {
-	// empty
+	Output::instance().to_file(filename);
 }
 
 
@@ -175,9 +176,9 @@ void ARParserContentPrintHandler::do_start_block()
 {
 	++block_counter_;
 
-	std::ios_base::fmtflags prev_settings = out_stream_.flags();
-	out_stream_ << "---------- Block " << std::dec << block_counter_ << " : ";
-	out_stream_.flags(prev_settings);
+	std::ostringstream ss;
+	ss << "---------- Block " << std::dec << block_counter_ << " : ";
+	Output::instance().output(ss.str());
 }
 
 
@@ -187,7 +188,9 @@ void ARParserContentPrintHandler::do_id(const uint8_t track_count,
 {
 	ARId id(track_count, disc_id1, disc_id2, cddb_id);
 
-	out_stream_ << arid_layout()->format(id, std::string{}) << std::endl;
+	auto str = arid_layout()->format(id, std::string{});
+	str += '\n';
+	Output::instance().output(str);
 }
 
 
@@ -197,7 +200,8 @@ void ARParserContentPrintHandler::do_triplet(const uint32_t arcs,
 	++track_;
 	const ARTriplet triplet(arcs, confidence, frame450_arcs);
 
-	out_stream_ << triplet_layout()->format(track_, triplet);
+	auto str = triplet_layout()->format(track_, triplet);
+	Output::instance().output(str);
 }
 
 
@@ -210,7 +214,8 @@ void ARParserContentPrintHandler::do_triplet(const uint32_t arcs,
 	const ARTriplet triplet(arcs, confidence, frame450_arcs, arcs_valid,
 			confidence_valid, frame450_arcs_valid);
 
-	out_stream_ << triplet_layout()->format(track_, triplet);
+	auto str = triplet_layout()->format(track_, triplet);
+	Output::instance().output(str);
 }
 
 
@@ -222,10 +227,9 @@ void ARParserContentPrintHandler::do_end_block()
 
 void ARParserContentPrintHandler::do_end_input()
 {
-	std::ios_base::fmtflags prev_settings = out_stream_.flags();
-	out_stream_ << "EOF======= Blocks: " <<
-		std::dec << block_counter_ << std::endl;
-	out_stream_.flags(prev_settings);
+	std::ostringstream ss;
+	ss << "EOF======= Blocks: " << std::dec << block_counter_ << std::endl;
+	Output::instance().output(ss.str());
 }
 
 

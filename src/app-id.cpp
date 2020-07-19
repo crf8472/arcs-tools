@@ -127,11 +127,11 @@ int ARIdApplication::do_run(const Options &options)
 	{
 		// Use labels iff allowed and more than one property is to be printed
 		const bool print_labels = !options.is_set(ARIdOptions::NOLABELS)
-			and
+			and (
 			1 < options.is_set(ARIdOptions::ID)
 			+ options.is_set(ARIdOptions::URL)
 			+ options.is_set(ARIdOptions::DBID)
-			+ options.is_set(ARIdOptions::CDDBID);
+			+ options.is_set(ARIdOptions::CDDBID));
 
 		layout = std::make_unique<ARIdTableLayout>(
 			print_labels,
@@ -147,7 +147,13 @@ int ARIdApplication::do_run(const Options &options)
 
 	auto result = layout->format(*arid, options.value(ARIdOptions::URLPREFIX));
 
-	output(result, options.value(OPTION::OUTFILE));
+	if (not result.empty() and result.back() != '\n') { result += '\n'; }
+
+	if (not options.value(OPTION::OUTFILE).empty())
+	{
+		Output::instance().to_file(options.value(OPTION::OUTFILE));
+	}
+	Output::instance().output(result);
 
 	return EXIT_SUCCESS;
 }

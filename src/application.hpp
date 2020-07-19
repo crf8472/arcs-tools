@@ -10,10 +10,11 @@
  * command line input.
  */
 
-#include <iostream>                 // for cout, basic_ostream, endl, cerr
-#include <fstream>                  // for ofstream
-#include <memory>                   // for unique_ptr, allocator
-#include <string>                   // for string
+#include <iostream>    // for cout, basic_ostream, endl, cerr
+#include <fstream>     // for ofstream
+#include <memory>      // for unique_ptr, allocator
+#include <mutex>       // for mutex, lock_guard
+#include <string>      // for string
 
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"        // for CallSyntaxException, Options, Configurator
@@ -21,6 +22,114 @@
 
 namespace arcsapp
 {
+
+/**
+ * \brief Represents an output channel.
+ */
+class Output
+{
+public:
+
+	Output()
+		: mutex_ {}
+		, filename_ {}
+		, append_ { false }
+	{
+		// empty
+	}
+
+	bool is_appending() const
+	{
+		return append_;
+	}
+
+	void set_append(const bool append)
+	{
+		const std::lock_guard<std::mutex> lock(mutex_);
+		append_ = append;
+	}
+
+	const std::string& filename() const
+	{
+		return filename_;
+	}
+
+	void to_file(const std::string &filename)
+	{
+		const std::lock_guard<std::mutex> lock(mutex_);
+		filename_ = filename;
+	}
+
+	/**
+	* \brief Worker: output a result object to file or stdout.
+	*
+	* The object musst overload operator << for std::ostream or a compile error
+	* will occurr.
+	*
+	* If a filename is specified, the output is directed to the file with the
+	* specified name. If \c filename() returns an empty string means that the
+	* output is passed to std::cout.
+	*
+	* If an existing file is specified, the file is overwritten by default.
+	* This behaviour can be changed by \c set_append(true) before calling
+	* \c output().
+	*
+	* This function is intended to be used in \c do_run() implementations for
+	* results. It is not suited to output errors or log messages.
+	*
+	* \param[in] object    The object to output
+	*
+	* \return Type void iff object overloads operator << for std::ostream
+	*/
+	template <typename T>
+	auto output(T&& object) -> decltype( std::cout << object, void() )
+	{
+		const std::lock_guard<std::mutex> lock(mutex_);
+
+		if (filename().empty())
+		{
+			std::cout << object;
+			return;
+		}
+
+		// write to file
+
+		std::ofstream out_file_stream;
+
+		auto mode = std::ios_base::openmode { is_appending()
+			? std::fstream::out | std::fstream::app
+			: std::fstream::out | std::fstream::trunc };
+
+		out_file_stream.open(filename(), mode);
+
+		if (!out_file_stream)
+		{
+			// File does not exist, create it
+			out_file_stream.open(filename(),
+				std::fstream::out | std::fstream::trunc);
+		}
+
+		out_file_stream << object;
+
+		append_ = true; // first call overwrites, subsequent calls append
+	}
+
+	static Output& instance()
+	{
+		static Output instance;
+
+		return instance;
+	}
+
+private:
+
+	std::mutex mutex_;
+
+	std::string filename_;
+
+	bool append_;
+};
+
 
 /**
  * \brief Abstract base class for command line applications.
@@ -88,62 +197,6 @@ protected:
 	 * \param[in] message The error message
 	 */
 	void fatal_error(const std::string &message) const;
-
-	/**
-	* \brief Worker: output a result object to file or stdout.
-	*
-	* The object musst overload operator << for std::ostream or a compile error
-	* will occurr.
-	*
-	* If a filename is specified, the output is directed to the file with the
-	* specified name. The default value for \c filename is an empty string which
-	* means that the output goes to std::cout.
-	*
-	* If an existing file is specified, the file is overwritten by default. If
-	* TRUE is passed for parameter \c overwrite, the existing file will be
-	* reopened and appended to.
-	*
-	* This function is intended to be used in \c do_run() implementations for
-	* results. It is not suited to output errors or log messages.
-	*
-	* \param[in] object    The object to output
-	* \param[in] filename  Optional filename, default is the empty string
-	* \param[in] overwrite Iff TRUE, existing files will be overwritten
-	*
-	* \return Type void iff object overloads operator << for std::ostream
-	*/
-	template <typename T>
-	auto output(T&& object,
-			const std::string &filename = std::string{},
-			const bool overwrite = true) const
-		-> decltype( std::cout << object, void() )
-	{
-		if (filename.empty())
-		{
-			std::cout << object;
-		} else
-		{
-			std::ofstream out_file_stream;
-
-			//  overwrite: If file exists, delete it and create new one
-			// !overwrite: If file exists, append to it, otherwise create it
-
-			auto mode = std::ios_base::openmode { overwrite
-				? std::fstream::out | std::fstream::trunc
-				: std::fstream::out | std::fstream::app };
-
-			out_file_stream.open(filename, mode);
-
-			if (!out_file_stream)
-			{
-				// File does not exist, create it
-				out_file_stream.open(filename,
-					std::fstream::out | std::fstream::trunc);
-			}
-
-			out_file_stream << object;
-		}
-	}
 
 private:
 

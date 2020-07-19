@@ -445,7 +445,11 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 	// Print formatted results to output stream
 
-	auto dont_overwrite = bool { true };
+	if (not options.value(OPTION::OUTFILE).empty())
+	{
+		Output::instance().to_file(options.value(OPTION::OUTFILE));
+	}
+
 	if (options.is_set(CALC::PRINTID) or options.is_set(CALC::PRINTURL))
 	{
 		const std::unique_ptr<ARIdLayout> layout =
@@ -462,8 +466,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 		auto result = layout->format(arid, std::string{});
 
-		output(result, options.value(OPTION::OUTFILE));
-		dont_overwrite = false;
+		Output::instance().output(result);
 	}
 
 	auto layout = configure_layout(options);
@@ -476,7 +479,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 	auto result = layout->format(checksums, filenames, toc.get(), arid,
 			album_mode);
-	output(result, options.value(OPTION::OUTFILE), dont_overwrite);
+	Output::instance().output(result);
 
 	return EXIT_SUCCESS;
 }
@@ -509,21 +512,21 @@ int ARCalcApplication::do_run(const Options &options)
 
 	// If only info options are present, handle info request
 
-	auto dont_overwrite = bool { true };
+	if (not options.value(OPTION::OUTFILE).empty())
+	{
+		Output::instance().to_file(options.value(OPTION::OUTFILE));
+	}
 
 	if (options.is_set(CALC::LIST_TOC_FORMATS))
 	{
-		output("TOC:\n", options.value(OPTION::OUTFILE));
-		dont_overwrite = false;
-		output(SupportedFormats::toc(), options.value(OPTION::OUTFILE),
-				dont_overwrite);
+		Output::instance().output("TOC:\n");
+		Output::instance().output(SupportedFormats::toc());
 	}
 
 	if (options.is_set(CALC::LIST_AUDIO_FORMATS))
 	{
-		output("Audio:\n", options.value(OPTION::OUTFILE), dont_overwrite);
-		output(SupportedFormats::audio(), options.value(OPTION::OUTFILE),
-				dont_overwrite);
+		Output::instance().output("Audio:\n");
+		Output::instance().output(SupportedFormats::audio());
 	}
 
 	return EXIT_SUCCESS;
