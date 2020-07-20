@@ -91,6 +91,11 @@ public:
 private:
 
 	/**
+	 * \brief Maximal number of kilobytes to accept as input.
+	 */
+	static const int MAX_KB_ = 50;
+
+	/**
 	 * \brief Bytes per read
 	 */
 	const std::size_t buf_size_;

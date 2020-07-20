@@ -4,7 +4,6 @@
 
 #include <fstream>                // for ostream, dec, ios_base, ios_base::f...
 #include <iostream>               // for cout
-//#include <ostream>                // for operator<<, basic_ostream<>::__ostr...
 #include <sstream>                // for ostringstream
 #include <utility>                // for move
 
@@ -65,23 +64,22 @@ std::vector<char> StdIn::bytes()
 
 	std::freopen(nullptr, "rb", stdin); // ignore returned FILE ptr to stdin
 #endif
-	// binary mode from now on
 
-	// Cancel on error
+	// Binary Mode From Here On
+
 	if (std::ferror(stdin))
 	{
-		auto msg = std::stringstream {};
-		msg << "While opening stdin for input: " << std::strerror(errno)
+		auto msg = std::ostringstream {};
+		msg << "Error while opening stdin for input: " << std::strerror(errno)
 			<< " (errno " << errno << ")";
 
 		throw std::runtime_error(msg.str());
 	}
 
-	// Commented out version with std::array (lines 149,155 and 167)
-
 	auto bytes = std::vector<char> {}; // collects the input bytes
 	auto len   = std::size_t { 0 }; // number of bytes read from stdin
 	auto buf { std::make_unique<char[]>(buf_size()) }; // input buffer
+	const auto MAX_KB_INPUT = MAX_KB_ * 1024; // maximum input bytes to accept
 
 	// As long as there are any bytes, read them
 
@@ -89,10 +87,18 @@ std::vector<char> StdIn::bytes()
 	{
 		if (std::ferror(stdin) and not std::feof(stdin))
 		{
-			auto msg = std::stringstream {};
+			auto msg = std::ostringstream {};
 			msg << "While reading from stdin: " << std::strerror(errno)
 				<< " (errno " << errno << ")";
 
+			throw std::runtime_error(msg.str());
+		}
+
+		if (bytes.size() >= MAX_KB_INPUT)
+		{
+			auto msg = std::ostringstream {};
+			msg << "Input exceeds maximum size of " << MAX_KB_
+				<< " kilobytes, abort.";
 			throw std::runtime_error(msg.str());
 		}
 
