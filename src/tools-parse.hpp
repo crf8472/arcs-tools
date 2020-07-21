@@ -37,8 +37,6 @@ using arcstk::ContentHandler;
 
 /**
  * \brief Wrap a vector in an istream.
- *
- * For parsing stdin.
  */
 template<typename CharT, typename TraitsT = std::char_traits<CharT> >
 class VectorIStream : public std::basic_streambuf<CharT, TraitsT>
@@ -58,9 +56,7 @@ public:
 
 
 /**
- * \brief Represents limited access to stdin.
- *
- * For parsing stdin.
+ * \brief Buffered binary read access to stdin.
  */
 class StdIn final
 {
@@ -87,7 +83,6 @@ public:
 	 */
 	std::size_t buf_size() const;
 
-
 private:
 
 	/**
@@ -110,7 +105,6 @@ private:
  */
 class ARParserContentPrintHandler : public ContentHandler
 {
-
 public:
 
 	/**
@@ -291,7 +285,6 @@ public:
 	ARFileParser(const ARFileParser &rhs) = delete;
 	ARFileParser& operator = (const ARFileParser &rhs) = delete;
 
-
 private:
 
 	uint32_t do_parse() final;
@@ -338,7 +331,6 @@ public:
 	// non-copyable class
 	ARStdinParser(const ARStdinParser &rhs) = delete;
 	ARStdinParser& operator = (const ARStdinParser &rhs) = delete;
-
 
 private:
 

@@ -17,7 +17,7 @@ set (PROJECT_BRIEF_DESC "Example Toolkit for libarcstk" )
 
 set (PROJECT_URL "https://codeberg.org/tristero/${PROJECT_NAME}/" )
 
-set (PROJECT_VERSION_SUFFIX "alpha.1" )
+set (PROJECT_VERSION_SUFFIX "alpha.2" )
 
 set (PROJECT_DEFAULT_BUILD_TYPE "Release" )
 
@@ -194,7 +194,7 @@ find_package (libarcsdec 0.1.0 REQUIRED )
 
 ## --- Build
 
-## All objects without name, used as dependency in tests
+## All objects, used as dependency in tests
 add_library ( ${PROJECT_NAME}-objects OBJECT
 	${PROJECT_SOURCE_DIR}/app-calc.cpp
 	${PROJECT_SOURCE_DIR}/app-id.cpp
