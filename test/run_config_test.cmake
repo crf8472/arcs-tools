@@ -7,7 +7,7 @@ execute_process (
 	WORKING_DIRECTORY ${DATA_DIR}
 )
 
-file (REMOVE logfile )
+file (REMOVE logfile ) ## reason for putting the test in this script
 
 if(status)
 	MESSAGE(FATAL_ERROR "Test executing status: ${status}" )

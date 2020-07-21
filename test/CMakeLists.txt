@@ -17,11 +17,14 @@ set (MAIN_TEST_CPP "${TEST_SOURCE_DIR}/main.test.cpp" )
 ## List of executable tests that do NOT create temporary files
 set (TEST_SETS )
 
+## default tests
 list (APPEND TEST_SETS clitokens   )
 list (APPEND TEST_SETS layouts     )
 list (APPEND TEST_SETS tools-fs    )
 list (APPEND TEST_SETS tools-calc  )
 list (APPEND TEST_SETS tools-parse )
+## custom test scripts
+list (APPEND TEST_SETS config      )
 
 
 ## --- Provide main object file
@@ -53,30 +56,39 @@ foreach (_testcase ${TEST_SETS} )
 
 
 	## Compile tests as C++17
+
 	set_property (TARGET ${_testcase}_test PROPERTY CXX_STANDARD 17 )
 
+
 	## Add test to ctest set
-	add_test (
-		NAME    ${_testcase}_test
-		COMMAND ${_testcase}_test
-			-o "${PROJECT_LOG_DIR}/report.${_testcase}.xml"
-			-r junit
-		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data"
-	)
+
+	if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/run_${_testcase}_test.cmake)
+
+		## test defined by custom script (found script file)
+
+		add_test (
+			NAME ${_testcase}_test_script
+			COMMAND ${CMAKE_COMMAND}
+				-DOUTFILE=${PROJECT_LOG_DIR}/report.${_testcase}.xml
+				-DREPORT=junit
+				-DBIN_DIR=${CMAKE_CURRENT_BINARY_DIR}
+				-DDATA_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data
+				-P ${CMAKE_CURRENT_SOURCE_DIR}/run_${_testcase}_test.cmake
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data
+		)
+
+	else()
+
+		## default test
+
+		add_test (
+			NAME    ${_testcase}_test
+			COMMAND ${_testcase}_test
+				-o "${PROJECT_LOG_DIR}/report.${_testcase}.xml"
+				-r junit
+			WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data"
+		)
+	endif()
 
 endforeach()
-
-## And the config test that creates temporary logfiles that have to be
-## removed thereafter
-
-add_test (
-	NAME config_test_w
-	COMMAND ${CMAKE_COMMAND}
-		-DOUTFILE=${PROJECT_LOG_DIR}/report.config.xml
-		-DREPORT=junit
-		-DBIN_DIR=${CMAKE_CURRENT_BINARY_DIR}
-		-DDATA_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data
-		-P ${CMAKE_CURRENT_SOURCE_DIR}/run_config_test.cmake
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data
-)
 
