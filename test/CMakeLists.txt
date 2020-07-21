@@ -14,11 +14,10 @@ set (MAIN_TEST_CPP "${TEST_SOURCE_DIR}/main.test.cpp" )
 
 ## --- Declare fixtures
 
-## List of executable tests
+## List of executable tests that do NOT create temporary files
 set (TEST_SETS )
 
 list (APPEND TEST_SETS clitokens   )
-list (APPEND TEST_SETS config      )
 list (APPEND TEST_SETS layouts     )
 list (APPEND TEST_SETS tools-fs    )
 list (APPEND TEST_SETS tools-calc  )
@@ -62,8 +61,22 @@ foreach (_testcase ${TEST_SETS} )
 		COMMAND ${_testcase}_test
 			-o "${PROJECT_LOG_DIR}/report.${_testcase}.xml"
 			-r junit
-			WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data"
+		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data"
 	)
 
 endforeach()
+
+## And the config test that creates temporary logfiles that have to be
+## removed thereafter
+
+add_test (
+	NAME config_test_w
+	COMMAND ${CMAKE_COMMAND}
+		-DOUTFILE=${PROJECT_LOG_DIR}/report.config.xml
+		-DREPORT=junit
+		-DBIN_DIR=${CMAKE_CURRENT_BINARY_DIR}
+		-DDATA_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/run_config_test.cmake
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data
+)
 

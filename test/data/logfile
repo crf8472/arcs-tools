@@ -1,8 +1,0 @@
-WARN: Option LIST_TOC_FORMATS is ignored due to calculation task
-WARN: Option LIST_AUDIO_FORMATS is ignored due to calculation task
-WARN: Option LIST_TOC_FORMATS is ignored due to calculation task
-WARN: Option LIST_AUDIO_FORMATS is ignored due to calculation task
-WARN: Option LIST_TOC_FORMATS is ignored due to calculation task
-WARN: Option LIST_AUDIO_FORMATS is ignored due to calculation task
-WARN: Ignore option PRINTID since option REFVALUES is active and reference values do not provide an ID to print
-WARN: Ignore option PRINTURL since option REFVALUES is active and reference values do not provide an URL to print
