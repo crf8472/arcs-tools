@@ -2,6 +2,7 @@
 
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![C++17](https://img.shields.io/badge/C++-17-darkblue.svg)](./API.md)
+[![Latest](https://img.shields.io/badge/dynamic/json.svg?url=https://codeberg.org/api/v1/repos/tristero/arcs-tools/releases&label=latest&query=$.0.name&color=yellowgreen)](https://codeberg.org/tristero/arcs-tools/releases)
 
 
 ## Introduction
