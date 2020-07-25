@@ -65,48 +65,73 @@ private:
 
 
 FormatCollector::FormatCollector()
-	: table_ { 0, 4, true, true }
+	: table_ { 0, 5, true, true }
 {
 	table_.set_title(0, "Name");
 	table_.set_width(0, table_.title(0).length() + 6);
 	table_.set_alignment(0, true);
 
-	table_.set_title(1, "Description");
+	table_.set_title(1, "Formats");
 	table_.set_width(1, table_.title(1).length() + 4);
 	table_.set_alignment(1, true);
 
-	table_.set_title(2, "Lib name");
-	table_.set_width(2, table_.title(2).length() + 5);
+	table_.set_title(2, "Codecs");
+	table_.set_width(2, table_.title(2).length() + 4);
 	table_.set_alignment(2, true);
 
-	table_.set_title(3, "Runtime object");
-	table_.set_width(3, table_.title(3).length());
+	table_.set_title(3, "Lib name");
+	table_.set_width(3, table_.title(3).length() + 5);
 	table_.set_alignment(3, true);
+
+	table_.set_title(4, "Runtime object");
+	table_.set_width(4, table_.title(4).length());
+	table_.set_alignment(4, true);
 }
 
 
 void FormatCollector::add(const arcsdec::FileReaderDescriptor &descriptor)
 {
-	// Compose description: comma-separated list of format names
+	// comma-separated list of format names
 
-	std::ostringstream desc;
+	std::ostringstream format_list;
 
 	if (const auto& formats = descriptor.formats(); not formats.empty())
 	{
 		if (formats.size() == 1)
 		{
-			desc << arcsdec::name(*formats.begin());
+			format_list << arcsdec::name(*formats.begin());
 		} else
 		{
-			// FIXME Always ends with a comma
-			std::transform(formats.begin(), formats.rbegin().base(),
-				std::ostream_iterator<std::string>(desc, ","),
-				[](const arcsdec::FileFormat &format) -> std::string
+			std::transform(formats.begin(), --formats.rbegin().base(),
+				std::ostream_iterator<std::string>(format_list, ","),
+				[](const arcsdec::Format &format) -> std::string
 				{
 					return arcsdec::name(format);
 				});
 
-			desc << arcsdec::name(*formats.rbegin());
+			format_list << arcsdec::name(*formats.rbegin());
+		}
+	}
+
+	// comma-separated list of codecs
+
+	std::ostringstream codec_list;
+
+	if (const auto& codecs = descriptor.codecs(); not codecs.empty())
+	{
+		if (codecs.size() == 1)
+		{
+			codec_list << arcsdec::name(*codecs.begin());
+		} else
+		{
+			std::transform(codecs.begin(), --codecs.rbegin().base(),
+				std::ostream_iterator<std::string>(codec_list, ","),
+				[](const arcsdec::Codec &codec) -> std::string
+				{
+					return arcsdec::name(codec);
+				});
+
+			codec_list << arcsdec::name(*codecs.rbegin());
 		}
 	}
 
@@ -115,14 +140,15 @@ void FormatCollector::add(const arcsdec::FileReaderDescriptor &descriptor)
 	int row = table_.current_row();
 
 	table_.update_cell(row, 0, descriptor.name());
-	table_.update_cell(row, 1, desc.str());
+	table_.update_cell(row, 1, format_list.str());
+	table_.update_cell(row, 2, codec_list.str());
 
 	auto dependencies = descriptor.libraries();
 
 	for (const auto& dep : dependencies)
 	{
-		table_.update_cell(row, 2, dep.first);
-		table_.update_cell(row, 3, dep.second);
+		table_.update_cell(row, 3, dep.first);
+		table_.update_cell(row, 4, dep.second);
 		++row;
 	}
 }
