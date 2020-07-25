@@ -8,6 +8,9 @@
 
 #include <iostream>
 
+#ifndef __LIBARCSDEC_DESCRIPTORS_HPP__
+#include <arcsdec/descriptors.hpp>
+#endif
 #ifndef __LIBARCSDEC_CALCULATORS_HPP__
 #include <arcsdec/calculators.hpp>  // for ARCSCalculator, TOCParser
 #endif
@@ -72,11 +75,11 @@ FormatCollector::FormatCollector()
 	table_.set_width(1, table_.title(1).length() + 4);
 	table_.set_alignment(1, true);
 
-	table_.set_title(2, "Lib");
+	table_.set_title(2, "Lib name");
 	table_.set_width(2, table_.title(2).length() + 5);
 	table_.set_alignment(2, true);
 
-	table_.set_title(3, "Version");
+	table_.set_title(3, "Runtime object");
 	table_.set_width(3, table_.title(3).length());
 	table_.set_alignment(3, true);
 }
@@ -107,20 +110,21 @@ void FormatCollector::add(const arcsdec::FileReaderDescriptor &descriptor)
 		}
 	}
 
-	// FIXME Get the name of the library used at runtime from libarcsdec
-
-	// FIXME Get the version of the library used at runtime from libarcsdec
-
 	// Add row for the current descriptor
 
 	int row = table_.current_row();
 
 	table_.update_cell(row, 0, descriptor.name());
 	table_.update_cell(row, 1, desc.str());
-	table_.update_cell(row, 2, "-");
-	table_.update_cell(row, 3, "-");
 
-	++row;
+	auto dependencies = descriptor.libraries();
+
+	for (const auto& dep : dependencies)
+	{
+		table_.update_cell(row, 2, dep.first);
+		table_.update_cell(row, 3, dep.second);
+		++row;
+	}
 }
 
 
