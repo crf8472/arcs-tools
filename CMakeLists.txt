@@ -17,7 +17,7 @@ set (PROJECT_BRIEF_DESC "Example Toolkit for libarcstk" )
 
 set (PROJECT_URL "https://codeberg.org/tristero/${PROJECT_NAME}/" )
 
-set (PROJECT_VERSION_SUFFIX "alpha.2" )
+set (PROJECT_VERSION_SUFFIX "alpha.1" )
 
 set (PROJECT_DEFAULT_BUILD_TYPE "Release" )
 
