@@ -467,6 +467,7 @@ std::string ARIdTableLayout::do_format(ArgsRefTuple t) const
 	auto stream = std::ostringstream {};
 	auto value = std::string {};
 
+	// TODO Use optimal_label_width?
 	auto label_width = fieldlabels() ? optimal_width(labels()) : 0;
 
 	for (const auto& sflag : show_flags())
@@ -1316,10 +1317,12 @@ void StringTableStructure::print_column_titles(std::ostream &out) const
 
 void StringTableStructure::print_label(std::ostream &o, const int row) const
 {
+	if (optimal_label_width() == 0) { return; }
+
 	o << std::setw(optimal_label_width())
 		<< std::left // TODO Make Configurable?
 		<< row_label(row)
-		<< column_delimiter();
+		<< column_delimiter(); // TODO Always with delimiter?
 }
 
 
@@ -1640,19 +1643,21 @@ std::ostream& operator << (std::ostream &out, const StringTableBase &table)
 	std::ios_base::fmtflags prev_settings = out.flags();
 
 	// Column titles
-	out << std::setw(label_width) << std::left << std::setfill(' ') << ' ';
+	if (label_width > 0)
+	{
+		out << std::setw(label_width) << std::left << std::setfill(' ') << ' ';
+	}
 	table.print_column_titles(out);
 	std::string text;
 
 	// Row contents
+	const auto last_col = table.columns() - 1;
 	for (std::size_t row = 0; row < table.rows(); ++row)
 	{
 		table.print_label(out, row);
-
 		for (std::size_t col = 0; col < table.columns(); ++col)
 		{
-			table.print_cell(out, col, table.cell(row, col),
-					col < table.columns() - 1);
+			table.print_cell(out, col, table.cell(row, col), col < last_col);
 		}
 		out << std::endl;
 	}
