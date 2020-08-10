@@ -85,7 +85,16 @@ void FormatCollector::add(const arcsdec::FileReaderDescriptor &descriptor)
 	// comma-separated list of format names
 
 	using format_func = std::string (*)(arcsdec::Format);
-	format_func f = &arcsdec::name;
+
+	// transform container formats to filetype suffices
+	format_func f = [](arcsdec::Format f) -> std::string
+	{
+		auto name = arcsdec::name(f);
+		std::transform(name.begin(), name.end(), name.begin(),
+			[](unsigned char c){ return std::tolower(c); });
+		return "." + name;
+	};
+
 	std::string formats = details::to_sep_list(descriptor.formats(), ",", f);
 
 	// comma-separated list of codec names
