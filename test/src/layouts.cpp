@@ -98,14 +98,19 @@ TEST_CASE ( "StringTable", "[stringtable]" )
 {
 	using arcsapp::StringTable;
 
-	StringTable table(2, 4, false, true); // no dynamic widths
+	StringTable table(2, 4, true);
 
 	REQUIRE ( table.rows()    == 2 );
 	REQUIRE ( table.columns() == 4 );
 
+	REQUIRE ( not table.has_dynamic_width(0) );
+	REQUIRE ( not table.has_dynamic_width(1) );
+	REQUIRE ( not table.has_dynamic_width(2) );
+	REQUIRE ( not table.has_dynamic_width(3) );
+
 	// Set widths
 
-	table.set_width(0, 5);
+	table.set_width(0, 5); // no dynamic widths
 	table.set_width(1, 3);
 	table.set_width(2, 4);
 	table.set_width(3, 10);
@@ -133,7 +138,7 @@ TEST_CASE ( "StringTable", "[stringtable]" )
 	REQUIRE ( table.cell(0, 3) == "357" );
 
 	REQUIRE ( table.cell(1, 0) == "xyz" );
-	REQUIRE ( table.cell(1, 1) == "fu~" ); // cut off
+	REQUIRE ( table.cell(1, 1) == "fubi" ); // cut off in print: fub~
 	REQUIRE ( table.cell(1, 2) == "quux" );
 	REQUIRE ( table.cell(1, 3) == "855" );
 
@@ -147,7 +152,7 @@ TEST_CASE ( "StringTable", "[stringtable]" )
 		CHECK ( table_copy.cell(0, 3) == "357" );
 
 		CHECK ( table_copy.cell(1, 0) == "xyz" );
-		CHECK ( table_copy.cell(1, 1) == "fu~" ); // cut off
+		CHECK ( table_copy.cell(1, 1) == "fubi" ); // cut off in print: fub~
 		CHECK ( table_copy.cell(1, 2) == "quux" );
 		CHECK ( table_copy.cell(1, 3) == "855" );
 	}
@@ -162,7 +167,7 @@ TEST_CASE ( "StringTable", "[stringtable]" )
 		CHECK ( table_moved.cell(0, 3) == "357" );
 
 		CHECK ( table_moved.cell(1, 0) == "xyz" );
-		CHECK ( table_moved.cell(1, 1) == "fu~" ); // cut off
+		CHECK ( table_moved.cell(1, 1) == "fubi" ); // cut off in print: fub~
 		CHECK ( table_moved.cell(1, 2) == "quux" );
 		CHECK ( table_moved.cell(1, 3) == "855" );
 	}
@@ -177,7 +182,7 @@ TEST_CASE ( "StringTable", "[stringtable]" )
 		CHECK ( table_copy.cell(0, 3) == "357" );
 
 		CHECK ( table_copy.cell(1, 0) == "xyz" );
-		CHECK ( table_copy.cell(1, 1) == "fu~" ); // cut off
+		CHECK ( table_copy.cell(1, 1) == "fubi" ); // cut off in print: fub~
 		CHECK ( table_copy.cell(1, 2) == "quux" );
 		CHECK ( table_copy.cell(1, 3) == "855" );
 	}
@@ -192,7 +197,7 @@ TEST_CASE ( "StringTable", "[stringtable]" )
 		CHECK ( table_moved.cell(0, 3) == "357" );
 
 		CHECK ( table_moved.cell(1, 0) == "xyz" );
-		CHECK ( table_moved.cell(1, 1) == "fu~" ); // cut off
+		CHECK ( table_moved.cell(1, 1) == "fubi" ); // cut off in print: fub~
 		CHECK ( table_moved.cell(1, 2) == "quux" );
 		CHECK ( table_moved.cell(1, 3) == "855" );
 	}

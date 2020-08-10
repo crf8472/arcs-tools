@@ -668,6 +668,9 @@ public:
 	void set_width(const int col, const int width);
 	int width(const int col) const;
 
+	void set_dynamic_width(const int col);
+	bool has_dynamic_width(const int col) const;
+
 	void set_alignment(const int col, const bool align);
 	bool alignment(const int col) const;
 
@@ -733,6 +736,11 @@ private:
 	std::vector<int> widths_;
 
 	/**
+	 * \brief Dynamic width flags.
+	 */
+	std::vector<bool> dyn_width_;
+
+	/**
 	 * \brief The column alignments.
 	 */
 	std::vector<bool> alignments_;
@@ -764,6 +772,7 @@ StringTableStructure::Impl::Impl(const int rows, const int cols)
 	, cols_         { cols }
 	, title_        {}
 	, widths_       (cols)
+	, dyn_width_    (cols)
 	, alignments_   (cols)
 	, col_types_    (cols)
 	, col_titles_   (cols)
@@ -816,6 +825,18 @@ void StringTableStructure::Impl::set_width(const int col, const int width)
 int StringTableStructure::Impl::width(const int col) const
 {
 	return widths_[col];
+}
+
+
+void StringTableStructure::Impl::set_dynamic_width(const int col)
+{
+	dyn_width_[col] = true;
+}
+
+
+bool StringTableStructure::Impl::has_dynamic_width(const int col) const
+{
+	return dyn_width_[col];
 }
 
 
@@ -893,6 +914,7 @@ void StringTableStructure::Impl::resize(const int rows, const int cols)
 	cols_ = cols;
 
 	widths_.resize(columns());
+	dyn_width_.resize(columns());
 	alignments_.resize(columns());
 	col_types_.resize(columns());
 
@@ -936,6 +958,7 @@ void StringTableStructure::Impl::swap(StringTableStructure::Impl rhs)
 	swap(rows_, rhs.rows_);
 	swap(cols_, rhs.cols_);
 	swap(widths_, rhs.widths_);
+	swap(dyn_width_, rhs.dyn_width_);
 	swap(alignments_, rhs.alignments_);
 	swap(col_types_, rhs.col_types_);
 	swap(col_titles_, rhs.col_titles_);
@@ -1024,6 +1047,18 @@ void StringTableStructure::set_width(const int col, const int width)
 int StringTableStructure::width(const int col) const
 {
 	return this->do_width(col);
+}
+
+
+void StringTableStructure::set_dynamic_width(const int col)
+{
+	this->do_set_dynamic_width(col);
+}
+
+
+bool StringTableStructure::has_dynamic_width(const int col) const
+{
+	return this->do_has_dynamic_width(col);
 }
 
 
@@ -1177,6 +1212,18 @@ int StringTableStructure::do_width(const int col) const
 }
 
 
+void StringTableStructure::do_set_dynamic_width(const int col)
+{
+	impl_->set_dynamic_width(col);
+}
+
+
+bool StringTableStructure::do_has_dynamic_width(const int col) const
+{
+	return impl_->has_dynamic_width(col);
+}
+
+
 void StringTableStructure::do_set_alignment(const int col, const bool align)
 {
 	impl_->set_alignment(col, align);
@@ -1279,9 +1326,19 @@ void StringTableStructure::print_label(std::ostream &o, const int row) const
 void StringTableStructure::print_cell(std::ostream &o, const int col,
 		const std::string &text, const bool with_delim) const
 {
-	o << std::setw(width(col))
-		<< (alignment(col) > 0 ? std::left : std::right)
-		<< text;
+	if (auto curr_width = static_cast<std::size_t>(width(col));
+			not has_dynamic_width(col) and text.length() > curr_width)
+	{
+		// Truncate cell (on column width)
+		o << std::setw(width(col))
+			<< (alignment(col) > 0 ? std::left : std::right)
+			<< text.substr(0, curr_width - 1) + "~";
+	} else
+	{
+		o << std::setw(width(col))
+			<< (alignment(col) > 0 ? std::left : std::right)
+			<< text;
+	}
 
 	if (with_delim)
 	{
@@ -1427,9 +1484,9 @@ int StringTableBase::Impl::index(const int row, const int col) const
 
 
 StringTableBase::StringTableBase(const int rows, const int columns,
-			const bool has_dynamic_widths, const bool has_appending_rows)
+			const bool has_appending_rows)
 	: StringTableStructure(rows, columns)
-	, flags_ { has_dynamic_widths, has_appending_rows }
+	, flags_ { has_appending_rows }
 	, impl_(std::make_unique<StringTableBase::Impl>(rows, columns, this))
 {
 	// empty
@@ -1474,15 +1531,9 @@ StringTableBase& StringTableBase::operator = (StringTableBase &&rhs) noexcept
 }
 
 
-bool StringTableBase::has_dynamic_widths() const
-{
-	return flags_[0];
-}
-
-
 bool StringTableBase::has_appending_rows() const
 {
-	return flags_[1];
+	return flags_[0];
 }
 
 
@@ -1509,11 +1560,13 @@ void StringTableBase::update_cell(const int row, const int col,
 		bounds_check_row(row);
 	}
 
-	// Handle dynamic column width
-	if (auto curr_width = static_cast<std::size_t>(width(col));
-		has_dynamic_widths() and text.length() > curr_width)
+	// Handle text with more width than column
+	if (text.length() > static_cast<std::size_t>(width(col)))
 	{
-		set_width(col, text.length());
+		if (has_dynamic_width(col))
+		{
+			set_width(col, text.length());
+		} // TODO else: Multiline cell
 	}
 
 	this->do_update_cell(row, col, text);
@@ -1524,16 +1577,7 @@ std::string StringTableBase::cell(const int row, const int col) const
 {
 	this->bounds_check(row, col);
 
-	auto text = impl_->cell(row, col);
-
-	// Truncate cell content on column width
-	if (auto curr_width = static_cast<std::size_t>(width(col));
-			text.length() > curr_width)
-	{
-		return text.substr(0, curr_width - 1) + "~";
-	}
-
-	return text;
+	return impl_->cell(row, col);
 }
 
 
@@ -1598,6 +1642,7 @@ std::ostream& operator << (std::ostream &out, const StringTableBase &table)
 	// Column titles
 	out << std::setw(label_width) << std::left << std::setfill(' ') << ' ';
 	table.print_column_titles(out);
+	std::string text;
 
 	// Row contents
 	for (std::size_t row = 0; row < table.rows(); ++row)
@@ -2296,9 +2341,9 @@ std::string VerifyTableLayout::do_format(ArgsRefTuple t) const
 	std::string cell{};
 	int trackno = 1;
 
-	for (std::size_t row = 0; row < lyt.rows() - 1; ++row, ++trackno) // print row
+	for (std::size_t row = 0; row < lyt.rows() - 1; ++row, ++trackno)//print row
 	{
-		for (std::size_t col = 0; col < lyt.columns(); ++col) // print cell
+		for (std::size_t col = 0; col < lyt.columns(); ++col)//print cell
 		{
 			switch (lyt.type_of(col))
 			{

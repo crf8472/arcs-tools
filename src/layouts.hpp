@@ -871,6 +871,24 @@ public:
 	int width(const int col) const;
 
 	/**
+	 * \brief Set the column width to dynamic
+	 *
+	 * \param[in] col   Column index
+	 */
+	void set_dynamic_width(const int col);
+
+	/**
+	 * \brief Indicate whether width of a column is dynamic
+	 *
+	 * \param[in] col The column to get the width of
+	 *
+	 * \return Width of the column
+	 *
+	 * \throws std::out_of_range If col > columns() or col < 0.
+	 */
+	bool has_dynamic_width(const int col) const;
+
+	/**
 	 * \brief Set alignment for the specified column
 	 *
 	 * \param[in] col   Column index
@@ -1094,6 +1112,9 @@ private:
 	virtual void do_set_width(const int col, const int width);
 	virtual int do_width(const int col) const;
 
+	virtual void do_set_dynamic_width(const int col);
+	virtual bool do_has_dynamic_width(const int col) const;
+
 	virtual void do_set_alignment(const int col, const bool align);
 	virtual bool do_alignment(const int col) const;
 
@@ -1143,11 +1164,10 @@ public:
 	 *
 	 * \param[in] rows    Number of rows (including header, if any)
 	 * \param[in] columns Number of columns (including label column, if any)
-	 * \param[in] has_dynamic_widths  If 'FALSE' cells are truncated on col width
 	 * \param[in] has_appending_rows If 'FALSE' appending rows is forbidden
 	 */
 	StringTableBase(const int rows, const int columns,
-			const bool has_dynamic_widths, const bool has_appending_rows);
+			const bool has_appending_rows);
 
 	/**
 	 * \brief Constructor
@@ -1158,7 +1178,7 @@ public:
 	 * \param[in] columns Number of columns (including label column, if any)
 	 */
 	StringTableBase(const int rows, const int columns)
-		: StringTableBase(rows, columns, true, true) { /* empty */ };
+		: StringTableBase(rows, columns, true) { /* empty */ };
 
 	/**
 	 * \brief Default constructor
@@ -1172,13 +1192,6 @@ public:
 	 * \brief Default destructor
 	 */
 	virtual ~StringTableBase() noexcept;
-
-	/**
-	 * \brief TRUE if the table has dynamic column widths activated.
-	 *
-	 * \return TRUE if dynamic column widths are activated, otherwise FALSE
-	 */
-	bool has_dynamic_widths() const;
 
 	/**
 	 * \brief TRUE if the table has row appending activated.
