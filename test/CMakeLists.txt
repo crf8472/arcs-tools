@@ -64,12 +64,12 @@ foreach (_testcase ${TEST_SETS} )
 
 	if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/run_${_testcase}_test.cmake)
 
-		## test defined by custom script (found script file)
+		##  Found custom script file: test defined by custom script
 
 		add_test (
 			NAME ${_testcase}_test_script
 			COMMAND ${CMAKE_COMMAND}
-				-DOUTFILE=${PROJECT_LOG_DIR}/report.${_testcase}.xml
+				-DOUTFILE=${PROJECT_BINARY_DIR}/report.${_testcase}.xml
 				-DREPORT=junit
 				-DBIN_DIR=${CMAKE_CURRENT_BINARY_DIR}
 				-DDATA_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data
@@ -84,7 +84,7 @@ foreach (_testcase ${TEST_SETS} )
 		add_test (
 			NAME    ${_testcase}_test
 			COMMAND ${_testcase}_test
-				-o "${PROJECT_LOG_DIR}/report.${_testcase}.xml"
+				-o "${PROJECT_BINARY_DIR}/report.${_testcase}.xml"
 				-r junit
 			WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data"
 		)
