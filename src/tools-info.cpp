@@ -83,10 +83,10 @@ void FormatCollector::add(const arcsdec::FileReaderDescriptor &descriptor)
 	auto dependencies = descriptor.libraries();
 
 	// comma-separated list of format names
+	// transform container formats to filetype suffices
 
 	using format_func = std::string (*)(arcsdec::Format);
 
-	// transform container formats to filetype suffices
 	format_func f = [](arcsdec::Format f) -> std::string
 	{
 		auto name = arcsdec::name(f);

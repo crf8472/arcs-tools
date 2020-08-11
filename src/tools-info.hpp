@@ -28,7 +28,7 @@ namespace details
 template <typename Container> // TODO SFINAE stuff: empty(), size(), b+e, rbegin
 std::string to_sep_list(const Container c, const std::string delim,
 		const std::function<std::string(const typename Container::value_type &)>
-		&func)
+		&f)
 {
 	if (c.empty())
 	{
@@ -37,19 +37,15 @@ std::string to_sep_list(const Container c, const std::string delim,
 
 	std::ostringstream list_stream;
 
-	if (c.size() == 1)
-	{
-		list_stream << func(*c.begin());
-	} else
+	if (c.size() > 1)
 	{
 		std::transform(c.begin(), --c.rbegin().base(),
-			std::ostream_iterator<std::string>(list_stream, delim.c_str()),
-			[func](const typename Container::value_type &entry) -> std::string
-			{
-				return func(entry);
-			});
+			std::ostream_iterator<std::string>(list_stream, delim.c_str()), f);
 
-		list_stream << func(*c.rbegin());
+		list_stream << f(*c.rbegin());
+	} else
+	{
+		list_stream << f(*c.begin());
 	}
 
 	return list_stream.str();
