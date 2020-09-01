@@ -139,6 +139,9 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 			const std::vector<std::string> &audiofilenames,
 			const std::string &metafilename) const
 {
+	ARCS_LOG_DEBUG << "Calculate result from at least one audiofile and a"
+		" metafile";
+
 	if (audiofilenames.empty())
 	{
 		ARCS_LOG_WARNING << "Called multiple audiofile calculation but "
@@ -201,6 +204,9 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 		const std::string &metafilename,
 		const std::string &audiosearchpath) const
 {
+	ARCS_LOG_DEBUG << "Calculate result from metafilename"
+			" and searchpath for audiofiles";
+
 	if (metafilename.empty())
 	{
 		throw std::invalid_argument("No TOC file specified.");
@@ -221,9 +227,6 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 			"pairwise distinct. This usecase is unsupported in the current "
 			"version.");
 	}
-
-	ARCS_LOG_DEBUG << "Calculate result from metafilename"
-			" and searchpath for audiofiles";
 
 	// Calculate ARCSs
 
@@ -306,6 +309,8 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 		const std::vector<std::string> &audiofilenames,
 		const std::string &metafilename) const
 {
+	ARCS_LOG_DEBUG << "Calculate result from audiofilenames and metafilename";
+
 	return impl_->calculate(audiofilenames, metafilename);
 }
 
@@ -315,6 +320,9 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 			const std::vector<std::string> &audiofilenames,
 			const bool &skip_front, const bool &skip_back) const
 {
+	ARCS_LOG_DEBUG << "Calculate result from audiofilenames "
+			" and flags for first and last track";
+
 	auto Checksums = impl_->calculate(audiofilenames, skip_front, skip_back);
 
 	return std::make_tuple(Checksums, arcstk::EmptyARId, nullptr);
