@@ -70,6 +70,7 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile-man.in ${DOXYFILE} @ONLY )
 ## Produce doxygen output
 
 file (MAKE_DIRECTORY ${PROJECT_MAN_BUILD_DIR} )
+file (MAKE_DIRECTORY ${PROJECT_MAN_DOXYGEN_OUT_DIR} )
 
 # List of expected man pages (output of doxygen run)
 set (MANPAGES )
@@ -80,7 +81,7 @@ endforeach()
 
 add_custom_command (
 	OUTPUT  ${MANPAGES}
-	COMMAND cmake -E rm -r "${PROJECT_MAN_DOXYGEN_OUT_DIR}/1"
+	COMMAND cmake -E rm -rf "${PROJECT_MAN_DOXYGEN_OUT_DIR}/1"
 	COMMAND Doxygen::doxygen ${DOXYFILE}
 	WORKING_DIRECTORY ${PROJECT_MAN_DOXYGEN_OUT_DIR}
 	DEPENDS ${MAN_SOURCE_FORMS} ${MAN_SOURCE_TEXTS}
