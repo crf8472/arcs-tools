@@ -149,15 +149,7 @@ inline int optimal_width(Container&& list)
 /**
  * \brief Interface for formatting Checksums.
  */
-class ChecksumLayout : public Layout<Checksum, int>
-{
-private:
-
-	// no assertions()
-
-	virtual std::string do_format(ArgsRefTuple t) const
-	= 0;
-};
+class ChecksumLayout : public Layout<Checksum, int> { /* empty */ };
 
 
 /**
@@ -585,8 +577,7 @@ private:
 		"CDDB ID"
 	};
 
-	virtual std::string do_format(ArgsRefTuple t) const
-	= 0;
+	//std::string do_format(ArgsRefTuple t) const
 
 	bool field_labels_;
 
@@ -1674,7 +1665,7 @@ private:
 			const std::vector<arcstk::checksum::type> &types) override;
 	};
 
-	virtual std::string do_format(ArgsRefTuple t) const override;
+	std::string do_format(ArgsRefTuple t) const override;
 };
 
 
@@ -1705,7 +1696,7 @@ private:
 		void do_init(const int, const int) override { /* empty */ };
 	};
 
-	virtual std::string do_format(ArgsRefTuple t) const override;
+	std::string do_format(ArgsRefTuple t) const override;
 };
 
 
@@ -1765,8 +1756,7 @@ protected:
 
 private:
 
-	virtual std::string do_format(ArgsRefTuple t) const
-	= 0;
+	//std::string do_format(ArgsRefTuple t) const
 
 	/**
 	 * \brief The symbol to be printed on identity of two checksum values.
@@ -1805,7 +1795,7 @@ private:
 			const std::vector<arcstk::checksum::type> &types) override;
 	};
 
-	virtual std::string do_format(ArgsRefTuple t) const override;
+	std::string do_format(ArgsRefTuple t) const override;
 };
 
 } // namespace arcsapp
