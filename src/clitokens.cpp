@@ -274,7 +274,7 @@ const std::string& CLITokens::argument(const std::size_t &i) const
 	while (counter < i)
 	{
 		token = std::find_if(tokens_.begin() + counter, tokens_.end(),
-				[i](const Token &item)
+				[](const Token &item)
 				{
 					return item.code() == Option::NONE;
 				});
