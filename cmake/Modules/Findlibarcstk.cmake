@@ -49,7 +49,7 @@ mark_as_advanced (
 include (FindPackageHandleStandardArgs )
 
 find_package_handle_standard_args (libarcstk
-	REQUIRED_VARS LIBARCSTK_LIBRARY LIBARCSTK_VERSION LIBARCSTK_INCLUDE_DIR
+	REQUIRED_VARS LIBARCSTK_LIBRARY LIBARCSTK_INCLUDE_DIR
 	VERSION_VAR   LIBARCSTK_VERSION
 )
 
