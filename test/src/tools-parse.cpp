@@ -274,7 +274,7 @@ TEST_CASE ( "ARFileParser", "[parse] [arfileparser]" )
 
 TEST_CASE ( "ARStdinParser", "[parse] [arstdinparser]" )
 {
-	using ARStdinParser = arcstk::ARStdinParser;
+	using ARStdinParser = arcsapp::ARStdinParser;
 	using ARResponse   = arcstk::ARResponse;
 	using DefaultErrorHandler   = arcstk::DefaultErrorHandler;
 	using DefaultContentHandler = arcstk::DefaultContentHandler;

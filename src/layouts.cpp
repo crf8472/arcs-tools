@@ -1855,12 +1855,12 @@ void CalcResultLayout::assertions(ArgsRefTuple t) const
 				"Need either TOC data or filenames to print results");
 	}
 
-	if (toc && static_cast<uint16_t>(toc->track_count()) != total_tracks)
+	if (toc && static_cast<uint16_t>(toc->total_tracks()) != total_tracks)
 	{
 		throw std::invalid_argument("Mismatch: "
 				"Checksums for " + std::to_string(total_tracks)
 				+ " files/tracks, but TOC specifies "
-				+ std::to_string(toc->track_count()) + " tracks.");
+				+ std::to_string(toc->total_tracks()) + " tracks.");
 	}
 
 	if (not (filenames.empty()
@@ -2179,12 +2179,12 @@ void VerifyResultLayout::assertions(const ArgsRefTuple t) const
 				"Need either TOC data or filenames to print results");
 	}
 
-	if (toc && static_cast<uint16_t>(toc->track_count()) != total_tracks)
+	if (toc && static_cast<uint16_t>(toc->total_tracks()) != total_tracks)
 	{
 		throw std::invalid_argument("Mismatch: "
 				"Checksums for " + std::to_string(total_tracks)
 				+ " files/tracks, but TOC specifies "
-				+ std::to_string(toc->track_count()) + " tracks.");
+				+ std::to_string(toc->total_tracks()) + " tracks.");
 	}
 
 	if (not (filenames.empty()

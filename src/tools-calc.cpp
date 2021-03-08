@@ -163,11 +163,11 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 
 	const int filecount = audiofilenames.size();
 
-	if (toc->track_count() != filecount and filecount != 1) // case: illegal
+	if (toc->total_tracks() != filecount and filecount != 1) // case: illegal
 	{
 		std::ostringstream msg;
 		msg << "Inconsistent input: Metafile " << metafilename
-			<< " specifies " << toc->track_count() << " tracks"
+			<< " specifies " << toc->total_tracks() << " tracks"
 			<< " but " << filecount << " audio files were passed to override.";
 
 		throw std::invalid_argument(msg.str());
@@ -187,7 +187,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 	}
 
 	// case: multi-file album w TOC
-	if (toc->track_count() == filecount)
+	if (toc->total_tracks() == filecount)
 	{
 		const auto checksums { c.calculate(audiofilenames, true, true) };
 		const auto arid      { make_arid(*toc) };

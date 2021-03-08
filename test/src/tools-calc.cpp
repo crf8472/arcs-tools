@@ -9,7 +9,7 @@ TEST_CASE ( "audiofile_layout()", "" )
 {
 	using arcsapp::calc::audiofile_layout;
 
-	using arcstk::lba_count;
+	using arcstk::lba_count_t;
 	using arcstk::make_toc;
 
 	SECTION ( "Audiolayout with no filenames" )
@@ -19,7 +19,7 @@ TEST_CASE ( "audiofile_layout()", "" )
 			// track count
 			15,
 			// offsets
-			std::vector<lba_count>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
+			std::vector<lba_count_t>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
 			87733, 106333, 139495, 157863, 198495, 213368, 225320, 234103 },
 			// leadout
 			253038
@@ -41,7 +41,7 @@ TEST_CASE ( "audiofile_layout()", "" )
 			// track count
 			15,
 			// offsets
-			std::vector<lba_count>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
+			std::vector<lba_count_t>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
 			87733, 106333, 139495, 157863, 198495, 213368, 225320, 234103 },
 			// leadout
 			253038,
@@ -67,7 +67,7 @@ TEST_CASE ( "audiofile_layout()", "" )
 			// track count
 			15,
 			// offsets
-			std::vector<lba_count>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
+			std::vector<lba_count_t>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
 			87733, 106333, 139495, 157863, 198495, 213368, 225320, 234103 },
 			// leadout
 			253038,
@@ -93,7 +93,7 @@ TEST_CASE ( "audiofile_layout()", "" )
 			// track count
 			15,
 			// offsets
-			std::vector<lba_count>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
+			std::vector<lba_count_t>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
 			87733, 106333, 139495, 157863, 198495, 213368, 225320, 234103 },
 			// leadout
 			253038,

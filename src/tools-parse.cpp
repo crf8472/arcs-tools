@@ -200,8 +200,8 @@ void ARParserContentPrintHandler::do_id(const uint8_t track_count,
 }
 
 
-void ARParserContentPrintHandler::do_triplet(const uint32_t arcs,
-		const uint8_t confidence, const uint32_t frame450_arcs)
+void ARParserContentPrintHandler::do_triplet(const Checksum arcs,
+		const uint8_t confidence, const Checksum frame450_arcs)
 {
 	++track_;
 	const ARTriplet triplet(arcs, confidence, frame450_arcs);
@@ -211,8 +211,8 @@ void ARParserContentPrintHandler::do_triplet(const uint32_t arcs,
 }
 
 
-void ARParserContentPrintHandler::do_triplet(const uint32_t arcs,
-		const uint8_t confidence, const uint32_t frame450_arcs,
+void ARParserContentPrintHandler::do_triplet(const Checksum arcs,
+		const uint8_t confidence, const Checksum frame450_arcs,
 		const bool arcs_valid, const bool confidence_valid,
 		const bool frame450_arcs_valid)
 {

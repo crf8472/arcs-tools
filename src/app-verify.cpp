@@ -566,7 +566,8 @@ int ARVerifyApplication::run_calculation(const Options &options)
 	if (diff->matches())
 	{
 		ARCS_LOG_INFO << "Response contains a total match (v"
-			<< (diff->matches_v2() + 1) << ") to the input tracks in block "
+			<< (diff->best_match_is_v2() + 1)
+			<< ") to the input tracks in block "
 			<< diff->best_match();
 	} else
 	{
@@ -666,7 +667,7 @@ void ARVerifyApplication::print_result(const Options &options,
 	} else // print only best match
 	{
 		const auto best_block       = diff.best_match();
-		const auto matching_version = diff.matches_v2();
+		const auto matching_version = diff.best_match_is_v2();
 
 		if (options.is_set(VERIFY::REFVALUES)) // Use refvals
 		{

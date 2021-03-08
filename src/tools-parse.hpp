@@ -32,6 +32,7 @@ class ARIdLayout;
 class ARTripletLayout;
 class Application;
 
+using arcstk::Checksum;
 using arcstk::ContentHandler;
 
 
@@ -187,13 +188,13 @@ private:
 			const uint32_t id2,
 			const uint32_t cddb_id) override;
 
-	void do_triplet(const uint32_t arcs,
+	void do_triplet(const Checksum arcs,
 			const uint8_t confidence,
-			const uint32_t frame450_arcs) override;
+			const Checksum frame450_arcs) override;
 
-	void do_triplet(const uint32_t arcs,
+	void do_triplet(const Checksum arcs,
 			const uint8_t confidence,
-			const uint32_t frame450_arcs,
+			const Checksum frame450_arcs,
 			const bool arcs_valid,
 			const bool confidence_valid,
 			const bool frame450_arcs_valid) override;
