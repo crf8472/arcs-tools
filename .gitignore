@@ -38,6 +38,7 @@
 # build
 build/*
 compile_commands.json
+.cache/*
 
 # vim intermediate files
 *.swp
