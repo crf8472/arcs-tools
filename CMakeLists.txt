@@ -13,20 +13,16 @@ cmake_policy (SET CMP0057 NEW )
 
 project (arcstk VERSION 0.1.0 LANGUAGES CXX )
 
+
+## --- Setup Version Information
+
 set (PROJECT_BRIEF_DESC "Example Toolkit for libarcstk" )
 
 set (PROJECT_URL "https://codeberg.org/tristero/${PROJECT_NAME}/" )
 
-set (PROJECT_VERSION_SUFFIX "alpha.1" )
+set (PROJECT_VERSION_SUFFIX "alpha.2" )
 
 set (PROJECT_DEFAULT_BUILD_TYPE "Release" )
-
-set (CMAKE_CXX_STANDARD 17 )
-set (CMAKE_CXX_STANDARD_REQUIRED ON )
-set (CMAKE_CXX_EXTENSIONS OFF ) ## use -std=c++11 instead of -std=gnu++11
-
-
-## --- Setup Version information
 
 set (PROJECT_VERSION_STRING_WITHOUT_SUFFIX
 	"${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
@@ -34,12 +30,13 @@ set (PROJECT_VERSION_STRING_WITHOUT_SUFFIX
 
 set (PROJECT_VERSION_STRING "${PROJECT_VERSION_STRING_WITHOUT_SUFFIX}" )
 
-if (PROJECT_VERSION_SUFFIX)
-	set(PROJECT_VERSION_STRING
-		"${PROJECT_VERSION_STRING}-${PROJECT_VERSION_SUFFIX}" )
-endif(PROJECT_VERSION_SUFFIX)
+if (PROJECT_VERSION_SUFFIX )
+	set (PROJECT_VERSION_STRING
+		"${PROJECT_VERSION_STRING_WITHOUT_SUFFIX}-${PROJECT_VERSION_SUFFIX}" )
+endif (PROJECT_VERSION_SUFFIX )
 
 message (STATUS "Building ${PROJECT_NAME} ${PROJECT_VERSION_STRING}" )
+
 
 
 ## --- Setup Default Build Type
@@ -49,15 +46,31 @@ if (NOT CMAKE_BUILD_TYPE )
 	set (CMAKE_BUILD_TYPE "${PROJECT_DEFAULT_BUILD_TYPE}"
 		CACHE STRING "Choose the type of build (e.g. Debug or Release)" FORCE )
 
-	message (STATUS "No build type specified, set to default" )
+	message (STATUS "No build type specified, set to ${CMAKE_BUILD_TYPE}" )
 
 endif (NOT CMAKE_BUILD_TYPE )
 
 message (STATUS "Build type: ${CMAKE_BUILD_TYPE}" )
 
 
-## --- Project Directory Layout
 
+## --- Global settings
+
+## Trigger configuration phase whenever git index changes
+set_property (DIRECTORY APPEND
+	PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/.git/index )
+
+set (CMAKE_CXX_STANDARD 17 )
+set (CMAKE_CXX_STANDARD_REQUIRED ON )
+set (CMAKE_CXX_EXTENSIONS OFF ) ## use -std=c++17 instead of -std=gnu++17
+
+## Search path for cmake modules
+set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules" )
+message (STATUS "Changed CMAKE_MODULE_PATH to: ${CMAKE_MODULE_PATH}" )
+
+
+
+## --- Project Directory Layout
 
 ## "Root directory for out-of-source build"
 set (PROJECT_BINARY_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/build" )
@@ -65,46 +78,12 @@ set (PROJECT_BINARY_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/build" )
 ## "Root directory for sources"
 set (PROJECT_SOURCE_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/src" )
 
-## "Root directory for testcases and testdata"
-set (PROJECT_TEST_DIR         "${CMAKE_CURRENT_SOURCE_DIR}/test" )
-
-## "Root directory for documentation config and sources" )
-set (PROJECT_DOC_DIR          "${CMAKE_CURRENT_SOURCE_DIR}/doc" )
-
-## "Root directory for manpages config and sources" )
-set (PROJECT_MAN_DIR          "${CMAKE_CURRENT_SOURCE_DIR}/man" )
-
 ## "Target directory for non-cmake logs"
 set (PROJECT_LOG_DIR          "${PROJECT_BINARY_DIR}/log" )
 
 ## "Target directory for generated sources and configuration"
 set (PROJECT_BUILD_SOURCE_DIR "${PROJECT_BINARY_DIR}/generated-sources" )
 
-## "Target directory for generated documentation"
-set (PROJECT_BUILD_DOC_DIR    "${PROJECT_BINARY_DIR}/generated-docs" )
-
-
-## Install directories
-
-set (INSTALL_BINARY_DIR "${CMAKE_INSTALL_PREFIX}/bin"
-	CACHE PATH "Installation directory for binaries" )
-
-set (INSTALL_MAN_DIR    "${CMAKE_INSTALL_PREFIX}/man"
-	CACHE PATH "Installation directory for man pages" )
-
-
-## --- CMake Modules
-
-set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules" )
-message (STATUS "Changed CMAKE_MODULE_PATH to: ${CMAKE_MODULE_PATH}" )
-
-
-## --- Source files configured by CMake
-
-configure_file (
-  "${PROJECT_SOURCE_DIR}/version.hpp.in"
-  "${PROJECT_BUILD_SOURCE_DIR}/version.hpp"
-)
 
 
 ## --- Create Log directory
@@ -113,86 +92,49 @@ file (MAKE_DIRECTORY ${PROJECT_LOG_DIR} )
 
 
 
-## --- Compiler specific settings
+## --- Update version.cpp with info from git
 
-## Settings for g++ and clang
+find_package (Git QUIET REQUIRED )
 
-if (CMAKE_COMPILER_IS_GNUCXX
-		OR CMAKE_CXX_COMPILER MATCHES ".*clang"
-		OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" )
+## Run 'git describe'
+execute_process (
+	COMMAND ${GIT_EXECUTABLE} describe --always HEAD
+	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+	RESULT_VARIABLE GIT_EXIT_CODE
+	OUTPUT_VARIABLE GIT_VERSION_STRING
+	OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
-	## Warnings
-
-	add_compile_options (-Wall -Wextra -Weffc++ -Wold-style-cast -Wpedantic )
-
-	## Platform specific optimizations (default ON for Release, otherwise OFF)
-
-	if (CMAKE_BUILD_TYPE STREQUAL "Release" )
-
-		set (WITH_NATIVE ON CACHE BOOL
-			"Build with platform specific optimization" FORCE )
-
-	endif (CMAKE_BUILD_TYPE STREQUAL "Release" )
-
-	if (WITH_NATIVE )
-
-		message (STATUS "Build with platform specific optimization" )
-
-		add_compile_options (-march=native -mtune=generic )
-	else()
-
-		message (STATUS "Build without platform specific optimization" )
-
-	endif (WITH_NATIVE )
-
+## Did running git work?
+if (GIT_EXIT_CODE EQUAL 0 )
+	message (STATUS "git describe --always HEAD: ${GIT_VERSION_STRING}" )
 else()
-
-	message (WARNING "No compile flags specified for the actual C++ compiler" )
-	message (WARNING "Try a generic compile without project specific flags" )
-
+	message (WARNING "Failed to run git describe --always HEAD" )
 endif()
 
+## Run 'git rev-parse'
+execute_process (
+	COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
+	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+	RESULT_VARIABLE GIT_EXIT_CODE
+	OUTPUT_VARIABLE GIT_COMMIT_ID
+	OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+## Did running git work?
+if (GIT_EXIT_CODE EQUAL 0 )
+	message (STATUS "git rev-parse HEAD: ${GIT_COMMIT_ID}" )
+else()
+	message (WARNING "Failed to run git rev-parse HEAD" )
+endif()
+
+## This presupposes having CMAKE_CONFIGURE_DEPENDS set to .git/index
+configure_file (${PROJECT_SOURCE_DIR}/version.cpp.in
+	${PROJECT_BUILD_SOURCE_DIR}/version.cpp
+	@ONLY )
 
 
-## --- Optional: Add include-what-you-use support (default: OFF)
-
-option (IWYU "Don't compile, check headers with include-what-you-use" OFF )
-if (IWYU)
-
-	message (STATUS "Program include-what-you-use requested" )
-	find_program (IWYU_BINARY NAMES include-what-you-use iwyu )
-
-	if (IWYU_BINARY )
-
-		## Set for all subsequent targets
-		set (CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${IWYU_BINARY} )
-
-		## Commented out: Set for specific targets only
-		#set_property(TARGET ${TARGET_NAME}
-		#	PROPERTY CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${IWYU_PATH})
-
-		message (STATUS "Program include-what-you-use found: ${IWYU_BINARY}" )
-
-	else (IWYU_BINARY )
-
-		message (FATAL_ERROR "Program include-what-you-use not found" )
-
-	endif (IWYU_BINARY )
-endif (IWYU)
-
-
-## --- Mandatory dependencies
-
-## Commented out: coming with 3.14.5 ?
-#set (CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE )
-
-find_package (libarcstk 0.1.0 REQUIRED )
-
-find_package (libarcsdec 0.1.0 REQUIRED )
-
-
-
-## --- Build
+## --- Add and configure project target
 
 ## All objects, used as dependency in tests
 add_library ( ${PROJECT_NAME}-objects OBJECT
@@ -209,17 +151,24 @@ add_library ( ${PROJECT_NAME}-objects OBJECT
 	${PROJECT_SOURCE_DIR}/tools-fs.cpp
 	${PROJECT_SOURCE_DIR}/tools-info.cpp
 	${PROJECT_SOURCE_DIR}/tools-parse.cpp
-)
+	${PROJECT_BUILD_SOURCE_DIR}/version.cpp )
+
 target_include_directories (${PROJECT_NAME}-objects
-	PUBLIC ${PROJECT_BUILD_SOURCE_DIR} )
+	PRIVATE ${PROJECT_BUILD_SOURCE_DIR} ${PROJECT_SOURCE_DIR} )
 
-
-## The MAIN target
 
 add_executable ( ${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/main.cpp )
+
 target_link_libraries (${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-objects )
 
-## MAIN: add libarcstk and libarcsdec
+
+
+## --- Required: libarcstk
+
+## Commented out: coming with 3.14.5 ?
+# set (CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE )
+
+find_package (libarcstk 0.1.0 REQUIRED )
 
 if (TARGET libarcstk::libarcstk )
 
@@ -227,37 +176,162 @@ if (TARGET libarcstk::libarcstk )
 		INTERFACE_INCLUDE_DIRECTORIES )
 endif ()
 
+target_link_libraries (${PROJECT_NAME} PRIVATE libarcstk::libarcstk )
+
+
+## --- Required: libarcsdec
+
+find_package (libarcsdec 0.1.0 REQUIRED )
+
 if (TARGET libarcsdec::libarcsdec )
 
 	get_target_property (libarcsdec_INCLUDE_DIRS libarcsdec::libarcsdec
 		INTERFACE_INCLUDE_DIRECTORIES )
 endif ()
 
-target_link_libraries (${PROJECT_NAME} PRIVATE libarcstk::libarcstk )
 target_link_libraries (${PROJECT_NAME} PRIVATE libarcsdec::libarcsdec )
 
 
 
-## --- Optional: Build tests, using Catch2 testing framework (default: OFF)
+## --- Install executables
 
-option (WITH_TESTS "Build unit tests" OFF )
+if (NOT SKIP_INSTALL_ALL )
 
-if (WITH_TESTS)
+	set (INSTALL_BINARY_DIR "${CMAKE_INSTALL_PREFIX}/bin"
+		CACHE PATH "Installation directory for binaries" )
 
-	message (STATUS "Build with tests" )
+	install (TARGETS ${PROJECT_NAME}
+		RUNTIME DESTINATION "${INSTALL_BINARY_DIR}" )
 
-	enable_testing()
+	if (UNIX )
 
-	## Add Catch2 test framework
-	add_subdirectory (thirdparty/catch2 EXCLUDE_FROM_ALL )
+		# Install symlinks
 
-	## Add tests
-	add_subdirectory (${PROJECT_TEST_DIR} )
+		foreach (LINK IN LISTS TOOL_NAMES)
+			message (STATUS "Create symlink ${LINK} in ${INSTALL_BINARY_DIR}" )
+			install (CODE "execute_process( \
+				COMMAND ${CMAKE_COMMAND} -E create_symlink \
+					${INSTALL_BINARY_DIR}/${PROJECT_NAME}  \
+					${INSTALL_BINARY_DIR}/${LINK})" )
+		endforeach()
+
+	endif(UNIX )
+
+endif()
+
+
+
+## --- BUILD_TYPE specific settings
+
+option (WITH_NATIVE "Use platform specific optimization on compiling" OFF )
+
+if (CMAKE_BUILD_TYPE STREQUAL "Release" )
+
+	set (WITH_NATIVE ON CACHE BOOL
+			"Release: Force platform specific optimization" FORCE )
+endif ()
+
+
+
+## --- Compiler Specific Settings
+
+## g++: Warnings
+set (PROJECT_CXX_GNU_FLAGS_WARNINGS
+	-Wall -Wextra -Wpedantic -Weffc++
+	-Wold-style-cast
+	-Wsuggest-override
+	-Wcast-align
+	-Wcast-qual
+	-Wctor-dtor-privacy
+	-Wdisabled-optimization
+	-Wformat=2
+	-Wlogical-op
+	-Wmissing-declarations
+	-Wmissing-include-dirs
+	-Wnoexcept
+	-Woverloaded-virtual
+	-Wredundant-decls
+	-Wshadow
+	-Wsign-conversion
+	-Wsign-promo
+	-Wstrict-null-sentinel
+	-Wstrict-overflow=5
+	-Wswitch-default
+	-Wundef
+	-Wuseless-cast
+	-Wzero-as-null-pointer-constant
+	)
+
+## g++: Optimize flags
+set (PROJECT_CXX_GNU_FLAGS_OPTIMIZE  -march=native -mtune=generic )
+
+
+## clang++: Warnings
+set (PROJECT_CXX_CLANG_FLAGS_WARNINGS
+	-Wall -Wextra -Wpedantic -Weffc++
+	-Wold-style-cast
+	-Wcast-align
+	-Wcast-qual
+	-Wformat=2
+	-Wshadow
+	-Wsign-conversion
+	-Wundef
+	-Wunused
+	-Wzero-as-null-pointer-constant
+	# -- clang specific --
+	-Winconsistent-missing-destructor-override
+	)
+
+## clang++: Optimize flags
+set (PROJECT_CXX_CLANG_FLAGS_OPTIMIZE -march=native -mtune=generic )
+
+
+## Compiler: apply specific flags
+
+if (CMAKE_COMPILER_IS_GNUCXX ) ## for g++
+
+	message (STATUS "Select compile flags for g++" )
+
+	set (PROJECT_CXX_FLAGS_WARNINGS ${PROJECT_CXX_GNU_FLAGS_WARNINGS} )
+	set (PROJECT_CXX_FLAGS_OPTIMIZE ${PROJECT_CXX_GNU_FLAGS_OPTIMIZE} )
+
+elseif (CMAKE_CXX_COMPILER MATCHES ".*clang"       ## for clang
+		OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" )
+
+	message (STATUS "Select compile flags for clang++" )
+
+	set (PROJECT_CXX_FLAGS_WARNINGS ${PROJECT_CXX_CLANG_FLAGS_WARNINGS} )
+	set (PROJECT_CXX_FLAGS_OPTIMIZE ${PROJECT_CXX_CLANG_FLAGS_OPTIMIZE} )
 
 else ()
 
-	message (STATUS "Build without tests" )
-endif (WITH_TESTS)
+	message (WARNING "C++ Compiler seems to be neither g++ nor clang++" )
+	message (WARNING "No compile flags specified for the actual C++ compiler" )
+	message (WARNING "Try a generic compile without project specific flags" )
+
+endif ()
+
+
+## Compiler: Activate Warnings
+
+target_compile_options (${PROJECT_NAME} PUBLIC ${PROJECT_CXX_FLAGS_WARNINGS} )
+
+message (STATUS "Warning Flags: ${PROJECT_CXX_FLAGS_WARNINGS}" )
+
+
+## Compiler: Activate Optimizations (default ON for Release, otherwise OFF)
+
+if (WITH_NATIVE )
+
+	message (STATUS "Build with platform specific optimization" )
+
+	target_compile_options (${PROJECT_NAME}
+		PUBLIC ${PROJECT_CXX_FLAGS_OPTIMIZE} )
+else()
+
+	message (STATUS "Build without platform specific optimization" )
+
+endif (WITH_NATIVE )
 
 
 
@@ -278,13 +352,23 @@ list (APPEND TOOL_NAMES
 
 
 
-## --- If on *nix, prepare man pages
+## --- Optional: Build tests, using Catch2 testing framework (default: OFF)
 
-if (UNIX )
+option (WITH_TESTS "Build unit tests" OFF )
 
-	add_subdirectory (man )
+if (WITH_TESTS)
 
-endif(UNIX )
+	message (STATUS "Build with tests" )
+
+	enable_testing()
+
+	## Add Catch2 test framework
+	add_subdirectory (thirdparty/catch2 EXCLUDE_FROM_ALL )
+
+	## Add tests
+	add_subdirectory ("${CMAKE_CURRENT_SOURCE_DIR}/test" )
+
+endif (WITH_TESTS)
 
 
 
@@ -292,28 +376,35 @@ endif(UNIX )
 
 add_subdirectory (doc )
 
+## If on *nix, prepare man pages
+
+if (UNIX )
+
+	add_subdirectory (man )
+
+endif (UNIX )
 
 
-## --- Install executables
 
-if (NOT SKIP_INSTALL_ALL )
+## --- Optional: Add include-what-you-use support (default: OFF)
 
-	install (TARGETS ${PROJECT_NAME}
-		RUNTIME DESTINATION "${INSTALL_BINARY_DIR}" )
+option (IWYU "Don't compile, check headers with include-what-you-use" OFF )
+if (IWYU )
 
-	if (UNIX )
+	message (STATUS "Program include-what-you-use requested" )
+	find_program (IWYU_BINARY NAMES include-what-you-use iwyu )
 
-		# Install symlinks
+	if (IWYU_BINARY )
 
-		foreach (LINK IN LISTS TOOL_NAMES)
-			message (STATUS "Create symlink ${LINK} in ${INSTALL_BINARY_DIR}" )
-			install (CODE "execute_process( \
-				COMMAND ${CMAKE_COMMAND} -E create_symlink \
-					${INSTALL_BINARY_DIR}/${PROJECT_NAME}  \
-					${INSTALL_BINARY_DIR}/${LINK})" )
-		endforeach()
+		## Set for all subsequent targets
+		set (CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${IWYU_BINARY} )
 
-	endif(UNIX )
+		message (STATUS "Program include-what-you-use found: ${IWYU_BINARY}" )
 
-endif()
+	else (IWYU_BINARY )
+
+		message (FATAL_ERROR "Program include-what-you-use not found" )
+
+	endif (IWYU_BINARY )
+endif (IWYU )
 

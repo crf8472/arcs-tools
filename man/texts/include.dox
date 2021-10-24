@@ -13,9 +13,9 @@ https://codeberg.org/tristero/arcs-tools/src/branch/master/LICENSE
 
 Accepted input formats for metadata files are the ones listed by \b
 --list-toc-formats. Accepted input formats for audio files are the ones listed
-by \b --list-audio-formats. In case of audio file, a "format" is a combination
-of a codec and a container file format. Which input formats are supported
-depends entirely on the underlying instance of libarcsdec that is used.
+by \b --list-audio-formats. An "audio format" is a combination of a codec and a
+container file format. Which input formats are supported depends entirely on the
+underlying instance of libarcsdec that is used.
 
 If a metadata file with the TOC is passed, there may or may not be passed audio
 files. The audio input will always be considered to form an album in this case.

@@ -35,7 +35,7 @@
 int main(int argc, char** argv)
 {
 	using arcsapp::ARCSTOOLS_BINARY_NAME;
-	using arcsapp::ARCSTOOLS_VERSION_INFO_STRING;
+	using arcsapp::ARCSTOOLS_VERSION;
 	using arcsapp::ApplicationFactory;
 	using arcsapp::CallSyntaxException;
 
@@ -88,9 +88,7 @@ int main(int argc, char** argv)
 
 	// No input? Print usage.
 
-	std::cout << ARCSTOOLS_BINARY_NAME << " "
-		<< ARCSTOOLS_VERSION_INFO_STRING
-		<< std::endl;
+	std::cout << ARCSTOOLS_BINARY_NAME << " " << ARCSTOOLS_VERSION << std::endl;
 
 	std::cout << "Usage: " << ARCSTOOLS_BINARY_NAME
 		<< " [id|calc|parse|verify] " // TODO Load names from Registry

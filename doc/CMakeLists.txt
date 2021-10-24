@@ -22,15 +22,33 @@ set (DOC_GEN_DIR "${PROJECT_BINARY_DIR}/generated-docs" )
 ## The generated doxyfile to use
 set (DOXYFILE ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile )
 
+## Output directory for doxygen
+set (DOXYGEN_OUTPUT_DIRECTORY "${DOC_GEN_DIR}/doxygen" )
+
 ## Generated index.html
-set (INDEXFILE "${DOC_GEN_DIR}/html/index.html" )
+set (INDEXFILE "${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html" )
+
+
+
+## --- Generate documentation output directory
+
+add_custom_command (
+	OUTPUT  ${DOC_GEN_DIR}
+	PRE_BUILD
+	COMMAND ${CMAKE_COMMAND}
+	ARGS    -E make_directory ${DOC_GEN_DIR} )
+
+
+add_custom_target (create_output_dir DEPENDS ${DOC_GEN_DIR} )
+
+
+## --- Generate base doxyfile
 
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile-doc.in ${DOXYFILE} @ONLY )
 
 add_custom_command (
 	OUTPUT "${INDEXFILE}"
-	COMMAND cmake -E rm -r "${DOC_GEN_DIR}/html"
 	COMMAND Doxygen::doxygen "${DOXYFILE}"
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 	DEPENDS ${DOXYFILE} ${DOC_SOURCES}
@@ -39,4 +57,5 @@ add_custom_command (
 )
 
 add_custom_target (doc DEPENDS "${INDEXFILE}" )
+add_dependencies  (doc create_output_dir )
 

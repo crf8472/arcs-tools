@@ -21,7 +21,7 @@
 #include "layouts.hpp"          // for StringTable
 #endif
 #ifndef __ARCSTOOLS_VERSION_HPP__
-#include "version.hpp"         // for ARCSTOOLS_VERSION_INFO
+#include "version.hpp"         // for ARCSTOOLS_VERSION
 #endif
 
 namespace arcsapp
@@ -66,7 +66,7 @@ int Application::run(int argc, char** argv)
 
 	if (options->is_set(OPTION::VERSION))
 	{
-		std::cout << this->name() << " " << ARCSTOOLS_VERSION_INFO << std::endl;
+		std::cout << this->name() << " " << ARCSTOOLS_VERSION << std::endl;
 
 		return EXIT_SUCCESS;
 	}

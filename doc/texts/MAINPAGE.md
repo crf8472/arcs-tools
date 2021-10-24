@@ -16,7 +16,7 @@ toolkit supports the following tasks for working with AccurateRip checksums:
 - Verify AccurateRip checksums against their reference sums from AccurateRip
 - Calculate the AccurateRip ID of a CD from its TOC information (along with the
   request URL and the canonical response filename)
-- Parse the response of an request to the AccurateRip database to plaintext
+- Parse the responses of AccurateRip to plaintext
 
 
 

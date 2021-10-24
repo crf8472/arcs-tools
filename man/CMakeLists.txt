@@ -67,10 +67,31 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile-man.in ${DOXYFILE} @ONLY )
 
 
 
+## --- Generate documentation output directory
+
+add_custom_command (
+	OUTPUT  ${PROJECT_MAN_BUILD_DIR}
+	PRE_BUILD
+	COMMAND ${CMAKE_COMMAND}
+	ARGS    -E make_directory ${PROJECT_MAN_BUILD_DIR} )
+
+
+add_custom_target (create_man_dir DEPENDS ${PROJECT_MAN_BUILD_DIR} )
+
+
+
 ## Produce doxygen output
 
-file (MAKE_DIRECTORY ${PROJECT_MAN_BUILD_DIR} )
-file (MAKE_DIRECTORY ${PROJECT_MAN_DOXYGEN_OUT_DIR} )
+add_custom_command (
+	OUTPUT  ${PROJECT_MAN_DOXYGEN_OUT_DIR}
+	PRE_BUILD
+	COMMAND ${CMAKE_COMMAND}
+	ARGS    -E make_directory ${PROJECT_MAN_DOXYGEN_OUT_DIR} )
+
+
+add_custom_target (create_man_out_dir DEPENDS ${PROJECT_MAN_DOXYGEN_OUT_DIR} )
+
+
 
 # List of expected man pages (output of doxygen run)
 set (MANPAGES )
@@ -81,7 +102,7 @@ endforeach()
 
 add_custom_command (
 	OUTPUT  ${MANPAGES}
-	COMMAND cmake -E rm -rf "${PROJECT_MAN_DOXYGEN_OUT_DIR}/1"
+	# COMMAND ${CMAKE_COMMAND} -E rm -rf "${PROJECT_MAN_DOXYGEN_OUT_DIR}/1"
 	COMMAND Doxygen::doxygen ${DOXYFILE}
 	WORKING_DIRECTORY ${PROJECT_MAN_DOXYGEN_OUT_DIR}
 	DEPENDS ${MAN_SOURCE_FORMS} ${MAN_SOURCE_TEXTS}
@@ -92,7 +113,7 @@ add_custom_command (
 
 ## Generate the manpages from text files
 add_custom_target (generate_manpages DEPENDS ${MANPAGES} )
-
+add_dependencies  (generate_manpages create_man_dir create_man_out_dir )
 
 
 ## Move the relevant files of the output to target directory
@@ -176,10 +197,10 @@ endif (GZIP_EXEC)
 
 if (NOT SKIP_INSTALL_ALL AND NOT SKIP_INSTALL_FILES )
 
-	install (FILES ${INSTALL_PAGES} DESTINATION "${INSTALL_MAN_DIR}/man1" )
+	install (FILES ${INSTALL_PAGES} DESTINATION "${CMAKE_INSTALL_PREFIX}/man1" )
 
 endif()
 
 add_custom_target (man )
-add_dependencies (man provide_manpages )
+add_dependencies  (man provide_manpages )
 
