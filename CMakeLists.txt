@@ -137,7 +137,7 @@ configure_file (${PROJECT_SOURCE_DIR}/version.cpp.in
 ## --- Add and configure project target
 
 ## All objects, used as dependency in tests
-add_library ( ${PROJECT_NAME}-objects OBJECT
+add_library (${PROJECT_NAME}-objects OBJECT
 	${PROJECT_SOURCE_DIR}/app-calc.cpp
 	${PROJECT_SOURCE_DIR}/app-id.cpp
 	${PROJECT_SOURCE_DIR}/app-parse.cpp
@@ -157,7 +157,7 @@ target_include_directories (${PROJECT_NAME}-objects
 	PRIVATE ${PROJECT_BUILD_SOURCE_DIR} ${PROJECT_SOURCE_DIR} )
 
 
-add_executable ( ${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/main.cpp )
+add_executable (${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/main.cpp )
 
 target_link_libraries (${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-objects )
 
@@ -337,18 +337,12 @@ endif (WITH_NATIVE )
 
 ## --- Tool informations (for manpages and installing symlinks)
 
-## Names
-set (TOOL_NAME_CALC   ${PROJECT_NAME}-calc )
-set (TOOL_NAME_ID     ${PROJECT_NAME}-id )
-set (TOOL_NAME_PARSE  ${PROJECT_NAME}-parse )
-set (TOOL_NAME_VERIFY ${PROJECT_NAME}-verify )
-
 set (TOOL_NAMES ) ## Iterable tool names, used for manpage generation
 list (APPEND TOOL_NAMES
-	${TOOL_NAME_CALC}
-	${TOOL_NAME_ID}
-	${TOOL_NAME_PARSE}
-	${TOOL_NAME_VERIFY} )
+	${PROJECT_NAME}-calc
+	${PROJECT_NAME}-id
+	${PROJECT_NAME}-parse
+	${PROJECT_NAME}-verify )
 
 
 
