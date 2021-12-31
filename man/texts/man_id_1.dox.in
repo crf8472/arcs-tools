@@ -1,6 +1,6 @@
 /*!
 
-\page @TOOL_NAME_ID@
+\page arcstk-id
 
 \brief Calculate AccurateRip ids locally
 
@@ -10,7 +10,7 @@
 
 \section SYNOPSIS
 
-@TOOL_NAME_ID@ [OPTIONS] TOCFILE [AUDIOFILE1 AUDIOFILE2 ...]
+arcstk-id [OPTIONS] TOCFILE [AUDIOFILE1 AUDIOFILE2 ...]
 
 
 \section DESCRIPTION
@@ -66,11 +66,11 @@ Specify the audiofile to use explicitly.
 Compute AccurateRip id for audiofile.cue while having the real audio file in the
 same directory:
 
-$ @TOOL_NAME_ID@ audiofile.cue
+$ arcstk-id audiofile.cue
 
 Do the same as in the first example, but track precisely what is going on:
 
-$ @TOOL_NAME_ID@ --vvv audiofile.cue
+$ arcstk-id --vvv audiofile.cue
 
 
 \section BUGS

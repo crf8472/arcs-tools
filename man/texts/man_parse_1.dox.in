@@ -1,6 +1,6 @@
 /*!
 
-\page @TOOL_NAME_PARSE@
+\page arcstk-parse
 
 \brief Parse responses from AccurateRip
 
@@ -10,7 +10,7 @@
 
 \section SYNOPSIS
 
-@TOOL_NAME_PARSE@ [OPTIONS] FILENAME
+arcstk-parse [OPTIONS] FILENAME
 
 
 \section DESCRIPTION
@@ -38,15 +38,15 @@ the response.
 Parse the binary data returned by AccurateRip and print it in a human-readable
 form:
 
-$ @TOOL_NAME_PARSE@ dBAR-123.bin
+$ arcstk-parse dBAR-123.bin
 
 Do the same as in the first example, but track precisely what is going on:
 
-$ @TOOL_NAME_PARSE@ --vvv dBAR-123.bin
+$ arcstk-parse --vvv dBAR-123.bin
 
 Do the same as in the first example, but write to myfile.txt instead of stdout:
 
-$ @TOOL_NAME_PARSE@ -o myfile.txt dBAR-123.bin
+$ arcstk-parse -o myfile.txt dBAR-123.bin
 
 
 \section BUGS

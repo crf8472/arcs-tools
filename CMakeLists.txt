@@ -1,6 +1,6 @@
 ## Root CMake file for arcs-tools
 
-cmake_minimum_required (VERSION 3.9.4 )
+cmake_minimum_required (VERSION 3.15 )
 
 ## Set variables corresponding to unspecified versions to the empty string.
 ## Required for specifying the project version along with the name in project()
@@ -162,34 +162,65 @@ add_executable (${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/main.cpp )
 target_link_libraries (${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-objects )
 
 
-
-## --- Required: libarcstk
-
-## Commented out: coming with 3.14.5 ?
-# set (CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE )
-
-find_package (libarcstk 0.1.0 REQUIRED )
-
-if (TARGET libarcstk::libarcstk )
-
-	get_target_property (libarcstk_INCLUDE_DIRS libarcstk::libarcstk
-		INTERFACE_INCLUDE_DIRECTORIES )
-endif ()
-
-target_link_libraries (${PROJECT_NAME} PRIVATE libarcstk::libarcstk )
+option (WITH_ARCSTK_LIBS "Compile libarcstk and libarcsdec as submodules" OFF )
 
 
-## --- Required: libarcsdec
+if (WITH_ARCSTK_LIBS )
 
-find_package (libarcsdec 0.1.0 REQUIRED )
+	message (FATAL "WITH_ARCSTK_LIBS is not yet implemented" )
 
-if (TARGET libarcsdec::libarcsdec )
+## Commented out for now (needs more testing)
+##
+#	message (STATUS "Link to local submodules libarcstk and libarcsdec" )
+#
+#	set (LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs" )
+#
+#	add_subdirectory (${LIBS_DIR}/libarcstk )
+#	add_subdirectory (${LIBS_DIR}/libarcsdec )
+#
+#	target_include_directories (${PROJECT_NAME} PRIVATE
+#		$<BUILD_INTERFACE:${LIBS_DIR}/libarcsdec/include> )
+#
+#	target_link_libraries (${PROJECT_NAME} PRIVATE libarcsdec libarcstk )
+#
+#	add_dependencies (libarcsdec libarcstk )
+#	add_dependencies (${PROJECT_NAME} libarcsdec )
 
-	get_target_property (libarcsdec_INCLUDE_DIRS libarcsdec::libarcsdec
-		INTERFACE_INCLUDE_DIRECTORIES )
-endif ()
+else()
 
-target_link_libraries (${PROJECT_NAME} PRIVATE libarcsdec::libarcsdec )
+	message (STATUS "Link to system-installed libarcstk and libarcsdec" )
+
+	## Tell find_package to first try locating libarcstk via system-installed
+	## .config file instead of project's FindLibarcstk.cmake module
+	set (CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE ) ## since CMake 3.15
+
+
+	## --- Required: libarcstk
+
+	find_package (libarcstk 0.1.0 REQUIRED )
+
+	if (TARGET libarcstk::libarcstk )
+
+		get_target_property (libarcstk_INCLUDE_DIRS libarcstk::libarcstk
+			INTERFACE_INCLUDE_DIRECTORIES )
+	endif ()
+
+	target_link_libraries (${PROJECT_NAME} PRIVATE libarcstk::libarcstk )
+
+
+	## --- Required: libarcsdec
+
+	find_package (libarcsdec 0.1.0 REQUIRED )
+
+	if (TARGET libarcsdec::libarcsdec )
+
+		get_target_property (libarcsdec_INCLUDE_DIRS libarcsdec::libarcsdec
+			INTERFACE_INCLUDE_DIRECTORIES )
+	endif ()
+
+	target_link_libraries (${PROJECT_NAME} PRIVATE libarcsdec::libarcsdec )
+
+endif (WITH_ARCSTK_LIBS )
 
 
 
