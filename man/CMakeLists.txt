@@ -7,57 +7,57 @@ find_program (GZIP_EXEC NAMES gzip )
 
 ## --- Targets, Files and Directories
 
-## Directory for manpage source texts
-set (PROJECT_MAN_TEXTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/texts" )
-
 ## The generated doxyfile to use
 set (DOXYFILE ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile )
 
-## The manpage sources after cmake configure_file()
-set (PROJECT_MAN_SRC_DIR "${CMAKE_CURRENT_BINARY_DIR}/input-dox" )
+## Directory for manpage source texts
+set (MAN_TEXTS_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/texts" )
 
-## The automated doxygen output (with all redundant pages)
-set (PROJECT_MAN_DOXYGEN_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/output-man" )
+## Directory for configured manpage sources
+set (MAN_SRC_DIR         "${CMAKE_CURRENT_BINARY_DIR}/configured-doxfiles" )
 
-## "Target directory for generated man pages
-set (PROJECT_MAN_BUILD_DIR    "${PROJECT_BINARY_DIR}/generated-manpages" )
+## Directory for doxygen output (with all redundant pages)
+set (MAN_DOXYGEN_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/doxygen-output" )
+
+## Directory for generated man pages
+set (MAN_BUILD_DIR       "${PROJECT_BINARY_DIR}/generated-manpages" )
 
 
 ## Compound target for creating the manpages (conatins all steps)
-add_custom_target (provide_manpages ALL)
+add_custom_target (provide_manpages ALL )
 
 
 ## --- Generate the dox file sources from the .dox.in files
 
 ## List of cmake-controlled manpage source files
-file (GLOB MAN_SOURCE_FORMS ${PROJECT_MAN_TEXTS_DIR}/*.dox.in )
+file (GLOB MAN_SOURCE_TEMPLATES ${MAN_TEXTS_DIR}/*.dox.in )
 
 if (${CMAKE_VERSION} VERSION_LESS "3.14.0" ) ## No NAME_WLE available
 
-	foreach (_form IN LISTS MAN_SOURCE_FORMS )
+	foreach (_form IN LISTS MAN_SOURCE_TEMPLATES )
 
 		get_filename_component(_form_NAME ${_form} NAME_WE )
-		configure_file (${_form} "${PROJECT_MAN_SRC_DIR}/${_form_NAME}.dox" )
+		configure_file (${_form} "${MAN_SRC_DIR}/${_form_NAME}.dox" )
 	endforeach()
 
 else ()
 
-	foreach (_form IN LISTS MAN_SOURCE_FORMS )
+	foreach (_form IN LISTS MAN_SOURCE_TEMPLATES )
 
 		get_filename_component(_form_OUTFILE ${_form} NAME_WLE )
-		configure_file (${_form} "${PROJECT_MAN_SRC_DIR}/${_form_OUTFILE}" )
+		configure_file (${_form} "${MAN_SRC_DIR}/${_form_OUTFILE}" )
 	endforeach()
 
 endif()
 
 
 ## List of manpage source text files (those not controlled by cmake)
-file (GLOB MAN_SOURCE_TEXTS ${PROJECT_MAN_TEXTS_DIR}/*.dox )
+file (GLOB MAN_SOURCE_TEXTS ${MAN_TEXTS_DIR}/*.dox )
 
 foreach (_doxfile IN LISTS MAN_SOURCE_TEXTS )
 
 	get_filename_component(_doxfilename ${_doxfile} NAME )
-	file (COPY ${_doxfile} DESTINATION "${PROJECT_MAN_SRC_DIR}" )
+	file (COPY ${_doxfile} DESTINATION "${MAN_SRC_DIR}" )
 endforeach()
 
 
@@ -67,29 +67,29 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile-man.in ${DOXYFILE} @ONLY )
 
 
 
-## --- Generate documentation output directory
+## --- Generate doxygen output directory
 
 add_custom_command (
-	OUTPUT  ${PROJECT_MAN_BUILD_DIR}
+	OUTPUT  ${MAN_DOXYGEN_OUT_DIR}
 	PRE_BUILD
 	COMMAND ${CMAKE_COMMAND}
-	ARGS    -E make_directory ${PROJECT_MAN_BUILD_DIR} )
+	ARGS    -E make_directory ${MAN_DOXYGEN_OUT_DIR} )
 
 
-add_custom_target (create_man_dir DEPENDS ${PROJECT_MAN_BUILD_DIR} )
+add_custom_target (create_man_dox_out_dir DEPENDS ${MAN_DOXYGEN_OUT_DIR} )
 
 
 
-## Produce doxygen output
+## --- Generate manpage output directory
 
 add_custom_command (
-	OUTPUT  ${PROJECT_MAN_DOXYGEN_OUT_DIR}
+	OUTPUT  ${MAN_BUILD_DIR}
 	PRE_BUILD
 	COMMAND ${CMAKE_COMMAND}
-	ARGS    -E make_directory ${PROJECT_MAN_DOXYGEN_OUT_DIR} )
+	ARGS    -E make_directory ${MAN_BUILD_DIR} )
 
 
-add_custom_target (create_man_out_dir DEPENDS ${PROJECT_MAN_DOXYGEN_OUT_DIR} )
+add_custom_target (create_man_dir DEPENDS ${MAN_BUILD_DIR} )
 
 
 
@@ -97,46 +97,45 @@ add_custom_target (create_man_out_dir DEPENDS ${PROJECT_MAN_DOXYGEN_OUT_DIR} )
 set (MANPAGES )
 foreach (_toolname IN LISTS TOOL_NAMES )
 
-	list (APPEND MANPAGES "${PROJECT_MAN_DOXYGEN_OUT_DIR}/1/${_toolname}.1" )
+	list (APPEND MANPAGES "${MAN_DOXYGEN_OUT_DIR}/1/${_toolname}.1" )
 endforeach()
 
 add_custom_command (
 	OUTPUT  ${MANPAGES}
-	# COMMAND ${CMAKE_COMMAND} -E rm -rf "${PROJECT_MAN_DOXYGEN_OUT_DIR}/1"
 	COMMAND Doxygen::doxygen ${DOXYFILE}
-	WORKING_DIRECTORY ${PROJECT_MAN_DOXYGEN_OUT_DIR}
-	DEPENDS ${MAN_SOURCE_FORMS} ${MAN_SOURCE_TEXTS}
-	BYPRODUCTS ${MANPAGES}
+	DEPENDS ${MAN_SOURCE_TEMPLATES} ${MAN_SOURCE_TEXTS}
+	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	COMMENT "Generate manpages with Doxygen"
 	VERBATIM
 )
 
 ## Generate the manpages from text files
 add_custom_target (generate_manpages DEPENDS ${MANPAGES} )
-add_dependencies  (generate_manpages create_man_dir create_man_out_dir )
+add_dependencies  (generate_manpages create_man_dir create_man_dox_out_dir )
 
 
 ## Move the relevant files of the output to target directory
 
 foreach (_toolname IN LISTS TOOL_NAMES )
 
-	set (MANPAGE "${PROJECT_MAN_DOXYGEN_OUT_DIR}/1/${_toolname}.1" )
+	set (MANPAGE "${MAN_DOXYGEN_OUT_DIR}/1/${_toolname}.1" )
 
 	add_custom_command (
-		OUTPUT "${PROJECT_MAN_BUILD_DIR}/${_toolname}.1"
-		COMMAND cmake -E copy "${MANPAGE}" "${PROJECT_MAN_BUILD_DIR}"
-		DEPENDS "${PROJECT_MAN_DOXYGEN_OUT_DIR}/1/${_toolname}.1"
+		OUTPUT "${MAN_BUILD_DIR}/${_toolname}.1"
+		COMMAND ${CMAKE_COMMAND} -E copy "${MANPAGE}" "${MAN_BUILD_DIR}"
+		DEPENDS "${MAN_DOXYGEN_OUT_DIR}/1/${_toolname}.1"
 		COMMENT "Copy ${_toolname}.1 to build directory"
 		VERBATIM
 	)
 
 	add_custom_target (copy_${_toolname}.1
 		## THIS dependency is the reason to keep the uncompressed sources!
-		DEPENDS "${PROJECT_MAN_BUILD_DIR}/${_toolname}.1"
+		DEPENDS "${MAN_BUILD_DIR}/${_toolname}.1"
 	)
 
-	add_dependencies (copy_${_toolname}.1  generate_manpages )
-	add_dependencies (provide_manpages  copy_${_toolname}.1 )
+	## COMMENTED OUT: seems redundant, calls generate_manpages for every tool
+	#add_dependencies (copy_${_toolname}.1  generate_manpages )
+	add_dependencies (provide_manpages     copy_${_toolname}.1 )
 endforeach()
 
 set (INSTALL_PAGES )
@@ -165,15 +164,15 @@ if (GZIP_EXEC )
 
 	foreach (_toolname IN LISTS TOOL_NAMES )
 
-		add_zip_command ("${PROJECT_MAN_BUILD_DIR}/${_toolname}.1"
-			"${PROJECT_MAN_BUILD_DIR}" )
+		add_zip_command ("${MAN_BUILD_DIR}/${_toolname}.1"
+			"${MAN_BUILD_DIR}" )
 
 		add_custom_target (compress_${_toolname}
-			DEPENDS "${PROJECT_MAN_BUILD_DIR}/${_toolname}.1.gz"
+			DEPENDS "${MAN_BUILD_DIR}/${_toolname}.1.gz"
 		)
 
 		list (APPEND INSTALL_PAGES
-			"${PROJECT_MAN_BUILD_DIR}/${_toolname}.1.gz" )
+			"${MAN_BUILD_DIR}/${_toolname}.1.gz" )
 
 		add_dependencies (compress_${_toolname} copy_${_toolname}.1 )
 		add_dependencies (provide_manpages  compress_${_toolname} )
@@ -187,7 +186,7 @@ else() ## If gzip is not available, install man pages uncompressed
 
 	foreach (_toolname IN LISTS TOOL_NAMES )
 
-		list (APPEND INSTALL_PAGES "${PROJECT_MAN_BUILD_DIR}/${_toolname}.1" )
+		list (APPEND INSTALL_PAGES "${MAN_BUILD_DIR}/${_toolname}.1" )
 	endforeach()
 
 endif (GZIP_EXEC)

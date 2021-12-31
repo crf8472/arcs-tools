@@ -2,12 +2,13 @@ PROJECT_NAME           = "@PROJECT_NAME@"
 PROJECT_NUMBER         = "@PROJECT_VERSION_STRING@"
 PROJECT_BRIEF          = "@PROJECT_BRIEF_DESC@"
 #
-OUTPUT_DIRECTORY       = @PROJECT_BINARY_DIR@
-INPUT                  = @PROJECT_MAN_SRC_DIR@
+OUTPUT_DIRECTORY       = "@PROJECT_BINARY_DIR@"
+WARN_LOGFILE           = "@PROJECT_LOG_DIR@/Doxygen_Warnings.log"
+INPUT                  = "@MAN_SRC_DIR@"
 FILE_PATTERNS          = *.dox
 GENERATE_HTML          = NO
 GENERATE_LATEX         = NO
 GENERATE_MAN           = YES
-MAN_OUTPUT             = @PROJECT_MAN_DOXYGEN_OUT_DIR@
+MAN_OUTPUT             = "@MAN_DOXYGEN_OUT_DIR@"
 MAN_EXTENSION          = .1
 MAN_SUBDIR             = 1

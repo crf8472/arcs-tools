@@ -1,6 +1,6 @@
 /*!
 
-\page @TOOL_NAME_VERIFY@
+\page arcstk-verify
 
 \brief Calculate AccurateRip checksums locally
 
@@ -10,7 +10,7 @@
 
 \section SYNOPSIS
 
-@TOOL_NAME_VERIFY@ [OPTIONS] AUDIOFILE1 AUDIOFILE2 ...
+arcstk-verify [OPTIONS] AUDIOFILE1 AUDIOFILE2 ...
 
 
 \section DESCRIPTION
@@ -121,7 +121,7 @@ and the TOC (as CUESheet). The CUESheet specifies the actual audiofiles, may it
 be a single file or one file per track. You saved the checksums from AccurateRip
 in a local dBAR file (see man 1 arcstk-parse).
 
-$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin -m myalbum/toc.cue
+$ arcstk-verify -r dBAR-some_id.bin -m myalbum/toc.cue
 
 
 
@@ -135,7 +135,7 @@ CUESheet. The CUESheet specifies audio files, but you want to override them with
 \c myalbum/album_rip.flac instead. You saved the checksums from AccurateRip in a
 local dBAR file (see man 1 arcstk-parse).
 
-$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin -m myalbum/toc.cue myalbum/album_rip.flac
+$ arcstk-verify -r dBAR-some_id.bin -m myalbum/toc.cue myalbum/album_rip.flac
 
 
 \par b) One audio file per track
@@ -145,7 +145,7 @@ as a CUESheet. The CUESheet is stored elsewhere or references WAV files, so you
 want to override its file references. You saved the checksums from AccurateRip
 in a local dBAR file (see man 1 arcstk-parse).
 
-$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin -m myalbum/toc.cue myalbum/track_1.flac myalbum/track_2.flac ...
+$ arcstk-verify -r dBAR-some_id.bin -m myalbum/toc.cue myalbum/track_1.flac myalbum/track_2.flac ...
 
 
 
@@ -156,7 +156,7 @@ TOC information. The filenames are such that the first filename is also the
 first track and the last filename is the last track of the album. You saved the
 checksums from AccurateRip in a local dBAR file (see man 1 arcstk-parse).
 
-$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin --album myalbum/f1.flac myalbum/f2.flac ...
+$ arcstk-verify -r dBAR-some_id.bin --album myalbum/f1.flac myalbum/f2.flac ...
 
 
 \subsection FILES 4. Some audiofiles but no TOC
@@ -166,15 +166,15 @@ e.g. the mapping from files to tracks is not known. You saved the checksums of
 some possibly matching album from AccurateRip in a local dBAR file
 (see man 1 arcstk-parse).
 
-$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin myalbum/track_1.flac myalbum/track_2.flac ...
+$ arcstk-verify -r dBAR-some_id.bin myalbum/track_1.flac myalbum/track_2.flac ...
 
 If you know that \c track_1.flac is the first track, declare it accordingly:
 
-$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin --first myalbum/track_1.flac myalbum/track_2.flac ...
+$ arcstk-verify -r dBAR-some_id.bin --first myalbum/track_1.flac myalbum/track_2.flac ...
 
 If you know that \c track_15.flac is the last track, declare it accordingly:
 
-$ @TOOL_NAME_VERIFY@ -r dBAR-some_id.bin --last myalbum/track_1.flac ... myalbum/track_15.flac
+$ arcstk-verify -r dBAR-some_id.bin --last myalbum/track_1.flac ... myalbum/track_15.flac
 
 \b NOTE The number of audiofiles passed must be equal to the track count of the
 album.
