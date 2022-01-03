@@ -6,7 +6,7 @@
 \page inc_license
 
 License is MIT. See full license text:
-https://codeberg.org/tristero/arcs-tools/src/branch/master/LICENSE
+https://github.com/crf8472/arcs-tools/tree/main/LICENSE
 
 
 \page inc_calcdesc
@@ -162,8 +162,8 @@ Do not print track numbers. Effects only album input.
 
 \page inc_buginfo
 
-For the list of issues see https://codeberg.org/tristero/arcs-tools/issues
+For the list of issues see https://github.com/crf8472/arcs-tools/issues
 
-Please file any bug on https://codeberg.org/tristero/arcs-tools
+Please file any bug on https://github.com/crf8472/arcs-tools
 
 */
