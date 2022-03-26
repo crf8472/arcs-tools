@@ -189,7 +189,7 @@ const std::vector<std::pair<Option, OptionCode>>&
 			CALC::NOLENGTHS},
 		{{  "no-labels", false, "FALSE", "Do not print column or row labels" },
 			CALC::NOLABELS},
-		{{  "col-delim", true, "<blank>", "Specify column delimiter" },
+		{{  "col-delim", true, "ASCII-32", "Specify column delimiter" },
 			CALC::COLDELIM},
 		{{  "print-id", false, "FALSE", "Print AccurateRip Id of the album" },
 			CALC::PRINTID},
