@@ -69,9 +69,9 @@ during program run may result in no information. Takes precedence over any
 potentially present \b -v. Takes any effect off of \b -l.
 
 \par -v,--verbosity=[0-8]
-Activate loglevel NUMBER. Default loglevel (without any \b -v option) is
-\b n == 2 which prints warnings and above. The following loglevels are
-available:
+Activate loglevel. Legal values are between 0 and 8. Default loglevel
+(without any \b -v option) is \b 2 which prints warnings and errors. The
+following loglevels are available:
 \verbatim
 .TS
 tab(@);
