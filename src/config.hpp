@@ -13,6 +13,7 @@
  * and can apply configuring logic on the resulting object.
  */
 
+#include <array>         // for array
 #include <cstdint>       // for uint8_t
 #include <climits>       // CHAR_BIT
 #include <map>           // for map
