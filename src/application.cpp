@@ -18,7 +18,7 @@
 #include "config.hpp"          // for Configurator, CallSyntaxException
 #endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"          // for StringTable
+#include "layouts.hpp"         // for StringTable
 #endif
 #ifndef __ARCSTOOLS_VERSION_HPP__
 #include "version.hpp"         // for ARCSTOOLS_VERSION
@@ -54,7 +54,7 @@ int Application::run(int argc, char** argv)
 		return EXIT_SUCCESS;
 	}
 
-	// This may throw a CallSyntaxException
+	// FIXME: This may throw a CallSyntaxException
 	auto options = this->setup_options(argc, argv);
 
 	if (options->is_set(OPTION::HELP))
@@ -150,7 +150,7 @@ std::unique_ptr<Options> Application::setup_options(int argc, char** argv)
 
 void Application::fatal_error(const std::string &message) const
 {
-	//ARCS_LOG_ERROR << message;
+	//ARCS_LOG_ERROR << message; // Commented out, just a reminder
 	throw std::runtime_error(message);
 }
 
