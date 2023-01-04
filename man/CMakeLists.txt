@@ -122,8 +122,9 @@ foreach (_toolname IN LISTS TOOL_NAMES )
 
 	add_custom_command (
 		OUTPUT "${MAN_BUILD_DIR}/${_toolname}.1"
-		COMMAND ${CMAKE_COMMAND} -E copy "${MANPAGE}" "${MAN_BUILD_DIR}"
-		DEPENDS "${MAN_DOXYGEN_OUT_DIR}/1/${_toolname}.1"
+		COMMAND ${CMAKE_COMMAND} -E copy "${MANPAGE}"
+			"${MAN_BUILD_DIR}/${_toolname}.1"
+		DEPENDS "${MAN_DOXYGEN_OUT_DIR}/1/${_toolname}.1" ${MAN_BUILD_DIR}
 		COMMENT "Copy ${_toolname}.1 to build directory"
 		VERBATIM
 	)

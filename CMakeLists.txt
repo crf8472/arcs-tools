@@ -18,7 +18,7 @@ project (arcstk VERSION 0.1.0 LANGUAGES CXX )
 
 set (PROJECT_BRIEF_DESC "Example Toolkit for libarcstk" )
 
-set (PROJECT_URL "https://codeberg.org/tristero/${PROJECT_NAME}/" )
+set (PROJECT_URL "https://github.com/crf8472/${PROJECT_NAME}/" )
 
 set (PROJECT_VERSION_SUFFIX "alpha.2" )
 

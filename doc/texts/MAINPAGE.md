@@ -3,7 +3,7 @@
 
 \section Home
 
-See the project home [on codeberg.org](https://codeberg.org/tristero/arcst-tools)
+See the [project repository](https://github.com/crf8472/arcs-tools)
 
 
 \section features Features

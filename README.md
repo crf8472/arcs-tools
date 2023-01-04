@@ -2,7 +2,7 @@
 
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![C++17](https://img.shields.io/badge/C++-17-darkblue.svg)](./API.md)
-[![Latest](https://img.shields.io/badge/dynamic/json.svg?url=https://codeberg.org/api/v1/repos/tristero/arcs-tools/releases&label=latest&query=$.0.name&color=yellowgreen)](https://codeberg.org/tristero/arcs-tools/releases)
+[![Release](https://img.shields.io/github/v/release/crf8472/arcs-tools?display_name=tag&include_prereleases)](https://github.com/crf8472/arcs-tools/releases)
 
 
 ## Introduction
@@ -57,6 +57,6 @@ Fetch AccurateRip data for a CD and verify the local image (requires curl):
 $ curl "$(arcstk-id --url /path/to/cuefile.cue -a /path/to/audiofile.flac)" | arcstk-verify -m /path/to/cuefile.cue /path/to/audiofile
 ```
 
-[1]: https://codeberg.org/tristero/libarcstk
-[2]: https://codeberg.org/tristero/libarcsdec
+[1]: https://github.com/crf8472/libarcstk
+[2]: https://github.com/crf8472/libarcsdec
 
