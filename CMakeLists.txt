@@ -270,27 +270,28 @@ endif ()
 set (PROJECT_CXX_GNU_FLAGS_WARNINGS
 	-Wall -Wextra -Wpedantic -Weffc++
 	-Wold-style-cast
-	-Wsuggest-override
 	-Wcast-align
 	-Wcast-qual
+	-Wformat=2
+	-Wshadow
+	-Wsign-conversion
+	-Wundef
+	-Wzero-as-null-pointer-constant
+	# -- g++ specific --
+	-Wsuggest-override
 	-Wctor-dtor-privacy
 	-Wdisabled-optimization
-	-Wformat=2
 	-Wlogical-op
 	-Wmissing-declarations
 	-Wmissing-include-dirs
 	-Wnoexcept
 	-Woverloaded-virtual
 	-Wredundant-decls
-	-Wshadow
-	-Wsign-conversion
 	-Wsign-promo
 	-Wstrict-null-sentinel
 	-Wstrict-overflow=5
 	-Wswitch-default
-	-Wundef
 	-Wuseless-cast
-	-Wzero-as-null-pointer-constant
 	)
 
 ## g++: Optimize flags
@@ -307,9 +308,9 @@ set (PROJECT_CXX_CLANG_FLAGS_WARNINGS
 	-Wshadow
 	-Wsign-conversion
 	-Wundef
-	-Wunused
 	-Wzero-as-null-pointer-constant
-	# -- clang specific --
+	# -- clang++ specific --
+	-Wunused
 	-Winconsistent-missing-destructor-override
 	)
 
