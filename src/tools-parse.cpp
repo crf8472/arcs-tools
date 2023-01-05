@@ -62,7 +62,8 @@ std::vector<char> StdIn::bytes()
 	// https://msdn.microsoft.com/en-us/library/tw4k6df8.aspx
 #else
 
-	std::freopen(nullptr, "rb", stdin); // ignore returned FILE ptr to stdin
+	static_cast<void>(std::freopen(nullptr, "rb", stdin));
+	// ignore returned FILE ptr to stdin while avoiding warning
 #endif
 
 	// Binary Mode From Here On
