@@ -1,6 +1,7 @@
 [submodule "libs/libarcstk"]
 	path = libs/libarcstk
-	url = https://codeberg.org/tristero/libarcstk
+	url = https://github.com/crf8472/libarcstk.git
 [submodule "libs/libarcsdec"]
 	path = libs/libarcsdec
-	url = https://codeberg.org/tristero/libarcsdec
+	url = https://github.com/crf8472/libarcsdec.git
+
