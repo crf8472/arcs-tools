@@ -165,27 +165,31 @@ target_link_libraries (${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-objects )
 option (WITH_ARCSTK_LIBS "Compile libarcstk and libarcsdec as submodules" OFF )
 
 
-if (WITH_ARCSTK_LIBS )
+if (WITH_SUBMODULES )
 
-	message (FATAL "WITH_ARCSTK_LIBS is not yet implemented" )
+	message (STATUS "Link to local submodules libarcstk and libarcsdec" )
 
-## Commented out for now (needs more testing)
-##
-#	message (STATUS "Link to local submodules libarcstk and libarcsdec" )
-#
-#	set (LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs" )
-#
-#	add_subdirectory (${LIBS_DIR}/libarcstk )
-#	add_subdirectory (${LIBS_DIR}/libarcsdec )
-#
-#	target_include_directories (${PROJECT_NAME} PRIVATE
-#		$<BUILD_INTERFACE:${LIBS_DIR}/libarcsdec/include> )
-#
-#	target_link_libraries (${PROJECT_NAME} PRIVATE libarcsdec libarcstk )
-#
-#	add_dependencies (libarcsdec libarcstk )
-#	add_dependencies (${PROJECT_NAME} libarcsdec )
+	## This signals libarcsdec's CMakeLists.txt where to find it's libarcstk
+	## depencency.
+	set (SUBMODULES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs" )
 
+	if (NOT LIBARCSTK_ADDED )
+		add_subdirectory (${SUBMODULES_DIR}/libarcstk
+			${SUBMODULES_DIR}/libarcstk/build )
+	endif()
+
+	add_subdirectory (${SUBMODULES_DIR}/libarcsdec
+		${SUBMODULES_DIR}/libarcsdec/build )
+
+	target_include_directories (${PROJECT_NAME} PRIVATE
+		$<BUILD_INTERFACE:${SUBMODULES_DIR}/libarcstk/include> )
+
+	target_include_directories (${PROJECT_NAME} PRIVATE
+		$<BUILD_INTERFACE:${SUBMODULES_DIR}/libarcsdec/include> )
+
+	target_link_libraries (${PROJECT_NAME} PRIVATE libarcsdec libarcstk )
+
+	add_dependencies (${PROJECT_NAME} libarcsdec libarcstk )
 else()
 
 	message (STATUS "Link to system-installed libarcstk and libarcsdec" )
@@ -220,7 +224,7 @@ else()
 
 	target_link_libraries (${PROJECT_NAME} PRIVATE libarcsdec::libarcsdec )
 
-endif (WITH_ARCSTK_LIBS )
+endif (WITH_SUBMODULES )
 
 
 
