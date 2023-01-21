@@ -6,10 +6,6 @@ cmake_minimum_required (VERSION 3.15 )
 ## Required for specifying the project version along with the name in project()
 cmake_policy (SET CMP0048 NEW )
 
-## Support new IN_LIST if() operator
-## Required by FindDoxygen.cmake
-cmake_policy (SET CMP0057 NEW )
-
 
 project (arcstk VERSION 0.1.0 LANGUAGES CXX )
 
@@ -73,7 +69,7 @@ message (STATUS "Changed CMAKE_MODULE_PATH to: ${CMAKE_MODULE_PATH}" )
 ## --- Project Directory Layout
 
 ## "Root directory for out-of-source build"
-set (PROJECT_BINARY_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/build" )
+set (PROJECT_BINARY_DIR       "${CMAKE_CURRENT_BINARY_DIR}" )
 
 ## "Root directory for sources"
 set (PROJECT_SOURCE_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/src" )
@@ -88,7 +84,8 @@ set (PROJECT_BUILD_SOURCE_DIR "${PROJECT_BINARY_DIR}/generated-sources" )
 
 ## --- Create Log directory
 
-file (MAKE_DIRECTORY ${PROJECT_LOG_DIR} )
+add_custom_target (arcstk_create_log_dir ALL
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_LOG_DIR} )
 
 
 
@@ -162,7 +159,7 @@ add_executable (${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/main.cpp )
 target_link_libraries (${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-objects )
 
 
-option (WITH_ARCSTK_LIBS "Compile libarcstk and libarcsdec as submodules" OFF )
+option (WITH_SUBMODULES "Compile libarcstk and libarcsdec as submodules" OFF )
 
 
 if (WITH_SUBMODULES )
@@ -173,23 +170,9 @@ if (WITH_SUBMODULES )
 	## depencency.
 	set (SUBMODULES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs" )
 
-	if (NOT LIBARCSTK_ADDED )
-		add_subdirectory (${SUBMODULES_DIR}/libarcstk
-			${SUBMODULES_DIR}/libarcstk/build )
-	endif()
+	add_subdirectory (${SUBMODULES_DIR}/libarcstk  )
+	add_subdirectory (${SUBMODULES_DIR}/libarcsdec )
 
-	add_subdirectory (${SUBMODULES_DIR}/libarcsdec
-		${SUBMODULES_DIR}/libarcsdec/build )
-
-	target_include_directories (${PROJECT_NAME} PRIVATE
-		$<BUILD_INTERFACE:${SUBMODULES_DIR}/libarcstk/include> )
-
-	target_include_directories (${PROJECT_NAME} PRIVATE
-		$<BUILD_INTERFACE:${SUBMODULES_DIR}/libarcsdec/include> )
-
-	target_link_libraries (${PROJECT_NAME} PRIVATE libarcsdec libarcstk )
-
-	add_dependencies (${PROJECT_NAME} libarcsdec libarcstk )
 else()
 
 	message (STATUS "Link to system-installed libarcstk and libarcsdec" )
@@ -198,35 +181,42 @@ else()
 	## .config file instead of project's FindLibarcstk.cmake module
 	set (CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE ) ## since CMake 3.15
 
-
-	## --- Required: libarcstk
-
-	find_package (libarcstk 0.1.0 REQUIRED )
-
-	if (TARGET libarcstk::libarcstk )
-
-		get_target_property (libarcstk_INCLUDE_DIRS libarcstk::libarcstk
-			INTERFACE_INCLUDE_DIRECTORIES )
-	endif ()
-
-	target_link_libraries (${PROJECT_NAME} PRIVATE libarcstk::libarcstk )
-
-
-	## --- Required: libarcsdec
-
+	find_package (libarcstk  0.1.0 REQUIRED )
 	find_package (libarcsdec 0.1.0 REQUIRED )
-
-	if (TARGET libarcsdec::libarcsdec )
-
-		get_target_property (libarcsdec_INCLUDE_DIRS libarcsdec::libarcsdec
-			INTERFACE_INCLUDE_DIRECTORIES )
-	endif ()
-
-	target_link_libraries (${PROJECT_NAME} PRIVATE libarcsdec::libarcsdec )
-
-endif (WITH_SUBMODULES )
+endif()
 
 
+## --- Required: libarcstk
+
+if (TARGET libarcstk::libarcstk )
+
+	target_link_libraries (${PROJECT_NAME}-objects PUBLIC libarcstk::libarcstk )
+else()
+	message (FATAL
+		"libarcstk is not present, neither system-wide nor as a submodule" )
+endif()
+
+
+
+## --- Required: libarcsdec
+
+if (TARGET libarcsdec::libarcsdec )
+
+	target_link_libraries (${PROJECT_NAME}-objects PUBLIC libarcsdec::libarcsdec )
+else()
+	message (FATAL
+		"libarcsdec is not present, neither system-wide nor as a submodule" )
+endif()
+
+
+
+#get_target_property (INC_DIRS libarcsdec::libarcsdec INCLUDE_DIRECTORIES )
+#message(STATUS "libarcsdec include: ${INC_DIRS}" )
+
+#target_include_directories (${PROJECT_NAME}-objects PRIVATE ${INC_DIRS} )
+
+get_target_property (INC_DIRS ${PROJECT_NAME}-objects INCLUDE_DIRECTORIES )
+message(STATUS "objects include: ${INC_DIRS}" )
 
 ## --- Install executables
 
