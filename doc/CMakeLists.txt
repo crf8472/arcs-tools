@@ -1,5 +1,9 @@
 ## CMakeLists.txt for building the documentation
 
+## Support new IN_LIST if() operator
+## Required by FindDoxygen.cmake
+cmake_policy (SET CMP0057 NEW )
+
 find_package (Doxygen 1.8.0 COMPONENTS REQUIRED dot )
 
 
