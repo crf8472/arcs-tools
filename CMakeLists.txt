@@ -210,14 +210,6 @@ endif()
 
 
 
-#get_target_property (INC_DIRS libarcsdec::libarcsdec INCLUDE_DIRECTORIES )
-#message(STATUS "libarcsdec include: ${INC_DIRS}" )
-
-#target_include_directories (${PROJECT_NAME}-objects PRIVATE ${INC_DIRS} )
-
-get_target_property (INC_DIRS ${PROJECT_NAME}-objects INCLUDE_DIRECTORIES )
-message(STATUS "objects include: ${INC_DIRS}" )
-
 ## --- Install executables
 
 if (NOT SKIP_INSTALL_ALL )
