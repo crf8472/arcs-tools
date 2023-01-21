@@ -91,7 +91,19 @@ int main(int argc, char** argv)
 	std::cout << ARCSTOOLS_BINARY_NAME << " " << ARCSTOOLS_VERSION << std::endl;
 
 	std::cout << "Usage: " << ARCSTOOLS_BINARY_NAME
-		<< " [id|calc|parse|verify] " // TODO Load names from Registry
+		<< " [";
+
+	{
+		const auto apps { ApplicationFactory::registered_names() };
+		auto i = apps.size();
+		for (const auto& name : apps)
+		{
+			std::cout << name;
+			if (0 <-- i) { std::cout << '|'; }
+		}
+	}
+
+	std::cout << "] "
 		<< "[OPTIONS] <filenames>"
 		<< std::endl;
 

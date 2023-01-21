@@ -10,10 +10,13 @@
  * instances of the types can be requested by this name.
  */
 
-#include <map>     // for map
-#include <memory>  // for unique_ptr
-#include <string>  // for string
-#include <utility> // for make_pair
+#include <algorithm> // for transform
+#include <iterator>  // for iterator
+#include <map>       // for map
+#include <memory>    // for unique_ptr
+#include <set>       // for set
+#include <string>    // for string
+#include <utility>   // for make_pair
 
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"
@@ -117,6 +120,20 @@ public:
 		return instantiate(it->first, it->second);
 	}
 
+	/**
+	 * \brief Return the set of names of available applications.
+	 *
+	 * \return Names of available applications.
+	 */
+	static std::set<std::string> registered_names()
+	{
+		std::set<std::string> names;
+		std::transform(get_map()->begin(), get_map()->end(),
+				std::inserter(names, names.begin()), RetrieveName());
+		return names;
+	}
+
+
 protected:
 
 	/**
@@ -150,6 +167,18 @@ protected:
 	}
 
 private:
+
+	/**
+	 * \brief Retrieve application name from an entry of map_.
+	 */
+	struct RetrieveName
+	{
+		template <typename T>
+		typename T::first_type operator()(T keyValuePair) const
+		{
+			return keyValuePair.first;
+		}
+	};
 
 	/**
 	 * \brief Map associating Application types with names
