@@ -60,6 +60,10 @@ set (CMAKE_CXX_STANDARD 17 )
 set (CMAKE_CXX_STANDARD_REQUIRED ON )
 set (CMAKE_CXX_EXTENSIONS OFF ) ## use -std=c++17 instead of -std=gnu++17
 
+## Tell find_package to first try locating libarcstk via system-installed
+## .config file instead of project's FindLibarcstk.cmake module
+set (CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE ) ## since CMake 3.15
+
 ## Search path for cmake modules
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules" )
 message (STATUS "Changed CMAKE_MODULE_PATH to: ${CMAKE_MODULE_PATH}" )
@@ -172,14 +176,9 @@ if (WITH_SUBMODULES )
 
 	add_subdirectory (${SUBMODULES_DIR}/libarcstk  )
 	add_subdirectory (${SUBMODULES_DIR}/libarcsdec )
-
 else()
 
 	message (STATUS "Link to system-installed libarcstk and libarcsdec" )
-
-	## Tell find_package to first try locating libarcstk via system-installed
-	## .config file instead of project's FindLibarcstk.cmake module
-	set (CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE ) ## since CMake 3.15
 
 	find_package (libarcstk  0.1.0 REQUIRED )
 	find_package (libarcsdec 0.1.0 REQUIRED )
@@ -192,7 +191,7 @@ if (TARGET libarcstk::libarcstk )
 
 	target_link_libraries (${PROJECT_NAME}-objects PUBLIC libarcstk::libarcstk )
 else()
-	message (FATAL
+	message (FATAL_ERROR
 		"libarcstk is not present, neither system-wide nor as a submodule" )
 endif()
 
@@ -204,7 +203,7 @@ if (TARGET libarcsdec::libarcsdec )
 
 	target_link_libraries (${PROJECT_NAME}-objects PUBLIC libarcsdec::libarcsdec )
 else()
-	message (FATAL
+	message (FATAL_ERROR
 		"libarcsdec is not present, neither system-wide nor as a submodule" )
 endif()
 

@@ -1,4 +1,4 @@
-#include "catch2/catch.hpp"
+#include "catch2/catch_test_macros.hpp"
 
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"

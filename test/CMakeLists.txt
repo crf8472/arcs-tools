@@ -2,14 +2,16 @@
 
 cmake_minimum_required (VERSION 3.7 )
 
+## Always link library files by full path when a full path is given to the
+## target_link_libraries() command.
+cmake_policy (SET CMP0003 NEW )
 
-## --- Global settings
+## Link libraries by full path even in implicit directories.
+cmake_policy (SET CMP0060 NEW )
+
 
 ## Directory for test sources
 set (TEST_SOURCE_DIR "src" )
-
-## Main test file (compiled only once, reused for each testcase)
-set (MAIN_TEST_CPP "${TEST_SOURCE_DIR}/main.test.cpp" )
 
 
 ## --- Declare fixtures
@@ -27,13 +29,6 @@ list (APPEND TEST_SETS tools-parse )
 list (APPEND TEST_SETS config      )
 
 
-## --- Provide main object file
-
-add_library (catch2_main OBJECT "${MAIN_TEST_CPP}" )
-set_property (TARGET catch2_main PROPERTY CXX_STANDARD 17 )
-target_link_libraries (catch2_main Catch2::Catch2 )
-
-
 ## --- Add common configuration for all testsuites (catch2 + project deps)
 
 foreach (_testcase ${TEST_SETS} )
@@ -41,24 +36,23 @@ foreach (_testcase ${TEST_SETS} )
 	## Define an executable for each single testfile
 
 	add_executable (${_testcase}_test
-		$<TARGET_OBJECTS:catch2_main>
-		"${TEST_SOURCE_DIR}/${_testcase}.cpp" )
-
-	target_include_directories (${_testcase}_test
-		PRIVATE ${PROJECT_SOURCE_DIR}         ## project headers
-		PRIVATE ${PROJECT_BUILD_SOURCE_DIR} ) ## generated sources
-
-	target_link_libraries (${_testcase}_test
-		Catch2::Catch2
-		libarcstk::libarcstk
-		libarcsdec::libarcsdec
-		$<TARGET_OBJECTS:${PROJECT_NAME}-objects> )
-
-
-	## Compile tests as C++17
+		"${TEST_SOURCE_DIR}/${_testcase}.cpp"
+	)
 
 	set_property (TARGET ${_testcase}_test PROPERTY CXX_STANDARD 17 )
 
+	target_include_directories (${_testcase}_test
+		PRIVATE ${PROJECT_SOURCE_DIR}         ## project headers
+		PRIVATE ${PROJECT_BUILD_SOURCE_DIR}   ## generated sources
+	)
+
+	target_link_libraries (${_testcase}_test
+		PRIVATE
+		Catch2::Catch2WithMain
+		libarcstk::libarcstk
+		libarcsdec::libarcsdec
+		$<TARGET_OBJECTS:${PROJECT_NAME}-objects>
+	)
 
 	## Add test to ctest set
 
