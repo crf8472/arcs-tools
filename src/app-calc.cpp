@@ -17,27 +17,17 @@
 #include <arcstk/logging.hpp>
 #endif
 #ifndef __LIBARCSTK_MATCH_HPP__
-#include <arcstk/match.hpp>         // for ARId, Checksums
-#endif
-
-#ifndef __LIBARCSDEC_AUDIOREADER_HPP__
-#include <arcsdec/audioreader.hpp>  // for AudioReaderSelection
-#endif
-#ifndef __LIBARCSDEC_CALCULATORS_HPP__
-#include <arcsdec/calculators.hpp>  // for ARCSCalculator, TOCParser
-#endif
-#ifndef __LIBARCSDEC_METAPARSER_HPP__
-#include <arcsdec/metaparser.hpp>   // for MetadataParserSelection
+#include <arcstk/match.hpp>         // for ARId, Checksums, TOC
 #endif
 
 #ifndef __ARCSTOOLS_APPREGISTRY_HPP__
-#include "appregistry.hpp"                 // for RegisterApplicationType
+#include "appregistry.hpp"          // for RegisterApplicationType
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
 #endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"               // for operator<<
+#include "layouts.hpp"              // for operator<<
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"           // for ARCSMultifileAlbumCalculator
@@ -59,10 +49,6 @@ class Options;
 using arcstk::ARId;
 using arcstk::Checksums;
 using arcstk::TOC;
-using arcstk::make_empty_arid;
-
-using arcsdec::ARCSCalculator;
-using arcsdec::TOCParser;
 
 
 // CALCBASE
