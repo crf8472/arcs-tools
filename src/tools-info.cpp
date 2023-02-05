@@ -8,7 +8,7 @@
 #include <sstream>             // for ostringstream
 
 #ifndef __LIBARCSDEC_DESCRIPTORS_HPP__
-#include <arcsdec/descriptors.hpp>
+#include <arcsdec/descriptor.hpp>   // for FileReaderDescriptor
 #endif
 #ifndef __LIBARCSDEC_CALCULATORS_HPP__
 #include <arcsdec/calculators.hpp>  // for ARCSCalculator, TOCParser
@@ -138,7 +138,7 @@ void traverse(FormatCollector &collector)
 			std::placeholders::_1);
 
 	T t;
-	t.selection().traverse_descriptors(apply_func);
+	t.descriptorset().traverse(apply_func);
 }
 
 
