@@ -17,14 +17,19 @@
 #include <arcstk/logging.hpp>
 #endif
 
+#ifndef __LIBARCSDEC_SELECTION_HPP__
+#include <arcsdec/selection.hpp>       // for FileReaderSelection
+#endif
+
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp" // for CLITokens
+#include "clitokens.hpp"               // for CLITokens
 #endif
 
 namespace arcsapp
 {
 
 using arcstk::Appender;
+using arcstk::Logging;
 
 
 // LogManager
@@ -424,8 +429,32 @@ std::unique_ptr<Options> Configurator::do_configure_options(
 const std::vector<std::pair<Option, OptionCode>>&
 	DefaultConfigurator::do_supported_options() const
 {
-	const static std::vector<std::pair<Option, OptionCode>> empty = {};
+	const static std::vector<std::pair<Option, OptionCode>> empty = {/*empty*/};
 	return empty;
+}
+
+
+// FORMATBASE
+
+
+constexpr OptionCode FORMATBASE::LIST_TOC_FORMATS;
+constexpr OptionCode FORMATBASE::LIST_AUDIO_FORMATS;
+constexpr OptionCode FORMATBASE::READERID;
+constexpr OptionCode FORMATBASE::PARSERID;
+
+constexpr OptionCode FORMATBASE::SUBCLASS_BASE;
+
+
+// IdSelection
+
+
+std::unique_ptr<arcsdec::FileReaderSelection> IdSelection::operator()(
+		const std::string& id) const
+{
+	using IdSelection_t = arcsdec::FileReaderPreferenceSelection<
+		arcsdec::ConstMinPreference, arcsdec::IdSelector>;
+
+	return !id.empty() ? std::make_unique<IdSelection_t>(id) : nullptr;
 }
 
 } // namespace arcsapp

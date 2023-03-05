@@ -55,9 +55,9 @@ std::string to_sep_list(const Container c, const std::string delim,
 
 
 /**
- * \brief Tool class to get supported formats.
+ * \brief Tool class to get lists of available readers.
  */
-class SupportedFormats final
+class AvailableFileReaders final
 {
 public:
 

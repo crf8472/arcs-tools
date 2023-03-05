@@ -28,6 +28,9 @@
 #ifndef __LIBARCSDEC_CALCULATORS_HPP__
 #include <arcsdec/calculators.hpp>
 #endif
+#ifndef __LIBARCSDEC_SELECTION_HPP__
+#include <arcsdec/selection.hpp>
+#endif
 
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
 #include "tools-fs.hpp"             // for path
@@ -38,10 +41,9 @@ namespace arcsapp
 namespace calc
 {
 
-using arcstk::make_empty_arid;
-
 using arcsdec::ARCSCalculator;
 using arcsdec::TOCParser;
+using arcsdec::FileReaderSelection;
 
 
 std::tuple<bool,bool,std::vector<std::string>> audiofile_layout(const TOC &toc)
@@ -111,6 +113,34 @@ public:
 	 */
 	arcstk::checksum::type type() const;
 
+	/**
+	 * \brief Set the FileReaderSelection for this instance.
+	 *
+	 * \param[in] selection The selection to use
+	 */
+	void set_toc_selection(FileReaderSelection *selection);
+
+	/**
+	 * \brief Get the FileReaderSelection used by this instance.
+	 *
+	 * \return The selection used by this instance
+	 */
+	FileReaderSelection* toc_selection() const;
+
+	/**
+	 * \brief Set the FileReaderSelection for this instance.
+	 *
+	 * \param[in] selection The selection to use
+	 */
+	void set_audio_selection(FileReaderSelection *selection);
+
+	/**
+	 * \brief Get the FileReaderSelection used by this instance.
+	 *
+	 * \return The selection used by this instance
+	 */
+	FileReaderSelection* audio_selection() const;
+
 private:
 
 	/**
@@ -130,7 +160,17 @@ private:
 	/**
 	 * \brief Checksum type to request
 	 */
-	arcstk::checksum::type type_;
+	arcstk::checksum::type type_ = arcstk::checksum::type::ARCS2;
+
+	/**
+	 * \brief Internal TOC parser selection.
+	 */
+	FileReaderSelection* toc_selection_ = nullptr;
+
+	/**
+	 * \brief Internal Audio reader selection.
+	 */
+	FileReaderSelection* audio_selection_ = nullptr;
 };
 
 
@@ -157,6 +197,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 	}
 
 	TOCParser parser;
+	if (toc_selection()) { parser.set_selection(toc_selection()); }
 	auto toc { parser.parse(metafilename) };
 
 	// Validate TOC information
@@ -177,6 +218,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 			" Audiofiles from TOC are ignored.";
 
 	ARCSCalculator c { type() };
+	if (audio_selection()) { c.set_selection(audio_selection()); }
 
 	// case: single-file album w TOC
 	if (1 == filecount)
@@ -213,6 +255,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 	}
 
 	TOCParser parser;
+	if (toc_selection()) { parser.set_selection(toc_selection()); }
 	auto toc { parser.parse(metafilename) };
 
 	// Validate TOC information
@@ -231,6 +274,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 	// Calculate ARCSs
 
 	ARCSCalculator calculator { type() };
+	if (audio_selection()) { calculator.set_selection(audio_selection()); }
 
 	if (single_audio_file)
 	{
@@ -271,6 +315,7 @@ Checksums ARCSMultifileAlbumCalculator::Impl::calculate(
 		const bool &skip_front, const bool &skip_back) const
 {
 	ARCSCalculator calculator { type() };
+	if (audio_selection()) { calculator.set_selection(audio_selection()); }
 
 	return calculator.calculate(audiofilenames, skip_front, skip_back);
 }
@@ -286,6 +331,32 @@ void ARCSMultifileAlbumCalculator::Impl::set_type(
 arcstk::checksum::type ARCSMultifileAlbumCalculator::Impl::type() const
 {
 	return type_;
+}
+
+
+void ARCSMultifileAlbumCalculator::Impl::set_toc_selection(
+		FileReaderSelection *selection)
+{
+	toc_selection_ = selection;
+}
+
+
+FileReaderSelection* ARCSMultifileAlbumCalculator::Impl::toc_selection() const
+{
+	return toc_selection_;
+}
+
+
+void ARCSMultifileAlbumCalculator::Impl::set_audio_selection(
+		FileReaderSelection *selection)
+{
+	audio_selection_ = selection;
+}
+
+
+FileReaderSelection* ARCSMultifileAlbumCalculator::Impl::audio_selection() const
+{
+	return audio_selection_;
 }
 
 
@@ -338,6 +409,32 @@ void ARCSMultifileAlbumCalculator::set_type(const arcstk::checksum::type &type)
 arcstk::checksum::type ARCSMultifileAlbumCalculator::type() const
 {
 	return impl_->type();
+}
+
+
+void ARCSMultifileAlbumCalculator::set_toc_selection(
+		FileReaderSelection *selection)
+{
+	impl_->set_toc_selection(selection);
+}
+
+
+FileReaderSelection* ARCSMultifileAlbumCalculator::toc_selection() const
+{
+	return impl_->toc_selection();
+}
+
+
+void ARCSMultifileAlbumCalculator::set_audio_selection(
+		FileReaderSelection *selection)
+{
+	impl_->set_audio_selection(selection);
+}
+
+
+FileReaderSelection* ARCSMultifileAlbumCalculator::audio_selection() const
+{
+	return impl_->audio_selection();
 }
 
 } // namespace calc

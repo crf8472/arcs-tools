@@ -20,6 +20,10 @@
 #include <arcstk/calculate.hpp>
 #endif
 
+#ifndef __LIBARCSDEC_SELECTION_HPP__
+#include <arcsdec/selection.hpp>
+#endif
+
 namespace arcsapp
 {
 namespace calc
@@ -28,6 +32,8 @@ namespace calc
 using arcstk::ARId;
 using arcstk::TOC;
 using arcstk::Checksums;
+
+using arcsdec::FileReaderSelection;
 
 
 /**
@@ -63,8 +69,6 @@ std::tuple<bool,bool,std::vector<std::string>> audiofile_layout(const TOC &toc);
 
 /**
  * \brief Wrapper for ARCSCalculator to handle input with multiple audio files.
- *
- *
  */
 class ARCSMultifileAlbumCalculator final
 {
@@ -146,6 +150,34 @@ public:
 	 * \return Checksum type to be calculated by this instance
 	 */
 	arcstk::checksum::type type() const;
+
+	/**
+	 * \brief Set the FileReaderSelection for this instance.
+	 *
+	 * \param[in] selection The selection to use
+	 */
+	void set_toc_selection(FileReaderSelection *selection);
+
+	/**
+	 * \brief Get the FileReaderSelection used by this instance.
+	 *
+	 * \return The selection used by this instance
+	 */
+	FileReaderSelection* toc_selection() const;
+
+	/**
+	 * \brief Set the FileReaderSelection for this instance.
+	 *
+	 * \param[in] selection The selection to use
+	 */
+	void set_audio_selection(FileReaderSelection *selection);
+
+	/**
+	 * \brief Get the FileReaderSelection used by this instance.
+	 *
+	 * \return The selection used by this instance
+	 */
+	FileReaderSelection* audio_selection() const;
 
 private:
 

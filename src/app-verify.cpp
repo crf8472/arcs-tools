@@ -23,8 +23,8 @@
 #include <arcstk/logging.hpp>       // for ARCS_LOG_DEBUG, ARCS_LOG_ERROR
 #endif
 
-#ifndef __LIBARCSDEC_CALCULATORS_HPP__
-#include <arcsdec/calculators.hpp>
+#ifndef __LIBARCSDEC_SELECTION_HPP__
+#include <arcsdec/selection.hpp>    // for FileReaderSelection
 #endif
 
 #ifndef __ARCSTOOLS_APPREGISTRY_HPP__
@@ -58,7 +58,6 @@ const auto verify = RegisterApplicationType<ARVerifyApplication>("verify");
 }
 
 using arcstk::ARStreamParser;
-using arcstk::ARParser;
 using arcstk::ARId;
 using arcstk::ARResponse;
 using arcstk::Checksum;
@@ -70,8 +69,6 @@ using arcstk::Matcher;
 using arcstk::AlbumMatcher;
 using arcstk::ListMatcher;
 using arcstk::TracksetMatcher;
-
-using arcsdec::ARCSCalculator;
 
 
 // VERIFY
@@ -117,71 +114,90 @@ const std::vector<std::pair<Option, OptionCode>>&
 {
 	const static std::vector<std::pair<Option, OptionCode>> local_options =
 	{
-		// calculation input options
+		// from FORMATBASE
 
-		{{      "no-first",    false, "~",
-			"Do not treat first audio file as first track" },
-			VERIFY::NOFIRST },
-		{{      "no-last",     false, "~",
-			"Do not treat last audio file as last track" },
-			VERIFY::NOLAST },
-		{{      "no-album",    false, "~",
-			"Abbreviates --no-first --no-last" },
-			VERIFY::NOALBUM },
-		{{ 'm', "metafile", true, "none",
-			"Specify metadata file (TOC) to use" },
-			VERIFY::METAFILE },
-		{{ 'r', "response", true, "none",
-			"Specify AccurateRip response file" },
-			VERIFY::RESPONSEFILE },
-		{{      "refvalues", true, "none",
-			"Specify AccurateRip reference values (as hex value list)" },
-			VERIFY::REFVALUES},
+		{{  "reader", true, "auto",
+			"Force use of audio reader with specified id" },
+			VERIFY::READERID},
 
-		// calculation output options
+		{{  "parser", true, "auto",
+			"Force use of toc parser with specified id" },
+			VERIFY::PARSERID},
 
-		{{      "no-track-nos",  false, "FALSE",
-			"Do not print track numbers" },
-			VERIFY::NOTRACKS},
-		{{      "no-filenames",    false, "FALSE",
-			"Do not print the filenames" },
-			VERIFY::NOFILENAMES},
-		{{      "no-offsets",    false, "FALSE",
-			"Do not print track offsets" },
-			VERIFY::NOOFFSETS},
-		{{      "no-lengths",    false, "FALSE",
-			"Do not print track lengths" },
-			VERIFY::NOLENGTHS},
-		{{      "no-labels",    false, "FALSE",
-			"Do not print column or row labels" },
-			VERIFY::NOLABELS},
-		{{      "col-delim",    true, " ",
-			"Specify column delimiter" },
-			VERIFY::COLDELIM},
-		{{      "print-id",    false, "FALSE",
-			"Print the AccurateRip Id of the album" },
-			VERIFY::PRINTID},
-		{{      "print-url",   false, "FALSE",
-			"Print the AccurateRip URL of the album" },
-			VERIFY::PRINTURL},
-		{{      "print-all-matches",   false, "FALSE",
-			"Print verification results for all blocks" },
-			VERIFY::PRINTALL},
-		{{ 'b', "boolean",   false, "FALSE",
-			"Return number of differing tracks in best match" },
-			VERIFY::BOOLEAN},
-		{{ 'n', "no-output", false, "FALSE",
-			"Do not print the result (implies --boolean)" },
-			VERIFY::NOOUTPUT},
-
-		// info output options
-
-		{{      "list-toc-formats",  false,   "FALSE",
+		{{  "list-toc-formats", false, "FALSE",
 			"List all supported file formats for TOC metadata" },
 			VERIFY::LIST_TOC_FORMATS },
-		{{      "list-audio-formats",  false, "FALSE",
+
+		{{  "list-audio-formats", false, "FALSE",
 			"List all supported audio codec/container formats" },
-			VERIFY::LIST_AUDIO_FORMATS }
+			VERIFY::LIST_AUDIO_FORMATS },
+
+		// from CALCBASE
+
+		{{  'm', "metafile", true, "none",
+			"Specify metadata file (TOC) to use" },
+			VERIFY::METAFILE },
+
+		{{  "no-track-nos", false, "FALSE", "Do not print track numbers" },
+			VERIFY::NOTRACKS },
+
+		{{  "no-filenames", false, "FALSE",
+			"Do not print the filenames" },
+			VERIFY::NOFILENAMES },
+
+		{{  "no-offsets", false, "FALSE", "Do not print track offsets" },
+			VERIFY::NOOFFSETS },
+
+		{{  "no-lengths", false, "FALSE", "Do not print track lengths" },
+			VERIFY::NOLENGTHS },
+
+		{{  "no-labels", false, "FALSE", "Do not print column or row labels" },
+			VERIFY::NOLABELS },
+
+		{{  "col-delim", true, "ASCII-32", "Specify column delimiter" },
+			VERIFY::COLDELIM },
+
+		{{  "print-id", false, "FALSE",
+			"Print the AccurateRip Id of the album" },
+			VERIFY::PRINTID },
+
+		{{  "print-url", false, "FALSE",
+			"Print the AccurateRip URL of the album" },
+			VERIFY::PRINTURL },
+
+		// from VERIFY
+
+		{{  "no-first", false, "FALSE",
+			"Do not treat first audio file as first track" },
+			VERIFY::NOFIRST },
+
+		{{  "no-last", false, "FALSE",
+			"Do not treat last audio file as last track" },
+			VERIFY::NOLAST },
+
+		{{  "no-album", false, "FALSE",
+			"Abbreviates \"--no-first --no-last\"" },
+			VERIFY::NOALBUM },
+
+		{{  'r', "response", true, "none",
+			"Specify AccurateRip response file" },
+			VERIFY::RESPONSEFILE },
+
+		{{  "refvalues", true, "none",
+			"Specify AccurateRip reference values (as hex value list)" },
+			VERIFY::REFVALUES },
+
+		{{  "print-all-matches", false, "FALSE",
+			"Print verification results for all blocks" },
+			VERIFY::PRINTALL },
+
+		{{  'b', "boolean", false, "FALSE",
+			"Return number of differing tracks in best match" },
+			VERIFY::BOOLEAN },
+
+		{{  'n', "no-output", false, "FALSE",
+			"Do not print the result (implies --boolean)" },
+			VERIFY::NOOUTPUT},
 	};
 
 	return local_options;
@@ -484,6 +500,21 @@ int ARVerifyApplication::run_calculation(const Options &options)
 
 	auto reference_sums = this->get_reference_checksums(options);
 
+	// Configure selections (e.g. --reader and --parser)
+
+	const IdSelection id_selection;
+
+	auto audio_selection = options.is_set(VERIFY::READERID)
+		? id_selection(options.value(VERIFY::READERID))
+		: nullptr;
+
+	auto toc_selection = options.is_set(VERIFY::PARSERID)
+		? id_selection(options.value(VERIFY::PARSERID))
+		: nullptr;
+
+	// If no selections are assigned, the libarcsdec default selections
+	// will be used.
+
 	// Calculate the actual ARCSs from input files
 
 	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(
@@ -491,7 +522,10 @@ int ARVerifyApplication::run_calculation(const Options &options)
 			options.arguments(),
 			not options.is_set(VERIFY::NOFIRST),
 			not options.is_set(VERIFY::NOLAST),
-			{ arcstk::checksum::type::ARCS2 } /* force ARCSv1 + ARCSv2 */);
+			{ arcstk::checksum::type::ARCS2 }, /* force ARCSv1 + ARCSv2 */
+			audio_selection.get(),
+			toc_selection.get()
+	);
 
 	if (checksums.size() == 0)
 	{
@@ -620,7 +654,7 @@ void ARVerifyApplication::print_result(const Options &options,
 					false, /* no tracks */
 					false, /* no id 1 */
 					false, /* no id 2 */
-					false /* no cddb id */
+					false  /* no cddb id */
 				);
 
 			const auto result =
@@ -707,13 +741,13 @@ int ARVerifyApplication::do_run(const Options &options)
 	if (options.is_set(VERIFY::LIST_TOC_FORMATS))
 	{
 		Output::instance().output("TOC:\n");
-		Output::instance().output(SupportedFormats::toc());
+		Output::instance().output(AvailableFileReaders::toc());
 	}
 
 	if (options.is_set(VERIFY::LIST_AUDIO_FORMATS))
 	{
 		Output::instance().output("Audio:\n");
-		Output::instance().output(SupportedFormats::audio());
+		Output::instance().output(AvailableFileReaders::audio());
 	}
 
 	return EXIT_SUCCESS;

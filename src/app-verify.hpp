@@ -51,17 +51,18 @@ using arcstk::Matcher;
  */
 class VERIFY : public CALCBASE
 {
-	static constexpr auto& BASE = CALCBASE::MAX_CONSTANT;
+	static constexpr auto& BASE = CALCBASE::SUBCLASS_BASE;
 
 public:
-	static constexpr OptionCode NOFIRST      = BASE + 1; // 18
-	static constexpr OptionCode NOLAST       = BASE + 2;
-	static constexpr OptionCode NOALBUM      = BASE + 3;
-	static constexpr OptionCode RESPONSEFILE = BASE + 4;
-	static constexpr OptionCode REFVALUES    = BASE + 5;
-	static constexpr OptionCode PRINTALL     = BASE + 6;
-	static constexpr OptionCode BOOLEAN      = BASE + 7; // ...
-	static constexpr OptionCode NOOUTPUT     = BASE + 8; // 25
+
+	static constexpr OptionCode NOFIRST      = BASE +  0; // 19
+	static constexpr OptionCode NOLAST       = BASE +  1;
+	static constexpr OptionCode NOALBUM      = BASE +  2;
+	static constexpr OptionCode RESPONSEFILE = BASE +  3;
+	static constexpr OptionCode REFVALUES    = BASE +  4;
+	static constexpr OptionCode PRINTALL     = BASE +  5;
+	static constexpr OptionCode BOOLEAN      = BASE +  6;
+	static constexpr OptionCode NOOUTPUT     = BASE +  7; // 26
 };
 
 
@@ -128,7 +129,7 @@ class ARVerifyApplication final : public Application
 	 *
 	 * \param[in] values The reference values as passed from the cli
 	 *
-	 * \return ARResponse object
+	 * \return Parsed checksums
 	 */
 	std::vector<Checksum> parse_refvalues(const Options &options) const;
 
@@ -137,7 +138,7 @@ class ARVerifyApplication final : public Application
 	 *
 	 * \param[in] values The reference values as passed from the cli
 	 *
-	 * \return ARResponse object
+	 * \return Parsed checksums
 	 */
 	std::vector<Checksum> parse_refvalues_sequence(const std::string &values)
 		const;

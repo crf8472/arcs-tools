@@ -84,7 +84,9 @@ as the input filenames. If the columns represent tracks instead of files, the
 order of columns follows the order of track numbers in ascending from left to
 right.
 
-\copydoc inc_calcinfooptions
+\copydoc inc_infooptions
+
+\copydoc inc_procoptions
 
 \copydoc inc_outfileopt
 

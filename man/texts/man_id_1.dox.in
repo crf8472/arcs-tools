@@ -52,9 +52,13 @@ Use a custom URL prefix for URL output. The default prefix is
 \par -a,--audiofile=FILEPATH
 Specify the audiofile to use explicitly.
 
-\copydoc inc_logfileopt
+\copydoc inc_infooptions
+
+\copydoc inc_procoptions
 
 \copydoc inc_outfileopt
+
+\copydoc inc_logfileopt
 
 \copydoc inc_logoptions
 

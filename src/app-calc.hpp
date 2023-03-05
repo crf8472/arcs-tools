@@ -19,6 +19,10 @@
 #include <arcstk/calculate.hpp>   // for Checksums, ARId, TOC
 #endif
 
+#ifndef __LIBARCSDEC_SELECTION_HPP__
+#include <arcsdec/selection.hpp>  // for FileReaderSelection
+#endif
+
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"
 #endif
@@ -39,36 +43,35 @@ class CLITokens;
 /**
  * \brief Options to configure Application instances that do ARCS calculation.
  */
-struct CALCBASE
+struct CALCBASE : public FORMATBASE
 {
-	static constexpr OptionCode BASE = Configurator::BASE_CODE();
+private:
 
-	// Info Output Options (no calculation)
+	static constexpr auto& BASE = FORMATBASE::SUBCLASS_BASE;
 
-	static constexpr OptionCode LIST_TOC_FORMATS   = BASE + 1; // 7
-	static constexpr OptionCode LIST_AUDIO_FORMATS = BASE + 2;
+public:
 
 	// Calculation Input Options
 
-	static constexpr OptionCode METAFILE     = BASE +  3;
+	static constexpr OptionCode METAFILE      = BASE +  0; // 10
 
 	// Calculation Output Options
 
-	static constexpr OptionCode NOTRACKS     = BASE +  4;
-	static constexpr OptionCode NOFILENAMES  = BASE +  5;
-	static constexpr OptionCode NOOFFSETS    = BASE +  6;
-	static constexpr OptionCode NOLENGTHS    = BASE +  7;
-	static constexpr OptionCode NOLABELS     = BASE +  8;
-	static constexpr OptionCode COLDELIM     = BASE +  9;
-	static constexpr OptionCode PRINTID      = BASE + 10; // ...
-	static constexpr OptionCode PRINTURL     = BASE + 11; // 17
+	static constexpr OptionCode NOTRACKS      = BASE +  1;
+	static constexpr OptionCode NOFILENAMES   = BASE +  2;
+	static constexpr OptionCode NOOFFSETS     = BASE +  3;
+	static constexpr OptionCode NOLENGTHS     = BASE +  4;
+	static constexpr OptionCode NOLABELS      = BASE +  5;
+	static constexpr OptionCode COLDELIM      = BASE +  6;
+	static constexpr OptionCode PRINTID       = BASE +  7;
+	static constexpr OptionCode PRINTURL      = BASE +  8; // 18
 
 protected:
 
 	/**
 	 * \brief Max constant occurring in CALC
 	 */
-	static constexpr OptionCode MAX_CONSTANT = BASE + 11;
+	static constexpr OptionCode SUBCLASS_BASE = BASE +  9;
 };
 
 
@@ -120,22 +123,22 @@ protected:
  */
 class CALC : public CALCBASE
 {
-	static constexpr auto& BASE = CALCBASE::MAX_CONSTANT;
+	static constexpr auto& BASE = CALCBASE::SUBCLASS_BASE;
 
 public:
 
 	// Calculation Input Options
 
-	static constexpr OptionCode FIRST        = BASE + 1;  // 18
-	static constexpr OptionCode LAST         = BASE + 2;
-	static constexpr OptionCode ALBUM        = BASE + 3;
+	static constexpr OptionCode FIRST        = BASE + 0;  // 19
+	static constexpr OptionCode LAST         = BASE + 1;
+	static constexpr OptionCode ALBUM        = BASE + 2;
 
 	// Calculation Output Options
 
-	static constexpr OptionCode NOV1         = BASE + 4;
-	static constexpr OptionCode NOV2         = BASE + 5;
-	static constexpr OptionCode SUMSONLY     = BASE + 6; // ...
-	static constexpr OptionCode TRACKSASCOLS = BASE + 7; // 24
+	static constexpr OptionCode NOV1         = BASE + 3;
+	static constexpr OptionCode NOV2         = BASE + 4;
+	static constexpr OptionCode SUMSONLY     = BASE + 5;
+	static constexpr OptionCode TRACKSASCOLS = BASE + 6; // 25
 };
 
 
@@ -170,11 +173,13 @@ public:
 	/**
 	 * \brief Do calculation based on the options passed.
 	 *
-	 * \param[in] metafilename   Filename of the TOC file
-	 * \param[in] audiofilenames Filenames of the audio files
-	 * \param[in] as_first       Flag to indicate album first track
-	 * \param[in] as_last        Flag to indicate album last track
-	 * \param[in] types          The checksum types requested
+	 * \param[in] metafilename    Filename of the TOC file
+	 * \param[in] audiofilenames  Filenames of the audio files
+	 * \param[in] as_first        Flag to indicate album first track
+	 * \param[in] as_last         Flag to indicate album last track
+	 * \param[in] types           The checksum types requested
+	 * \param[in] audio_selection The selection for audio readers
+	 * \param[in] toc_selection   The selection for TOC parsers
 	 *
 	 * \return Calculation result
 	 */
@@ -183,7 +188,9 @@ public:
 		const std::vector<std::string> &audiofilenames,
 		const bool as_first,
 		const bool as_last,
-		const std::set<arcstk::checksum::type> &types);
+		const std::set<arcstk::checksum::type> &types,
+		arcsdec::FileReaderSelection *audio_selection,
+		arcsdec::FileReaderSelection *toc_selection);
 
 private:
 

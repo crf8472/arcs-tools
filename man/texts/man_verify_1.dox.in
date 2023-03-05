@@ -71,7 +71,9 @@ Abbreviates \b --no-first \b --no-last to suppress calculating a first and a
 last track. This switch is intended for cases in which only some tracks of an
 album are to be verified.
 
-\copydoc inc_calcinoptions
+\copydoc inc_infoptions
+
+\copydoc inc_procoptions
 
 
 \subsection OUTPUT Options for output

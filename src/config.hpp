@@ -26,15 +26,17 @@
 #include <arcstk/logging.hpp>
 #endif
 
+#ifndef __LIBARCSDEC_SELECTION_HPP__
+#include <arcsdec/selection.hpp>      // for FileReaderSelection
+#endif
+
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp" // for OptionCode
+#include "clitokens.hpp"              // for OptionCode
 #endif
 
 namespace arcsapp
 {
 
-using arcstk::Logging;
-using arcstk::Log;
 using arcstk::LOGLEVEL;
 
 
@@ -381,12 +383,13 @@ public:
 	/**
 	 * \brief Returns the minimal OptionCode constant to be used by subclasses.
 	 *
-	 * Subclasses my declare their code range starting with this OptionCode + 1.
+	 * Subclasses may declare their code range starting with this
+	 * OptionCode + 1.
 	 *
 	 * \see ARIdOptions
 	 * \see CALCBASE
 	 */
-	static constexpr OptionCode BASE_CODE() { return global_id_.size(); };
+	static constexpr OptionCode BASE() { return global_id_.size(); };
 
 protected:
 
@@ -460,6 +463,49 @@ private:
 
 	const std::vector<std::pair<Option, OptionCode>>&
 		do_supported_options() const override;
+};
+
+
+/**
+ * \brief Options to configure listing and reading/parsing of input files.
+ *
+ * Those options can be implemented by all applications that use libarcsdec
+ * provided parsers and readers.
+ */
+struct FORMATBASE
+{
+private:
+
+	static constexpr OptionCode BASE = Configurator::BASE();
+
+public:
+
+	// Info Output Options (no calculation)
+
+	static constexpr OptionCode LIST_TOC_FORMATS   = BASE +  0; // 6
+	static constexpr OptionCode LIST_AUDIO_FORMATS = BASE +  1;
+
+	// Tool Selection Options
+
+	static constexpr OptionCode READERID           = BASE +  2;
+	static constexpr OptionCode PARSERID           = BASE +  3; // 9
+
+protected:
+
+	static constexpr OptionCode SUBCLASS_BASE      = BASE + 4;
+};
+
+
+/**
+ * \brief Create a selection for a specific FileReader Id.
+ */
+struct IdSelection
+{
+	/**
+	 * \brief Create a selection for the specific FileReader id.
+	 */
+	std::unique_ptr<arcsdec::FileReaderSelection> operator()(
+			const std::string& id) const;
 };
 
 } // namespace arcsapp

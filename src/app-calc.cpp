@@ -20,6 +20,10 @@
 #include <arcstk/match.hpp>         // for ARId, Checksums, TOC
 #endif
 
+#ifndef __LIBARCSDEC_SELECTION_HPP__
+#include <arcsdec/selection.hpp>    // for FileReaderSelection
+#endif
+
 #ifndef __ARCSTOOLS_APPREGISTRY_HPP__
 #include "appregistry.hpp"          // for RegisterApplicationType
 #endif
@@ -33,7 +37,7 @@
 #include "tools-calc.hpp"           // for ARCSMultifileAlbumCalculator
 #endif
 #ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
-#include "tools-info.hpp"           // for SupportedFormats
+#include "tools-info.hpp"           // for AvailableFileReaders
 #endif
 
 namespace arcsapp
@@ -53,8 +57,6 @@ using arcstk::TOC;
 
 // CALCBASE
 
-constexpr OptionCode CALCBASE::LIST_TOC_FORMATS;
-constexpr OptionCode CALCBASE::LIST_AUDIO_FORMATS;
 constexpr OptionCode CALCBASE::METAFILE;
 constexpr OptionCode CALCBASE::NOTRACKS;
 constexpr OptionCode CALCBASE::NOFILENAMES;
@@ -65,7 +67,7 @@ constexpr OptionCode CALCBASE::COLDELIM;
 constexpr OptionCode CALCBASE::PRINTID;
 constexpr OptionCode CALCBASE::PRINTURL;
 
-constexpr OptionCode CALCBASE::MAX_CONSTANT;
+constexpr OptionCode CALCBASE::SUBCLASS_BASE;
 
 
 // CALC
@@ -142,54 +144,75 @@ const std::vector<std::pair<Option, OptionCode>>&
 {
 	const static std::vector<std::pair<Option, OptionCode>> local_options =
 	{
-		// Calculation Input Options
+		// from FORMATBASE
 
-		{{      "first",  false, "~", "Treat first audio file as first track" },
-			CALC::FIRST },
-		{{      "last",   false, "~", "Treat last audio file as last track" },
-			CALC::LAST },
-		{{      "album",  false, "~", "Abbreviates --first --last" },
-			CALC::ALBUM },
-		{{ 'm', "metafile", true, "none", "Specify toc metadata file to use" },
-			CALC::METAFILE },
+		{{  "reader", true, "auto",
+			"Force use of audio reader with specified id" },
+			CALC::READERID },
 
-		// Calculation Output Options
+		{{  "parser", true, "auto",
+			"Force use of toc parser with specified id" },
+			CALC::PARSERID },
 
-		{{  "no-v1", false, "FALSE", "Do not provide ARCSv1" },
-			CALC::NOV1 },
-		{{  "no-v2", false, "FALSE", "Do not provide ARCSv2" },
-			CALC::NOV2 },
-		{{  "print-sums-only", false, "FALSE", "Print only checksums" },
-			CALC::SUMSONLY},
-		{{  "tracks-as-cols", false, "FALSE", "Print tracks as columns" },
-			CALC::TRACKSASCOLS},
+		{{  "list-toc-formats", false, "FALSE",
+			"List all supported file formats for TOC metadata" },
+			CALC::LIST_TOC_FORMATS },
+
+		{{  "list-audio-formats", false, "FALSE",
+			"List all supported audio codec/container formats" },
+			CALC::LIST_AUDIO_FORMATS },
 
 		// from CALCBASE
+
+		{{  'm', "metafile", true, "none", "Specify toc metadata file to use" },
+			CALC::METAFILE },
+
 		{{  "no-track-nos", false, "FALSE", "Do not print track numbers" },
-			CALC::NOTRACKS},
+			CALC::NOTRACKS },
+
 		{{  "no-filenames", false, "FALSE", "Do not print the filenames" },
-			CALC::NOFILENAMES},
+			CALC::NOFILENAMES },
+
 		{{  "no-offsets", false, "FALSE", "Do not print track offsets" },
-			CALC::NOOFFSETS},
+			CALC::NOOFFSETS },
+
 		{{  "no-lengths", false, "FALSE", "Do not print track lengths" },
-			CALC::NOLENGTHS},
+			CALC::NOLENGTHS },
+
 		{{  "no-labels", false, "FALSE", "Do not print column or row labels" },
-			CALC::NOLABELS},
+			CALC::NOLABELS },
+
 		{{  "col-delim", true, "ASCII-32", "Specify column delimiter" },
-			CALC::COLDELIM},
+			CALC::COLDELIM },
+
 		{{  "print-id", false, "FALSE", "Print AccurateRip Id of the album" },
-			CALC::PRINTID},
+			CALC::PRINTID },
+
 		{{  "print-url", false, "FALSE", "Print AccurateRip URL of the album" },
 			CALC::PRINTURL},
 
-		// Info Output Options
+		// from CALC
 
-		{{  "list-toc-formats", false, "FALSE",
-				"List all supported file formats for TOC metadata" },
-			CALC::LIST_TOC_FORMATS },
-		{{  "list-audio-formats", false, "FALSE",
-				"List all supported audio codec/container formats" },
-			CALC::LIST_AUDIO_FORMATS }
+		{{  "first", false, "FALSE", "Treat first audio file as first track" },
+			CALC::FIRST },
+
+		{{  "last", false, "FALSE", "Treat last audio file as last track" },
+			CALC::LAST },
+
+		{{  "album", false, "FALSE", "Abbreviates \"--first --last\"" },
+			CALC::ALBUM },
+
+		{{  "no-v1", false, "FALSE", "Do not provide ARCSv1" },
+			CALC::NOV1 },
+
+		{{  "no-v2", false, "FALSE", "Do not provide ARCSv2" },
+			CALC::NOV2 },
+
+		{{  "print-sums-only", false, "FALSE", "Print only checksums" },
+			CALC::SUMSONLY },
+
+		{{  "tracks-as-cols", false, "FALSE", "Print tracks as columns" },
+			CALC::TRACKSASCOLS }
 	};
 
 	return local_options;
@@ -298,7 +321,9 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 	const std::vector<std::string> &audiofilenames,
 	const bool as_first,
 	const bool as_last,
-	const std::set<arcstk::checksum::type> &types)
+	const std::set<arcstk::checksum::type> &types,
+	arcsdec::FileReaderSelection *audio_selection,
+	arcsdec::FileReaderSelection *toc_selection)
 {
 	using ChecksumType = arcstk::checksum::type;
 
@@ -306,8 +331,15 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 	ChecksumType checksum_type = types.find(ChecksumType::ARCS2) != types.end()
 		? ChecksumType::ARCS2
 		: ChecksumType::ARCS1;
+	// The types to calculate are allowed to differ from the explicitly
+	// requested types (since e.g. ARCS1 is a byproduct of ARCS2 and the
+	// type-to-calculate ARCS2 hence represents both the types-requested ARCS1
+	// as well as ARCS2).
 
 	calc::ARCSMultifileAlbumCalculator c { checksum_type };
+
+	if (toc_selection)   { c.set_toc_selection(toc_selection); }
+	if (audio_selection) { c.set_audio_selection(audio_selection); }
 
 	auto [ checksums, arid, toc ] = metafilename.empty()
 		? c.calculate(audiofilenames, as_first, as_last) //Tracks/Album w/o TOC
@@ -400,15 +432,33 @@ int ARCalcApplication::run_calculation(const Options &options)
 		return EXIT_SUCCESS;
 	}
 
-	// Let calculate() determine the types to _calculate_, which are allowed
-	// to differ from the explicitly requested types (since e.g. ARCS1 is
-	// a byproduct of ARCS2 and the type-to-calculate ARCS2 hence represents
-	// both the types-requested ARCS1 as well as ARCS2).
+	// Configure selections (e.g. --reader and --parser)
 
-	auto [ checksums, arid, toc ] = this->calculate(
-			options.value(CALC::METAFILE), options.arguments(),
-			options.is_set(CALC::FIRST), options.is_set(CALC::LAST),
-			requested_types);
+	const IdSelection id_selection;
+
+	auto audio_selection = options.is_set(CALC::READERID)
+		? id_selection(options.value(CALC::READERID))
+		: nullptr;
+
+	auto toc_selection = options.is_set(CALC::PARSERID)
+		? id_selection(options.value(CALC::PARSERID))
+		: nullptr;
+
+	// If no selections are assigned, the libarcsdec default selections
+	// will be used.
+
+	// Perform the actual calculation
+
+	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(
+			options.value(CALC::METAFILE),
+			options.arguments(),
+			options.is_set(CALC::FIRST),
+			options.is_set(CALC::LAST),
+			requested_types,
+			audio_selection.get(),
+			toc_selection.get()
+	);
+
 
 	if (checksums.size() == 0)
 	{
@@ -447,7 +497,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 				false, /* no tracks */
 				false, /* no id 1 */
 				false, /* no id 2 */
-				false /* no cddb id */
+				false  /* no cddb id */
 			);
 
 		auto result = layout->format(arid, std::string{});
@@ -465,6 +515,7 @@ int ARCalcApplication::run_calculation(const Options &options)
 
 	auto result = layout->format(checksums, filenames, toc.get(), arid,
 			album_mode);
+
 	Output::instance().output(result);
 
 	return EXIT_SUCCESS;
@@ -506,16 +557,17 @@ int ARCalcApplication::do_run(const Options &options)
 	if (options.is_set(CALC::LIST_TOC_FORMATS))
 	{
 		Output::instance().output("TOC:\n");
-		Output::instance().output(SupportedFormats::toc());
+		Output::instance().output(AvailableFileReaders::toc());
 	}
 
 	if (options.is_set(CALC::LIST_AUDIO_FORMATS))
 	{
 		Output::instance().output("Audio:\n");
-		Output::instance().output(SupportedFormats::audio());
+		Output::instance().output(AvailableFileReaders::audio());
 	}
 
 	return EXIT_SUCCESS;
 }
 
 } // namespace arcsapp
+

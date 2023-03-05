@@ -131,42 +131,46 @@ bool FormatCollector::empty() const
 // traverse
 
 
-template <class T>
-void traverse(FormatCollector &collector)
+template <class Container>
+void traverse(FormatCollector &collector, const Container& c)
 {
-	auto apply_func = std::bind(&FormatCollector::add, &collector,
-			std::placeholders::_1);
-
-	T t;
-	t.descriptorset().traverse(apply_func);
+	const auto cp = &collector;
+	std::for_each(c.filereaders().begin(), c.filereaders().end(),
+		[cp](const auto& key_value_pair)
+		{
+			cp->add(*key_value_pair.second);
+		});
 }
 
 
 // info
 
 
-template <class T>
-StringTable formats()
+template <class Calculator>
+StringTable DefaultReaders()
 {
 	FormatCollector collector;
-	traverse<T>(collector);
+	{
+		Calculator calculator;
+		traverse<Calculator>(collector, calculator);
+	}
 	return collector.info();
 }
 
 
-// SupportedFormats
+// AvailableFileReaders
 
 
-const StringTable& SupportedFormats::audio()
+const StringTable& AvailableFileReaders::audio()
 {
-	static StringTable table { formats<arcsdec::ARCSCalculator>() };
+	static StringTable table { DefaultReaders<arcsdec::ARCSCalculator>() };
 	return table;
 }
 
 
-const StringTable& SupportedFormats::toc()
+const StringTable& AvailableFileReaders::toc()
 {
-	static StringTable table { formats<arcsdec::TOCParser>() };
+	static StringTable table { DefaultReaders<arcsdec::TOCParser>() };
 	return table;
 }
 

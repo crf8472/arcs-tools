@@ -108,7 +108,48 @@ Print version information and exit. If \b --version is passed, neither of the
 other command line options except \b --help will be evaluated.
 
 
-\page inc_calcinfooptions
+\page inc_procoptions
+
+\par --parser=STRING
+Force to process the TOC file (if any) by the parser with the specified id.
+The following parsers are available with this version of libarcsdec.
+\verbatim
+.TS
+tab(@);
+cl.
+ID@Description
+cuesheet@CueSheet parser based on libcue
+cdrdaotoc@Cdrdao TOC format parser based on libcdio (not yet implemented)
+
+.TE
+\endverbatim
+Any parser will only be available if compiled in. Specifying a parser that is
+not available results in an error. Specifying a parser that is not capable of
+reading the input file will result in an error.
+
+
+\par --reader=STRING
+Force to process the audio file (if any) by the reader with the specified id.
+The following readers are available with this version of libarcsdec.
+\verbatim
+.TS
+tab(@);
+cl.
+ID@Description
+wavpcm@Internal RIFF/WAV parser for PCM encoded audio. Fast, but experimental.
+ffmpeg@Reader for WAV,FLAC,APE,CAF,OGGFLAC,AIFF and ALAC in M4A based on ffmpeg.
+flac@Reader for FLAC based on libFLAC.
+wavpack@Reader for .WV container based on WavPack.
+libsndfile@Reader WAV,FLAC and AIFF based on libsndfile.
+
+.TE
+\endverbatim
+Any reader will only be available if compiled in. Specifying a reader that is
+not available results in an error. Specifying a reader that is not capable of
+reading the input file will result in an error.
+
+
+\page inc_infooptions
 
 \par --list-toc-formats
 Print a list of supported TOC file formats. Files specified by the \b -m

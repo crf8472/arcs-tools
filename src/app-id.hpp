@@ -31,18 +31,20 @@ class CLITokens;
 /**
  * \brief Configuration options for ARIdApplications.
  */
-struct ARIdOptions
+class ARIdOptions : public FORMATBASE
 {
-	static constexpr OptionCode BASE = Configurator::BASE_CODE();
+	static constexpr auto& BASE = FORMATBASE::SUBCLASS_BASE;
 
-	static constexpr OptionCode CDDBID    = BASE +  1; // 7
-	static constexpr OptionCode URL       = BASE +  2;
-	static constexpr OptionCode DBID      = BASE +  3;
-	static constexpr OptionCode PROFILE   = BASE +  4;
-	static constexpr OptionCode URLPREFIX = BASE +  5;
-	static constexpr OptionCode ID        = BASE +  6;
-	static constexpr OptionCode AUDIOFILE = BASE +  7; // ...
-	static constexpr OptionCode NOLABELS  = BASE +  8; // 14
+public:
+
+	static constexpr OptionCode CDDBID    = BASE +  0; // 10
+	static constexpr OptionCode URL       = BASE +  1;
+	static constexpr OptionCode DBID      = BASE +  2;
+	static constexpr OptionCode PROFILE   = BASE +  3;
+	static constexpr OptionCode URLPREFIX = BASE +  4;
+	static constexpr OptionCode ID        = BASE +  5;
+	static constexpr OptionCode AUDIOFILE = BASE +  6;
+	static constexpr OptionCode NOLABELS  = BASE +  7; // 17
 };
 
 
@@ -67,6 +69,16 @@ private:
  */
 class ARIdApplication final : public Application
 {
+	/**
+	 * \brief Worker for run(): handles calculation requests.
+	 *
+	 * \param[in] options The options to run the application
+	 *
+	 * \return Application return code
+	 */
+	int run_calculation(const Options &options);
+
+
 	std::string do_name() const override;
 
 	std::string do_call_syntax() const override;
