@@ -30,35 +30,15 @@ class Output
 {
 public:
 
-	Output()
-		: mutex_ {}
-		, filename_ {}
-		, append_ { false }
-	{
-		// empty
-	}
+	Output();
 
-	bool is_appending() const
-	{
-		return append_;
-	}
+	bool is_appending() const;
 
-	void set_append(const bool append)
-	{
-		const std::lock_guard<std::mutex> lock(mutex_);
-		append_ = append;
-	}
+	void set_append(const bool append);
 
-	const std::string& filename() const
-	{
-		return filename_;
-	}
+	const std::string& filename() const;
 
-	void to_file(const std::string &filename)
-	{
-		const std::lock_guard<std::mutex> lock(mutex_);
-		filename_ = filename;
-	}
+	void to_file(const std::string &filename);
 
 	/**
 	* \brief Worker: output a result object to file or stdout.
@@ -82,7 +62,7 @@ public:
 	* \return Type void iff object overloads operator << for std::ostream
 	*/
 	template <typename T>
-	auto output(T&& object) -> decltype( std::cout << object, void() )
+	inline auto output(T&& object) -> decltype( std::cout << object, void() )
 	{
 		const std::lock_guard<std::mutex> lock(mutex_);
 
@@ -114,12 +94,7 @@ public:
 		append_ = true; // first call overwrites, subsequent calls append
 	}
 
-	static Output& instance()
-	{
-		static Output instance;
-
-		return instance;
-	}
+	static Output& instance();
 
 private:
 

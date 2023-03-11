@@ -27,6 +27,53 @@
 namespace arcsapp
 {
 
+
+// Output
+
+
+Output::Output()
+	: mutex_ {}
+	, filename_ {}
+	, append_ { false }
+{
+	// empty
+}
+
+
+bool Output::is_appending() const
+{
+	return append_;
+}
+
+
+void Output::set_append(const bool append)
+{
+	const std::lock_guard<std::mutex> lock(mutex_);
+	append_ = append;
+}
+
+
+const std::string& Output::filename() const
+{
+	return filename_;
+}
+
+
+void Output::to_file(const std::string &filename)
+{
+	const std::lock_guard<std::mutex> lock(mutex_);
+	filename_ = filename;
+}
+
+
+Output& Output::instance()
+{
+	static Output instance;
+
+	return instance;
+}
+
+
 class Options;
 
 
