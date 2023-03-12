@@ -149,7 +149,7 @@ int ARIdApplication::run_calculation(const Options &options)
 		if (audio_selection) { c.set_audio_selection(audio_selection.get()); }
 		if (toc_selection)   { c.set_toc_selection(toc_selection.get()); }
 
-		arid = c.calculate(audiofilename, metafilename);
+		arid = c.calculate(metafilename, audiofilename);
 	}
 
 	if (!arid) { this->fatal_error("Could not compute AccurateRip id."); }

@@ -135,7 +135,7 @@ template <class Container>
 void traverse(FormatCollector &collector, const Container& c)
 {
 	const auto cp = &collector;
-	std::for_each(c.filereaders().begin(), c.filereaders().end(),
+	std::for_each(c.readers()->begin(), c.readers()->end(),
 		[cp](const auto& key_value_pair)
 		{
 			cp->add(*key_value_pair.second);
