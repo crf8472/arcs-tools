@@ -505,15 +505,16 @@ int ARCalcApplication::run_calculation(const Options &options)
 		Output::instance().output(result);
 	}
 
-	auto layout = configure_layout(options);
+	const auto layout = configure_layout(options);
 
-	auto filenames = toc
+	const auto filenames = toc
 		? arcstk::toc::get_filenames(toc)
 		: options.arguments();
 
-	auto album_mode = options.is_set(CALC::ALBUM);
+	const auto album_mode = options.is_set(CALC::ALBUM);
 
-	auto result = layout->format(checksums, filenames, toc.get(), arid,
+	const auto toc_ptr = toc ? toc.get() : nullptr;
+	const auto result = layout->format(checksums, filenames, toc_ptr, arid,
 			album_mode);
 
 	Output::instance().output(result);
