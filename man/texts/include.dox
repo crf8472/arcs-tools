@@ -72,23 +72,23 @@ potentially present \b -v. Takes any effect off of \b -l.
 Activate loglevel. Legal values are between 0 and 8. Default loglevel
 (without any \b -v option) is \b 2 which prints warnings and errors. The
 following loglevels are available:
-\verbatim
+\manonly
 .TS
-tab(@);
+tab(|);
 cl.
-Loglevel@Description
-0@Quiet\&. No logs\&. Never\&.
-1@Errors only
-2@Warnings
-3@Information
-4@Debug
-5@More debug
-6@Even more debug
-7@Quite many debug
-8@Too much debug
-
+Loglevel|Description
+0|Quiet. No logs. Never.
+1|Errors only
+2|Warnings
+3|Information
+4|Debug
+5|More debug
+6|Even more debug
+7|Quite many debug
+8|Too much debug
 .TE
-\endverbatim
+\endmanonly
+
 For any \b n > 8, loglevel 8 will be set. Log messages will be printed to stdlog
 by default. Alternatively, a logfile can be specified by option \b --l. If \b -q
 is present, any other loglevel options will be ignored.
@@ -113,16 +113,15 @@ other command line options except \b --help will be evaluated.
 \par --parser=STRING
 Force to process the TOC file (if any) by the parser with the specified id.
 The following parsers are available with this version of libarcsdec.
-\verbatim
+\manonly
 .TS
 tab(@);
-cl.
+ll.
 ID@Description
 cuesheet@CueSheet parser based on libcue
-cdrdaotoc@Cdrdao TOC format parser based on libcdio (not yet implemented)
-
 .TE
-\endverbatim
+\endmanonly
+
 Any parser will only be available if compiled in. Specifying a parser that is
 not available results in an error. Specifying a parser that is not capable of
 reading the input file will result in an error.
@@ -131,19 +130,19 @@ reading the input file will result in an error.
 \par --reader=STRING
 Force to process the audio file (if any) by the reader with the specified id.
 The following readers are available with this version of libarcsdec.
-\verbatim
+\manonly
 .TS
 tab(@);
-cl.
+ll.
 ID@Description
 wavpcm@Internal RIFF/WAV parser for PCM encoded audio. Fast, but experimental.
 ffmpeg@Reader for WAV,FLAC,APE,CAF,OGGFLAC,AIFF and ALAC in M4A based on ffmpeg.
 flac@Reader for FLAC based on libFLAC.
 wavpack@Reader for .WV container based on WavPack.
 libsndfile@Reader WAV,FLAC and AIFF based on libsndfile.
-
 .TE
-\endverbatim
+\endmanonly
+
 Any reader will only be available if compiled in. Specifying a reader that is
 not available results in an error. Specifying a reader that is not capable of
 reading the input file will result in an error.
