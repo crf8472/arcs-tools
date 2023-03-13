@@ -115,10 +115,10 @@ Force to process the TOC file (if any) by the parser with the specified id.
 The following parsers are available with this version of libarcsdec.
 \manonly
 .TS
-tab(@);
+tab(|);
 ll.
-ID@Description
-cuesheet@CueSheet parser based on libcue
+ID|Description
+cuesheet|CueSheet parser based on libcue
 .TE
 \endmanonly
 
@@ -132,14 +132,14 @@ Force to process the audio file (if any) by the reader with the specified id.
 The following readers are available with this version of libarcsdec.
 \manonly
 .TS
-tab(@);
+tab(|);
 ll.
-ID@Description
-wavpcm@Internal RIFF/WAV parser for PCM encoded audio. Fast, but experimental.
-ffmpeg@Reader for WAV,FLAC,APE,CAF,OGGFLAC,AIFF and ALAC in M4A based on ffmpeg.
-flac@Reader for FLAC based on libFLAC.
-wavpack@Reader for .WV container based on WavPack.
-libsndfile@Reader WAV,FLAC and AIFF based on libsndfile.
+ID|Description
+wavpcm|Internal RIFF/WAV parser for PCM encoded audio. Fast, but experimental.
+ffmpeg|Reader for WAV,FLAC,APE,CAF,OGGFLAC,AIFF and ALAC in M4A based on ffmpeg.
+flac|Reader for FLAC based on libFLAC.
+wavpack|Reader for .WV container based on WavPack.
+libsndfile|Reader WAV,FLAC and AIFF based on libsndfile.
 .TE
 \endmanonly
 
