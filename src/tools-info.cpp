@@ -24,14 +24,14 @@ namespace arcsapp
 /**
  * \brief Collect descriptor infos
  */
-class FormatCollector final
+class InfoCollector final
 {
 public:
 
 	/**
 	 * \brief Constructor
 	 */
-	FormatCollector();
+	InfoCollector();
 
 	/**
 	 * \brief Add information represented by a descriptor
@@ -63,66 +63,69 @@ private:
 };
 
 
-FormatCollector::FormatCollector()
-	: table_ { 0/* rows */, 2/* cols */, true/* append rows */ }
+InfoCollector::InfoCollector()
+	: table_ { 0/* rows */, 3/* cols */, true/* append rows */ }
 {
 	table_.set_title(0, "Name");
 	table_.set_dynamic_width(0);
 	table_.set_alignment(0, true);
 
-	table_.set_title(1, "Properties");
+	table_.set_title(1, "Libraries");
 	table_.set_dynamic_width(1);
 	table_.set_alignment(1, true);
+
+	table_.set_title(2, "Formats");
+	table_.set_dynamic_width(2);
+	table_.set_alignment(2, true);
 }
 
 
-void FormatCollector::add(const arcsdec::FileReaderDescriptor &descriptor)
+void InfoCollector::add(const arcsdec::FileReaderDescriptor &descriptor)
 {
 	// aggregate of all involved libraries
 
 	auto dependencies = descriptor.libraries();
 
-	// comma-separated list of format names
-	// transform container formats to filetype suffices
+	// Comma-separated list of Format names
 
-	using format_func = std::string (*)(arcsdec::Format);
+	std::string formats = details::to_sep_list(descriptor.formats(), " ",
+			[](arcsdec::Format f) -> std::string
+			{
+				// Transform Container Formats to Filetype Suffices
+				auto name = arcsdec::name(f);
+				std::transform(name.begin(), name.end(), name.begin(),
+					[](unsigned char c){ return std::tolower(c); });
+				return "." + name;
+			});
 
-	format_func f = [](arcsdec::Format f) -> std::string
-	{
-		auto name = arcsdec::name(f);
-		std::transform(name.begin(), name.end(), name.begin(),
-			[](unsigned char c){ return std::tolower(c); });
-		return "." + name;
-	};
-
-	std::string formats = details::to_sep_list(descriptor.formats(), ",", f);
-
-	// comma-separated list of codec names
+	// Comma-separated list of Codec names
 
 	using codec_func = std::string (*)(arcsdec::Codec);
 	codec_func c = &arcsdec::name;
-	std::string codecs = details::to_sep_list(descriptor.codecs(), ",", c);
+	std::string codecs = details::to_sep_list(descriptor.codecs(), " ", c);
 
 	// Compose table: Add row for the current descriptor
 
 	int row = table_.current_row();
 	table_.update_cell(row, 0, descriptor.name());
+
+	auto current_row = row;
 	for (const auto& dep : dependencies)
 	{
-		table_.update_cell(row++, 1, dep.second); // dep.first == libname
+		table_.update_cell(current_row++, 1, dep.second); // dep.first == libname
 	}
-	table_.update_cell(row++, 1, formats);
-	table_.update_cell(row++, 1, codecs);
+	table_.update_cell(row, 2, formats);
+	table_.update_cell(++row, 2, codecs);
 }
 
 
-const StringTable& FormatCollector::info() const
+const StringTable& InfoCollector::info() const
 {
 	return table_;
 }
 
 
-bool FormatCollector::empty() const
+bool InfoCollector::empty() const
 {
 	return table_.empty();
 }
@@ -132,7 +135,7 @@ bool FormatCollector::empty() const
 
 
 template <class Container>
-void traverse(FormatCollector &collector, const Container& c)
+void traverse(InfoCollector &collector, const Container& c)
 {
 	const auto cp = &collector;
 	std::for_each(c.readers()->begin(), c.readers()->end(),
@@ -149,7 +152,7 @@ void traverse(FormatCollector &collector, const Container& c)
 template <class Calculator>
 StringTable DefaultReaders()
 {
-	FormatCollector collector;
+	InfoCollector collector;
 	{
 		Calculator calculator;
 		traverse<Calculator>(collector, calculator);
