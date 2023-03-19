@@ -452,7 +452,7 @@ std::unique_ptr<arcsdec::FileReaderSelection> IdSelection::operator()(
 		const std::string& id) const
 {
 	using IdSelection_t = arcsdec::FileReaderPreferenceSelection<
-		arcsdec::ConstMinPreference, arcsdec::IdSelector>;
+		arcsdec::MinPreference, arcsdec::IdSelector>;
 
 	return !id.empty() ? std::make_unique<IdSelection_t>(id) : nullptr;
 }
