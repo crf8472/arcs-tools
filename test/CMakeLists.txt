@@ -25,6 +25,7 @@ list (APPEND TEST_SETS layouts     )
 list (APPEND TEST_SETS tools-fs    )
 list (APPEND TEST_SETS tools-calc  )
 list (APPEND TEST_SETS tools-parse )
+list (APPEND TEST_SETS table       )
 ## custom test scripts
 list (APPEND TEST_SETS config      )
 
