@@ -129,7 +129,7 @@ private:
 	const char        shorthand_;
 	const std::string symbol_;
 	const bool        needs_value_;
-	const std::string default_;
+	const std::string default_arg_;
 	const std::string description_;
 };
 
@@ -223,13 +223,6 @@ public:
 	const std::string& option_value(const int i) const;
 
 	/**
-	 * \brief Returns TRUE iff the instance does not hold any input tokens.
-	 *
-	 * \return TRUE iff the instance does not hold any input tokens
-	 */
-	bool empty() const;
-
-	/**
 	 * \brief Returns TRUE iff an option with this code is contained.
 	 *
 	 * \param[in] option The code to query the instance for
@@ -241,7 +234,7 @@ public:
 	/**
 	 * \brief Returns the parsed value for the specified code.
 	 *
-	 * If \c contains(code) is \c FALSE or \c option is \c Option::NONE, the
+	 * If \c contains(option) is \c FALSE or \c option is \c Option::NONE, the
 	 * result will be an empty string.
 	 *
 	 * \param[in] option The option to get the value for
@@ -251,10 +244,9 @@ public:
 	const std::string& value(const OptionCode &option) const;
 
 	/**
-	 * \brief Returns the i-th argument.
+	 * \brief Returns the i-th argument (where 0 is the first).
 	 *
-	 * If \c preserve_order is TRUE, this will correspond to the i-th input
-	 * argument. If the total number of arguments is less than i, an empty
+	 * If the total number of arguments is less than \c i, an empty
 	 * string will be returned. If \c i is greater or equal than the total
 	 * number of arguments, or \c i is 0, an empty string is returned.
 	 *
@@ -263,39 +255,6 @@ public:
 	const std::string& argument(const std::size_t &i) const;
 
 private:
-
-	/**
-	 * \brief Description.
-	 *
-	 * \param[in] opt       The option symbol to consume
-	 * \param[in] val       The option value to consume
-	 * \param[in] supported The supported options to match
-	 * \param[in,out] pos   Character position in the call string
-	 */
-	void consume_as_symbol(const char * const opt, const char * const val,
-			const std::vector<std::pair<Option, OptionCode>> supported,
-			int &pos);
-
-	/**
-	 * \brief Description.
-	 *
-	 * \param[in] opt       The option symbol to consume
-	 * \param[in] val       The option value to consume
-	 * \param[in] supported The supported options to match
-	 * \param[in,out] pos   Character position in the call string
-	 */
-	void consume_as_shorthand(const char * const opt, const char * const val,
-			const std::vector<std::pair<Option, OptionCode>> supported,
-			int &pos);
-
-	/**
-	 * \brief Returns an empty option value.
-	 *
-	 * Convenience: do not have to create empty string objects while parsing.
-	 *
-	 * \return An empty option value
-	 */
-	const std::string& empty_value() const noexcept;
 
 	/**
 	 * \brief Uniform representation of an input token.
@@ -356,7 +315,7 @@ private:
 		 * \param[in] value Value for this Token
 		 */
 		Token(const OptionCode code, const std::string &value)
-			: code_ { code }
+			: code_  { code }
 			, value_ { value }
 		{ /* empty */ }
 
@@ -374,7 +333,57 @@ private:
 	 */
 	const Token* lookup(const OptionCode &option) const;
 
-private:
+	/**
+	 * \brief Consume all tokens.
+	 *
+	 * If \c preserve_order is set to TRUE, the returned list will contain the
+	 * tokens in the same order as the occurred in the input.
+	 *
+	 * \param[in] argc      Number of command line arguments
+	 * \param[in] argv      Command line arguments
+	 * \param[in] supported Supported options
+	 * \param[in] preserve_order TRUE if order of occurrences is to be preserved
+	 *
+	 * \return List of tokens
+	 */
+	std::vector<Token> consume_tokens(const int argc,
+		const char* const * const argv,
+		const std::vector<std::pair<Option, OptionCode>> &supported,
+		const bool preserve_order) const;
+
+	/**
+	 * \brief Description.
+	 *
+	 * \param[in] opt       The option symbol to consume
+	 * \param[in] val       The option value to consume
+	 * \param[in] supported The supported options to match
+	 * \param[in,out] pos   Character position in the call string
+	 */
+	Token consume_as_symbol(const char * const opt, const char * const val,
+			const std::vector<std::pair<Option, OptionCode>>& supported,
+			int &pos) const;
+
+	/**
+	 * \brief Description.
+	 *
+	 * \param[in] opt       The option symbol to consume
+	 * \param[in] val       The option value to consume
+	 * \param[in] supported The supported options to match
+	 * \param[in,out] pos   Character position in the call string
+	 */
+	std::vector<CLITokens::Token> consume_as_shorthand(const char * const opt,
+			const char * const val,
+			const std::vector<std::pair<Option, OptionCode>>& supported,
+			int &pos) const;
+
+	/**
+	 * \brief Returns an empty option value.
+	 *
+	 * Convenience: do not have to create empty string objects while parsing.
+	 *
+	 * \return An empty option value
+	 */
+	const std::string& empty_value() const noexcept;
 
 	/**
 	 * \brief Parsed items.
@@ -393,6 +402,13 @@ public:
 	 * \return Number of input tokens.
 	 */
 	size_type size() const;
+
+	/**
+	 * \brief Returns TRUE iff the instance does not hold any input tokens.
+	 *
+	 * \return TRUE iff the instance does not hold any input tokens
+	 */
+	bool empty() const;
 
 	using iterator = decltype( tokens_ )::iterator;
 

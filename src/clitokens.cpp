@@ -10,7 +10,7 @@
 #include <tuple>      // for tuple, get
 #include <vector>     // for vector
 
-#include <iostream>   // cout (for debugging)
+#include <iostream>
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
@@ -31,7 +31,7 @@ Option::Option(const char shorthand, const std::string &symbol,
 	: shorthand_   { shorthand }
 	, symbol_      { symbol }
 	, needs_value_ { needs_value }
-	, default_     { default_arg }
+	, default_arg_ { default_arg }
 	, description_ { desc }
 {
 	// empty
@@ -58,7 +58,7 @@ bool Option::needs_value() const
 
 std::string Option::default_arg() const
 {
-	return default_;
+	return default_arg_;
 }
 
 
@@ -73,18 +73,14 @@ std::vector<std::string> Option::tokens() const
 	std::vector<std::string> tokens;
 	tokens.reserve(2);
 
-	auto symbol = this->symbol();
-	if (not symbol.empty())
+	if (!this->symbol().empty())
 	{
-		symbol.insert(0, "--");
-		tokens.push_back(symbol);
+		tokens.push_back("--" + this->symbol());
 	}
 
-	if (auto shorthand_sym = this->shorthand_symbol(); shorthand_sym != '\0')
+	if (this->shorthand_symbol() != '\0')
 	{
-		auto shorthand = std::string(1, shorthand_sym);
-		shorthand.insert(0, "-");
-		tokens.push_back(shorthand);
+		tokens.push_back({'-', this->shorthand_symbol()});
 	}
 
 	return tokens;
@@ -94,13 +90,14 @@ std::vector<std::string> Option::tokens() const
 std::string Option::tokens_str() const
 {
 	std::ostringstream oss;
-	auto tokens = this->tokens();
 
-	if (!tokens.empty())
+	if (const auto tokens { this->tokens() }; !tokens.empty())
 	{
-		std::copy(tokens.begin(), tokens.end() - 1,
-			std::ostream_iterator<std::string>(oss, ","));
+		using std::begin;
+		using std::end;
 
+		std::copy(begin(tokens), end(tokens) - 1,
+			std::ostream_iterator<std::string>(oss, ","));
 		oss << tokens.back();
 	}
 
@@ -120,7 +117,7 @@ bool operator == (const Option &lhs, const Option &rhs) noexcept
 
 
 CallSyntaxException::CallSyntaxException(const std::string &what_arg)
-	: std::runtime_error(what_arg)
+	: std::runtime_error { what_arg }
 {
 	// empty
 }
@@ -132,87 +129,9 @@ CallSyntaxException::CallSyntaxException(const std::string &what_arg)
 CLITokens::CLITokens(const int argc, const char* const * const argv,
 		const std::vector<std::pair<Option, OptionCode>> &supported,
 		const bool preserve_order)
-	: tokens_ () // TODO reserve sensible capacity
+	: tokens_ { consume_tokens(argc, argv, supported, preserve_order) }
 {
-	if (argc < 2 or !argv)
-	{
-		return; // No Options or Arguments Present
-	}
-
-	auto pos = int { 1 }; // Ignore argv[0]
-
-	unsigned char first_ch  = 0;
-	unsigned char second_ch = 0;
-
-	auto non_options = std::vector<const char*>{}; // Tokens Not Options
-
-	while (pos < argc)
-	{
-		first_ch  = argv[pos][0];
-		second_ch = first_ch ? argv[pos][1] : 0;
-
-		if (first_ch == '-') // An Option Starts
-		{
-			if (second_ch)
-			{
-				const char * const token = argv[pos];
-				const char * const next = (pos + 1 < argc) ? argv[pos + 1] : 0;
-
-				if (second_ch == '-')
-				{
-					if (!argv[pos][2])
-					{
-						// Input is only '--'
-						++pos;
-						break;
-					} else
-					{
-						// Expected Syntax: --some-option
-						try { consume_as_symbol(token, next, supported, pos); }
-						catch (const CallSyntaxException &e)
-						{
-							throw;
-						}
-					}
-				} else
-				{
-					// Expected Syntax: -o
-					try { consume_as_shorthand(token, next, supported, pos); }
-					catch (const CallSyntaxException &e)
-					{
-						throw;
-					}
-				}
-			} else
-			{
-				// Input item is only '-':
-				throw CallSyntaxException("Illegal input (only '-')");
-			}
-		} else // found an argument
-		{
-			if (preserve_order)
-			{
-				// preserve order of occurrences
-				tokens_.push_back(Token(argv[pos]));
-			} else
-			{
-				// handle arguments separately
-				non_options.push_back(argv[pos]);
-			}
-			pos++;
-		}
-	} // while
-
-	for (auto i = std::size_t { 0 }; i < non_options.size(); ++i)
-	{
-		tokens_.push_back(Token(non_options[i]));
-	}
-
-	while (pos < argc)
-	{
-		tokens_.push_back(Token(argv[pos]));
-		++pos;
-	}
+	// empty
 }
 
 
@@ -241,21 +160,15 @@ const std::string& CLITokens::option_value(const int i) const
 }
 
 
-bool CLITokens::empty() const
-{
-	return tokens_.empty();
-}
-
-
 bool CLITokens::contains(const OptionCode &option) const noexcept
 {
-	return lookup(option) ? true : false;
+	return lookup(option);
 }
 
 
 const std::string& CLITokens::value(const OptionCode &option) const
 {
-	auto element = lookup(option);
+	const auto element { lookup(option) };
 
 	return element ? element->value() : empty_value();
 }
@@ -263,43 +176,179 @@ const std::string& CLITokens::value(const OptionCode &option) const
 
 const std::string& CLITokens::argument(const std::size_t &i) const
 {
+	using std::begin;
+	using std::end;
+
 	if (i >= size())
 	{
 		return empty_value();
 	}
 
-	std::size_t counter = 0;
-	auto token = tokens_.begin();
+	using size_type = decltype( tokens_ )::size_type;
 
-	while (counter < i)
+	const auto stop { end(tokens_) };
+	auto counter = size_type { 0 };
+	auto pos   { begin(tokens_) };
+	auto token { pos };
+
+	const auto is_argument {
+		[](const Token &item) { return item.code() == Option::NONE; }
+	};
+
+	do
 	{
-		token = std::find_if(tokens_.begin() + counter, tokens_.end(),
-				[](const Token &item)
-				{
-					return item.code() == Option::NONE;
-				});
+		token = std::find_if(pos, stop, is_argument);
 
-		if (token == tokens_.end())
+		if (stop == token)
 		{
 			return empty_value();
 		}
 
 		++counter;
+		pos = token + 1;
+
+	} while (pos != stop && counter <= i);
+
+	return counter > i ? token->value() : empty_value() ;
+}
+
+
+const CLITokens::Token* CLITokens::lookup(const OptionCode &option) const
+{
+	using std::begin;
+	using std::end;
+
+	const auto element { std::find_if(begin(tokens_), end(tokens_),
+			[option](const Token &i)
+			{
+				return i.code() == option;
+			})
+	};
+
+	if (element != end(tokens_))
+	{
+		return &(*element);
 	}
 
-	return token->value();
+	return nullptr;
 }
 
 
-CLITokens::size_type CLITokens::size() const
+std::vector<CLITokens::Token> CLITokens::consume_tokens(const int argc,
+		const char* const * const argv,
+		const std::vector<std::pair<Option, OptionCode>>& supported,
+		const bool preserve_order) const
 {
-	return tokens_.size();
+	std::vector<Token> tokens;
+	tokens.reserve(7);
+
+	if (argc < 2 or !argv)
+	{
+		return {}; // No Options or Arguments Present
+	}
+
+	auto pos = int { 1 }; // Ignore argv[0]
+
+	using unsigned_char = unsigned char;
+	auto first_ch  = unsigned_char { 0 };
+	auto second_ch = unsigned_char { 0 };
+
+	auto non_options = std::vector<const char*>{}; // Tokens Not Options
+
+	while (pos < argc)
+	{
+		first_ch  = argv[pos][0];
+		second_ch = first_ch ? argv[pos][1] : 0;
+
+		if (first_ch == '-') // An Option Starts
+		{
+			if (second_ch)
+			{
+				const char * const token = argv[pos];
+				const char * const next = (pos + 1 < argc) ? argv[pos + 1] : 0;
+
+				if (second_ch == '-')
+				{
+					if (!argv[pos][2])
+					{
+						// Input is only '--'
+						++pos;
+						break;
+					} else
+					{
+						// Expected Syntax: --some-option
+						try
+						{
+							tokens.push_back(
+								consume_as_symbol(token, next, supported, pos));
+						}
+						catch (const CallSyntaxException &e)
+						{
+							throw;
+						}
+					}
+				} else
+				{
+					// Expected Syntax: -o
+					try
+					{
+						auto sh_symbols {
+							consume_as_shorthand(token, next, supported, pos)
+						};
+						if (!sh_symbols.empty())
+						{
+							using std::begin;
+							using std::end;
+							tokens.insert(end(tokens), begin(sh_symbols),
+									end(sh_symbols));
+						}
+					}
+					catch (const CallSyntaxException &e)
+					{
+						throw;
+					}
+				}
+			} else
+			{
+				// Input item is only '-':
+				throw CallSyntaxException("Illegal input (only '-')");
+			}
+		} else // found an argument
+		{
+			if (preserve_order)
+			{
+				// preserve order of occurrences
+				tokens.push_back(Token(argv[pos]));
+			} else
+			{
+				// handle arguments separately
+				non_options.push_back(argv[pos]);
+			}
+			pos++;
+		}
+	} // while
+
+	using size_type = decltype( non_options )::size_type;
+	for (auto i = size_type { 0 }; i < non_options.size(); ++i)
+	{
+		tokens.push_back(Token(non_options[i]));
+	}
+
+	while (pos < argc)
+	{
+		tokens.push_back(Token(argv[pos]));
+		++pos;
+	}
+	tokens.shrink_to_fit();
+
+	return tokens;
 }
 
 
-void CLITokens::consume_as_symbol(const char * const token,
+CLITokens::Token CLITokens::consume_as_symbol(const char * const token,
 		const char * const next,
-		const std::vector<std::pair<Option, OptionCode>> supported, int &pos)
+		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos)
+		const
 {
 	// Determine Length of Option Symbol in Token
 	auto sym_len = unsigned { 0 };
@@ -356,7 +405,7 @@ void CLITokens::consume_as_symbol(const char * const token,
 	if (option_pos < 0)
 	{
 		std::ostringstream msg;
-		msg << "Invalid option --'" << &token[2] << "'";
+		msg << "Invalid option '--" << &token[2] << "'";
 		throw CallSyntaxException(msg.str());
 	}
 
@@ -371,9 +420,9 @@ void CLITokens::consume_as_symbol(const char * const token,
 	// Move Token Pointer for Caller
 	++pos;
 
-	tokens_.emplace_back(code);
+	Token result_token { code };
 
-	const auto& option = supported[option_pos].first;
+	const auto& option { supported[option_pos].first };
 
 	if (token[sym_len + 2]) // Expect syntax '--some-option=foo'
 	{
@@ -384,50 +433,58 @@ void CLITokens::consume_as_symbol(const char * const token,
 			if (!token[sym_len + 3])
 			{
 				std::ostringstream msg;
-				msg << "Option --" << option.symbol()
-					<< " requires argument but none is passed";
+				msg << "Option '--" << option.symbol()
+					<< "' requires an argument but none is passed";
 				throw CallSyntaxException(msg.str());
 			}
 		} else
 		{
 			std::ostringstream msg;
-			msg << "Option --" << option.symbol();
+			msg << "Option '--" << option.symbol();
 
 			if (!token[sym_len + 3])
 			{
-				msg << " has an unexpected trailing character '"
+				msg << "' has an unexpected trailing character '"
 					<< token[sym_len + 2] << "'";
 			} else
 			{
-				msg << " is assigned an unexpected argument: '"
+				msg << "' is assigned an unexpected argument: '"
 					<< &token[sym_len + 3] << "'";
 			}
 
 			throw CallSyntaxException(msg.str());
 		}
 
-		tokens_.back().set_value(&token[sym_len + 3]);
+		result_token.set_value(&token[sym_len + 3]);
 	} else if (option.needs_value()) // Expect syntax '--foo bar'
 	{
 		if (!next or !next[0])
 		{
 			std::ostringstream msg;
-			msg << "Option " << token
-				<< " requires argument but none is passed";
+			msg << "Option '" << token
+				<< "' requires an argument but none is passed";
 			throw CallSyntaxException(msg.str());
 		}
 
 		// Move Token Pointer for Caller
 		++pos;
-		tokens_.back().set_value(next);
+
+		result_token.set_value(next);
 	}
+
+	return result_token;
 }
 
 
-void CLITokens::consume_as_shorthand(const char * const token,
-		const char * const next,
-		const std::vector<std::pair<Option, OptionCode>> supported, int &pos)
+std::vector<CLITokens::Token> CLITokens::consume_as_shorthand(
+		const char * const token, const char * const next,
+		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos)
+		const
 {
+	auto result_tokens = std::vector<Token> { };
+
+	using unsigned_char = unsigned char;
+
 	// Position Index of Character in Token
 	auto cind  = int { 1 };
 
@@ -440,7 +497,8 @@ void CLITokens::consume_as_shorthand(const char * const token,
 	// Traverse all characters in token as separate options.
 	while (cind > 0)
 	{
-		const unsigned char c = token[cind]; // Consider Next Character
+		//const unsigned char c = token[cind]; // Consider Next Character
+		const auto c = unsigned_char (token[cind]); // Consider Next Character
 		option_pos = -1; // Flag "nothing found"
 
 		if (c != 0)
@@ -467,7 +525,7 @@ void CLITokens::consume_as_shorthand(const char * const token,
 
 		// Supported Option Represented by 'c' is 'supported[option_pos].first'
 
-		tokens_.emplace_back(code);
+		result_tokens.emplace_back(code);
 
 		++cind;
 
@@ -485,7 +543,7 @@ void CLITokens::consume_as_shorthand(const char * const token,
 			{
 				// Consume Trailing Part as Option Value
 
-				tokens_.back().set_value(&token[cind]);
+				result_tokens.back().set_value(&token[cind]);
 			} else
 			{
 				// No trailing part, consider Next Token as Value
@@ -498,7 +556,7 @@ void CLITokens::consume_as_shorthand(const char * const token,
 					throw CallSyntaxException(msg.str());
 				}
 
-				tokens_.back().set_value(next);
+				result_tokens.back().set_value(next);
 			}
 			cind = 0;
 
@@ -506,56 +564,8 @@ void CLITokens::consume_as_shorthand(const char * const token,
 			++pos;
 		}
 	} // while
-}
 
-
-CLITokens::iterator CLITokens::begin()
-{
-	return tokens_.begin();
-}
-
-
-CLITokens::iterator CLITokens::end()
-{
-	return tokens_.end();
-}
-
-
-CLITokens::const_iterator CLITokens::begin() const
-{
-	return tokens_.begin();
-}
-
-
-CLITokens::const_iterator CLITokens::end() const
-{
-	return tokens_.end();
-}
-
-
-CLITokens::const_iterator CLITokens::cbegin() const
-{
-	return tokens_.cbegin();
-}
-
-
-CLITokens::const_iterator CLITokens::cend() const
-{
-	return tokens_.cend();
-}
-
-
-const CLITokens::Token* CLITokens::lookup(const OptionCode &option) const
-{
-	auto element = std::find_if(tokens_.begin(), tokens_.end(),
-			[option](const Token &i){ return i.code() == option; } );
-
-	if (element != tokens_.end())
-	{
-		return &(*element);
-	}
-
-	return nullptr;
+	return result_tokens;
 }
 
 
@@ -563,6 +573,60 @@ const std::string& CLITokens::empty_value() const noexcept
 {
 	static const auto empty_string = std::string{};
 	return empty_string;
+}
+
+
+CLITokens::size_type CLITokens::size() const
+{
+	return tokens_.size();
+}
+
+
+bool CLITokens::empty() const
+{
+	return tokens_.empty();
+}
+
+
+CLITokens::iterator CLITokens::begin()
+{
+	using std::begin;
+	return begin(tokens_);
+}
+
+
+CLITokens::iterator CLITokens::end()
+{
+	using std::end;
+	return end(tokens_);
+}
+
+
+CLITokens::const_iterator CLITokens::begin() const
+{
+	using std::begin;
+	return begin(tokens_);
+}
+
+
+CLITokens::const_iterator CLITokens::end() const
+{
+	using std::end;
+	return end(tokens_);
+}
+
+
+CLITokens::const_iterator CLITokens::cbegin() const
+{
+	using std::cbegin;
+	return cbegin(tokens_);
+}
+
+
+CLITokens::const_iterator CLITokens::cend() const
+{
+	using std::cend;
+	return cend(tokens_);
 }
 
 } // namespace arcsapp

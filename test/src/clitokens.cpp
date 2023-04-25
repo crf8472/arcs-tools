@@ -19,13 +19,14 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 		const OptionCode FULLOPTION   = 5;
 		const OptionCode SUBSET       = 6;
 		const OptionCode SOMEOPTION   = 7;
+		const OptionCode SOMEOTHER    = 8;
 	};
 
 	auto my_test = TEST {};
 
 	const std::vector<std::pair<Option, OptionCode>> supported_options =
 	{
-		{{  'n', "no-album",    false, "~",
+		{{  'n', "no-album", false, "~",
 			"Abbreviates --no-first --no-last" },
 			my_test.NOALBUM },
 		{{ 'm', "metafile", true, "none",
@@ -45,7 +46,10 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 			my_test.SUBSET},
 		{{      "some-option-with-value", true, "none",
 			"Some option with a value" },
-			my_test.SOMEOPTION }
+			my_test.SOMEOPTION },
+		{{  'q', "some-option-without-value", false, "none",
+			"Some option without a value" },
+			my_test.SOMEOTHER }
 	};
 
 	SECTION ( "Input with distinct options" )
@@ -134,6 +138,65 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 		CHECK ( (tokens.begin() + 3)->value() == "1,2,3"            );
 		CHECK ( (tokens.begin() + 4)->code()  == Option::NONE       );
 		CHECK ( (tokens.begin() + 4)->value() == "foo/foo.wav"      );
+	}
+
+	SECTION ( "No options" )
+	{
+		const char * const argv[] = { "arcstk-whatever" };
+		const int argc = 1;
+
+		auto tokens = CLITokens(argc, argv, supported_options, false);
+
+		CHECK ( tokens.size() == 0 );
+		CHECK ( tokens.empty() );
+	}
+
+	SECTION ( "contains()" )
+	{
+		const char * const argv[] = { "arcstk-nevermore", "-qns",
+			"--refvalues=1,2,3", "foo/foo.wav", "bar/bar.ape",
+			"quux.alac", "baz.m4a"
+		};
+		const int argc = 7;
+
+		auto tokens1 = CLITokens(argc, argv, supported_options, false);
+
+		CHECK ( tokens1.contains(my_test.REFVALUES) );
+		CHECK ( tokens1.contains(my_test.NOALBUM) );
+		CHECK ( tokens1.contains(my_test.SUBSET) );
+		CHECK ( tokens1.contains(my_test.SOMEOTHER) );
+
+		CHECK ( !tokens1.contains(my_test.METAFILE) );
+		CHECK ( !tokens1.contains(my_test.SOMEOPTION) );
+	}
+
+	SECTION ( "argument(i)" )
+	{
+		const char * const argv[] = { "arcstk-whatever", "-snf",
+			"--refvalues=1,2,3", "foo/foo.wav", "-q", "bar/bar.flac",
+			"quux.alac", "baz.m4a"
+		};
+		const int argc = 8;
+
+		auto tokens1 = CLITokens(argc, argv, supported_options, true);
+
+		CHECK ( tokens1.size() == 9 );
+
+		CHECK ( tokens1.argument(0) == "foo/foo.wav" );
+		CHECK ( tokens1.argument(1) == "bar/bar.flac" );
+		CHECK ( tokens1.argument(2) == "quux.alac" );
+		CHECK ( tokens1.argument(3) == "baz.m4a" );
+		CHECK ( tokens1.argument(4) == "" );
+
+		auto tokens2 = CLITokens(argc, argv, supported_options, false);
+
+		CHECK ( tokens2.size() == 9 );
+
+		CHECK ( tokens2.argument(0) == "foo/foo.wav" );
+		CHECK ( tokens2.argument(1) == "bar/bar.flac" );
+		CHECK ( tokens2.argument(2) == "quux.alac" );
+		CHECK ( tokens2.argument(3) == "baz.m4a" );
+		CHECK ( tokens2.argument(4) == "" );
 	}
 }
 
