@@ -8,28 +8,28 @@
 
 #include <memory>                   // for unique_ptr, make_unique
 #include <sstream>                  // for ostream
-#include <stdexcept>                // for logic_error
+#include <stdexcept>                // for invalid_argument
 #include <string>                   // for string, char_traits, operator<<
 #include <tuple>                    // for make_tuple, tuple
 #include <unordered_set>            // for unordered_set
-#include <utility>                  // for move, make_pair, pair
+#include <utility>                  // for move
 #include <vector>                   // for vector
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
-#include <arcstk/identifier.hpp>
+#include <arcstk/identifier.hpp>       // for ARId, EmptyARId
 #endif
 #ifndef __LIBARCSTK_CALCULATE_HPP__
-#include <arcstk/calculate.hpp>
+#include <arcstk/calculate.hpp>        // for Checksums, type
 #endif
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
 #endif
 
 #ifndef __LIBARCSDEC_CALCULATORS_HPP__
-#include <arcsdec/calculators.hpp>
+#include <arcsdec/calculators.hpp>  // for TOCParser, ARCSCalculator
 #endif
 #ifndef __LIBARCSDEC_SELECTION_HPP__
-#include <arcsdec/selection.hpp>
+#include <arcsdec/selection.hpp>    // for FileReaderPreferenceSelection
 #endif
 
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
@@ -59,6 +59,19 @@ std::tuple<bool,bool,std::vector<std::string>> audiofile_layout(const TOC &toc)
 	const bool is_single { set.size() == 1 };
 	return std::make_tuple(is_single, is_single or set.size() == list.size(),
 			is_single ? std::vector<std::string>{ *list.cbegin() } : list);
+}
+
+
+// IdSelection
+
+
+std::unique_ptr<arcsdec::FileReaderSelection> IdSelection::operator()(
+		const std::string& id) const
+{
+	using IdSelection_t = arcsdec::FileReaderPreferenceSelection<
+		arcsdec::MinPreference, arcsdec::IdSelector>;
+
+	return !id.empty() ? std::make_unique<IdSelection_t>(id) : nullptr;
 }
 
 

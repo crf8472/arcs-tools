@@ -7,6 +7,7 @@
 #include <iostream>                 // for cout
 #include <memory>                   // for unique_ptr, make_unique, allocator
 #include <string>                   // for string, char_traits, operator<<
+#include <utility>                  // for make_pair
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>
@@ -23,13 +24,19 @@
 #endif
 
 #ifndef __ARCSTOOLS_APPREGISTRY_HPP__
-#include "appregistry.hpp"
+#include "appregistry.hpp"            // for RegisterApplicationType
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
-#include "config.hpp"
+#include "config.hpp"                 // for Configurator
+#endif
+#ifndef __ARCSTOOLS_RESULT_HPP__
+#include "result.hpp"                 // for ResultObject
 #endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"                // for ARIdLayout, ...
+#include "layouts.hpp"                // for ARIdLayout, ARIdTableLayout ...
+#endif
+#ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
+#include "tools-calc.hpp"             // for IdSelection
 #endif
 #ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
 #include "tools-info.hpp"             // for AvailableFileReaders
@@ -54,66 +61,98 @@ using arcsdec::ARIdCalculator;
 const std::vector<std::pair<Option, OptionCode>>&
 	ARIdConfigurator::do_supported_options() const
 {
-	const static std::vector<std::pair<Option, OptionCode>> local_options =
-	{
-			// from FORMATBASE
+	const static Configurator::OptionRegistry supported_options =
+	[this](){
+		auto list = Configurator::OptionRegistry
+		{
+		// from FORMATBASE
 
-			{{  "reader", true, "auto",
-				"Force use of audio reader with specified id" },
-				ARIdOptions::READERID},
+		{{  "reader", true, "auto",
+			"Force use of audio reader with specified id" },
+			ARIdOptions::READERID},
 
-			{{  "parser", true, "auto",
-				"Force use of toc parser with specified id" },
-				ARIdOptions::PARSERID},
+		{{  "parser", true, "auto",
+			"Force use of toc parser with specified id" },
+			ARIdOptions::PARSERID},
 
-			{{  "list-toc-formats", false, "FALSE",
-				"List all supported file formats for TOC metadata" },
-				ARIdOptions::LIST_TOC_FORMATS },
+		{{  "list-toc-formats", false, "FALSE",
+			"List all supported file formats for TOC metadata" },
+			ARIdOptions::LIST_TOC_FORMATS },
 
-			{{  "list-audio-formats", false, "FALSE",
-				"List all supported audio codec/container formats" },
-				ARIdOptions::LIST_AUDIO_FORMATS },
+		{{  "list-audio-formats", false, "FALSE",
+			"List all supported audio codec/container formats" },
+			ARIdOptions::LIST_AUDIO_FORMATS },
 
-			// from ARIdOptions
+		// from ARIdOptions
 
-			{{  "cddb-id", false, "FALSE", "Print the CDDB id" },
-				ARIdOptions::CDDBID },
+		{{  "cddb-id", false, "FALSE", "Print the CDDB id" },
+			ARIdOptions::CDDBID },
 
-			{{  "db-id", false, "FALSE",
-				"Print the AccurateRip DB ID (equivalent to filename)" },
-				ARIdOptions::DBID },
+		{{  "db-id", false, "FALSE",
+			"Print the AccurateRip DB ID (equivalent to filename)" },
+			ARIdOptions::DBID },
 
-			{{  "filename", false, "FALSE",
-				"Print the AccurateRip DB ID (equivalent to db-id)" },
-				ARIdOptions::DBID },
+		{{  "filename", false, "FALSE",
+			"Print the AccurateRip DB ID (equivalent to db-id)" },
+			ARIdOptions::DBID },
 
-			{{ "no-labels", false, "FALSE", "No labels on columns and rows" },
-				ARIdOptions::NOLABELS },
+		{{ "no-labels", false, "FALSE", "No labels on columns and rows" },
+			ARIdOptions::NOLABELS },
 
-			{{  "url", false, "FALSE",
-				"Print the AccurateRip URL" },
-				ARIdOptions::URL },
+		{{  "url", false, "FALSE",
+			"Print the AccurateRip URL" },
+			ARIdOptions::URL },
 
-			{{ "profile", false, "FALSE", "Print all information" },
-				ARIdOptions::PROFILE },
+		{{ "profile", false, "FALSE", "Print all information" },
+			ARIdOptions::PROFILE },
 
-			{{  "url-prefix", true, "none",
-				"Use the specified prefix instead of the default "
-					"'http://accuraterip.com/accuraterip/'" },
-				ARIdOptions::URLPREFIX },
+		{{  "url-prefix", true, "none",
+			"Use the specified prefix instead of the default "
+				"'http://accuraterip.com/accuraterip/'" },
+			ARIdOptions::URLPREFIX },
 
-			{{ 'a', "audiofile", true, "none", "Specify input audio file" },
-				ARIdOptions::AUDIOFILE }
-	};
+		{{ 'a', "audiofile", true, "none", "Specify input audio file" },
+			ARIdOptions::AUDIOFILE }
+		};
 
-	return local_options;
+		flush_common_options_to(list);
+
+		return list;
+	}();
+
+	return supported_options;
 }
 
 
 // ARIdApplication
 
 
-int ARIdApplication::run_calculation(const Options &options)
+std::string ARIdApplication::do_name() const
+{
+	return "id";
+}
+
+
+std::string ARIdApplication::do_call_syntax() const
+{
+	return "[OPTIONS] FILENAME";
+}
+
+
+std::unique_ptr<Configurator> ARIdApplication::create_configurator() const
+{
+	return std::make_unique<ARIdConfigurator>();
+}
+
+
+bool ARIdApplication::calculation_requested(const Options &options) const
+{
+	return options.is_set(ARIdOptions::AUDIOFILE) || not options.no_arguments();
+}
+
+
+auto ARIdApplication::run_calculation(const Options &options) const
+	-> std::pair<int, std::unique_ptr<Result>>
 {
 	// Compute requested values
 
@@ -125,7 +164,7 @@ int ARIdApplication::run_calculation(const Options &options)
 	{
 		// Configure selections (e.g. --reader and --parser)
 
-		const IdSelection id_selection;
+		const calc::IdSelection id_selection;
 
 		auto audio_selection = options.is_set(ARIdOptions::READERID)
 			? id_selection(options.value(ARIdOptions::READERID))
@@ -154,7 +193,7 @@ int ARIdApplication::run_calculation(const Options &options)
 
 	if (!arid) { this->fatal_error("Could not compute AccurateRip id."); }
 
-	// Adjust format and print information
+	// Build the result object
 
 	std::unique_ptr<ARIdLayout> layout;
 
@@ -184,55 +223,54 @@ int ARIdApplication::run_calculation(const Options &options)
 		);
 	}
 
-	auto result = layout->format(*arid, options.value(ARIdOptions::URLPREFIX));
+	auto id = RichARId{*arid, std::move(layout),
+		options.value(ARIdOptions::URLPREFIX)};
 
-	if (not result.empty() and result.back() != '\n') { result += '\n'; }
+	//if (not result_str.empty() and result_str.back() != '\n')
+	//{
+	//	result_str += '\n';
+	//}
 
-	if (not options.value(OPTION::OUTFILE).empty())
-	{
-		Output::instance().to_file(options.value(OPTION::OUTFILE));
-	}
-	Output::instance().output(result);
-
-	return EXIT_SUCCESS;
-}
-
-
-std::string ARIdApplication::do_name() const
-{
-	return "id";
-}
-
-
-std::string ARIdApplication::do_call_syntax() const
-{
-	return "[OPTIONS] FILENAME";
-}
-
-
-std::unique_ptr<Configurator> ARIdApplication::create_configurator() const
-{
-	return std::make_unique<ARIdConfigurator>();
+	//return { EXIT_SUCCESS, std::move(r) };
+	return std::make_pair(EXIT_SUCCESS,
+			std::make_unique<ResultObject<RichARId>>(std::move(id)));
 }
 
 
 int ARIdApplication::do_run(const Options &options)
 {
 	// Is an actual calculation requested?
-	if (options.is_set(ARIdOptions::AUDIOFILE) || !options.no_arguments())
+	if (calculation_requested(options))
 	{
-		return this->run_calculation(options);
+		if (options.is_set(ARIdOptions::LIST_TOC_FORMATS))
+		{
+			// TODO Warn about ignored option or do it in Configurator
+		}
+		if (options.is_set(ARIdOptions::LIST_AUDIO_FORMATS))
+		{
+			// TODO Warn about ignored option or do it in Configurator
+		}
+
+		auto [ exit_code, result ] = this->run_calculation(options);
+
+		this->output(std::move(result), options);
+		return exit_code;
+	}
+
+	// If only info options are present, handle info request
+
+	if (not options.value(OPTION::OUTFILE).empty())
+	{
+		Output::instance().to_file(options.value(OPTION::OUTFILE));
 	}
 
 	if (options.is_set(ARIdOptions::LIST_TOC_FORMATS))
 	{
-		Output::instance().output("TOC:\n");
 		Output::instance().output(AvailableFileReaders::toc());
 	}
 
 	if (options.is_set(ARIdOptions::LIST_AUDIO_FORMATS))
 	{
-		Output::instance().output("Audio:\n");
 		Output::instance().output(AvailableFileReaders::audio());
 	}
 

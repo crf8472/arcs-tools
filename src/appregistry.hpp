@@ -73,7 +73,7 @@ using FunctionReturning = std::unique_ptr<T>(*)();
 
 
 /**
- * \brief Factory for creating instances of registered Application types
+ * \brief Create instances of registered Application types
  */
 class ApplicationFactory
 {

@@ -16,7 +16,10 @@
 #include "application.hpp"
 #endif
 #ifndef __ARCSTOOLS_APPREGISTRY_HPP__
-#include "appregistry.hpp"
+#include "appregistry.hpp"     // for ApplicationFactory
+#endif
+#ifndef __ARCSTOOLS_CLITOKENS_HPP__
+#include "clitokens.hpp"       // for CallSyntaxException
 #endif
 #ifndef __ARCSTOOLS_VERSION_HPP__
 #include "version.hpp"

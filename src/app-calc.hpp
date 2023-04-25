@@ -30,7 +30,7 @@
 #include "config.hpp"
 #endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"           // for CalcResultLayout, CalcTableResultLayout
+#include "layouts.hpp"             // for Layout, ResultFormatter
 #endif
 
 
@@ -38,7 +38,7 @@ namespace arcsapp
 {
 
 class CLITokens;
-
+class Result;
 
 /**
  * \brief Options to configure Application instances that do ARCS calculation.
@@ -76,28 +76,13 @@ protected:
 
 
 /**
- * \brief Base clase for Application instances that support CALCBASE options.
+ * \brief Base class for Application instances that support CALCBASE options.
  */
 class ARCalcConfiguratorBase : public Configurator
 {
 public:
 
 	using Configurator::Configurator;
-
-	/**
-	 * \brief Service: returns TRUE iff some real calculation is requested.
-	 *
-	 * A calculation is requested, iff either --help or --version are absent
-	 * or audiofiles are present or --metafile is present.
-	 *
-	 * This is used to determine whether the optional info options are to be
-	 * ignored in the presence of a calculation request.
-	 *
-	 * \param[in] options The input options (may or may not be configured)
-	 *
-	 * \return TRUE iff a real calculation is requested.
-	 */
-	static bool calculation_requested(const Options &options);
 
 protected:
 
@@ -156,10 +141,46 @@ public:
 private:
 
 	const std::vector<std::pair<Option, OptionCode>>& do_supported_options()
-		const override;
+		const final;
 
 	std::unique_ptr<Options> do_configure_options(
-			std::unique_ptr<Options> options) override;
+			std::unique_ptr<Options> options) const final;
+};
+
+
+/**
+ * \brief Interface to format result objects of a calculation process.
+ */
+using C5L = Layout<std::unique_ptr<Result>, Checksums, std::vector<std::string>,
+			const TOC*, ARId, std::string>;
+
+
+/**
+ * \brief Format the results of the ARCalcApplication.
+ */
+class CalcResultFormatter final : public ResultFormatter
+								, public C5L
+{
+private:
+
+	virtual std::vector<ATTR> do_create_attributes(
+		const bool tracks, const bool offsets, const bool lengths,
+		const bool filenames,
+		const std::vector<arcstk::checksum::type>& types_to_print) const final;
+
+	virtual void configure_composer(ResultComposer& composer) const final;
+
+	virtual void do_their_checksum(const std::vector<Checksum>& checksums,
+		const arcstk::checksum::type t, const int entry, ResultComposer* b)
+		const final;
+
+	virtual void do_mine_checksum(const Checksums& checksums,
+		const arcstk::checksum::type t, const int entry, ResultComposer* b,
+		const bool match) const final;
+
+	void assertions(InputTuple t) const final;
+
+	std::unique_ptr<Result> do_format(InputTuple t) const final;
 };
 
 
@@ -188,7 +209,7 @@ public:
 		const std::vector<std::string> &audiofilenames,
 		const bool as_first,
 		const bool as_last,
-		const std::set<arcstk::checksum::type> &types,
+		const std::vector<arcstk::checksum::type> &types,
 		arcsdec::FileReaderSelection *audio_selection,
 		arcsdec::FileReaderSelection *toc_selection);
 
@@ -202,8 +223,8 @@ private:
 	 * \param[in] options   The options parsed from command line
 	 * \param[in] checksums The checksums to format
 	 */
-	std::unique_ptr<CalcResultLayout> configure_layout(const Options &options)
-		const;
+	std::unique_ptr<CalcResultFormatter> configure_layout(
+			const Options &options) const;
 
 	/**
 	 * \brief Worker: Determine the requested checksum types for calculation.
@@ -212,26 +233,22 @@ private:
 	 *
 	 * \return Checksum types to calculate.
 	 */
-	std::set<arcstk::checksum::type> requested_types(const Options &options)
-		const;
-
-	/**
-	 * \brief Worker for run(): handles calculation requests.
-	 *
-	 * \param[in] options The options to run the application
-	 *
-	 * \return Application return code
-	 */
-	int run_calculation(const Options &options);
+	std::vector<arcstk::checksum::type> requested_types(const Options &options)
+			const;
 
 
-	std::string do_name() const override;
+	std::string do_name() const final;
 
-	std::string do_call_syntax() const override;
+	std::string do_call_syntax() const final;
 
-	std::unique_ptr<Configurator> create_configurator() const override;
+	std::unique_ptr<Configurator> create_configurator() const final;
 
-	int do_run(const Options &options) override;
+	bool calculation_requested(const Options &options) const final;
+
+	std::pair<int, std::unique_ptr<Result>> run_calculation(
+			const Options &options) const final;
+
+	int do_run(const Options &options) final;
 };
 
 } // namespace arcsapp

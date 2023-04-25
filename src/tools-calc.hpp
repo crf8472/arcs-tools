@@ -7,21 +7,20 @@
  * \brief Helper tools for ARCS calculation.
  */
 
-#include <memory>
-#include <string>
-#include <tuple>
-#include <utility>
-#include <vector>
+#include <memory>      // for unique_ptr
+#include <string>      // for string
+#include <tuple>       // for tuple
+#include <vector>      // for vector
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
-#include <arcstk/identifier.hpp>
+#include <arcstk/identifier.hpp>       // for ARId
 #endif
 #ifndef __LIBARCSTK_CALCULATE_HPP__
-#include <arcstk/calculate.hpp>
+#include <arcstk/calculate.hpp>        // for Checksums, type
 #endif
 
 #ifndef __LIBARCSDEC_SELECTION_HPP__
-#include <arcsdec/selection.hpp>
+#include <arcsdec/selection.hpp>       // FileReaderSelection
 #endif
 
 namespace arcsapp
@@ -34,7 +33,6 @@ using arcstk::TOC;
 using arcstk::Checksums;
 
 using arcsdec::FileReaderSelection;
-
 
 /**
  * \brief Returns the audiofile layout of a TOC.
@@ -65,6 +63,19 @@ using arcsdec::FileReaderSelection;
  * \return Flags for audiolayout, list of audio files
  */
 std::tuple<bool,bool,std::vector<std::string>> audiofile_layout(const TOC &toc);
+
+
+/**
+ * \brief Create a selection for a specific FileReader Id.
+ */
+struct IdSelection
+{
+	/**
+	 * \brief Create a selection for the specific FileReader id.
+	 */
+	std::unique_ptr<arcsdec::FileReaderSelection> operator()(
+			const std::string& id) const;
+};
 
 
 /**
@@ -194,4 +205,5 @@ private:
 } // namespace arcsapp
 
 #endif
+
 

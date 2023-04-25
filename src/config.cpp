@@ -18,11 +18,12 @@
 #endif
 
 #ifndef __LIBARCSDEC_SELECTION_HPP__
-#include <arcsdec/selection.hpp>       // for FileReaderSelection
+#include <arcsdec/selection.hpp>        // for FileReaderSelection
+										//     FileReaderPreferenceSelection
 #endif
 
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp"               // for CLITokens
+#include "clitokens.hpp"                // for CLITokens
 #endif
 
 namespace arcsapp
@@ -30,32 +31,24 @@ namespace arcsapp
 
 using arcstk::Appender;
 using arcstk::Logging;
+using arcstk::LOGLEVEL;
 
 
-// LogManager
+/**
+ * \brief LOGLEVEL from a string representation.
+ *
+ * The string is expected to consist of digit symbols.
+ *
+ * \param[in] lvl_str  A string
+ *
+ * \throw ConfigurationException Conversion to loglevel failed
+ *
+ * \return The deduced log level
+ */
+LOGLEVEL to_loglevel(const std::string &lvl_str);
 
 
-LogManager::LogManager(const LOGLEVEL default_lvl, const LOGLEVEL quiet_lvl)
-	: default_loglevel_ { default_lvl }
-	, quiet_loglevel_   { quiet_lvl   }
-{
-	// empty
-}
-
-
-LOGLEVEL LogManager::default_loglevel() const
-{
-	return default_loglevel_;
-}
-
-
-LOGLEVEL LogManager::quiet_loglevel() const
-{
-	return quiet_loglevel_;
-}
-
-
-LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
+LOGLEVEL to_loglevel(const std::string &lvl_str)
 {
 	using arcstk::LOGLEVEL_MIN;
 	using arcstk::LOGLEVEL_MAX;
@@ -64,13 +57,13 @@ LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 
 	try {
 
-		parsed_level = std::stoi(loglevel_arg);
+		parsed_level = std::stoi(lvl_str);
 
 	} catch (const std::invalid_argument &ia)
 	{
-		std::stringstream ss;
+		std::ostringstream ss;
 
-		ss << "Parsed LOGLEVEL is '" << loglevel_arg
+		ss << "Parsed LOGLEVEL is '" << lvl_str
 			<< "' but must be a non-negative integer in the range "
 			<< LOGLEVEL_MIN << "-"
 			<< LOGLEVEL_MAX << ".";
@@ -79,9 +72,9 @@ LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 
 	} catch (const std::out_of_range &oor)
 	{
-		std::stringstream ss;
+		std::ostringstream ss;
 
-		ss << "Parsed LOGLEVEL is '" << loglevel_arg
+		ss << "Parsed LOGLEVEL is '" << lvl_str
 			<< "' which is out of the valid range "
 			<< LOGLEVEL_MIN << "-"
 			<< LOGLEVEL_MAX << "";
@@ -91,9 +84,9 @@ LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 
 	if (parsed_level < LOGLEVEL_MIN or parsed_level > LOGLEVEL_MAX)
 	{
-		std::stringstream ss;
+		std::ostringstream ss;
 
-		ss << "Parsed LOGLEVEL is '" << loglevel_arg
+		ss << "Parsed LOGLEVEL is '" << lvl_str
 			<< "' which does not correspond to a valid loglevel ("
 			<< LOGLEVEL_MIN << "-"
 			<< LOGLEVEL_MAX << ").";
@@ -117,7 +110,7 @@ LOGLEVEL LogManager::get_loglevel(const std::string &loglevel_arg)
 		case 7: log_level = LOGLEVEL::DEBUG3;  break;
 		case 8: log_level = LOGLEVEL::DEBUG4;  break;
 		default: {
-			std::stringstream ss;
+			std::ostringstream ss;
 
 			ss << "Illegal value for log_level (must be in range "
 				<< LOGLEVEL_MIN << "-"
@@ -271,27 +264,23 @@ std::ostream& operator << (std::ostream& out, const Options &options)
 // Configurator
 
 
-const std::vector<Option> Configurator::global_options_ = {
-	{ 'h', "help",      false, "FALSE", "Get help on usage" },
-	{      "version",   false, "FALSE", "Print version and exit,"
-	                                    " ignoring any other options." },
-	{ 'v', "verbosity", true,  "2",     "Verbosity of output (loglevel 0-8)" },
-	{ 'q', "quiet",     false, "FALSE", "Only output results, nothing else." },
-	{ 'l', "logfile",   true,  "none",  "File for logging output" },
-	{ 'o', "outfile",   true,  "none",  "File for result output" }
-};
-
-
 Configurator::Configurator()
-	: logman_ { /* Define the default log level and the quiet log level */
-		LogManager::get_loglevel(global(OPTION::VERBOSITY).default_arg()),
-		LOGLEVEL::NONE /* quiet */
-	  }
 {
 	// We do not know whether the application is required to run quiet,
 	// so initial level is NOT default level but quiet level
+	Logging::instance().set_level(LOGLEVEL::NONE);
 
-	Logging::instance().set_level(logman_.quiet_loglevel());
+	// Reset default Loglevel to value defined by option
+	const auto& options { common_options() };
+	if (options.size() < OPTION::VERBOSITY)
+	{
+		const auto& verbosity {
+			std::get<0>(common_options()[OPTION::VERBOSITY])
+		};
+		auto lvl = to_loglevel(verbosity.default_arg());
+		Logging::instance().set_level(lvl);
+	}
+
 	Logging::instance().set_timestamps(false);
 }
 
@@ -300,13 +289,13 @@ Configurator::~Configurator() noexcept = default;
 
 
 std::unique_ptr<Options> Configurator::provide_options(const int argc,
-		const char* const * const argv)
+		const char* const * const argv) const
 {
-	auto all_supported_options = this->all_supported();
+	const auto& supported_options = this->supported_options();
 
 	// Parse Input and Match Supported Options
 
-	auto input = CLITokens { argc, argv, all_supported_options, true };
+	auto input = CLITokens { argc, argv, supported_options, true };
 	auto options = std::make_unique<Options>();
 
 	// Activate logging:
@@ -333,16 +322,13 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 		{
 			if (input.contains(OPTION::VERBOSITY))
 			{
-				Logging::instance().set_level(logman_.get_loglevel(
+				Logging::instance().set_level(to_loglevel(
 							input.value(OPTION::VERBOSITY)));
-			} else
-			{
-				Logging::instance().set_level(logman_.default_loglevel());
 			}
-		}
+		} // else do nothing since LOGLEVEL::NONE i.e. --quiet is default
 
 		// TODO Make configurable
-		Logging::instance().set_timestamps(false);
+		//Logging::instance().set_timestamps(false);
 	}
 
 	// Convert input to Options object
@@ -360,21 +346,16 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 
 	ARCS_LOG_DEBUG << "Command line input successfully parsed";
 
-	// Reset verbosity to actual log level (to maintain consistency)
+	// Reset verbosity to actual log level
+	// XXX WHY THIS??
 	{
-		auto actual_level = static_cast<std::underlying_type_t<LOGLEVEL>>(
+		const auto actual_level = static_cast<std::underlying_type_t<LOGLEVEL>>(
 				Logging::instance().level());
 
 		options->set(OPTION::VERBOSITY, std::to_string(actual_level));
 	}
 
 	return this->do_configure_options(std::move(options));
-}
-
-
-const std::vector<Option>& Configurator::global_options()
-{
-	return Configurator::global_options_;
 }
 
 
@@ -385,39 +366,51 @@ const std::vector<std::pair<Option, OptionCode>>&
 }
 
 
-const Option& Configurator::global(const OptionCode c)
+const Configurator::OptionRegistry& Configurator::common_options()
 {
-	return Configurator::global_options_[c - 1];
+	const static OptionRegistry common_options = {
+		{{ 'h', "help",      false, "FALSE", "Get help on usage" },
+			OPTION::HELP },
+
+		{{      "version",   false, "FALSE", "Print version and exit,"
+											" ignoring any other options." },
+			OPTION::VERSION },
+
+		{{ 'v', "verbosity", true,  "2", "Verbosity of output (loglevel 0-8)" },
+			OPTION::VERBOSITY },
+
+		{{ 'q', "quiet",     false, "FALSE", "Only output results, "
+			"nothing else." },
+			OPTION::QUIET },
+
+		{{ 'l', "logfile",   true,  "none",  "File for logging output" },
+			OPTION::LOGFILE },
+
+		{{ 'o', "outfile",   true,  "none",  "File for result output" },
+			OPTION::OUTFILE }
+	};
+
+	return common_options;
 }
 
 
-std::vector<std::pair<Option, OptionCode>> Configurator::all_supported() const
+void Configurator::flush_common_options_to(OptionRegistry& r) const
 {
-	// TODO Find a way not to copy the statically stored options.
-	// It's all internal data and should be accessible without copy.
+	using std::begin;
+	using std::end;
 
-	std::vector<std::pair<Option, OptionCode>> all_supported =
-		supported_options();
-
-	// Add global options to supported options
-
-	for (auto i = std::size_t { 0 }; i < global_options_.size(); ++i)
-	{
-		auto option = std::make_pair(
-				global(static_cast<OptionCode>(i + 1)), /* global option */
-				global_id_[i] /* option code */);
-
-		all_supported.push_back(option);
-	}
-
-	return all_supported;
+	std::copy(
+		begin(Configurator::common_options()),
+		end(Configurator::common_options()),
+		std::back_inserter(r)
+	);
 }
 
 
 std::unique_ptr<Options> Configurator::do_configure_options(
-		std::unique_ptr<Options> options)
+		std::unique_ptr<Options> options) const
 {
-	// Default Implementation does Nothing
+	// Default Implementation does nothing
 
 	return options;
 }
@@ -429,8 +422,7 @@ std::unique_ptr<Options> Configurator::do_configure_options(
 const std::vector<std::pair<Option, OptionCode>>&
 	DefaultConfigurator::do_supported_options() const
 {
-	const static std::vector<std::pair<Option, OptionCode>> empty = {/*empty*/};
-	return empty;
+	return Configurator::common_options();
 }
 
 
@@ -443,19 +435,6 @@ constexpr OptionCode FORMATBASE::READERID;
 constexpr OptionCode FORMATBASE::PARSERID;
 
 constexpr OptionCode FORMATBASE::SUBCLASS_BASE;
-
-
-// IdSelection
-
-
-std::unique_ptr<arcsdec::FileReaderSelection> IdSelection::operator()(
-		const std::string& id) const
-{
-	using IdSelection_t = arcsdec::FileReaderPreferenceSelection<
-		arcsdec::MinPreference, arcsdec::IdSelector>;
-
-	return !id.empty() ? std::make_unique<IdSelection_t>(id) : nullptr;
-}
 
 } // namespace arcsapp
 

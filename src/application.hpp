@@ -16,15 +16,11 @@
 #include <mutex>       // for mutex, lock_guard
 #include <string>      // for string
 
-#ifndef __ARCSTOOLS_CONFIG_HPP__
-#include "config.hpp"        // for CallSyntaxException, Options, Configurator
-#endif
-
 namespace arcsapp
 {
 
 /**
- * \brief Represents an output channel.
+ * \brief An output stream.
  */
 class Output
 {
@@ -106,15 +102,14 @@ private:
 };
 
 
+// forward declare instead of include
+class Configurator;
+class Options;
+class Result;
+
+
 /**
  * \brief Abstract base class for command line applications.
- *
- * Defines an interface to create a delegate that creates the configuration
- * object and run the application.
- *
- * Implements parsing of the command line input to a configuration object,
- * configuration of logging and the core \c run() function. Provides workers
- * for fatal_error() and output() as well as printing the usage info.
  */
 class Application
 {
@@ -173,6 +168,14 @@ protected:
 	 */
 	void fatal_error(const std::string &message) const;
 
+	/**
+	 * \brief Output the result.
+	 *
+	 * \param[in] result  Result object to output
+	 * \param[in] options The options to run the application
+	 */
+	void output(std::unique_ptr<Result> result, const Options &options) const;
+
 private:
 
 	/**
@@ -195,6 +198,33 @@ private:
 	 * \return The configurator for this application
 	 */
 	virtual std::unique_ptr<Configurator> create_configurator() const
+	= 0;
+
+	/**
+	 * \brief Returns TRUE iff a calculation result is requested, otherwise
+	 * FALSE.
+	 *
+	 * This can be used to decide whether run_calculation() has actually to
+	 * be called or the mere info options can be evaluated.
+	 *
+	 * \param[in] options The options to run the application
+	 *
+	 * \return TRUE iff a calculation result is requested
+	 */
+	virtual bool calculation_requested(const Options& options) const
+	= 0;
+
+	/**
+	 * \brief Run the internal calculation.
+	 *
+	 * Can be used as a worker for run().
+	 *
+	 * \param[in] options The options to run the application
+	 *
+	 * \return Application return code and calculation Result
+	 */
+	virtual std::pair<int, std::unique_ptr<Result>> run_calculation(
+			const Options &options) const
 	= 0;
 
 	/**

@@ -11,14 +11,14 @@
 #include <arcstk/logging.hpp>
 #endif
 
-#ifndef __ARCSTOOLS_APPLICATION_HPP__
-#include "application.hpp"
-#endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
-#include "config.hpp"          // for Configurator, CallSyntaxException
+#include "config.hpp"          // for Configurator
 #endif
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"         // for StringTable
+#ifndef __ARCSTOOLS_RESULT_HPP__
+#include "result.hpp"          // for Result
+#endif
+#ifndef __ARCSTOOLS_TABLE_HPP__
+#include "table.hpp"           // for StringTable
 #endif
 #ifndef __ARCSTOOLS_VERSION_HPP__
 #include "version.hpp"         // for ARCSTOOLS_VERSION
@@ -26,7 +26,6 @@
 
 namespace arcsapp
 {
-
 
 // Output
 
@@ -135,49 +134,26 @@ void Application::print_usage() const
 
 	std::cout << "OPTIONS:" << std::endl;
 
-	const auto& goptions { Configurator::global_options() };
-	const auto& soptions { this->create_configurator()->supported_options() };
+	const auto& options { this->create_configurator()->supported_options() };
+	// Reference points to static local member
 
-	StringTable table { static_cast<int>(goptions.size() + soptions.size()),
-		3 };
+	table::StringTable table { static_cast<int>(options.size()), 3 };
 
-	table.set_title(0, "Option");
-	table.set_width(0, table.title(0).length());
-	table.set_dynamic_width(0);
-	table.set_alignment(0, true);
-
-	table.set_title(1, "Default");
-	table.set_width(1, table.title(1).length());
-	table.set_dynamic_width(1);
-	table.set_alignment(1, false);
-
-	table.set_title(2, "Description");
-	table.set_width(2, table.title(2).length());
-	table.set_dynamic_width(2);
-	table.set_alignment(2, true);
+	table.set_col_label(0, "Option");
+	table.set_col_label(1, "Default");
+	table.set_col_label(2, "Description");
 
 	int row = 0;
 
-	// Print global options
-	for (const auto& option : goptions)
+	for (const auto& entry : options)
 	{
-		// Add row
-		table.update_cell(row, 0, option.tokens_str());
-		table.update_cell(row, 1, option.default_arg());
-		table.update_cell(row, 2, option.description());
-
-		++row;
-	}
-
-	// Print app specific options
-	for (const auto& entry : soptions)
-	{
+		// Use option, discard code
 		auto& option = std::get<0>(entry);
 
 		// Add row
-		table.update_cell(row, 0, option.tokens_str());
-		table.update_cell(row, 1, option.default_arg());
-		table.update_cell(row, 2, option.description());
+		table(row, 0) = option.tokens_str();
+		table(row, 1) = option.default_arg();
+		table(row, 2) = option.description();
 
 		++row;
 	}
@@ -186,8 +162,7 @@ void Application::print_usage() const
 }
 
 
-std::unique_ptr<Options> Application::setup_options(int argc, char** argv)
-	const
+std::unique_ptr<Options> Application::setup_options(int argc, char** argv) const
 {
 	auto configurator = this->create_configurator();
 
@@ -199,6 +174,34 @@ void Application::fatal_error(const std::string &message) const
 {
 	//ARCS_LOG_ERROR << message; // Commented out, just a reminder
 	throw std::runtime_error(message);
+}
+
+
+void Application::output(std::unique_ptr<Result> result, const Options &options)
+	const
+{
+	auto object { std::move(result) };
+
+	if (!object)
+	{
+		return;
+	}
+
+	if (not options.value(OPTION::OUTFILE).empty())
+	{
+		// Save previous state of Output and restore it after use
+		const auto filename { Output::instance().filename() };
+		Output::instance().to_file(options.value(OPTION::OUTFILE));
+
+		// Perform output
+		Output::instance().output(*object);
+
+		// Restore previous state
+		Output::instance().to_file(filename);
+	} else
+	{
+		Output::instance().output(*object);
+	}
 }
 
 

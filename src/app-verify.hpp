@@ -28,7 +28,7 @@
 #include "application.hpp"       // for Application
 #endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"           // for VerifyResultLayout, ...
+#include "layouts.hpp"           // for Layout, ResultFormatter
 #endif
 
 namespace arcsapp
@@ -37,6 +37,7 @@ namespace arcsapp
 class CLITokens;
 class Configurator;
 class Options;
+class Result;
 
 using arcstk::ARResponse;
 using arcstk::Checksum;
@@ -80,10 +81,68 @@ public:
 private:
 
 	const std::vector<std::pair<Option, OptionCode>>& do_supported_options()
-		const override;
+		const final;
 
 	std::unique_ptr<Options> do_configure_options(
-			std::unique_ptr<Options> options) override;
+			std::unique_ptr<Options> options) const final;
+};
+
+
+/**
+ * \brief Interface to format result objects of a verification process.
+ */
+using V10L = Layout<std::unique_ptr<Result>, Checksums, const ARResponse*,
+			const std::vector<Checksum>, const Match*, const int, const bool,
+			const TOC*, const ARId, std::string, std::vector<std::string>>;
+
+
+/**
+ * \brief Interface for formatting the results of an ARVerifyApplication.
+ */
+class VerifyResultFormatter : public ResultFormatter
+							, public V10L
+{
+public:
+
+	/**
+	 * \brief Set the symbol to be printed on identity of two checksum values.
+	 *
+	 * \param[in] match_symbol The symbol to represent a match
+	 */
+	void set_match_symbol(const std::string& match_symbol);
+
+	/**
+	 * \brief The symbol to be printed on identity of two checksum values.
+	 *
+	 * \return Match symbol
+	 */
+	const std::string& match_symbol() const;
+
+private:
+
+	virtual std::vector<ATTR> do_create_attributes(
+		const bool tracks, const bool offsets, const bool lengths,
+		const bool filenames,
+		const std::vector<arcstk::checksum::type>& types_to_print) const final;
+
+	virtual void configure_composer(ResultComposer& composer) const final;
+
+	virtual void do_their_checksum(const std::vector<Checksum>& checksums,
+		const arcstk::checksum::type t, const int entry, ResultComposer* b) const
+		final;
+
+	virtual void do_mine_checksum(const Checksums& checksums,
+		const arcstk::checksum::type t, const int entry, ResultComposer* b,
+		const bool match) const final;
+
+	void assertions(InputTuple t) const final;
+
+	std::unique_ptr<Result> do_format(InputTuple t) const final;
+
+	/**
+	 * \brief The symbol to be printed on identity of two checksum values.
+	 */
+	std::string match_symbol_;
 };
 
 
@@ -98,8 +157,8 @@ class ARVerifyApplication final : public Application
 	 * \param[in] options        The options to run the application
 	 * \param[in] with_filenames Flag to indicate whether to print filenames
 	 */
-	std::unique_ptr<VerifyResultLayout> configure_layout(const Options &options,
-		const bool with_filenames) const;
+	std::unique_ptr<VerifyResultFormatter> configure_layout(
+			const Options &options) const;
 
 	/**
 	 * \brief Provide reference checksums from options.
@@ -156,40 +215,37 @@ class ARVerifyApplication final : public Application
 		const bool version = true) const;
 
 	/**
-	 * \brief Worker for run(): handles calculation requests.
-	 *
-	 * \param[in] options The options to run the application
-	 *
-	 * \return Application return code
-	 */
-	int run_calculation(const Options &options);
-
-	/**
 	 * \brief Print the result of the matching operation.
 	 *
 	 * \param[in] options         Call options
 	 * \param[in] actual_sums     Actual checksums
 	 * \param[in] reference_sums  Reference checksums
+	 * \param[in] diff            Matcher result
 	 * \param[in] toc             TOC
 	 * \param[in] id              Album ARId
-	 * \param[in] diff            Matcher result
 	 * \param[in] print_filenames Flag to print filenames
 	 *
+	 * \return A string representation of the result
 	 */
-	void print_result(const Options &options,
+	std::unique_ptr<Result> format_result(const Options &options,
 			const Checksums &actual_sums,
 			const std::tuple<ARResponse, std::vector<Checksum>> &reference_sums,
-			const TOC *toc, const ARId &id, const Matcher &diff,
-			const bool print_filenames) const;
+			const Matcher &diff, const TOC *toc, const ARId &id,
+			const std::vector<std::string>& print_filenames) const;
 
 
-	std::string do_name() const override;
+	std::string do_name() const final;
 
-	std::string do_call_syntax() const override;
+	std::string do_call_syntax() const final;
 
-	std::unique_ptr<Configurator> create_configurator() const override;
+	std::unique_ptr<Configurator> create_configurator() const final;
 
-	int do_run(const Options &options) override;
+	bool calculation_requested(const Options &options) const final;
+
+	std::pair<int, std::unique_ptr<Result>> run_calculation(
+			const Options &options) const final;
+
+	int do_run(const Options &options) final;
 };
 
 } // namespace arcsapp

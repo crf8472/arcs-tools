@@ -19,14 +19,13 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"       // for Configurator
 #endif
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"      // for ARIdLayout, ...
-#endif
+
 
 namespace arcsapp
 {
 
 class CLITokens;
+class Result;
 
 /**
  * \brief Configuration options for ARIdApplications.
@@ -65,27 +64,22 @@ private:
 
 
 /**
- * \brief AccurateRip Identifier Calculation Application
+ * \brief Application to calculate AccurateRip Identifiers.
  */
 class ARIdApplication final : public Application
 {
-	/**
-	 * \brief Worker for run(): handles calculation requests.
-	 *
-	 * \param[in] options The options to run the application
-	 *
-	 * \return Application return code
-	 */
-	int run_calculation(const Options &options);
+	std::string do_name() const final;
 
+	std::string do_call_syntax() const final;
 
-	std::string do_name() const override;
+	std::unique_ptr<Configurator> create_configurator() const final;
 
-	std::string do_call_syntax() const override;
+	bool calculation_requested(const Options &options) const final;
 
-	std::unique_ptr<Configurator> create_configurator() const override;
+	std::pair<int, std::unique_ptr<Result>> run_calculation(
+			const Options &options) const final;
 
-	int do_run(const Options &options) override;
+	int do_run(const Options &options) final;
 };
 
 } // namespace arcsapp

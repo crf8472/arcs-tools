@@ -20,6 +20,7 @@
 #include <memory>        // for unique_ptr
 #include <string>        // for string
 #include <type_traits>   // for underlying_type
+#include <utility>       // for pair, make_pair, move
 #include <vector>        // for vector
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
@@ -31,73 +32,11 @@
 #endif
 
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp"              // for OptionCode
+#include "clitokens.hpp"              // for Option, OptionCode
 #endif
 
 namespace arcsapp
 {
-
-using arcstk::LOGLEVEL;
-
-
-/**
- * \brief Service class for configuring the loglevel.
- *
- * Implements the levels for 'default' and 'quiet' and can convert a string
- * to a loglevel.
- */
-class LogManager
-{
-public:
-
-	/**
-	 * \brief Constructor.
-	 *
-	 * Specify the level to choose by default and the level to choose for
-	 * quietness.
-	 *
-	 * \param[in] default_level The default level to use
-	 * \param[in] quiet_level   The level for quietness to use
-	 */
-	LogManager(const LOGLEVEL default_level, const LOGLEVEL quiet_level);
-
-	/**
-	 * \brief Return the default log level.
-	 *
-	 * \return The default log level for the application
-	 */
-	LOGLEVEL default_loglevel() const;
-
-	/**
-	 * \brief Return the quiet log level.
-	 *
-	 * \return The quiet log level for the application
-	 */
-	LOGLEVEL quiet_loglevel() const;
-
-	/**
-	 * \brief Deduce the log level from a string representation.
-	 *
-	 * The string is expected to consist of digit symbols.
-	 *
-	 * \param[in] loglevel The loglevel value parsed
-	 *
-	 * \return The deduced log level
-	 */
-	static LOGLEVEL get_loglevel(const std::string& loglevel);
-
-private:
-
-	/**
-	 * \brief Default log level.
-	 */
-	const LOGLEVEL default_loglevel_;
-
-	/**
-	 * \brief Quiet log level.
-	 */
-	const LOGLEVEL quiet_loglevel_;
-};
 
 
 /**
@@ -121,12 +60,13 @@ std::ostream& operator << (std::ostream& out, const Options &options);
 
 
 /**
- * \brief Base class for configuration options.
+ * \brief Configuration for an Application instance.
  *
  * An Options object contains the boolean as well as the valued options and
- * arguments for an Application.
+ * arguments for an Application. It represents the complete input configuration
+ * for an application instance.
  */
-class Options
+class Options final
 {
 public:
 
@@ -249,8 +189,8 @@ private:
 	/**
 	 * \brief Options with their respective values.
 	 *
-	 * An Option is set iff it is present in this aggregate, otherwise it is
-	 * unset.
+	 * An Option is set iff it is present in this aggregate, otherwise it
+	 * is unset.
 	 */
 	std::map<OptionCode, std::string> options_;
 
@@ -317,6 +257,11 @@ class Configurator
 public:
 
 	/**
+	 * \brief Internal type used by Configurator.
+	 */
+	using OptionRegistry = std::vector<std::pair<Option, OptionCode>>;
+
+	/**
 	 * \brief Constructor.
 	 */
 	Configurator();
@@ -344,14 +289,7 @@ public:
 	 * \throws CallSyntaxException If the input is not syntactically wellformed
 	 */
 	std::unique_ptr<Options> provide_options(const int argc,
-		const char* const * const argv);
-
-	/**
-	 * \brief Return the list of options supported by every Configurator.
-	 *
-	 * \return List of options supported by every Configurator.
-	 */
-	static const std::vector<Option>& global_options();
+		const char* const * const argv) const;
 
 	/**
 	 * \brief Return the list of options supported by this Configurator.
@@ -360,25 +298,14 @@ public:
 	 *
 	 * \return List of options supported by this Configurator
 	 */
-	const std::vector<std::pair<Option, OptionCode>>& supported_options()
-		const;
-
-protected:
+	const OptionRegistry& supported_options() const;
 
 	/**
-	 *  \brief Enumerable representation of global config options.
+	 * \brief Options common to all subclasses of Configurator.
+	 *
+	 * \return List of options supported by every Configurator.
 	 */
-	static constexpr std::array<OptionCode, 6> global_id_ =
-	{
-		OPTION::HELP,
-		OPTION::VERSION,
-		OPTION::VERBOSITY,
-		OPTION::QUIET,
-		OPTION::LOGFILE,
-		OPTION::OUTFILE
-	};
-
-public:
+	static const OptionRegistry& common_options();
 
 	/**
 	 * \brief Returns the minimal OptionCode constant to be used by subclasses.
@@ -389,34 +316,18 @@ public:
 	 * \see ARIdOptions
 	 * \see CALCBASE
 	 */
-	static constexpr OptionCode BASE() { return global_id_.size(); };
+	static constexpr OptionCode BASE() { return 6/*last member in OPTION*/; };
 
 protected:
 
 	/**
-	 * \brief Access a global option by its OptionCode.
+	 * \brief Worker: subclass may want to flush common options to own registry.
 	 *
-	 * \param[in] conf OptionCode to get the Option for
-	 *
-	 * \return The Option corresponding to \c conf
+	 * \param[in] r Registry to flush common options to
 	 */
-	static const Option& global(const OptionCode conf);
-
-	/**
-	 * \brief Create a list of all supported options of this Configurator.
-	 *
-	 * Creates the union of supported_options() and global_options().
-	 *
-	 * \return List of options supported by this Configurator
-	 */
-	std::vector<std::pair<Option, OptionCode>> all_supported() const;
+	void flush_common_options_to(OptionRegistry& r) const;
 
 private:
-
-	/**
-	 * \brief List of options supported by every Configurator.
-	 */
-	static const std::vector<Option> global_options_;
 
 	/**
 	 * \brief Implements supported_options().
@@ -441,12 +352,12 @@ private:
 	 * \return The Options instance derived from the command line input
 	 */
 	virtual std::unique_ptr<Options> do_configure_options(
-			std::unique_ptr<Options> options);
+			std::unique_ptr<Options> options) const;
 
 	/**
-	 * \brief The loglevel manager.
+	 * \brief Registry of supported Options and their respective OptionCodes.
 	 */
-	LogManager logman_;
+	OptionRegistry supported_options_;
 };
 
 
@@ -493,19 +404,6 @@ public:
 protected:
 
 	static constexpr OptionCode SUBCLASS_BASE      = BASE + 4;
-};
-
-
-/**
- * \brief Create a selection for a specific FileReader Id.
- */
-struct IdSelection
-{
-	/**
-	 * \brief Create a selection for the specific FileReader id.
-	 */
-	std::unique_ptr<arcsdec::FileReaderSelection> operator()(
-			const std::string& id) const;
 };
 
 } // namespace arcsapp

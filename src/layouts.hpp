@@ -12,11 +12,16 @@
  * also be used to construct new layouts.
  */
 
-#include <cstdint>                // for uint32_t, uint8_t
-#include <istream>                // for size_t, ostream
+#include <array>                  // for array
+#include <cstddef>                // for size_t
+#include <cstdint>                // for uint32_t
+#include <map>                    // for map
 #include <memory>                 // for unique_ptr
+#include <ostream>                // for ostream
 #include <string>                 // for string
-#include <type_traits>            // for underlying_type_t
+#include <tuple>                  // for tuple, make_tuple
+#include <utility>                // for move
+#include <vector>                 // for vector
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>
@@ -31,6 +36,12 @@
 #include <arcstk/parse.hpp>
 #endif
 
+#ifndef __ARCSTOOLS_APPLICATION_HPP__
+#include "application.hpp"
+#endif
+#ifndef __ARCSTOOLS_RESULT_HPP__
+#include "result.hpp"                // for ResultObject, Result
+#endif
 #ifndef __ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"
 #endif
@@ -45,20 +56,397 @@ using arcstk::Checksums;
 using arcstk::Match;
 using arcstk::TOC;
 
+class Result;
+
+namespace details
+{
 
 /**
- * \brief Abstract templatized base class for layouts.
+ * \brief Generate a list of the types used in \c checksums in the order they
+ * appear in arcstk::checksum::types.
+ *
+ * \param[in] checksums The Checksums to inspect for checksums::types
+ *
+ * \return List of occurring checksum::type in the order libarcstk defines them
+ */
+std::vector<arcstk::checksum::type> ordered_typelist(const Checksums
+		&checksums);
+
+} // namespace details
+
+
+using table::StringTable;
+using table::StringTableLayout;
+
+
+/**
+ * \brief Interface for composing a result by records.
+ *
+ * \tparam T Type of the result object
+ * \tparam F Type of the field keys
+ */
+template<typename T, typename F>
+class RecordInterface
+{
+public:
+
+	using size_type = std::size_t;
+
+	virtual ~RecordInterface() noexcept = default;
+
+	/**
+	 * \brief Set the value for the specified field in record \c i.
+	 */
+	inline void set_field(const int i, const F& field_type,
+			const std::string& value)
+	{
+		this->do_set_field(i, field_type, value);
+	}
+
+	/**
+	 * \brief The value of the specified field.
+	 */
+	inline std::string field(const int i, const F& field_type) const
+	{
+		return this->do_field(i, field_type);
+	}
+
+	/**
+	 * \brief Set the label for the specified field type.
+	 */
+	inline void set_label(const F& field_type, const std::string& label)
+	{
+		this->do_set_label(field_type, label);
+	}
+
+	/**
+	 * \brief Label for the specified field type.
+	 */
+	inline std::string label(const F& field_type) const
+	{
+		return this->do_label(field_type);
+	}
+
+	/**
+	 * \brief Index of specified field type.
+	 */
+	inline int field_idx(const F& field_type) const
+	{
+		return this->do_field_idx(field_type);
+	}
+
+	/**
+	 * \brief TRUE iff specified field type is part of the result.
+	 */
+	inline bool has_field(const F& field_type) const
+	{
+		return this->do_has_field(field_type);
+	}
+
+	/**
+	 * \brief Total number of records.
+	 */
+	inline size_type total_records() const
+	{
+		return this->do_total_records();
+	}
+
+	/**
+	 * \brief Total number of fields per record.
+	 */
+	inline size_type fields_per_record() const
+	{
+		return this->do_fields_per_record();
+	}
+
+	/**
+	 * \brief Get the result.
+	 */
+	inline std::unique_ptr<Result> result() const
+	{
+		return this->do_result();
+	}
+
+protected:
+
+	using result_type = ResultObject<T>;
+
+	inline RecordInterface(T&& object)
+		: object_ { std::move(object) }
+	{
+		// empty
+	}
+
+	inline T& object()
+	{
+		return object_;
+	}
+
+	inline const T& object() const
+	{
+		return object_;
+	}
+
+private:
+
+	virtual void do_set_field(const int i, const F& field_type,
+			const std::string& value)
+	= 0;
+
+	virtual const std::string& do_field(const int i, const F& field_type) const
+	= 0;
+
+	virtual void do_set_label(const F& field_type, const std::string& label)
+	= 0;
+
+	virtual std::string do_label(const F& field_type) const
+	= 0;
+
+	virtual int do_field_idx(const F& field_type) const
+	= 0;
+
+	virtual bool do_has_field(const F& field_type) const
+	= 0;
+
+	virtual size_type do_total_records() const
+	= 0;
+
+	virtual size_type do_fields_per_record() const
+	= 0;
+
+	virtual std::unique_ptr<Result> do_result() const
+	= 0;
+
+	/**
+	 * \brief Internal result object.
+	 */
+	T object_;
+};
+
+
+/**
+ * \brief Attributes for representing result data.
+ *
+ * Use this attributes to define a layout for printing the result. The concrete
+ * ResultComposer will know whether the attributes are rows or columns in the
+ * result table to build.
+ */
+enum class ATTR: int
+{
+	TRACK,
+	OFFSET,
+	LENGTH,
+	FILENAME,
+	CHECKSUM_ARCS1,
+	CHECKSUM_ARCS2,
+	THEIRS_ARCS1,
+	MINE_ARCS1,
+	THEIRS_ARCS2,
+	MINE_ARCS2
+};
+
+
+/**
+ * \brief Produce default label for a specified attribute.
+ */
+template<ATTR A>
+std::string DefaultLabel();
+
+
+/**
+ * \brief Interface for constructing a result table.
+ *
+ * A ResultComposer builds a StringTable with entries and attributes. Each
+ * record contains a value for each of its defined fields.
+ */
+class ResultComposer : public RecordInterface<StringTable, ATTR>
+{
+public:
+
+	void set_layout(std::unique_ptr<StringTableLayout> layout);
+
+	/**
+	 * \brief Return the StringTable instance.
+	 *
+	 * \return StringTable
+	 */
+	StringTable table() const;
+
+protected:
+
+	/**
+	 * \brief Common constructor.
+	 *
+	 * \param[in] fields   Ordering of attributes
+	 * \param[in] table    Table with dimensions for entries and attributes
+	 */
+	ResultComposer(const std::vector<ATTR>& fields, StringTable&& table);
+
+	/**
+	 * \brief Write value to specified field in record.
+	 *
+	 * \param[in] record_idx  The record to modify
+	 * \param[in] field_idx   The field to modify
+	 */
+	std::string& value(const int record_idx, const int field_idx);
+
+	/**
+	 * \brief Write to table.
+	 *
+	 * \return Reference to internal table
+	 */
+	StringTable& in_table();
+
+	/**
+	 * \brief Read from table.
+	 *
+	 * \return Reference to internal table
+	 */
+	const StringTable& from_table() const;
+
+	/**
+	 * \brief Assign each field its respective label.
+	 *
+	 * The labels are composed from the default names of the attribute labels.
+	 */
+	void assign_labels();
+
+private:
+
+	void do_set_field(const int record_idx, const ATTR& field_type,
+			const std::string& value) final;
+
+	const std::string& do_field(const int i, const ATTR& field_type)
+		const final;
+
+	void do_set_label(const ATTR& field_type, const std::string& label) final;
+
+	std::string do_label(const ATTR& field_type) const final;
+
+	int do_field_idx(const ATTR& field_type) const final;
+
+	bool do_has_field(const ATTR& field_type) const final;
+
+	std::unique_ptr<Result> do_result() const final;
+
+	//
+
+	virtual int get_row(const int i, const int j) const
+	= 0;
+
+	virtual int get_col(const int i, const int j) const
+	= 0;
+
+	virtual void set_field_label(const int field_idx, const std::string& label)
+	= 0;
+
+	virtual std::string field_label(const int field_idx) const
+	= 0;
+
+	std::vector<ATTR> fields_;
+	std::map<ATTR, std::string> labels_;
+};
+
+
+/**
+ * \brief Build a table whose records are rows and the fields are columns.
+ */
+class RowResultComposer final : public ResultComposer
+{
+	size_type do_total_records() const final;
+	size_type do_fields_per_record() const final;
+
+	void set_field_label(const int field_idx, const std::string& label) final;
+	std::string field_label(const int field_idx) const final;
+	int get_row(const int i, const int j) const final;
+	int get_col(const int i, const int j) const final;
+
+public:
+
+	RowResultComposer(const std::size_t entries,
+		const std::vector<ATTR>& order, const bool with_labels);
+};
+
+
+/**
+ * \brief Build a table whose records are columns and the fields are rows.
+ */
+class ColResultComposer final : public ResultComposer
+{
+	size_type do_total_records() const final;
+	size_type do_fields_per_record() const final;
+
+	void set_field_label(const int field_idx, const std::string& label) final;
+	std::string field_label(const int field_idx) const final;
+	int get_row(const int i, const int j) const final;
+	int get_col(const int i, const int j) const final;
+
+public:
+
+	ColResultComposer(const std::size_t entries,
+		const std::vector<ATTR>& order, const bool with_labels);
+};
+
+
+/**
+ * \brief Create a ResultComposer.
+ */
+class ResultComposerBuilder
+{
+public:
+
+	std::unique_ptr<ResultComposer> create_composer(
+		const std::size_t entries,
+		const std::vector<ATTR>& attributes, const bool with_labels) const;
+
+private:
+
+	virtual std::unique_ptr<ResultComposer> do_create_composer(
+		const std::size_t entries,
+		const std::vector<ATTR>& attributes, const bool with_labels) const
+	= 0;
+};
+
+
+/**
+ * \brief Create a RowResultComposer.
+ */
+class RowResultComposerBuilder final : public ResultComposerBuilder
+{
+	std::unique_ptr<ResultComposer> do_create_composer(
+		const std::size_t entries,
+		const std::vector<ATTR>& attributes, const bool with_labels) const
+		final;
+};
+
+
+/**
+ * \brief Create a ColResultComposer.
+ */
+class ColResultComposerBuilder final : public ResultComposerBuilder
+{
+	std::unique_ptr<ResultComposer> do_create_composer(
+		const std::size_t entries,
+		const std::vector<ATTR>& attributes, const bool with_labels) const
+		final;
+};
+
+
+/**
+ * \brief Provide easy format templates for subclasses.
  *
  * Each concrete subclass will provide a function \c format() that accepts
  * exactly the parameters from the template parameter pack as const references.
  */
-template <typename ...Args>
+template <typename T, typename ...Args>
 class Layout
 {
 public:
 
-	using ArgsTuple     = std::tuple<Args...>;
-	using ArgsRefTuple  = std::tuple<const Args&...>;
+	/**
+	 * \brief A tuple of const-references of the input arguments.
+	 */
+	using InputTuple = std::tuple<const Args&...>;
 
 	/**
 	 * \brief Virtual default destructor
@@ -70,7 +458,7 @@ public:
 	 *
 	 * \param[in] t Tuple of the objects to format
 	 */
-	inline std::string format(ArgsRefTuple t) const
+	inline T format(InputTuple t) const
 	{
 		this->assertions(t);
 		return this->do_format(t);
@@ -83,18 +471,18 @@ public:
 	 *
 	 * \param[in] args The objects to format
 	 */
-	inline std::string format(const Args&... args) const
+	inline T format(const Args&... args) const
 	{
 		return this->format(std::make_tuple(args...));
 	}
 
 protected:
 
-	virtual void assertions(ArgsRefTuple) const { /* empty */ };
+	virtual void assertions(InputTuple) const { /* empty */ };
 
 private:
 
-	virtual std::string do_format(ArgsRefTuple args) const
+	virtual T do_format(InputTuple args) const
 	= 0;
 };
 
@@ -109,7 +497,7 @@ private:
 //
 //	using SettingsTuple = std::tuple<Settings...>;
 //	using ArgsTuple     = std::tuple<Args...>;
-//	using ArgsRefTuple  = std::tuple<const Args*...>;
+//	using InputTuple  = std::tuple<const Args*...>;
 //
 //	...
 //};
@@ -119,32 +507,11 @@ private:
 
 
 /**
- * \brief Worker: return underlying value of an integral enum.
- *
- * \tparam E Enum to get the underlying type for
- */
-template <typename E>
-inline constexpr auto to_underlying(E e) noexcept
-{
-    return static_cast<std::underlying_type_t<E>>(e);
-}
-
-
-/**
- * \brief Interface for formatting Checksums.
- */
-class ChecksumLayout : public Layout<Checksum, int>
-{
-	/* empty */
-};
-
-
-/**
- * \brief Internal flag API
+ * \brief Access non-public flags.
  *
  * Provides 32 boolean states with accessors.
  */
-class InternalFlags
+class InternalFlags final
 {
 public:
 
@@ -221,7 +588,7 @@ public:
 	/**
 	 * \brief Construct with individual flags.
 	 */
-	explicit WithInternalFlags(const uint32_t flags) : settings_ { flags }
+	explicit WithInternalFlags(const uint32_t flags) : flags_ { flags }
 		{ /* empty */ }
 
 	/**
@@ -238,23 +605,29 @@ protected:
 	 *
 	 * \return Settings.
 	 */
-	InternalFlags& settings() { return settings_; }
+	InternalFlags& flags() { return flags_; }
 
 	/**
 	 * \brief Access internal settings.
 	 *
 	 * \return Settings.
 	 */
-	const InternalFlags& settings() const { return settings_; }
+	const InternalFlags& flags() const { return flags_; }
 
 private:
 
-	InternalFlags settings_;
+	InternalFlags flags_;
 };
 
 
 /**
- * \brief Format numbers in hexadecimal representation
+ * \brief Interface for formatting Checksums.
+ */
+using ChecksumLayout = Layout<std::string, Checksum, int>;
+
+
+/**
+ * \brief Format Checksums in hexadecimal representation.
  */
 class HexLayout : protected WithInternalFlags
 				, public ChecksumLayout
@@ -296,73 +669,45 @@ public:
 
 private:
 
-	std::string do_format(ArgsRefTuple t) const override;
+	std::string do_format(InputTuple t) const override;
 };
 
 
 /**
- * \brief Property to set or use a layout for printing checksums.
+ * \brief Interface for formatting ARTriplets.
  */
-class WithChecksumLayout
-{
-public:
-
-	/**
-	 * \brief Default constructor
-	 *
-	 * Initializes a default HexLayout.
-	 */
-	WithChecksumLayout();
-
-	/**
-	 * \brief Virtual destructor.
-	 */
-	virtual ~WithChecksumLayout() noexcept;
-
-	/**
-	 * \brief Set the layout for printing the checksums
-	 *
-	 * \param[in] layout Layout for printing the checksums
-	 */
-	void set_checksum_layout(std::unique_ptr<ChecksumLayout> &layout);
-
-	/**
-	 * \brief Return the layout for printing the checksums
-	 *
-	 * \return Layout for printing the checksums
-	 */
-	const ChecksumLayout& checksum_layout() const;
-
-private:
-
-	std::unique_ptr<ChecksumLayout> checksum_layout_;
-};
+using TripletLayout = Layout<std::string, int, ARTriplet>;
 
 
 /**
- * \brief Abstract base class for output formats of ARTriplet.
+ * \brief Interface for formatting ARTriplet instances for output.
  */
 class ARTripletLayout : protected WithInternalFlags
-					  , public Layout<int, ARTriplet>
+					  , public TripletLayout
 {
 public:
 
-	using Layout<int, ARTriplet>::Layout;
+	using TripletLayout::Layout;
 
 private:
 
 	// no assertions()
 
-	std::string do_format(ArgsRefTuple t) const override;
+	std::string do_format(InputTuple t) const override;
 };
 
 
 /**
- * \brief Abstract base class for output formats of ARId.
+ * \brief Interface for formatting ARIds.
+ */
+using IdLayout = Layout<std::string, ARId, std::string>;
+
+
+/**
+ * \brief Interface for formatting ARId instances for output.
  */
 class ARIdLayout : protected WithInternalFlags
-				 , public WithChecksumLayout
-				 , public Layout<ARId, std::string> // TODO Do also Settings!
+				 , public IdLayout // TODO Do also Settings!
 {
 public:
 
@@ -530,6 +875,8 @@ public:
 	 */
 	bool has_only(const ARID_FLAG flag) const;
 
+	std::unique_ptr<ARIdLayout> clone() const;
+
 private:
 
 	/**
@@ -537,7 +884,8 @@ private:
 	 *
 	 * Order matches definition order in ARID_FLAG.
 	 */
-	const std::array<ARID_FLAG, to_underlying(ARID_FLAG::COUNT)> show_flags_
+	const std::array<ARID_FLAG,
+		details::to_underlying(ARID_FLAG::COUNT)> show_flags_
 	{
 		ARID_FLAG::ID,
 		ARID_FLAG::URL,
@@ -553,7 +901,8 @@ private:
 	 *
 	 * Order matches definition order in ARID_FLAG.
 	 */
-	const std::array<std::string, to_underlying(ARID_FLAG::COUNT)> labels_
+	const std::array<std::string,
+		details::to_underlying(ARID_FLAG::COUNT)> labels_
 	{
 		"ID",
 		"URL",
@@ -564,9 +913,13 @@ private:
 		"CDDB ID"
 	};
 
-	//std::string do_format(ArgsRefTuple t) const
-
+	/**
+	 * \brief Field labels.
+	 */
 	bool field_labels_;
+
+	virtual std::unique_ptr<ARIdLayout> do_clone() const
+	= 0;
 
 protected:
 
@@ -602,91 +955,133 @@ public:
 
 private:
 
-	std::string do_format(ArgsRefTuple t) const override;
+	std::unique_ptr<ARIdLayout> do_clone() const override;
+
+	std::string do_format(InputTuple t) const override;
 };
 
 
 /**
- * \brief Abstract base class for output formats that conatin an ARId.
+ * \brief An ARId accompanied by a layout and an optional URL prefix.
+ *
+ * This object contains all information necessary to be be printed.
  */
-class WithARIdLayout
+class RichARId
 {
 public:
 
 	/**
-	 * \brief Constructor.
-	 */
-	WithARIdLayout();
-
-	/**
-	 * \brief Constructor.
+	 * \brief An ARId with every information required for printing.
 	 *
-	 * \param[in] arid_layout The ARIdLayout to set
+	 * \param[in] id      ARId to print
+	 * \param[in] layout  Layout to use for printing
 	 */
-	explicit WithARIdLayout(std::unique_ptr<ARIdLayout> arid_layout);
+	RichARId(const ARId& id, std::unique_ptr<ARIdLayout> layout);
 
 	/**
-	 * \brief Virtual default destructor.
+	 * \brief An ARId with every information required for printing.
+	 *
+	 * \param[in] id         ARId to print
+	 * \param[in] layout     Layout to use for printing
+	 * \param[in] alt_prefix Optional alternative URL prefix
 	 */
-	virtual ~WithARIdLayout() noexcept;
+	RichARId(const ARId& id, std::unique_ptr<ARIdLayout> layout,
+			const std::string& alt_prefix);
+
+
+	const ARId& id() const;
+
+	const ARIdLayout& layout() const;
+
+	const std::string& alt_prefix() const;
+
+private:
+
+	ARId id_;
+
+	std::unique_ptr<ARIdLayout> layout_;
+
+	std::string alt_prefix_;
+};
+
+
+std::ostream& operator << (std::ostream& o, const RichARId& a);
+
+
+/**
+ * \brief Abstract base class for result formatting.
+ */
+class ResultFormatter : public WithInternalFlags
+{
+public:
 
 	/**
-	 * \brief Set the format to use for formatting the ARId.
+	 * \brief Set the ResultComposerBuilder to use.
+	 *
+	 * \param[in] c The ResultComposerBuilder to use
+	 */
+	void set_builder_creator(std::unique_ptr<ResultComposerBuilder> c);
+
+	/**
+	 * \brief The ResultComposerBuilder to use.
+	 *
+	 * \return The ResultComposerBuilder to use
+	 */
+	const ResultComposerBuilder* builder_creator() const;
+
+	/**
+	 * \brief Create the internal ResultComposer to compose the result data.
+	 *
+	 * Uses the internal ResultComposer instance.
+	 */
+	std::unique_ptr<ResultComposer> create_composer(
+		const std::size_t entries,
+		const std::vector<ATTR>& attributes, const bool with_labels) const;
+
+	/**
+	 * \brief Set the layout to use for formatting the output table.
+	 *
+	 * \param[in] table_layout The StringTableLayout to set
+	 */
+	void set_table_layout(const StringTableLayout& table_layout);
+
+	/**
+	 * \brief Layout to use for formatting the output table.
+	 *
+	 * \return The StringTableLayout to use
+	 */
+	StringTableLayout table_layout() const;
+
+	/**
+	 * \brief Set the layout to use for formatting the ARId.
 	 *
 	 * \param[in] arid_layout The ARIdLayout to set
 	 */
 	void set_arid_layout(std::unique_ptr<ARIdLayout> arid_layout);
 
 	/**
-	 * \brief Read the format to use for formatting the ARId.
+	 * \brief Layout to use for formatting the ARId.
 	 *
 	 * \return The internal ARIdLayout
 	 */
-	ARIdLayout* arid_layout();
-
-private:
+	const ARIdLayout* arid_layout() const;
 
 	/**
-	 * \brief Format for the ARId.
-	 */
-	std::unique_ptr<ARIdLayout> arid_layout_;
-};
-
-
-/**
- * \brief Adds flags for showing track, offset, length or filename.
- */
-class WithMetadataFlagMethods : protected WithInternalFlags
-{
-public:
-
-	/**
-	 * \brief Constructor.
+	 * \brief Set the layout for printing the checksums
 	 *
-	 * \param[in] label    Set to TRUE for printing labels
-	 * \param[in] track    Set to TRUE for printing track number (if any)
-	 * \param[in] offset   Set to TRUE for printing offset (if any)
-	 * \param[in] length   Set to TRUE for printing length (if any)
-	 * \param[in] filename Set to TRUE for printing filename (if any)
+	 * \param[in] layout Layout for printing the checksums
 	 */
-	WithMetadataFlagMethods(const bool label, const bool track,
-			const bool offset, const bool length, const bool filename);
+	void set_checksum_layout(std::unique_ptr<ChecksumLayout> layout);
 
 	/**
-	 * \brief Default constructor.
+	 * \brief Return the layout for printing the checksums
 	 *
-	 * Constructs an instance with all flags FALSE.
+	 * \return Layout for printing the checksums
 	 */
-	WithMetadataFlagMethods() : WithMetadataFlagMethods(
-			false, false, false, false, false) {}
+	const ChecksumLayout* checksum_layout() const;
 
 	/**
-	 * \brief Virtual default destructor
-	 */
-	virtual ~WithMetadataFlagMethods() noexcept;
-
-	/**
-	 * \brief Returns TRUE iff instance is configured to format the label.
+	 * \brief Return TRUE iff instance is configured to format the label.
 	 *
 	 * Intended to control the printing of column titles and row labels.
 	 *
@@ -759,469 +1154,194 @@ public:
 	 * \param[in] filename Flag to set for printing the filename
 	 */
 	void set_filename(const bool &filename);
-};
-
-
-/**
- * \brief Cell types for album information
- */
-enum class CELL_TYPE : int
-{
-	TRACK    = 1,
-	FILENAME = 2,
-	OFFSET   = 3,
-	LENGTH   = 4,
-	CHECKSUM = 5,
-	MATCH    = 6
-};
-
-
-/**
- * \brief Default values
- */
-namespace defaults
-{
-
-/**
- * \brief Return default title for columns or rows of the given type
- *
- * \param[in] type The type to get the default title for
- *
- * \return Default title for columns of this \c type
- */
-std::string label(const CELL_TYPE type);
-
-/**
- * \brief Return default width for columns of the given type
- *
- * \param[in] type The type to get the default width for
- *
- * \return Default width for columns of this \c type
- */
-int width(const CELL_TYPE type);
-
-} //namespace defaults
-
-
-/**
- * \brief Convert from CELL_TYPE to int
- *
- * \param[in] type Type to convert
- *
- * \return Integer representing this type
- */
-int convert_from(const CELL_TYPE type);
-
-
-/**
- * \brief Convert to CELL_TYPE from int
- *
- * \param[in] type Integer representing the type
- *
- * \return Column type
- */
-CELL_TYPE convert_to(const int type);
-
-
-/**
- * \brief A table based format for album data with untyped columns.
- *
- * The tracks are columns and the rows are TOC data or checksums.
- *
- * A layout can be set to format the cells in columns holding checksums.
- */
-class TypedRowsTableBase	: public WithMetadataFlagMethods
-							, virtual public WithARIdLayout
-							, virtual public WithChecksumLayout
-							, virtual public StringTableStructure
-{
-public:
-
-	/**
-	 * \brief Constructor.
-	 *
-	 * \param[in] rows     Number of rows
-	 * \param[in] columns  Number of columns
-	 * \param[in] label    Set to TRUE for printing column titles
-	 * \param[in] track    Set to TRUE for printing track number (if any)
-	 * \param[in] offset   Set to TRUE for printing offset (if any)
-	 * \param[in] length   Set to TRUE for printing length (if any)
-	 * \param[in] filename Set to TRUE for printing filename (if any)
-	 */
-	TypedRowsTableBase(const int rows, const int columns,
-			const bool label, const bool track, const bool offset,
-			const bool length, const bool filename);
-
-	/**
-	 * \brief Constructor.
-	 *
-	 * \param[in] rows    Number of rows
-	 * \param[in] columns Number of columns
-	 */
-	TypedRowsTableBase(const int rows, const int columns)
-		: TypedRowsTableBase(rows, columns, true, true, true, true, true)
-	{ /* empty */ };
-
-	/**
-	 * \brief Constructor.
-	 */
-	TypedRowsTableBase()
-		: TypedRowsTableBase(0, 0, true, true, true, true, true)
-	{ /* empty */ };
-
-	// FIXME Make abstract!
 
 protected:
 
 	/**
-	 * \brief Apply labels to rows.
+	 * \brief Build the result representation.
 	 *
-	 * The metadata rows are: 'Tracks', 'Filenames', 'Offsets' and 'Lengths'.
-	 * Those are equal for many types of tables.
+	 * Calls create_attributes() to determine and create the attributes for the
+	 * result object, create_composer() to instantiate the ResultComposer
+	 * instance, and build_table() to populate the result table with the
+	 * relevant data.
 	 *
-	 * \param[in] is_album Flag to indicate whether the layout is for an album
-	 *
-	 * \return Number of metadata rows
+	 * \param[in] checksums      Calculated checksums
+	 * \param[in] refsums        Reference checksums
+	 * \param[in] diff           Match between calculation and reference
+	 * \param[in] block          Best block in \c diff
+	 * \param[in] toc            TOC for calculated checksums
+	 * \param[in] arid           ARId of input
+	 * \param[in] alt_prefix     Alternative AccurateRip URL prefix
+	 * \param[in] filenames      List of input filenames
+	 * \param[in] types_to_print List of Checksum types requested for print
 	 */
-	int rows_apply_md_settings(const bool is_album);
-};
-
-
-/**
- * \brief A table based format for album data with typed columns.
- *
- * The tracks are rows and the columns are TOC data or checksums.
- *
- * A layout can be set to format the cells in columns holding checksums.
- *
- * Concrete subclasses define how to preconfigure the columns for checksums or
- * match flags.
- */
-class TypedColsTableBase	: public WithMetadataFlagMethods
-							, virtual public WithARIdLayout
-							, virtual public WithChecksumLayout
-							, virtual public StringTableStructure
-{
-public:
+	std::unique_ptr<Result> build_result(
+		const Checksums& checksums, const std::vector<Checksum>& refsums,
+		const Match* diff, int block, const TOC* toc, const ARId& arid,
+		const std::string& alt_prefix,
+		const std::vector<std::string>& filenames,
+		const std::vector<arcstk::checksum::type>& types_to_print) const;
 
 	/**
-	 * \brief Constructor.
+	 * \brief Validate the result objects common to every result.
 	 *
-	 * \param[in] rows     Number of rows
-	 * \param[in] columns  Number of columns
-	 * \param[in] label    Set to TRUE for printing column titles
-	 * \param[in] track    Set to TRUE for printing track number (if any)
-	 * \param[in] offset   Set to TRUE for printing offset (if any)
-	 * \param[in] length   Set to TRUE for printing length (if any)
-	 * \param[in] filename Set to TRUE for printing filename (if any)
+	 * Throws if validation fails.
+	 *
+	 * \param[in] checksums  Checksums as resulted
+	 * \param[in] filenames  Filenames as resulted
+	 * \param[in] toc        TOC as resulted
+	 * \param[in] arid       ARId as resulted
 	 */
-	TypedColsTableBase(const int rows, const int columns,
-			const bool label, const bool track, const bool offset,
-			const bool length, const bool filename);
+	void validate(const Checksums& checksums, const TOC* toc,
+		const ARId& arid, const std::vector<std::string>& filenames) const;
 
 	/**
-	 * \brief Constructor.
+	 * \brief Create the result attributes.
 	 *
-	 * \param[in] rows    Number of rows
-	 * \param[in] columns Number of columns
+	 * \param[in] tracks    Iff TRUE, print tracks
+	 * \param[in] offsets   Iff TRUE, print offsets
+	 * \param[in] lengths   Iff TRUE, print lengths
+	 * \param[in] filenames Iff TRUE, print filenames
+	 * \param[in] types     List of checksum types to print
+	 *
+	 * \return Sequence of result attributes to form an record
 	 */
-	TypedColsTableBase(const int rows, const int columns)
-		: TypedColsTableBase(rows, columns, true, true, true, true, true)
-	{ /* empty */ };
+	std::vector<ATTR> create_attributes(const bool tracks,
+		const bool offsets, const bool lengths, const bool filenames,
+		const std::vector<arcstk::checksum::type>& types) const;
 
 	/**
-	 * \brief Constructor.
+	 * \brief Description.
 	 */
-	TypedColsTableBase()
-		: TypedColsTableBase(0, 0, true, true, true, true, true)
-	{ /* empty */ };
+	RichARId build_id(const TOC* toc, const ARId& arid,
+		const std::string& alt_prefix) const;
 
 	/**
-	 * \brief Set column type for specified column
+	 * \brief Build the result table.
 	 *
-	 * \param[in] col  The column to set the type for
-	 * \param[in] type The type to set
+	 * \param[in] checksums   Checksums as resulted
+	 * \param[in] refsums     Reference checksums as specified
+	 * \param[in] match       Match object (maybe null)
+	 * \param[in] block       Index to choose from \c match
+	 * \param[in] filenames   Filenames as resulted
+	 * \param[in] toc         TOC as resulted
+	 * \param[in] arid        ARId as resulted
+	 * \param[in] b           ResultComposer to use
+	 * \param[in] p_tracks    Iff TRUE, print tracks
+	 * \param[in] p_offsets   Iff TRUE, print offsets
+	 * \param[in] p_lengths   Iff TRUE, print lengths
+	 * \param[in] p_filenames Iff TRUE, print filenames
+	 * \param[in] types       List of checksum types to print
+	 *
+	 * \return Table with result data
 	 */
-	void assign_type(const int col, const CELL_TYPE type);
+	StringTable build_table(const Checksums& checksums,
+		const std::vector<Checksum>& refsums,
+		const Match* match, const int block,
+		const TOC* toc, const ARId& arid,
+		const std::vector<std::string>& filenames,
+		const bool p_tracks, const bool p_offsets, const bool p_lengths,
+		const bool p_filenames,
+		const std::vector<arcstk::checksum::type>& types) const;
 
 	/**
-	 * \brief Return type of specified column
+	 * \brief Print their checksums.
 	 *
-	 * \param[in] col Column index
+	 * Used by build_table().
 	 *
-	 * \return Type of specified column
+	 * Note that \c record also determines access to \c checksums.
+	 *
+	 * \param[in] checksums  Reference checksums
+	 * \param[in] t          Checksum type to print
+	 * \param[in] record      Index of the record in \c b to edit
+	 * \param[in] b          ResultComposer to use
 	 */
-	CELL_TYPE type_of(const int col) const;
+	void their_checksum(const std::vector<Checksum>& checksums,
+		const arcstk::checksum::type t, const int record, ResultComposer* b) const;
 
 	/**
-	 * \brief Set widths of all columns with given type
+	 * \brief Print my checksums.
 	 *
-	 * \param[in] type  The type to get the default title for
-	 * \param[in] width The width to set for columns of this \c type
+	 * Used by build_table().
+	 *
+	 * Note that \c record also determines access to \c checksums.
+	 *
+	 * \param[in] checksums  Result checksums
+	 * \param[in] t          Checksum type to print
+	 * \param[in] record      Index of the record in \c b to edit
+	 * \param[in] b          ResultComposer to use
+	 * \param[in] match      Decide to print match_symbol() or checksum
 	 */
-	void set_widths(const CELL_TYPE type, const int width);
-
-protected:
+	void mine_checksum(const Checksums& checksums,
+		const arcstk::checksum::type t, const int record, ResultComposer* b,
+		const bool match) const;
 
 	/**
-	 * \brief Return number of declared metadata columns.
+	 * \brief Worker for mine_checksums().
 	 *
-	 * \return Number of declared metadata columns.
+	 * If checksum_layout() is available for formatting the checksums, it
+	 * is used, otherwise the fitting implementation of operator '<<' is
+	 * picked (which could be libarcstk's).
+	 *
+	 * The caller is responsible that \c record picks an existing column
+	 * in \c b. (E.g. you wont' pass 'mine' in some subclass like
+	 * CalcResultFormatter that does not define an attribute 'mine'.)
+	 *
+	 * \param[in] checksums  Result checksums
+	 * \param[in] type       Checksum type to print
+	 * \param[in] record      Index of the record in \c b to edit
+	 * \param[in] func       Cell reference function to use
 	 */
-	int total_metadata_columns() const;
-
-	/**
-	 * \brief Apply types and standard settings to metadata columns.
-	 *
-	 * The metadata columns are: 'Tracks', 'Filenames', 'Offsets' and 'Lengths'.
-	 * Those are equal for many types of tables.
-	 *
-	 * \return Number of metadata columns
-	 */
-	int columns_apply_md_settings();
+	void checksum_worker(const int record, ATTR a, const Checksum& checksum,
+		ResultComposer* b) const;
 
 private:
 
-	/**
-	 * \brief Apply default settings to the CHECKSUM and MATCH columns
-	 *
-	 * To be called after the metadata columns are initialized, i.e. after
-	 * columns_apply_settings() has been called.
-	 *
-	 * It is expected that this function initializes the columns that are
-	 * typed CHECKSUM and MATCH.
-	 *
-	 * \param[in] types List of types
-	 */
-	virtual int columns_apply_cs_settings(
-			const std::vector<arcstk::checksum::type> &types)
+	virtual std::vector<ATTR> do_create_attributes(
+		const bool tracks, const bool offsets, const bool lengths,
+		const bool filenames,
+		const std::vector<arcstk::checksum::type>& types_to_print) const
 	= 0;
-};
-
-
-/**
- * \brief Base class for users of a StringTableStructure.
- */
-class TableUser : public WithMetadataFlagMethods
-{
-public:
 
 	/**
-	 * \brief Common constructor.
+	 * \brief Configure ResultComposer.
 	 *
-	 * \param[in] label    Set to TRUE for printing column titles
-	 * \param[in] track    Set to TRUE for printing track number (if any)
-	 * \param[in] offset   Set to TRUE for printing offset (if any)
-	 * \param[in] length   Set to TRUE for printing length (if any)
-	 * \param[in] filename Set to TRUE for printing filename (if any)
-	 * \param[in] coldelim Set column delimiter
-	 */
-	TableUser(const bool label, const bool track,
-			const bool offset, const bool length, const bool filename,
-			const std::string &coldelim);
-
-	/**
-	 * \brief Returns the column delimiter.
+	 * This is called by build_result() before the composer creates the result
+	 * object. Its configuration can be adjusted by implementing this function.
 	 *
-	 * \return Delimiter for columns
+	 * \param[in,out] composer The ResultComposer to be configured
 	 */
-	std::string column_delimiter() const;
+	virtual void configure_composer(ResultComposer& composer) const
+	= 0;
+
+	virtual void do_their_checksum(const std::vector<Checksum>& checksums,
+		const arcstk::checksum::type t, const int record, ResultComposer* b) const
+	= 0;
+
+	virtual void do_mine_checksum(const Checksums& checksums,
+		const arcstk::checksum::type t, const int record, ResultComposer* b,
+		const bool match) const
+	= 0;
 
 	/**
-	 * \brief Set the column delimiter.
-	 *
-	 * \param[in] coldelim New column delimiter
+	 * \brief Internal ResultComposerBuilder.
 	 */
-	void set_column_delimiter(const std::string &coldelim);
-
-private:
-
-	std::string coldelim_;
-};
-
-
-
-/**
- * \brief Interface for formatting the results of the CALC application.
- */
-class CalcResultLayout : public TableUser
-					   , public Layout < Checksums,
-										 std::vector<std::string>,
-										 const TOC*,
-										 ARId,
-										 bool >
-{
-public:
-
-	using TableUser::TableUser;
-
-protected:
-
-	void assertions(ArgsRefTuple t) const override;
-};
-
-
-/**
- * \brief Formatting the result of an album-mode calculation as a table.
- */
-class CalcAlbumTableLayout final : public CalcResultLayout
-{
-public:
-
-	using CalcResultLayout::CalcResultLayout;
-
-private:
+	std::unique_ptr<ResultComposerBuilder> builder_creator_;
 
 	/**
-	 * \brief Internal table class.
+	 * \brief Format for the result StringTable.
 	 */
-	class TableLayout : public TypedColsTableBase
-	{
-	public:
-
-		friend CalcAlbumTableLayout;
-
-		using TypedColsTableBase::TypedColsTableBase;
-
-	private:
-
-		void do_init(const int, const int) override { /* empty */ };
-
-		int columns_apply_cs_settings(
-			const std::vector<arcstk::checksum::type> &types) override;
-	};
-
-	std::string do_format(ArgsRefTuple t) const override;
-};
-
-
-/**
- * \brief Formatting the result of a tracks-mode calculation as a table.
- */
-class CalcTracksTableLayout final : public CalcResultLayout // TODO Redundant?
-{
-public:
-
-	using CalcResultLayout::CalcResultLayout;
-
-private:
+	StringTableLayout table_layout_;
 
 	/**
-	 * \brief Internal table class.
+	 * \brief Format for the ARId.
 	 */
-	class TableLayout : public TypedRowsTableBase
-	{
-	public:
-
-		friend CalcTracksTableLayout;
-
-		using TypedRowsTableBase::TypedRowsTableBase;
-
-	private:
-
-		void do_init(const int, const int) override { /* empty */ };
-	};
-
-	std::string do_format(ArgsRefTuple t) const override;
-};
-
-
-/**
- * \brief Interface for formatting the results of the VERIFY application.
- */
-class VerifyResultLayout : public TableUser
-						 , public Layout < Checksums,
-										   std::vector<std::string>,
-										   std::vector<Checksum>,
-										   const Match*,
-										   int,
-										   bool,
-										   const TOC*,
-										   ARId >
-{
-public:
+	std::unique_ptr<ARIdLayout> arid_layout_;
 
 	/**
-	 * \brief Constructor.
-	 *
-	 * \param[in] label    Set to TRUE for printing column titles
-	 * \param[in] track    Set to TRUE for printing track number (if any)
-	 * \param[in] offset   Set to TRUE for printing offset (if any)
-	 * \param[in] length   Set to TRUE for printing length (if any)
-	 * \param[in] filename Set to TRUE for printing filename (if any)
-	 * \param[in] coldelim Set column delimiter
+	 * \brief Format for the Checksums.
 	 */
-	VerifyResultLayout(const bool label, const bool track,
-			const bool offset, const bool length, const bool filename,
-			const std::string &coldelim)
-		: TableUser(label, track, offset, length, filename, coldelim)
-		, match_symbol_ { "   ==   " }
-	{ /* empty */ }
-
-	/**
-	 * \brief Set the symbol to be printed on identity of two checksum values.
-	 *
-	 * When some values do not match, the respective values are printed.
-	 *
-	 * \param[in] match_symbol The symbol to represent a match
-	 */
-	void set_match_symbol(const std::string &match_symbol);
-
-	/**
-	 * \brief The symbol to be printed on identity of two checksum values.
-	 *
-	 * When some values do not match, the respective values are printed.
-	 *
-	 * \return Match symbol
-	 */
-	const std::string& match_symbol() const;
-
-protected:
-
-	void assertions(ArgsRefTuple t) const override;
-
-private:
-
-	//std::string do_format(ArgsRefTuple t) const
-
-	/**
-	 * \brief The symbol to be printed on identity of two checksum values.
-	 */
-	std::string match_symbol_;
-};
-
-
-/**
- * \brief Formatting the result of a verification as a table.
- */
-class VerifyTableLayout final : public VerifyResultLayout
-{
-public:
-
-	using VerifyResultLayout::VerifyResultLayout;
-
-private:
-
-	/**
-	 * \brief Internal table class.
-	 */
-	class TableLayout : public TypedColsTableBase
-	{
-	public:
-
-		friend VerifyTableLayout;
-
-		using TypedColsTableBase::TypedColsTableBase;
-
-	private:
-
-		void do_init(const int, const int) override { /* empty */ };
-
-		int columns_apply_cs_settings(
-			const std::vector<arcstk::checksum::type> &types) override;
-	};
-
-	std::string do_format(ArgsRefTuple t) const override;
+	std::unique_ptr<ChecksumLayout> checksum_layout_;
 };
 
 } // namespace arcsapp

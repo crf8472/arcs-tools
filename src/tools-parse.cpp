@@ -2,6 +2,13 @@
 #include "tools-parse.hpp"
 #endif
 
+#ifdef _WIN32 // XXX This is completely untested
+
+#include <io.h>     // for stdin
+#include <fcntl.h>  // for _setmode, 0_BINARY
+
+#endif
+
 #include <fstream>                // for ostream, dec, ios_base, ios_base::f...
 #include <iostream>               // for cout
 #include <sstream>                // for ostringstream
@@ -14,11 +21,8 @@
 #include <arcstk/logging.hpp>
 #endif
 
-#ifndef __ARCSTOOLS_APPLICATION_HPP__
-#include "application.hpp"
-#endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"            // for ARTripletLayout
+#include "layouts.hpp"            // for ARIdLayout, ARTripletLayout
 #endif
 
 namespace arcsapp

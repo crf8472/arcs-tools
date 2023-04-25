@@ -153,6 +153,7 @@ add_library (${PROJECT_NAME}-objects OBJECT
 	${PROJECT_SOURCE_DIR}/tools-fs.cpp
 	${PROJECT_SOURCE_DIR}/tools-info.cpp
 	${PROJECT_SOURCE_DIR}/tools-parse.cpp
+	${PROJECT_SOURCE_DIR}/result.cpp
 	${PROJECT_BUILD_SOURCE_DIR}/version.cpp )
 
 target_include_directories (${PROJECT_NAME}-objects

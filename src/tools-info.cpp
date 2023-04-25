@@ -7,6 +7,8 @@
 #include <iterator>            // for ostream_iterator
 #include <sstream>             // for ostringstream
 
+#include <iostream>
+
 #ifndef __LIBARCSDEC_DESCRIPTORS_HPP__
 #include <arcsdec/descriptor.hpp>   // for FileReaderDescriptor
 #endif
@@ -14,24 +16,25 @@
 #include <arcsdec/calculators.hpp>  // for ARCSCalculator, TOCParser
 #endif
 
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"          // for StringTable
+#ifndef __ARCSTOOLS_TABLE_HPP__
+#include "table.hpp"                // for StringTable
 #endif
 
 namespace arcsapp
 {
 
+
 /**
  * \brief Collect descriptor infos
  */
-class InfoCollector final
+class InfoResultComposer final
 {
 public:
 
 	/**
 	 * \brief Constructor
 	 */
-	InfoCollector();
+	InfoResultComposer();
 
 	/**
 	 * \brief Add information represented by a descriptor
@@ -45,14 +48,7 @@ public:
 	 *
 	 * \return Information collected
 	 */
-	const StringTable& info() const;
-
-	/**
-	 * \brief TRUE while nothing was collected.
-	 *
-	 * \return TRUE while nothign was collected, otherwise FALSE.
-	 */
-	bool empty() const;
+	const StringTable& table() const;
 
 private:
 
@@ -63,101 +59,99 @@ private:
 };
 
 
-InfoCollector::InfoCollector()
-	: table_ { 0/* rows */, 3/* cols */, true/* append rows */ }
+InfoResultComposer::InfoResultComposer()
+	: table_ { 0/* rows */, 4/* cols */ }
 {
-	table_.set_title(0, "Name");
-	table_.set_dynamic_width(0);
-	table_.set_alignment(0, true);
+	using table::Align;
 
-	table_.set_title(1, "Libraries");
-	table_.set_dynamic_width(1);
-	table_.set_alignment(1, true);
+	table_.set_col_label(0, "ID");
 
-	table_.set_title(2, "Formats");
-	table_.set_dynamic_width(2);
-	table_.set_alignment(2, true);
+	table_.set_col_label(1, "Libraries");
+	table_.set_align(1, Align::BLOCK);
+
+	table_.set_col_label(2, "File Formats");
+	table_.set_align(2, Align::BLOCK);
+	table_.set_max_width(2, 13);
+
+	table_.set_col_label(3, "Codecs");
+	table_.set_align(3, Align::BLOCK);
+	table_.set_max_width(3, 17); // libarcsdec max codec name length
 }
 
 
-void InfoCollector::add(const arcsdec::FileReaderDescriptor &descriptor)
+void InfoResultComposer::add(const arcsdec::FileReaderDescriptor &descriptor)
 {
-	// aggregate of all involved libraries
+	const std::string sep { " " };
 
-	auto dependencies = descriptor.libraries();
+	// Aggregate all libraries
 
-	// Comma-separated list of Format names
+	std::string deps;
+	{
+		const auto dependencies = descriptor.libraries();
+		for (const auto& dep : dependencies)
+		{
+			deps += dep.second + sep;
 
-	std::string formats = details::to_sep_list(descriptor.formats(), " ",
-			[](arcsdec::Format f) -> std::string
+			if (table_.max_width(1) < dep.second.length())
 			{
-				// Transform Container Formats to Filetype Suffices
-				auto name = arcsdec::name(f);
-				std::transform(name.begin(), name.end(), name.begin(),
-					[](unsigned char c){ return std::tolower(c); });
-				return "." + name;
-			});
+				table_.set_max_width(1, dep.second.length());
+			}
+		}
+	}
 
-	// Comma-separated list of Codec names
+	// Space-separated list of Format names
+
+	using format_func = std::string (*)(arcsdec::Format);
+	const format_func f = &arcsdec::name;
+	const std::string fmts = details::to_sep_list(descriptor.formats(), sep, f);
+
+	// Space-separated list of Codec names
 
 	using codec_func = std::string (*)(arcsdec::Codec);
-	codec_func c = &arcsdec::name;
-	std::string codecs = details::to_sep_list(descriptor.codecs(), " ", c);
+	const codec_func c = &arcsdec::name;
+	const std::string cdecs = details::to_sep_list(descriptor.codecs(), sep, c);
 
-	// Compose table: Add row for the current descriptor
+	// Compose table: Add rows for the current descriptor
 
-	int row = table_.current_row();
-	table_.update_cell(row, 0, descriptor.name());
+	const auto row { table_.rows() };
 
-	auto current_row = row;
-	for (const auto& dep : dependencies)
-	{
-		table_.update_cell(current_row++, 1, dep.second); // dep.first == libname
-	}
-	table_.update_cell(row, 2, formats);
-	table_.update_cell(++row, 2, codecs);
+	table_.cell(row, 0) = descriptor.id();
+	table_.cell(row, 1) = deps;
+	table_.cell(row, 2) = fmts;
+	table_.cell(row, 3) = cdecs;
 }
 
 
-const StringTable& InfoCollector::info() const
+const StringTable& InfoResultComposer::table() const
 {
 	return table_;
 }
 
 
-bool InfoCollector::empty() const
-{
-	return table_.empty();
-}
-
-
-// traverse
-
-
-template <class Container>
-void traverse(InfoCollector &collector, const Container& c)
-{
-	const auto cp = &collector;
-	std::for_each(c.readers()->begin(), c.readers()->end(),
-		[cp](const auto& key_value_pair)
-		{
-			cp->add(*key_value_pair.second);
-		});
-}
-
-
-// info
+// DefaultReaders
 
 
 template <class Calculator>
-StringTable DefaultReaders()
+StringTable DefaultReaders(const std::function<
+		bool(const arcsdec::FileReaderDescriptor &descriptor)>& filter_func)
 {
-	InfoCollector collector;
+	const auto readers { std::make_unique<Calculator>()->readers() };
+
+	auto builder = InfoResultComposer{};
+	const auto collect = [&builder,&filter_func](const auto& key_value_pair)
 	{
-		Calculator calculator;
-		traverse<Calculator>(collector, calculator);
-	}
-	return collector.info();
+		if (filter_func(*key_value_pair.second))
+		{
+			builder.add(*key_value_pair.second);
+		}
+	};
+
+	using std::begin;
+	using std::end;
+
+	std::for_each(begin(*readers), end(*readers), collect);
+
+	return builder.table();
 }
 
 
@@ -166,14 +160,30 @@ StringTable DefaultReaders()
 
 const StringTable& AvailableFileReaders::audio()
 {
-	static StringTable table { DefaultReaders<arcsdec::ARCSCalculator>() };
+	using arcsdec::FileReaderDescriptor;
+	using arcsdec::InputType;
+
+	static StringTable table { DefaultReaders<arcsdec::ARCSCalculator>(
+			[](const FileReaderDescriptor& d) -> bool
+			{
+				return InputType::AUDIO == d.input_type();
+			}) };
+
 	return table;
 }
 
 
 const StringTable& AvailableFileReaders::toc()
 {
-	static StringTable table { DefaultReaders<arcsdec::TOCParser>() };
+	using arcsdec::FileReaderDescriptor;
+	using arcsdec::InputType;
+
+	static StringTable table { DefaultReaders<arcsdec::TOCParser>(
+			[](const FileReaderDescriptor& d) -> bool
+			{
+				return InputType::TOC == d.input_type();
+			}) };
+
 	return table;
 }
 

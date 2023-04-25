@@ -2,13 +2,6 @@
 #include "app-parse.hpp"
 #endif
 
-#ifdef _WIN32 // XXX This is completely untested
-
-#include <io.h>     // for stdin
-#include <fcntl.h>  // for _setmode, 0_BINARY
-
-#endif
-
 #include <cstdlib>             // for EXIT_SUCCESS
 #include <iostream>            // for operator<<, cout, ostream, basic_ostream
 #include <memory>              // for make_unique, unique_ptr, allocator
@@ -24,13 +17,16 @@
 #endif
 
 #ifndef __ARCSTOOLS_APPREGISTRY_HPP__
-#include "appregistry.hpp"
+#include "appregistry.hpp"         // for RegisterApplicationType
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
-#include "config.hpp"
+#include "config.hpp"              // for DefaultConfigurator
+#endif
+#ifndef __ARCSTOOLS_RESULT_HPP__
+#include "result.hpp"              // for Result
 #endif
 #ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
-#include "tools-parse.hpp"
+#include "tools-parse.hpp"        // for ARParserContentPrintHandler,
 #endif
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
 #include "tools-fs.hpp"
@@ -44,33 +40,7 @@ namespace registered
 const auto parse = RegisterApplicationType<ARParseApplication>("parse");
 }
 
-class Options;
-
 using arcstk::DefaultErrorHandler;
-
-
-namespace {
-
-/**
- * \brief Wrap a vector in an istream.
- */
-template <typename CharT, typename TraitsT = std::char_traits<CharT>>
-class istreamwrapper : public std::basic_streambuf<CharT, TraitsT>
-{
-public:
-
-	/**
-	 * Constructor
-	 *
-	 * \param[in] vec The vector to wrap
-	 */
-	explicit istreamwrapper(std::vector<CharT> &vec)
-	{
-		this->setg(vec.data(), vec.data(), vec.data() + vec.size());
-	}
-};
-
-} // namespace
 
 
 // ARParseApplication
@@ -94,12 +64,25 @@ std::unique_ptr<Configurator> ARParseApplication::create_configurator() const
 }
 
 
+bool ARParseApplication::calculation_requested(const Options &options) const
+{
+	return false;
+}
+
+
+auto ARParseApplication::run_calculation(const Options &options) const
+	-> std::pair<int, std::unique_ptr<Result>>
+{
+	return { 0, nullptr }; // never called
+}
+
+
 int ARParseApplication::do_run(const Options &options)
 {
 	auto content_handler = std::make_unique<ARParserContentPrintHandler>(
 		options.value(OPTION::OUTFILE));
 
-	auto arguments = options.arguments();
+	const auto arguments = options.arguments();
 
 	if (not arguments.empty()) // read from file(s)
 	{

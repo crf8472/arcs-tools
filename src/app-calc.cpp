@@ -10,7 +10,7 @@
 #include <memory>                   // for unique_ptr, allocator, make_unique
 #include <string>                   // for string, char_traits, operator<<
 #include <tuple>                    // for tuple, tuple_element<>::type
-#include <utility>                  // for move
+#include <utility>                  // for move, make_pair
 #include <vector>                   // for vector
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
@@ -84,16 +84,10 @@ constexpr OptionCode CALC::TRACKSASCOLS;
 // ARCalcConfiguratorBase
 
 
-bool ARCalcConfiguratorBase::calculation_requested(const Options &options)
-{
-	return options.is_set(CALCBASE::METAFILE) or not options.no_arguments();
-}
-
-
 std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 		std::unique_ptr<Options> options) const
 {
-	if (not calculation_requested(*options))
+	if (!options->is_set(CALCBASE::METAFILE) || options->no_arguments())
 	{
 		ARCS_LOG_INFO <<
 			"No calculation task requested, no configuring required";
@@ -142,8 +136,10 @@ std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 const std::vector<std::pair<Option, OptionCode>>&
 	ARCalcConfigurator::do_supported_options() const
 {
-	const static std::vector<std::pair<Option, OptionCode>> local_options =
-	{
+	const static Configurator::OptionRegistry supported_options =
+	[this](){
+		auto list = Configurator::OptionRegistry
+		{
 		// from FORMATBASE
 
 		{{  "reader", true, "auto",
@@ -213,14 +209,19 @@ const std::vector<std::pair<Option, OptionCode>>&
 
 		{{  "tracks-as-cols", false, "FALSE", "Print tracks as columns" },
 			CALC::TRACKSASCOLS }
-	};
+		};
 
-	return local_options;
+		flush_common_options_to(list);
+
+		return list;
+	}();
+
+	return supported_options;
 }
 
 
 std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
-		std::unique_ptr<Options> coptions)
+		std::unique_ptr<Options> coptions) const
 {
 	auto options = this->configure_calcbase_options(std::move(coptions));
 
@@ -313,6 +314,95 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 }
 
 
+// CalcResultFormatter
+
+
+std::vector<ATTR> CalcResultFormatter::do_create_attributes(
+		const bool p_tracks, const bool p_offsets, const bool p_lengths,
+		const bool p_filenames,
+		const std::vector<arcstk::checksum::type>& types_to_print) const
+{
+	const auto total_attributes = p_tracks + p_offsets + p_lengths + p_filenames
+		+ types_to_print.size();
+
+	using checksum = arcstk::checksum::type;
+
+	std::vector<ATTR> attributes;
+	attributes.reserve(total_attributes);
+	if (p_tracks)    { attributes.push_back(ATTR::TRACK);    }
+	if (p_offsets)   { attributes.push_back(ATTR::OFFSET);   }
+	if (p_lengths)   { attributes.push_back(ATTR::LENGTH);   }
+	if (p_filenames) { attributes.push_back(ATTR::FILENAME); }
+
+	for (const auto& t : types_to_print)
+	{
+		if (checksum::ARCS1 == t)
+		{
+			attributes.push_back(ATTR::CHECKSUM_ARCS1);
+		} else
+		if (checksum::ARCS2 == t)
+		{
+			attributes.push_back(ATTR::CHECKSUM_ARCS2);
+		}
+	}
+
+	return attributes;
+}
+
+
+void CalcResultFormatter::configure_composer(ResultComposer& composer) const
+{
+	// empty
+}
+
+
+void CalcResultFormatter::assertions(InputTuple t) const
+{
+	const auto& checksums = std::get<0>(t);
+	const auto& filenames = std::get<1>(t);
+	const auto  toc       = std::get<2>(t);
+	const auto& arid      = std::get<3>(t);
+
+	validate(checksums, toc, arid, filenames);
+}
+
+
+std::unique_ptr<Result> CalcResultFormatter::do_format(InputTuple t) const
+{
+	const auto& checksums = std::get<0>(t);
+	const auto& filenames = std::get<1>(t);
+	const auto  toc       = std::get<2>(t);
+	const auto& arid      = std::get<3>(t);
+	const auto& altprefix = std::get<4>(t);
+
+	const auto types_to_print = details::ordered_typelist(checksums);
+
+	return build_result(checksums, {}, nullptr, 0, toc, arid,
+			altprefix, filenames, types_to_print);
+}
+
+
+void CalcResultFormatter::do_their_checksum(
+		const std::vector<Checksum>& /* checksums */,
+		const arcstk::checksum::type /* t */, const int /* record */,
+		ResultComposer* /* b */) const
+{
+	// do nothing
+}
+
+
+void CalcResultFormatter::do_mine_checksum(const Checksums& checksums,
+		const arcstk::checksum::type type, const int record, ResultComposer* b,
+		const bool /* does_match */) const
+{
+	ATTR attr = type == arcstk::checksum::type::ARCS2
+		? ATTR::CHECKSUM_ARCS2
+		: ATTR::CHECKSUM_ARCS1;
+
+	checksum_worker(record, attr, checksums.at(record).get(type), b);
+}
+
+
 // ARCalcApplication
 
 
@@ -321,14 +411,18 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 	const std::vector<std::string> &audiofilenames,
 	const bool as_first,
 	const bool as_last,
-	const std::set<arcstk::checksum::type> &types,
+	const std::vector<arcstk::checksum::type> &types,
 	arcsdec::FileReaderSelection *audio_selection,
 	arcsdec::FileReaderSelection *toc_selection)
 {
 	using ChecksumType = arcstk::checksum::type;
 
 	// XXX Determine whether to request ARCS2+1 or ARCS1-only
-	ChecksumType checksum_type = types.find(ChecksumType::ARCS2) != types.end()
+	using std::begin;
+	using std::end;
+	using std::find;
+	ChecksumType checksum_type =
+		find(begin(types), end(types), ChecksumType::ARCS2) != types.end()
 		? ChecksumType::ARCS2
 		: ChecksumType::ARCS1;
 	// The types to calculate are allowed to differ from the explicitly
@@ -349,92 +443,126 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 }
 
 
-std::unique_ptr<CalcResultLayout> ARCalcApplication::configure_layout(
+std::unique_ptr<CalcResultFormatter> ARCalcApplication::configure_layout(
 		const Options &options) const
 {
-	const bool has_toc = !options.value(CALC::METAFILE).empty();
-
-	// Print track number if they are not forbidden and a TOC is present
-	const bool prints_tracks = options.is_set(CALC::NOTRACKS)
-		? false
-		: has_toc;
-
-	// Print filenames if they are not forbidden and a TOC is _not_ present
-	const bool prints_filenames = options.is_set(CALC::NOFILENAMES)
-		? false
-		: not has_toc;
-
-	// Print offsets if they are not forbidden and a TOC is present
-	const bool prints_offsets = options.is_set(CALC::NOOFFSETS)
-		? false
-		: has_toc;
-
-	// Print lengths if they are not forbidden
-	const bool prints_lengths = not options.is_set(CALC::NOLENGTHS);
-
-	// Set column delimiter
-	const std::string coldelim = options.is_set(CALC::COLDELIM)
-		? options.value(CALC::COLDELIM)
-		: " ";
-
-	// Decide which implementation
-
-	std::unique_ptr<CalcResultLayout> layout;
-
-	if (options.is_set(CALC::TRACKSASCOLS))
+	auto fmt = std::unique_ptr<CalcResultFormatter>
 	{
-		layout = std::make_unique<CalcTracksTableLayout>(
-			not options.is_set(CALC::NOLABELS),
-			prints_tracks, prints_offsets, prints_lengths, prints_filenames,
-			coldelim);
-	} else
+		std::make_unique<CalcResultFormatter>()
+	};
+
+	// Layouts for Checksums + ARId
+
+	fmt->set_checksum_layout(std::make_unique<HexLayout>());
+
+	if (options.is_set(CALC::PRINTID) || options.is_set(CALC::PRINTURL))
 	{
-		layout = std::make_unique<CalcAlbumTableLayout>(
-			not options.is_set(CALC::NOLABELS),
-			prints_tracks, prints_offsets, prints_lengths, prints_filenames,
-			coldelim);
+		std::unique_ptr<ARIdLayout> id_layout =
+			std::make_unique<ARIdTableLayout>(
+			!options.is_set(CALC::NOLABELS),
+			options.is_set(CALC::PRINTID),
+			options.is_set(CALC::PRINTURL),
+			false, /* no filenames */
+			false, /* no tracks */
+			false, /* no id 1 */
+			false, /* no id 2 */
+			false  /* no cddb id */
+		);
+
+		fmt->set_arid_layout(std::move(id_layout));
 	}
 
-	return layout;
+	// Print labels or not
+	fmt->set_label(!options.is_set(CALC::NOLABELS));
+
+	// TOC present? Helper for determining other properties
+	const bool has_toc = !options.value(CALC::METAFILE).empty();
+
+	// Print track numbers if they are not forbidden and a TOC is present
+	fmt->set_track(options.is_set(CALC::NOTRACKS) ? false : has_toc);
+
+	// Print offsets if they are not forbidden and a TOC is present
+	fmt->set_offset(options.is_set(CALC::NOOFFSETS) ? false : has_toc);
+
+	// Print lengths if they are not forbidden
+	fmt->set_length(!options.is_set(CALC::NOLENGTHS));
+
+	// Print filenames if they are not forbidden and a TOC is _not_ present
+	fmt->set_filename(options.is_set(CALC::NOFILENAMES) ? false : !has_toc);
+
+	StringTableLayout l;
+
+	// Define delimiters and switch them on or off
+
+	l.set_col_inner_delim(options.is_set(CALC::COLDELIM)
+		? options.value(CALC::COLDELIM)
+		: " ");
+
+	// Print tracks either as columns or as rows
+
+	std::unique_ptr<ResultComposerBuilder> creator = nullptr;
+	if (options.is_set(CALC::TRACKSASCOLS))
+	{
+		creator = std::make_unique<ColResultComposerBuilder>();
+
+		// delimiter between labels column and column for first track
+		l.set_col_labels_delim(l.col_inner_delim());
+		l.set_col_labels_delims(true);
+	} else
+	{
+		creator = std::make_unique<RowResultComposerBuilder>();
+	}
+
+	fmt->set_builder_creator(std::move(creator));
+	fmt->set_table_layout(l);
+
+	return fmt;
 }
 
 
-std::set<arcstk::checksum::type> ARCalcApplication::requested_types(
+std::vector<arcstk::checksum::type> ARCalcApplication::requested_types(
 		const Options &options) const
 {
 	// Select the checksum::type(s) to print
 
-	std::set<arcstk::checksum::type> types = {};
+	std::vector<arcstk::checksum::type> types = {};
 
 	if (not options.is_set(CALC::NOV1))
 	{
-		types.insert(arcstk::checksum::type::ARCS1);
+		types.push_back(arcstk::checksum::type::ARCS1);
 	}
 	if (not options.is_set(CALC::NOV2))
 	{
-		types.insert(arcstk::checksum::type::ARCS2);
+		types.push_back(arcstk::checksum::type::ARCS2);
 	}
 
 	return types;
 }
 
 
-int ARCalcApplication::run_calculation(const Options &options)
+bool ARCalcApplication::calculation_requested(const Options &options) const
+{
+	return options.is_set(CALC::METAFILE) || not options.no_arguments();
+}
+
+
+auto ARCalcApplication::run_calculation(const Options &options) const
+	-> std::pair<int, std::unique_ptr<Result>>
 {
 	// Determine the explicitly requested types
 
-	auto requested_types = this->requested_types(options);
+	const auto requested_types = this->requested_types(options);
 
 	if (requested_types.empty()) // No types requested? No calculation required!
 	{
 		ARCS_LOG_WARNING << "No checksum types requested. Done.";
 
-		return EXIT_SUCCESS;
+		return { EXIT_SUCCESS, nullptr };
 	}
 
 	// Configure selections (e.g. --reader and --parser)
 
-	const IdSelection id_selection;
+	const calc::IdSelection id_selection;
 
 	auto audio_selection = options.is_set(CALC::READERID)
 		? id_selection(options.value(CALC::READERID))
@@ -459,12 +587,12 @@ int ARCalcApplication::run_calculation(const Options &options)
 			toc_selection.get()
 	);
 
-
 	if (checksums.size() == 0)
 	{
 		this->fatal_error("Calculation returned no checksums");
 	}
 
+	// Postprocessing
 	// A hack: for printing, remove all types from the result that not
 	// have been requested explicitly (implements e.g. --no-v1)
 
@@ -472,54 +600,27 @@ int ARCalcApplication::run_calculation(const Options &options)
 	{
 		for (const auto& type : track.types())
 		{
-			if (requested_types.find(type) == requested_types.end())
+			if (find(begin(requested_types), end(requested_types), type)
+					== end(requested_types))
 			{
 				track.erase(type);
 			}
 		}
 	}
 
-	// Print formatted results to output stream
+	// Configure result presentation
 
-	if (not options.value(OPTION::OUTFILE).empty())
-	{
-		Output::instance().to_file(options.value(OPTION::OUTFILE));
-	}
+	const auto layout { configure_layout(options) };
 
-	if (options.is_set(CALC::PRINTID) or options.is_set(CALC::PRINTURL))
-	{
-		const std::unique_ptr<ARIdLayout> layout =
-			std::make_unique<ARIdTableLayout>(
-				not options.is_set(CALC::NOLABELS),
-				options.is_set(CALC::PRINTID),
-				options.is_set(CALC::PRINTURL),
-				false, /* no filenames */
-				false, /* no tracks */
-				false, /* no id 1 */
-				false, /* no id 2 */
-				false  /* no cddb id */
-			);
+	auto result { layout->format(
+	/* ARCSs */  checksums,
+	/* files */  toc ? arcstk::toc::get_filenames(toc) : options.arguments(),
+	/* TOC   */  toc ? toc.get() : nullptr,
+	/* ARId */   arid,
+	/* Prefix */ std::string { /* TODO Implement Alt-Prefix */ }
+	)};
 
-		auto result = layout->format(arid, std::string{});
-
-		Output::instance().output(result);
-	}
-
-	const auto layout = configure_layout(options);
-
-	const auto filenames = toc
-		? arcstk::toc::get_filenames(toc)
-		: options.arguments();
-
-	const auto album_mode = options.is_set(CALC::ALBUM);
-
-	const auto toc_ptr = toc ? toc.get() : nullptr;
-	const auto result = layout->format(checksums, filenames, toc_ptr, arid,
-			album_mode);
-
-	Output::instance().output(result);
-
-	return EXIT_SUCCESS;
+	return std::make_pair(EXIT_SUCCESS, std::move(result));
 }
 
 
@@ -543,9 +644,13 @@ std::unique_ptr<Configurator> ARCalcApplication::create_configurator() const
 
 int ARCalcApplication::do_run(const Options &options)
 {
-	if (ARCalcConfiguratorBase::calculation_requested(options))
+	// Is an actual calculation requested?
+	if (calculation_requested(options))
 	{
-		return this->run_calculation(options);
+		auto [ exit_code, result ] = this->run_calculation(options);
+
+		this->output(std::move(result), options);
+		return exit_code;
 	}
 
 	// If only info options are present, handle info request
@@ -557,13 +662,11 @@ int ARCalcApplication::do_run(const Options &options)
 
 	if (options.is_set(CALC::LIST_TOC_FORMATS))
 	{
-		Output::instance().output("TOC:\n");
 		Output::instance().output(AvailableFileReaders::toc());
 	}
 
 	if (options.is_set(CALC::LIST_AUDIO_FORMATS))
 	{
-		Output::instance().output("Audio:\n");
 		Output::instance().output(AvailableFileReaders::audio());
 	}
 
