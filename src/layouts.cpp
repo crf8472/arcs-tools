@@ -1102,7 +1102,7 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 	using TYPE = arcstk::checksum::type;
 	using std::to_string;
 
-	bool does_match;
+	auto does_match = bool { false };
 	auto track = int { 1 }; // is always i + 1
 	for (auto i = int { 0 }; i < c->total_records(); ++track, ++i)
 	{
