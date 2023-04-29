@@ -4,11 +4,10 @@
 #include "clitokens.hpp"
 #endif
 
-TEST_CASE ( "CLITokens", "[clitokens]" )
+TEST_CASE ( "parse", "[parse]" )
 {
 	using arcsapp::OptionCode;
 	using arcsapp::Option;
-	using arcsapp::CLITokens;
 	using arcsapp::input::get_tokens;
 
 	struct TEST
@@ -150,56 +149,6 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 
 		CHECK ( tokens.size() == 0 );
 		CHECK ( tokens.empty() );
-	}
-
-
-
-	SECTION ( "contains()" )
-	{
-		const char * const argv[] = { "arcstk-nevermore", "-qns",
-			"--refvalues=1,2,3", "foo/foo.wav", "bar/bar.ape",
-			"quux.alac", "baz.m4a"
-		};
-		const int argc = 7;
-
-		auto tokens1 = CLITokens(argc, argv, supported_options);
-
-		CHECK ( tokens1.contains(my_test.REFVALUES) );
-		CHECK ( tokens1.contains(my_test.NOALBUM) );
-		CHECK ( tokens1.contains(my_test.SUBSET) );
-		CHECK ( tokens1.contains(my_test.SOMEOTHER) );
-
-		CHECK ( !tokens1.contains(my_test.METAFILE) );
-		CHECK ( !tokens1.contains(my_test.SOMEOPTION) );
-	}
-
-	SECTION ( "argument(i)" )
-	{
-		const char * const argv[] = { "arcstk-whatever", "-snf",
-			"--refvalues=1,2,3", "foo/foo.wav", "-q", "bar/bar.flac",
-			"quux.alac", "baz.m4a"
-		};
-		const int argc = 8;
-
-		auto tokens1 = CLITokens(argc, argv, supported_options);
-
-		CHECK ( tokens1.size() == 9 );
-
-		CHECK ( tokens1.argument(0) == "foo/foo.wav" );
-		CHECK ( tokens1.argument(1) == "bar/bar.flac" );
-		CHECK ( tokens1.argument(2) == "quux.alac" );
-		CHECK ( tokens1.argument(3) == "baz.m4a" );
-		CHECK ( tokens1.argument(4) == "" );
-
-		auto tokens2 = CLITokens(argc, argv, supported_options);
-
-		CHECK ( tokens2.size() == 9 );
-
-		CHECK ( tokens2.argument(0) == "foo/foo.wav" );
-		CHECK ( tokens2.argument(1) == "bar/bar.flac" );
-		CHECK ( tokens2.argument(2) == "quux.alac" );
-		CHECK ( tokens2.argument(3) == "baz.m4a" );
-		CHECK ( tokens2.argument(4) == "" );
 	}
 }
 
