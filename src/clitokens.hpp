@@ -195,6 +195,17 @@ class Token
 public:
 
 	/**
+	 * \brief Construct item with specified code and value.
+	 *
+	 * \param[in] code  Code for this Token
+	 * \param[in] value Value for this Token
+	 */
+	Token(const OptionCode code, const std::string &value)
+		: code_  { code }
+		, value_ { value }
+	{ /* empty */ }
+
+	/**
 	 * \brief Construct option item with specified code.
 	 *
 	 * \param[in] code Code for this option
@@ -248,36 +259,14 @@ public:
 
 private:
 
-	/**
-	 * \brief Construct item with specified code and value.
-	 *
-	 * \param[in] code  Code for this Token
-	 * \param[in] value Value for this Token
-	 */
-	Token(const OptionCode code, const std::string &value)
-		: code_  { code }
-		, value_ { value }
-	{ /* empty */ }
-
 	OptionCode code_;
 
 	std::string value_;
 };
 
 
-using option_callback =
-			std::function<void(const OptionCode, const std::string&)>;
-
-
-void get_tokens(const int argc, const char* const * const argv,
-		const std::vector<std::pair<Option, OptionCode>> &supported,
-		const option_callback& f);
-
 /**
- * \brief Consume all tokens.
- *
- * The returned list will contain the tokens in the same order as the occurred
- * in the input.
+ * \brief Get all CLI input tokens.
  *
  * \param[in] argc           Number of command line arguments
  * \param[in] argv           Command line arguments
@@ -291,32 +280,57 @@ std::vector<Token> get_tokens(const int argc,
 
 
 /**
+ * \brief Type of callback function pointer for notifying about parsed options.
+ *
+ * Called by parse() whenever a token is parsed.
+ */
+using option_callback =
+			std::function<void(const OptionCode, const std::string&)>;
+
+
+/**
+ * \brief Consume all tokens.
+ *
+ * The returned list will contain the tokens in the same order as the occurred
+ * in the input.
+ *
+ * \param[in] argc           Number of command line arguments
+ * \param[in] argv           Command line arguments
+ * \param[in] supported      Supported options
+ * \param[in] pass_token     Function to call on each parsed token
+ */
+void parse(const int argc, const char* const * const argv,
+		const std::vector<std::pair<Option, OptionCode>> &supported,
+		const option_callback& pass_token);
+
+
+/**
  * \brief Consume input chars as an option symbol.
  *
- * \param[in] opt       The option symbol to consume
- * \param[in] val       The option value to consume
- * \param[in] supported The supported options to match
- * \param[in,out] pos   Character position in the call string
- *
- * \return The resulting token
+ * \param[in] opt         The option symbol to consume
+ * \param[in] val         The option value to consume
+ * \param[in] supported   The supported options to match
+ * \param[in,out] pos     Character position in the call string
+ * \param[in] pass_token  Function to call on each parsed token
  */
-Token consume_as_symbol(const char * const opt, const char * const val,
-		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos);
+void consume_as_symbol(const char * const opt, const char * const val,
+		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos,
+		const option_callback& pass_token);
 
 
 /**
  * \brief Consume input chars as an option shorthand symbol.
  *
- * \param[in] opt       The option symbol to consume
- * \param[in] val       The option value to consume
- * \param[in] supported The supported options to match
- * \param[in,out] pos   Character position in the call string
- *
- * \return The resulting token
+ * \param[in] opt        The option symbol to consume
+ * \param[in] val        The option value to consume
+ * \param[in] supported  The supported options to match
+ * \param[in,out] pos    Character position in the call string
+ * \param[in] pass_token Function to call on each parsed token
  */
-std::vector<Token> consume_as_shorthand(const char * const opt,
+void consume_as_shorthand(const char * const opt,
 		const char * const val,
-		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos);
+		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos,
+		const option_callback& pass_token);
 
 } // namespace input
 

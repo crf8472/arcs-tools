@@ -307,9 +307,10 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 					cli_options->set(c, v);
 				}
 			};
-		auto cli_input = CLITokens {};
-		cli_input.register_callback(add_option);
-		cli_input.parse(argc, argv, supported_options());
+		//auto cli_input = CLITokens {};
+		//cli_input.register_callback(add_option);
+		//cli_input.parse(argc, argv, supported_options());
+		input::parse(argc, argv, supported_options(), add_option);
 	}
 	//
 

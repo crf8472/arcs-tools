@@ -127,24 +127,28 @@ namespace input
 {
 
 
-void get_tokens(const int argc, const char* const * const argv,
-		const std::vector<std::pair<Option, OptionCode>> &supported,
-		const option_callback& f)
-{
-	// TODO
-}
-
-
-std::vector<Token> get_tokens(const int argc,
-		const char* const * const argv,
+std::vector<Token> get_tokens(const int argc, const char* const * const argv,
 		const std::vector<std::pair<Option, OptionCode>>& supported)
 {
 	std::vector<Token> tokens;
-	tokens.reserve(7);
+	tokens.reserve(12);
+	const auto append_token =
+		[&tokens](const OptionCode c, const std::string& v)
+		{
+			tokens.emplace_back(c, v);
+		};
+	parse(argc, argv, supported, append_token);
+	return tokens;
+}
 
+
+void parse(const int argc, const char* const * const argv,
+		const std::vector<std::pair<Option, OptionCode>> &supported,
+		const option_callback& pass_token)
+{
 	if (argc < 2 or !argv)
 	{
-		return {}; // No Options or Arguments Present
+		return; // No Options or Arguments Present
 	}
 
 	auto pos = int { 1 }; // Ignore argv[0]
@@ -177,8 +181,8 @@ std::vector<Token> get_tokens(const int argc,
 						// Expected Syntax: --some-option
 						try
 						{
-							tokens.push_back(
-								consume_as_symbol(token, next, supported, pos));
+							consume_as_symbol(token, next, supported, pos,
+									pass_token);
 						}
 						catch (const CallSyntaxException &e)
 						{
@@ -190,16 +194,8 @@ std::vector<Token> get_tokens(const int argc,
 					// Expected Syntax: -o
 					try
 					{
-						auto sh_symbols {
-							consume_as_shorthand(token, next, supported, pos)
-						};
-						if (!sh_symbols.empty())
-						{
-							using std::begin;
-							using std::end;
-							tokens.insert(end(tokens), begin(sh_symbols),
-									end(sh_symbols));
-						}
+						consume_as_shorthand(token, next, supported, pos,
+									pass_token);
 					}
 					catch (const CallSyntaxException &e)
 					{
@@ -213,24 +209,22 @@ std::vector<Token> get_tokens(const int argc,
 			}
 		} else // found an argument
 		{
-			tokens.push_back(Token(argv[pos]));
-			pos++;
+			pass_token(Option::NONE, argv[pos]);
+			++pos;
 		}
 	} // while
 
 	while (pos < argc)
 	{
-		tokens.push_back(Token(argv[pos]));
+		pass_token(Option::NONE, argv[pos]);
 		++pos;
 	}
-	tokens.shrink_to_fit();
-
-	return tokens;
 }
 
 
-Token consume_as_symbol(const char * const token, const char * const next,
-		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos)
+void consume_as_symbol(const char * const token, const char * const next,
+		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos,
+		const option_callback& pass_token)
 {
 	// Determine Length of Option Symbol in Token
 	auto sym_len = unsigned { 0 };
@@ -302,8 +296,6 @@ Token consume_as_symbol(const char * const token, const char * const next,
 	// Move Token Pointer for Caller
 	++pos;
 
-	Token result_token { code };
-
 	const auto& option { supported[option_pos].first };
 
 	if (token[sym_len + 2]) // Expect syntax '--some-option=foo'
@@ -337,7 +329,7 @@ Token consume_as_symbol(const char * const token, const char * const next,
 			throw CallSyntaxException(msg.str());
 		}
 
-		result_token.set_value(&token[sym_len + 3]);
+		pass_token(code, &token[sym_len + 3]);
 	} else if (option.needs_value()) // Expect syntax '--foo bar'
 	{
 		if (!next or !next[0])
@@ -351,19 +343,19 @@ Token consume_as_symbol(const char * const token, const char * const next,
 		// Move Token Pointer for Caller
 		++pos;
 
-		result_token.set_value(next);
+		pass_token(code, next);
+	} else
+	{
+		pass_token(code, "");
 	}
-
-	return result_token;
 }
 
 
-std::vector<Token> consume_as_shorthand(const char * const token,
+void consume_as_shorthand(const char * const token,
 		const char * const next,
-		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos)
+		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos,
+		const option_callback& pass_token)
 {
-	auto result_tokens = std::vector<Token> { };
-
 	using unsigned_char = unsigned char;
 
 	// Position Index of Character in Token
@@ -378,7 +370,6 @@ std::vector<Token> consume_as_shorthand(const char * const token,
 	// Traverse all characters in token as separate options.
 	while (cind > 0)
 	{
-		//const unsigned char c = token[cind]; // Consider Next Character
 		const auto c = unsigned_char (token[cind]); // Consider Next Character
 		option_pos = -1; // Flag "nothing found"
 
@@ -406,8 +397,6 @@ std::vector<Token> consume_as_shorthand(const char * const token,
 
 		// Supported Option Represented by 'c' is 'supported[option_pos].first'
 
-		result_tokens.emplace_back(code);
-
 		++cind;
 
 		if (token[cind] == 0) // Token is Completely Processed
@@ -424,7 +413,7 @@ std::vector<Token> consume_as_shorthand(const char * const token,
 			{
 				// Consume Trailing Part as Option Value
 
-				result_tokens.back().set_value(&token[cind]);
+				pass_token(code, &token[cind]);
 			} else
 			{
 				// No trailing part, consider Next Token as Value
@@ -437,16 +426,17 @@ std::vector<Token> consume_as_shorthand(const char * const token,
 					throw CallSyntaxException(msg.str());
 				}
 
-				result_tokens.back().set_value(next);
+				pass_token(code, next);
 			}
 			cind = 0;
 
 			// Move Token Pointer for Caller
 			++pos;
+		} else
+		{
+			pass_token(code, "");
 		}
 	} // while
-
-	return result_tokens;
 }
 
 } // namespace input
