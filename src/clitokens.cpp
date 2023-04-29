@@ -2,19 +2,19 @@
 #include "clitokens.hpp"
 #endif
 
-#include <algorithm>  // for find, find_if
+#include <algorithm>  // for copy, find_if
 #include <cstring>    // for strncmp
-#include <iterator>   // for ostream_iterator
+#include <iterator>   // for ostream_iterator, begin, end, cbegin, cend
 #include <sstream>    // for ostringstream
-#include <string>     // for string, allocator
-#include <tuple>      // for tuple, get
+#include <stdexcept>  // for runtime_error
+#include <string>     // for string
+#include <utility>    // for pair
 #include <vector>     // for vector
-
-#include <iostream>
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
 #endif
+
 
 namespace arcsapp
 {
@@ -123,121 +123,21 @@ CallSyntaxException::CallSyntaxException(const std::string &what_arg)
 }
 
 
-// CLITokens
+namespace input
+{
 
 
-CLITokens::CLITokens(const int argc, const char* const * const argv,
+void get_tokens(const int argc, const char* const * const argv,
 		const std::vector<std::pair<Option, OptionCode>> &supported,
-		const bool preserve_order)
-	: tokens_ { consume_tokens(argc, argv, supported, preserve_order) }
+		const option_callback& f)
 {
-	// empty
+	// TODO
 }
 
 
-CLITokens::~CLITokens() noexcept = default;
-
-
-OptionCode CLITokens::option_code(const int i) const
-{
-	if (i >= 0 && static_cast<decltype( tokens_.size() )>(i) < tokens_.size())
-	{
-		return tokens_[i].code();
-	}
-
-	return 0;
-}
-
-
-const std::string& CLITokens::option_value(const int i) const
-{
-	if (i >= 0 && static_cast<decltype( tokens_.size() )>(i) < tokens_.size())
-	{
-		return tokens_[i].value();
-	}
-
-	return empty_value();
-}
-
-
-bool CLITokens::contains(const OptionCode &option) const noexcept
-{
-	return lookup(option);
-}
-
-
-const std::string& CLITokens::value(const OptionCode &option) const
-{
-	const auto element { lookup(option) };
-
-	return element ? element->value() : empty_value();
-}
-
-
-const std::string& CLITokens::argument(const std::size_t &i) const
-{
-	using std::begin;
-	using std::end;
-
-	if (i >= size())
-	{
-		return empty_value();
-	}
-
-	using size_type = decltype( tokens_ )::size_type;
-
-	const auto stop { end(tokens_) };
-	auto counter = size_type { 0 };
-	auto pos   { begin(tokens_) };
-	auto token { pos };
-
-	const auto is_argument {
-		[](const Token &item) { return item.code() == Option::NONE; }
-	};
-
-	do
-	{
-		token = std::find_if(pos, stop, is_argument);
-
-		if (stop == token)
-		{
-			return empty_value();
-		}
-
-		++counter;
-		pos = token + 1;
-
-	} while (pos != stop && counter <= i);
-
-	return counter > i ? token->value() : empty_value() ;
-}
-
-
-const CLITokens::Token* CLITokens::lookup(const OptionCode &option) const
-{
-	using std::begin;
-	using std::end;
-
-	const auto element { std::find_if(begin(tokens_), end(tokens_),
-			[option](const Token &i)
-			{
-				return i.code() == option;
-			})
-	};
-
-	if (element != end(tokens_))
-	{
-		return &(*element);
-	}
-
-	return nullptr;
-}
-
-
-std::vector<CLITokens::Token> CLITokens::consume_tokens(const int argc,
+std::vector<Token> get_tokens(const int argc,
 		const char* const * const argv,
-		const std::vector<std::pair<Option, OptionCode>>& supported,
-		const bool preserve_order) const
+		const std::vector<std::pair<Option, OptionCode>>& supported)
 {
 	std::vector<Token> tokens;
 	tokens.reserve(7);
@@ -252,8 +152,6 @@ std::vector<CLITokens::Token> CLITokens::consume_tokens(const int argc,
 	using unsigned_char = unsigned char;
 	auto first_ch  = unsigned_char { 0 };
 	auto second_ch = unsigned_char { 0 };
-
-	auto non_options = std::vector<const char*>{}; // Tokens Not Options
 
 	while (pos < argc)
 	{
@@ -315,24 +213,10 @@ std::vector<CLITokens::Token> CLITokens::consume_tokens(const int argc,
 			}
 		} else // found an argument
 		{
-			if (preserve_order)
-			{
-				// preserve order of occurrences
-				tokens.push_back(Token(argv[pos]));
-			} else
-			{
-				// handle arguments separately
-				non_options.push_back(argv[pos]);
-			}
+			tokens.push_back(Token(argv[pos]));
 			pos++;
 		}
 	} // while
-
-	using size_type = decltype( non_options )::size_type;
-	for (auto i = size_type { 0 }; i < non_options.size(); ++i)
-	{
-		tokens.push_back(Token(non_options[i]));
-	}
 
 	while (pos < argc)
 	{
@@ -345,10 +229,8 @@ std::vector<CLITokens::Token> CLITokens::consume_tokens(const int argc,
 }
 
 
-CLITokens::Token CLITokens::consume_as_symbol(const char * const token,
-		const char * const next,
+Token consume_as_symbol(const char * const token, const char * const next,
 		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos)
-		const
 {
 	// Determine Length of Option Symbol in Token
 	auto sym_len = unsigned { 0 };
@@ -476,10 +358,9 @@ CLITokens::Token CLITokens::consume_as_symbol(const char * const token,
 }
 
 
-std::vector<CLITokens::Token> CLITokens::consume_as_shorthand(
-		const char * const token, const char * const next,
+std::vector<Token> consume_as_shorthand(const char * const token,
+		const char * const next,
 		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos)
-		const
 {
 	auto result_tokens = std::vector<Token> { };
 
@@ -491,7 +372,7 @@ std::vector<CLITokens::Token> CLITokens::consume_as_shorthand(
 	// Position of identified Option in 'supported'
 	auto option_pos = int { -1 };
 
-	auto code  = OptionCode { Option::NONE };
+	auto code = OptionCode { Option::NONE };
 
 	// We may have concatenated options like '-lsbn':
 	// Traverse all characters in token as separate options.
@@ -568,11 +449,140 @@ std::vector<CLITokens::Token> CLITokens::consume_as_shorthand(
 	return result_tokens;
 }
 
+} // namespace input
 
-const std::string& CLITokens::empty_value() const noexcept
+
+// CLITokens
+
+
+CLITokens::CLITokens()
+	: option_ {/* empty */}
+	, tokens_ {/* empty */}
 {
-	static const auto empty_string = std::string{};
-	return empty_string;
+	// empty
+}
+
+
+CLITokens::~CLITokens() noexcept = default;
+
+
+void CLITokens::register_callback(const input::option_callback f)
+{
+	option_ = f;
+}
+
+
+void CLITokens::parse(const int argc, const char* const * const argv,
+			const std::vector<std::pair<Option, OptionCode>> &supported)
+{
+	tokens_ = input::get_tokens(argc, argv, supported);
+}
+
+
+//
+
+
+CLITokens::CLITokens(const int argc, const char* const * const argv,
+		const std::vector<std::pair<Option, OptionCode>> &supported)
+	: option_ { /* empty */ }
+	, tokens_ { input::get_tokens(argc, argv, supported) }
+{
+	// empty
+}
+
+
+const std::string& CLITokens::value(const OptionCode &option) const
+{
+	const auto element { lookup(option) };
+
+	return element ? element->value() : Token::empty_value();
+}
+
+
+bool CLITokens::contains(const OptionCode &option) const noexcept
+{
+	return lookup(option);
+}
+
+
+OptionCode CLITokens::option_code(const size_type i) const
+{
+	return get(i) ? get(i)->code() : 0;
+}
+
+
+const std::string& CLITokens::option_value(const size_type i) const
+{
+	return get(i) ? get(i)->value() : Token::empty_value();
+}
+
+
+const std::string& CLITokens::argument(const size_type &i) const
+{
+	using std::begin;
+	using std::end;
+
+	if (i >= size())
+	{
+		return Token::empty_value();
+	}
+
+	const auto stop { end(tokens_) };
+	auto counter = size_type { 0 };
+	auto pos   { begin(tokens_) };
+	auto token { pos };
+
+	const auto is_argument {
+		[](const Token &item) { return item.code() == Option::NONE; }
+	};
+
+	do
+	{
+		token = std::find_if(pos, stop, is_argument);
+
+		if (stop == token)
+		{
+			return Token::empty_value();
+		}
+
+		++counter;
+		pos = token + 1;
+
+	} while (pos != stop && counter <= i);
+
+	return counter > i ? token->value() : Token::empty_value() ;
+}
+
+
+const CLITokens::Token* CLITokens::lookup(const OptionCode &option) const
+{
+	using std::begin;
+	using std::end;
+
+	const auto element { std::find_if(begin(tokens_), end(tokens_),
+			[option](const Token &i)
+			{
+				return i.code() == option;
+			})
+	};
+
+	if (element != end(tokens_))
+	{
+		return &(*element);
+	}
+
+	return nullptr;
+}
+
+
+const CLITokens::Token* CLITokens::get(const size_type i) const
+{
+	if (i >= 0 && i < tokens_.size())
+	{
+		return &tokens_[i];
+	}
+
+	return nullptr;
 }
 
 

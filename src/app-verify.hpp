@@ -34,7 +34,6 @@
 namespace arcsapp
 {
 
-class CLITokens;
 class Configurator;
 class Options;
 class Result;

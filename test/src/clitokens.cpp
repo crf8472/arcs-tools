@@ -9,6 +9,7 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 	using arcsapp::OptionCode;
 	using arcsapp::Option;
 	using arcsapp::CLITokens;
+	using arcsapp::input::get_tokens;
 
 	struct TEST
 	{
@@ -59,7 +60,7 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 		};
 		const int argc = 6;
 
-		auto tokens = CLITokens(argc, argv, supported_options, true);
+		auto tokens = get_tokens(argc, argv, supported_options);
 
 		CHECK ( tokens.size() == 3 );
 
@@ -78,7 +79,7 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 		};
 		const int argc = 4;
 
-		auto tokens = CLITokens(argc, argv, supported_options, true);
+		auto tokens = get_tokens(argc, argv, supported_options);
 
 		CHECK ( tokens.size() == 3 );
 
@@ -95,7 +96,7 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 		};
 		const int argc = 3;
 
-		auto tokens = CLITokens(argc, argv, supported_options, true);
+		auto tokens = get_tokens(argc, argv, supported_options);
 
 		CHECK ( tokens.size() == 1 );
 
@@ -110,7 +111,7 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 		};
 		const int argc = 2;
 
-		auto tokens = CLITokens(argc, argv, supported_options, true);
+		auto tokens = get_tokens(argc, argv, supported_options);
 
 		CHECK ( tokens.size() == 1 );
 
@@ -125,7 +126,7 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 		};
 		const int argc = 4;
 
-		auto tokens = CLITokens(argc, argv, supported_options, true);
+		auto tokens = get_tokens(argc, argv, supported_options);
 
 		CHECK ( tokens.size() == 5 );
 
@@ -145,11 +146,13 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 		const char * const argv[] = { "arcstk-whatever" };
 		const int argc = 1;
 
-		auto tokens = CLITokens(argc, argv, supported_options, false);
+		auto tokens = get_tokens(argc, argv, supported_options);
 
 		CHECK ( tokens.size() == 0 );
 		CHECK ( tokens.empty() );
 	}
+
+
 
 	SECTION ( "contains()" )
 	{
@@ -159,7 +162,7 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 		};
 		const int argc = 7;
 
-		auto tokens1 = CLITokens(argc, argv, supported_options, false);
+		auto tokens1 = CLITokens(argc, argv, supported_options);
 
 		CHECK ( tokens1.contains(my_test.REFVALUES) );
 		CHECK ( tokens1.contains(my_test.NOALBUM) );
@@ -178,7 +181,7 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 		};
 		const int argc = 8;
 
-		auto tokens1 = CLITokens(argc, argv, supported_options, true);
+		auto tokens1 = CLITokens(argc, argv, supported_options);
 
 		CHECK ( tokens1.size() == 9 );
 
@@ -188,7 +191,7 @@ TEST_CASE ( "CLITokens", "[clitokens]" )
 		CHECK ( tokens1.argument(3) == "baz.m4a" );
 		CHECK ( tokens1.argument(4) == "" );
 
-		auto tokens2 = CLITokens(argc, argv, supported_options, false);
+		auto tokens2 = CLITokens(argc, argv, supported_options);
 
 		CHECK ( tokens2.size() == 9 );
 

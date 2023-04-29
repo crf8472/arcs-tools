@@ -22,7 +22,6 @@ namespace arcsapp
 {
 
 class Application;
-class CLITokens;
 class Configurator;
 class Options;
 class Result;

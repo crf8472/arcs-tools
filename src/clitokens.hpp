@@ -4,7 +4,7 @@
 /**
  * \file
  *
- * \brief A very simple command line parser.
+ * \brief A simple command line pull-parser.
  *
  * This parser distinguishes arguments, boolean (value-less) options and options
  * requiring values. The caller just pull-consumes those tokens for the rules
@@ -12,18 +12,20 @@
  * input is syntactically valid.
  */
 
+#include <cstddef>       // for size_t
 #include <cstdint>       // for uint64_t
+#include <functional>    // for function
 #include <stdexcept>     // for runtime_error
-#include <string>
-#include <tuple>
-#include <vector>
-#include <deque>
+#include <string>        // for string
+#include <utility>       // for pair
+#include <vector>        // for vector
+
 
 namespace arcsapp
 {
 
 /**
- * \brief ID for a supported option
+ * \brief Unique id of a supported option
  */
 using OptionCode = uint64_t;
 
@@ -36,7 +38,9 @@ bool operator == (const Option &lhs, const Option &rhs) noexcept;
  *
  * An Option has a symbol (e.g. '--print-all', '--boolean') and may or may not
  * have a shorthand symbol (e.g. '-r'). It may or may not expect a value and
- * most options have some default. An option also has a short description.
+ * most options have some default. Options that do not expect a value are also
+ * called 'boolean'. An option has an additional short description that
+ * can be printed in a usage or help message.
  */
 class Option
 {
@@ -126,10 +130,31 @@ public:
 
 private:
 
+	/**
+	 * \brief Internal shorthand symbol.
+	 */
 	const char        shorthand_;
+
+	/**
+	 * \brief Internal symbol.
+	 */
 	const std::string symbol_;
+
+	/**
+	 * \brief Flag to indicate whether the option requires a value.
+	 */
 	const bool        needs_value_;
+
+	/**
+	 * \brief Default argument, if any.
+	 */
 	const std::string default_arg_;
+
+	/**
+	 * \brief Short description.
+	 *
+	 * Can be printed in usage message for example.
+	 */
 	const std::string description_;
 };
 
@@ -142,12 +167,158 @@ class CallSyntaxException : public std::runtime_error
 public:
 
 	/**
+	 * \brief Virtual default destructor.
+	 */
+	virtual ~CallSyntaxException() noexcept = default;
+
+	/**
 	 * \brief Constructor
 	 *
 	 * \param[in] what_arg What-Message
 	 */
 	CallSyntaxException(const std::string &what_arg);
 };
+
+
+namespace input
+{
+
+/**
+ * \brief Uniform representation of an input token.
+ *
+ * A Token can be an argument or an option with or without a value.
+ *
+ * An argument is represented as Option with code Option::NONE.
+ */
+class Token
+{
+public:
+
+	/**
+	 * \brief Construct option item with specified code.
+	 *
+	 * \param[in] code Code for this option
+	 */
+	Token(const OptionCode code)
+		: Token { code, std::string{} }
+	{ /* empty */ };
+
+	/**
+	 * \brief Construct argument item with specified value.
+	 *
+	 * \param[in] value Argument value
+	 */
+	Token(const std::string &value)
+		: Token { Option::NONE, value }
+	{ /* empty */ };
+
+	/**
+	 * \brief OptionCode of the Token.
+	 *
+	 * \return OptionCode of the Token
+	 */
+	OptionCode code() const { return code_; }
+
+	/**
+	 * \brief Set the value of the Token.
+	 *
+	 * \param[in] value New value of the Token
+	 */
+	void set_value(const std::string &value) { value_ = value; }
+
+	/**
+	 * \brief Get the value of the Token.
+	 *
+	 * \return Value of the Token
+	 */
+	const std::string& value() const noexcept { return value_; }
+
+	/**
+	 * \brief Returns an empty option value.
+	 *
+	 * Convenience: do not have to create empty string objects while parsing.
+	 *
+	 * \return An empty option value
+	 */
+	static const std::string& empty_value() noexcept
+	{
+		static const auto empty_string = std::string{};
+		return empty_string;
+	}
+
+private:
+
+	/**
+	 * \brief Construct item with specified code and value.
+	 *
+	 * \param[in] code  Code for this Token
+	 * \param[in] value Value for this Token
+	 */
+	Token(const OptionCode code, const std::string &value)
+		: code_  { code }
+		, value_ { value }
+	{ /* empty */ }
+
+	OptionCode code_;
+
+	std::string value_;
+};
+
+
+using option_callback =
+			std::function<void(const OptionCode, const std::string&)>;
+
+
+void get_tokens(const int argc, const char* const * const argv,
+		const std::vector<std::pair<Option, OptionCode>> &supported,
+		const option_callback& f);
+
+/**
+ * \brief Consume all tokens.
+ *
+ * The returned list will contain the tokens in the same order as the occurred
+ * in the input.
+ *
+ * \param[in] argc           Number of command line arguments
+ * \param[in] argv           Command line arguments
+ * \param[in] supported      Supported options
+ *
+ * \return List of tokens
+ */
+std::vector<Token> get_tokens(const int argc,
+		const char* const * const argv,
+		const std::vector<std::pair<Option, OptionCode>> &supported);
+
+
+/**
+ * \brief Consume input chars as an option symbol.
+ *
+ * \param[in] opt       The option symbol to consume
+ * \param[in] val       The option value to consume
+ * \param[in] supported The supported options to match
+ * \param[in,out] pos   Character position in the call string
+ *
+ * \return The resulting token
+ */
+Token consume_as_symbol(const char * const opt, const char * const val,
+		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos);
+
+
+/**
+ * \brief Consume input chars as an option shorthand symbol.
+ *
+ * \param[in] opt       The option symbol to consume
+ * \param[in] val       The option value to consume
+ * \param[in] supported The supported options to match
+ * \param[in,out] pos   Character position in the call string
+ *
+ * \return The resulting token
+ */
+std::vector<Token> consume_as_shorthand(const char * const opt,
+		const char * const val,
+		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos);
+
+} // namespace input
 
 
 /**
@@ -180,7 +351,33 @@ public:
  */
 class CLITokens final
 {
+	using Token = input::Token;
+
+	input::option_callback option_;
+
+	/**
+	 * \brief Parsed items.
+	 */
+	std::vector<Token> tokens_;
+
 public:
+
+	/**
+	 * \brief Size type of CLITokens.
+	 */
+	using size_type = decltype( tokens_ )::size_type;
+
+	/**
+	 * \brief Iterator type of CLITokens.
+	 */
+	using iterator = decltype( tokens_ )::iterator;
+
+	/**
+	 * \brief Const iterator type of CLITokens.
+	 */
+	using const_iterator = decltype( tokens_ )::const_iterator;
+
+	CLITokens();
 
 	/**
 	 * \brief Constructor for token view on the command line input.
@@ -188,39 +385,38 @@ public:
 	 * The supported options are represented as a sequence of pairs of the
 	 * actual option and the numerical code for this option.
 	 *
-	 * \param[in] argc      Number of command line arguments
-	 * \param[in] argv      Command line arguments
-	 * \param[in] supported Supported options
-	 * \param[in] preserve_order TRUE if order of occurrences is to be preserved
+	 * The caller is responsible that \c argc is the precise number of
+	 * elements in \c argv.
+	 *
+	 * \param[in] argc           Number of command line arguments
+	 * \param[in] argv           Command line arguments
+	 * \param[in] supported      Supported options
 	 */
 	CLITokens(const int argc, const char* const * const argv,
-			const std::vector<std::pair<Option, OptionCode>> &supported,
-			const bool preserve_order);
+			const std::vector<std::pair<Option, OptionCode>> &supported);
 
 	/**
 	 * \brief Default destructor.
 	 */
 	~CLITokens() noexcept;
 
-	/**
-	 * \brief The i-th input option.
-	 *
-	 * If \c option_code(i) is Option::NONE, \c option_value(i) is an argument.
-	 * Otherwise, \c option_value(i) is the value for option \c i.
-	 *
-	 * \return Option \c i.
-	 */
-	OptionCode option_code(const int i) const;
+	void register_callback(const input::option_callback f);
 
 	/**
-	 * \brief Access value for i-ith input option.
+	 * \brief Constructor for token view on the command line input.
 	 *
-	 * If \c option_code(i) is Option::NONE, \c option_value(i) is an argument.
-	 * Otherwise, \c option_value(i) is the value for option \c i.
+	 * The supported options are represented as a sequence of pairs of the
+	 * actual option and the numerical code for this option.
 	 *
-	 * \return Value for option \c i.
+	 * The caller is responsible that \c argc is the precise number of
+	 * elements in \c argv.
+	 *
+	 * \param[in] argc           Number of command line arguments
+	 * \param[in] argv           Command line arguments
+	 * \param[in] supported      Supported options
 	 */
-	const std::string& option_value(const int i) const;
+	void parse(const int argc, const char* const * const argv,
+			const std::vector<std::pair<Option, OptionCode>> &supported);
 
 	/**
 	 * \brief Returns TRUE iff an option with this code is contained.
@@ -244,7 +440,27 @@ public:
 	const std::string& value(const OptionCode &option) const;
 
 	/**
-	 * \brief Returns the i-th argument (where 0 is the first).
+	 * \brief The i-th input option.
+	 *
+	 * If \c option_code(i) is Option::NONE then \c option_value(i) is an
+	 * argument. Otherwise, \c option_value(i) is the value for option \c i.
+	 *
+	 * \return Option \c i.
+	 */
+	OptionCode option_code(const size_type i) const;
+
+	/**
+	 * \brief Access value for i-ith input option.
+	 *
+	 * If \c option_code(i) is Option::NONE then \c option_value(i) is an
+	 * argument. Otherwise, \c option_value(i) is the value for option \c i.
+	 *
+	 * \return Value for option \c i.
+	 */
+	const std::string& option_value(const size_type i) const;
+
+	/**
+	 * \brief Returns the i-th argument (where 0 is the first argument).
 	 *
 	 * If the total number of arguments is less than \c i, an empty
 	 * string will be returned. If \c i is greater or equal than the total
@@ -252,147 +468,7 @@ public:
 	 *
 	 * \return Argument with index \c i or empty string if \c i >= size().
 	 */
-	const std::string& argument(const std::size_t &i) const;
-
-private:
-
-	/**
-	 * \brief Uniform representation of an input token.
-	 *
-	 * An InputToken can be an argument or an option with or without a value.
-	 *
-	 * An argument is represented as Option with code Option::NONE.
-	 */
-	class Token
-	{
-	public:
-
-		/**
-		 * \brief Construct option item with specified code.
-		 *
-		 * \param[in] code Code for this option
-		 */
-		Token(const OptionCode code)
-			: Token { code, std::string{} }
-		{ /* empty */ };
-
-		/**
-		 * \brief Construct argument item with specified value.
-		 *
-		 * \param[in] value Argument value
-		 */
-		Token(const std::string &value)
-			: Token { Option::NONE, value }
-		{ /* empty */ };
-
-		/**
-		 * \brief OptionCode of the Token.
-		 *
-		 * \return OptionCode of the Token
-		 */
-		OptionCode code() const { return code_; }
-
-		/**
-		 * \brief Set the value of the Token.
-		 *
-		 * \param[in] value New value of the Token
-		 */
-		void set_value(const std::string &value) { value_ = value; }
-
-		/**
-		 * \brief Get the value of the Token.
-		 *
-		 * \return Value of the Token
-		 */
-		const std::string& value() const { return value_; }
-
-	private:
-
-		/**
-		 * \brief Construct item with specified code and value.
-		 *
-		 * \param[in] code  Code for this Token
-		 * \param[in] value Value for this Token
-		 */
-		Token(const OptionCode code, const std::string &value)
-			: code_  { code }
-			, value_ { value }
-		{ /* empty */ }
-
-		OptionCode code_;
-
-		std::string value_;
-	};
-
-	/**
-	 * \brief Returns the specified option token, if present, otherwise nullptr.
-	 *
-	 * \param[in] option The option to lookup
-	 *
-	 * \return The specified option token, if present, otherwise nullptr.
-	 */
-	const Token* lookup(const OptionCode &option) const;
-
-	/**
-	 * \brief Consume all tokens.
-	 *
-	 * If \c preserve_order is set to TRUE, the returned list will contain the
-	 * tokens in the same order as the occurred in the input.
-	 *
-	 * \param[in] argc      Number of command line arguments
-	 * \param[in] argv      Command line arguments
-	 * \param[in] supported Supported options
-	 * \param[in] preserve_order TRUE if order of occurrences is to be preserved
-	 *
-	 * \return List of tokens
-	 */
-	std::vector<Token> consume_tokens(const int argc,
-		const char* const * const argv,
-		const std::vector<std::pair<Option, OptionCode>> &supported,
-		const bool preserve_order) const;
-
-	/**
-	 * \brief Description.
-	 *
-	 * \param[in] opt       The option symbol to consume
-	 * \param[in] val       The option value to consume
-	 * \param[in] supported The supported options to match
-	 * \param[in,out] pos   Character position in the call string
-	 */
-	Token consume_as_symbol(const char * const opt, const char * const val,
-			const std::vector<std::pair<Option, OptionCode>>& supported,
-			int &pos) const;
-
-	/**
-	 * \brief Description.
-	 *
-	 * \param[in] opt       The option symbol to consume
-	 * \param[in] val       The option value to consume
-	 * \param[in] supported The supported options to match
-	 * \param[in,out] pos   Character position in the call string
-	 */
-	std::vector<CLITokens::Token> consume_as_shorthand(const char * const opt,
-			const char * const val,
-			const std::vector<std::pair<Option, OptionCode>>& supported,
-			int &pos) const;
-
-	/**
-	 * \brief Returns an empty option value.
-	 *
-	 * Convenience: do not have to create empty string objects while parsing.
-	 *
-	 * \return An empty option value
-	 */
-	const std::string& empty_value() const noexcept;
-
-	/**
-	 * \brief Parsed items.
-	 */
-	std::vector<Token> tokens_;
-
-public:
-
-	using size_type = decltype( tokens_ )::size_type;
+	const std::string& argument(const size_type &i) const;
 
 	/**
 	 * \brief Return number of input tokens.
@@ -410,16 +486,32 @@ public:
 	 */
 	bool empty() const;
 
-	using iterator = decltype( tokens_ )::iterator;
-
-	using const_iterator = decltype( tokens_ )::const_iterator;
-
 	iterator begin();
 	iterator end();
 	const_iterator begin() const;
 	const_iterator end() const;
 	const_iterator cbegin() const;
 	const_iterator cend() const;
+
+private:
+
+	/**
+	 * \brief Returns the specified option token, if present, otherwise nullptr.
+	 *
+	 * \param[in] option The option to lookup
+	 *
+	 * \return The specified option token, if present, otherwise nullptr.
+	 */
+	const Token* lookup(const OptionCode &option) const;
+
+	/**
+	 * \brief Get i-th token.
+	 *
+	 * \param[in] i Index of the token
+	 *
+	 * \return i-ith input Token
+	 */
+	const Token* get(const size_type i) const;
 };
 
 } // namespace arcsapp

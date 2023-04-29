@@ -150,7 +150,8 @@ Options::~Options() noexcept = default;
 
 bool Options::is_set(const OptionCode &option) const
 {
-	return options_.find(option) != options_.end();
+	using std::end;
+	return options_.find(option) != end(options_);
 }
 
 
@@ -167,7 +168,7 @@ void Options::set(const OptionCode &option, const std::string &value)
 		throw ConfigurationException("Cannot set OPTION::NONE");
 	}
 
-	auto rc = options_.insert(std::make_pair(option, value));
+	auto rc { options_.insert(std::make_pair(option, value)) };
 
 	if (not rc.second) // Insertion failed, but option value can be updated
 	{
@@ -178,7 +179,7 @@ void Options::set(const OptionCode &option, const std::string &value)
 
 void Options::unset(const OptionCode &option)
 {
-	auto o = options_.find(option);
+	auto o { options_.find(option) };
 
 	if (o != options_.end())
 	{
@@ -189,14 +190,14 @@ void Options::unset(const OptionCode &option)
 
 std::string Options::value(const OptionCode &option) const
 {
-	auto o = options_.find(option);
+	auto o { options_.find(option) };
 
 	if (o != options_.end())
 	{
 		return o->second;
 	}
 
-	return std::string();
+	return std::string{};
 }
 
 
@@ -291,11 +292,32 @@ Configurator::~Configurator() noexcept = default;
 std::unique_ptr<Options> Configurator::provide_options(const int argc,
 		const char* const * const argv) const
 {
+	// Parse Input and Match Supported Options
+
+	auto cli_options = std::make_unique<Options>();
+	{
+		const auto add_option =
+			[&cli_options](const OptionCode c, const std::string& v)
+			{
+				if (Option::NONE == c)
+				{
+					cli_options->put_argument(v);
+				} else
+				{
+					cli_options->set(c, v);
+				}
+			};
+		auto cli_input = CLITokens {};
+		cli_input.register_callback(add_option);
+		cli_input.parse(argc, argv, supported_options());
+	}
+	//
+
 	const auto& supported_options = this->supported_options();
 
 	// Parse Input and Match Supported Options
 
-	auto input = CLITokens { argc, argv, supported_options, true };
+	auto input = CLITokens { argc, argv, supported_options };
 	auto options = std::make_unique<Options>();
 
 	// Activate logging:

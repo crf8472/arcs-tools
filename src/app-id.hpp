@@ -24,7 +24,6 @@
 namespace arcsapp
 {
 
-class CLITokens;
 class Result;
 
 /**
