@@ -292,7 +292,7 @@ Configurator::~Configurator() noexcept = default;
 std::unique_ptr<Options> Configurator::provide_options(const int argc,
 		const char* const * const argv) const
 {
-	// Parse Input and Match Supported Options
+	// Parse Commandline Input and Match Supported Options
 
 	auto cli_options = std::make_unique<Options>();
 	{
@@ -307,19 +307,9 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 					cli_options->set(c, v);
 				}
 			};
-		//auto cli_input = CLITokens {};
-		//cli_input.register_callback(add_option);
-		//cli_input.parse(argc, argv, supported_options());
+
 		input::parse(argc, argv, supported_options(), add_option);
 	}
-	//
-
-	const auto& supported_options = this->supported_options();
-
-	// Parse Input and Match Supported Options
-
-	auto input = CLITokens { argc, argv, supported_options };
-	auto options = std::make_unique<Options>();
 
 	// Activate logging:
 	// The log options --logfile, --verbosity and --quiet take immediate effect
@@ -329,9 +319,10 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 
 		std::unique_ptr<Appender> appender;
 
-		if (input.contains(OPTION::LOGFILE))
+		if (cli_options->is_set(OPTION::LOGFILE))
 		{
-			appender = std::make_unique<Appender>(input.value(OPTION::LOGFILE));
+			appender = std::make_unique<Appender>(
+					cli_options->value(OPTION::LOGFILE));
 		} else
 		{
 			appender = std::make_unique<Appender>("stdout", stdout);
@@ -341,44 +332,32 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 
 		// --quiet, --verbosity
 
-		if (not input.contains(OPTION::QUIET))
+		if (not cli_options->is_set(OPTION::QUIET))
 		{
-			if (input.contains(OPTION::VERBOSITY))
+			if (cli_options->is_set(OPTION::VERBOSITY))
 			{
 				Logging::instance().set_level(to_loglevel(
-							input.value(OPTION::VERBOSITY)));
+							cli_options->value(OPTION::VERBOSITY)));
 			}
 		} // else do nothing since LOGLEVEL::NONE i.e. --quiet is default
+
+		ARCS_LOG_DEBUG << "Activate Logging";
 
 		// TODO Make configurable
 		//Logging::instance().set_timestamps(false);
 	}
 
-	// Convert input to Options object
-
-	for (const auto& token : input)
-	{
-		if (Option::NONE == token.code())
-		{
-			options->put_argument(token.value());
-		} else
-		{
-			options->set(token.code(), token.value());
-		}
-	}
-
 	ARCS_LOG_DEBUG << "Command line input successfully parsed";
 
 	// Reset verbosity to actual log level
-	// XXX WHY THIS??
 	{
 		const auto actual_level = static_cast<std::underlying_type_t<LOGLEVEL>>(
 				Logging::instance().level());
 
-		options->set(OPTION::VERBOSITY, std::to_string(actual_level));
+		cli_options->set(OPTION::VERBOSITY, std::to_string(actual_level));
 	}
 
-	return this->do_configure_options(std::move(options));
+	return this->do_configure_options(std::move(cli_options));
 }
 
 
