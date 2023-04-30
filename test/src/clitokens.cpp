@@ -70,10 +70,7 @@ TEST_CASE ( "parse", "[parse]" )
 			"Some option with a value" }},
 		{ my_test.SOMEOTHER,
 		{  'q', "some-option-without-value", false, "none",
-			"Some option without a value" }},
-		{ my_test.LIST_TOC_FORMATS,
-		{      "list-toc-formats", false, "none",
-			"Print list with TOC formats" }}
+			"Some option without a value" }}
 	};
 
 	SECTION ( "parse() input with distinct options" )
@@ -95,7 +92,7 @@ TEST_CASE ( "parse", "[parse]" )
 		CHECK ( (tokens.begin() + 2)->value() == "foo/foo.bin"        );
 	}
 
-	SECTION ( "parse() input with non-distinct options" )
+	SECTION ( "parse() input with an options that is a subset of another" )
 	{
 		const char * const argv[] = { "arcstk-ignored",
 			"--subset-of-full-option", "--subset-of", "foo/foo.wav"
@@ -112,7 +109,7 @@ TEST_CASE ( "parse", "[parse]" )
 		CHECK ( (tokens.begin() + 2)->value() == "foo/foo.wav"      );
 	}
 
-	SECTION ( "parse() symbol with value (blank)" )
+	SECTION ( "parse() valued option with blank as delimiter" )
 	{
 		const char * const argv[] = { "arcstk-whatever",
 			"--some-option-with-value", "foo/foo.wav"
@@ -127,7 +124,7 @@ TEST_CASE ( "parse", "[parse]" )
 		CHECK ( tokens.begin()->value() == "foo/foo.wav"      );
 	}
 
-	SECTION ( "parse() symbol with value (=)" )
+	SECTION ( "parse() valued option with '=' as delimiter" )
 	{
 		const char * const argv[] = { "arcstk-whatever",
 			"--some-option-with-value=foo/foo.wav"
@@ -164,7 +161,7 @@ TEST_CASE ( "parse", "[parse]" )
 		CHECK ( (tokens.begin() + 4)->value() == "foo/foo.wav"      );
 	}
 
-	SECTION ( "parse() no options and no arguments" )
+	SECTION ( "parse() command line without any options and arguments" )
 	{
 		const char * const argv[] = { "arcstk-whatever" };
 		const int argc = 1;
