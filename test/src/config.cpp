@@ -203,7 +203,47 @@ TEST_CASE ( "ARCalcConfigurator", "[ARCalcConfigurator]" )
 TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 {
 	using arcsapp::ARVerifyConfigurator;
+	using arcsapp::OPTION;
 	using arcsapp::VERIFY;
+
+	SECTION ("List of supported options is sound and complete")
+	{
+		ARVerifyConfigurator conf1;
+		using std::end;
+
+		const auto supported { conf1.supported_options() };
+
+		CHECK ( 27 == supported.size() );
+
+		CHECK ( supported.find(VERIFY::READERID) != end(supported) );
+		CHECK ( supported.find(VERIFY::PARSERID) != end(supported) );
+		CHECK ( supported.find(VERIFY::LIST_TOC_FORMATS) != end(supported) );
+		CHECK ( supported.find(VERIFY::LIST_AUDIO_FORMATS) != end(supported) );
+		CHECK ( supported.find(VERIFY::METAFILE) != end(supported) );
+		CHECK ( supported.find(VERIFY::NOTRACKS) != end(supported) );
+		CHECK ( supported.find(VERIFY::NOFILENAMES) != end(supported) );
+		CHECK ( supported.find(VERIFY::NOOFFSETS) != end(supported) );
+		CHECK ( supported.find(VERIFY::NOLENGTHS) != end(supported) );
+		CHECK ( supported.find(VERIFY::NOLABELS) != end(supported) );
+		CHECK ( supported.find(VERIFY::COLDELIM) != end(supported) );
+		CHECK ( supported.find(VERIFY::PRINTID) != end(supported) );
+		CHECK ( supported.find(VERIFY::PRINTURL) != end(supported) );
+		CHECK ( supported.find(VERIFY::NOFIRST) != end(supported) );
+		CHECK ( supported.find(VERIFY::NOLAST) != end(supported) );
+		CHECK ( supported.find(VERIFY::NOALBUM) != end(supported) );
+		CHECK ( supported.find(VERIFY::RESPONSEFILE) != end(supported) );
+		CHECK ( supported.find(VERIFY::REFVALUES) != end(supported) );
+		CHECK ( supported.find(VERIFY::PRINTALL) != end(supported) );
+		CHECK ( supported.find(VERIFY::BOOLEAN) != end(supported) );
+		CHECK ( supported.find(VERIFY::NOOUTPUT) != end(supported) );
+
+		CHECK ( supported.find(OPTION::HELP) != end(supported) );
+		CHECK ( supported.find(OPTION::VERSION) != end(supported) );
+		CHECK ( supported.find(OPTION::VERBOSITY) != end(supported) );
+		CHECK ( supported.find(OPTION::QUIET) != end(supported) );
+		CHECK ( supported.find(OPTION::LOGFILE) != end(supported) );
+		CHECK ( supported.find(OPTION::OUTFILE) != end(supported) );
+	}
 
 	SECTION ("Input with -m and -r is ok")
 	{
@@ -339,6 +379,42 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 		ARVerifyConfigurator conf1;
 
 		CHECK_THROWS( conf1.provide_options(argc, input) );
+	}
+}
+
+TEST_CASE ( "ARIdConfigurator", "[ARIdConfigurator]" )
+{
+	using arcsapp::ARIdConfigurator;
+	using arcsapp::OPTION;
+	using arcsapp::ARIdOptions;
+
+	SECTION ("List of supported options is sound and complete")
+	{
+		ARIdConfigurator conf1;
+		using std::end;
+
+		const auto supported { conf1.supported_options() };
+
+		CHECK ( 17 == supported.size() );
+
+		CHECK ( supported.find(ARIdOptions::READERID) != end(supported) );
+		CHECK ( supported.find(ARIdOptions::PARSERID) != end(supported) );
+		CHECK ( supported.find(ARIdOptions::LIST_TOC_FORMATS) != end(supported) );
+		CHECK ( supported.find(ARIdOptions::LIST_AUDIO_FORMATS) != end(supported) );
+		CHECK ( supported.find(ARIdOptions::CDDBID) != end(supported) );
+		CHECK ( supported.find(ARIdOptions::DBID) != end(supported) );
+		CHECK ( supported.find(ARIdOptions::NOLABELS) != end(supported) );
+		CHECK ( supported.find(ARIdOptions::URL) != end(supported) );
+		CHECK ( supported.find(ARIdOptions::PROFILE) != end(supported) );
+		CHECK ( supported.find(ARIdOptions::URLPREFIX) != end(supported) );
+		CHECK ( supported.find(ARIdOptions::AUDIOFILE) != end(supported) );
+
+		CHECK ( supported.find(OPTION::HELP) != end(supported) );
+		CHECK ( supported.find(OPTION::VERSION) != end(supported) );
+		CHECK ( supported.find(OPTION::VERBOSITY) != end(supported) );
+		CHECK ( supported.find(OPTION::QUIET) != end(supported) );
+		CHECK ( supported.find(OPTION::LOGFILE) != end(supported) );
+		CHECK ( supported.find(OPTION::OUTFILE) != end(supported) );
 	}
 }
 

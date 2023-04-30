@@ -55,14 +55,14 @@ class VERIFY : public CALCBASE
 
 public:
 
-	static constexpr OptionCode NOFIRST      = BASE +  0; // 19
+	static constexpr OptionCode NOFIRST      = BASE +  0; // 20
 	static constexpr OptionCode NOLAST       = BASE +  1;
 	static constexpr OptionCode NOALBUM      = BASE +  2;
 	static constexpr OptionCode RESPONSEFILE = BASE +  3;
 	static constexpr OptionCode REFVALUES    = BASE +  4;
 	static constexpr OptionCode PRINTALL     = BASE +  5;
 	static constexpr OptionCode BOOLEAN      = BASE +  6;
-	static constexpr OptionCode NOOUTPUT     = BASE +  7; // 26
+	static constexpr OptionCode NOOUTPUT     = BASE +  7; // 27
 };
 
 
