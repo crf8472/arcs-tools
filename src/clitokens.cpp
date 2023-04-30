@@ -211,26 +211,23 @@ void consume_as_symbol(const char * const token, const char * const next,
 	auto sym_len = unsigned { 0 };
 	while (token[sym_len + 2] && token[sym_len + 2] != '=') { ++sym_len; }
 
-	// Position of identified Option in 'supported'
-	//auto option_pos = int { -1 };
-	const Option* found_op = nullptr;
-
 	auto exact    = bool { false }; // Indicates Exact Match
 	auto is_alias = bool { false }; // Indicates an Alias for an Other Option
 
 	// Traverse Supported Options for a Match of the Symbol
-	//auto i = int { 0 };
-	auto code = OptionCode { ARGUMENT };
+
+	auto code = OptionCode { ARGUMENT }; // Code to identify Option
+	const Option* found_op = nullptr;    // Identified Option in 'supported'
+
 	for (const auto& entry : supported)
 	{
-		const auto& option { entry.second };
+		const auto& o { entry.second };
 
-		if (std::strncmp(option.symbol().c_str(), &token[2], sym_len) == 0)
+		if (std::strncmp(o.symbol().c_str(), &token[2], sym_len) == 0)
 		{
-			if (option.symbol().length() == sym_len)
+			if (o.symbol().length() == sym_len)
 			{
-				//option_pos = i;
-				found_op = &option;
+				found_op = &o;
 				code = entry.first;
 				exact = true;
 
@@ -240,39 +237,28 @@ void consume_as_symbol(const char * const token, const char * const next,
 			} else
 			{
 				// Substring Match:
-				// 'token[2]' is a substring of 'option', but may be a valid
-				// option itself.
+				// 'token[2]' is a substring of 'o', but it may still be a valid
+				// option on its own.
 
 				if (!found_op)
 				{
-					found_op = &option;
+					// First substring match: just memorize.
+					found_op = &o;
+					// If no second match follows, the name of the option is
+					// just a substring of another option name and there is
+					// nothing more to do.
 				} else
 				{
-					is_alias = (option == *found_op);
+					// Second substring match: this could be an abbreviation
+					is_alias = (o == *found_op);
+					// If this is in fact the same option as the memorized first
+					// match, it is an abbreviation for this.
 				}
-
-				/*
-				if (option_pos < 0)
-				{
-					// First Substring Match: memorize.
-					// If no Second Substring Match follows, the name of the
-					// option is just a substring of an other option name.
-					option_pos = i;
-				} else
-				{
-					// Second Substring Match: Check whether this is an Alias
-					// for the Memorized First Match ("abbreviated option").
-					is_alias = (option == supported[option_pos].first);
-				}
-				*/
 			}
 		}
-
-		//++i;
 	}
 
 	if(!found_op)
-	//if (option_pos < 0)
 	{
 		std::ostringstream msg;
 		msg << "Invalid option '--" << &token[2] << "'";
@@ -284,14 +270,12 @@ void consume_as_symbol(const char * const token, const char * const next,
 		std::ostringstream msg;
 		msg << "Option '--" << &token[2] << "' is unknown, did you mean '--"
 			<< found_op->symbol() << "'?";
-			//<< supported[option_pos].first.symbol() << "'?";
 		throw CallSyntaxException(msg.str());
 	}
 
 	// Move Token Pointer for Caller
 	++pos;
 
-	//const auto& option { supported[option_pos].first };
 	const auto& option { *found_op };
 
 	if (token[sym_len + 2]) // Expect syntax '--some-option=foo'
@@ -357,7 +341,6 @@ void consume_as_shorthand(const char * const token, const char * const next,
 	auto cind  = int { 1 };
 
 	// Position of identified Option in 'supported'
-	//auto option_pos = int { -1 };
 	const Option* found_op = nullptr;
 
 	auto code = OptionCode { ARGUMENT };
@@ -367,7 +350,6 @@ void consume_as_shorthand(const char * const token, const char * const next,
 	while (cind > 0)
 	{
 		const auto c = unsigned_char (token[cind]); // Consider Next Character
-		//option_pos = -1; // Flag "nothing found"
 		found_op = nullptr;
 
 		if (c != 0)
@@ -377,7 +359,6 @@ void consume_as_shorthand(const char * const token, const char * const next,
 			{
 				if (c == option.second.shorthand_symbol())
 				{
-					//option_pos = i;
 					found_op = &option.second;
 					code = option.first;
 					break;
@@ -387,7 +368,6 @@ void consume_as_shorthand(const char * const token, const char * const next,
 		}
 
 		if (!found_op)
-		//if (option_pos < 0)
 		{
 			std::ostringstream msg;
 			msg << "Invalid option '-" << c << "'";
@@ -407,7 +387,6 @@ void consume_as_shorthand(const char * const token, const char * const next,
 		}
 
 		if (found_op->needs_value())
-		//if (supported[option_pos].first.needs_value())
 		{
 			if (cind > 0 and token[cind])
 			{
