@@ -58,69 +58,59 @@ using arcsdec::ARIdCalculator;
 // ARIdConfigurator
 
 
-const std::vector<std::pair<Option, OptionCode>>&
-	ARIdConfigurator::do_supported_options() const
+void ARIdConfigurator::flush_local_options(OptionRegistry& r) const
 {
-	const static Configurator::OptionRegistry supported_options =
-	[this](){
-		auto list = Configurator::OptionRegistry
-		{
+	r.insert({
+
 		// from FORMATBASE
 
-		{{  "reader", true, "auto",
-			"Force use of audio reader with specified id" },
-			ARIdOptions::READERID},
+		{ ARIdOptions::READERID,
+		{ "reader", true, "auto",
+			"Force use of audio reader with specified id" }},
 
-		{{  "parser", true, "auto",
-			"Force use of toc parser with specified id" },
-			ARIdOptions::PARSERID},
+		{ ARIdOptions::PARSERID,
+		{ "parser", true, "auto",
+			"Force use of toc parser with specified id" }},
 
-		{{  "list-toc-formats", false, "FALSE",
-			"List all supported file formats for TOC metadata" },
-			ARIdOptions::LIST_TOC_FORMATS },
+		{ ARIdOptions::LIST_TOC_FORMATS,
+		{ "list-toc-formats", false, "FALSE",
+			"List all supported file formats for TOC metadata" }},
 
-		{{  "list-audio-formats", false, "FALSE",
-			"List all supported audio codec/container formats" },
-			ARIdOptions::LIST_AUDIO_FORMATS },
+		{ ARIdOptions::LIST_AUDIO_FORMATS,
+		{ "list-audio-formats", false, "FALSE",
+			"List all supported audio codec/container formats" }},
 
 		// from ARIdOptions
 
-		{{  "cddb-id", false, "FALSE", "Print the CDDB id" },
-			ARIdOptions::CDDBID },
+		{ ARIdOptions::CDDBID,
+		{ "cddb-id", false, "FALSE", "Print the CDDB id" }},
 
-		{{  "db-id", false, "FALSE",
-			"Print the AccurateRip DB ID (equivalent to filename)" },
-			ARIdOptions::DBID },
+		{ ARIdOptions::DBID,
+		{ "db-id", false, "FALSE",
+			"Print the AccurateRip DB ID (equivalent to filename)" }},
 
-		{{  "filename", false, "FALSE",
-			"Print the AccurateRip DB ID (equivalent to db-id)" },
-			ARIdOptions::DBID },
+		{ ARIdOptions::DBID,
+		{ "filename", false, "FALSE",
+			"Print the AccurateRip DB ID (equivalent to db-id)" }},
 
-		{{ "no-labels", false, "FALSE", "No labels on columns and rows" },
-			ARIdOptions::NOLABELS },
+		{ ARIdOptions::NOLABELS,
+		{ "no-labels", false, "FALSE", "No labels on columns and rows" }},
 
-		{{  "url", false, "FALSE",
-			"Print the AccurateRip URL" },
-			ARIdOptions::URL },
+		{ ARIdOptions::URL,
+		{ "url", false, "FALSE",
+			"Print the AccurateRip URL" }},
 
-		{{ "profile", false, "FALSE", "Print all information" },
-			ARIdOptions::PROFILE },
+		{ ARIdOptions::PROFILE,
+		{ "profile", false, "FALSE", "Print all information" }},
 
-		{{  "url-prefix", true, "none",
+		{ ARIdOptions::URLPREFIX,
+		{ "url-prefix", true, "none",
 			"Use the specified prefix instead of the default "
-				"'http://accuraterip.com/accuraterip/'" },
-			ARIdOptions::URLPREFIX },
+			"'http://accuraterip.com/accuraterip/'" }},
 
-		{{ 'a', "audiofile", true, "none", "Specify input audio file" },
-			ARIdOptions::AUDIOFILE }
-		};
-
-		flush_common_options_to(list);
-
-		return list;
-	}();
-
-	return supported_options;
+		{ ARIdOptions::AUDIOFILE,
+		{ 'a', "audiofile", true, "none", "Specify input audio file" }}
+	});
 }
 
 

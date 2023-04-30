@@ -15,6 +15,7 @@
 #include <cstddef>       // for size_t
 #include <cstdint>       // for uint64_t
 #include <functional>    // for function
+#include <map>           // for map
 #include <stdexcept>     // for runtime_error
 #include <string>        // for string
 #include <utility>       // for pair
@@ -42,16 +43,11 @@ bool operator == (const Option &lhs, const Option &rhs) noexcept;
  * called 'boolean'. An option has an additional short description that
  * can be printed in a usage or help message.
  */
-class Option
+class Option final
 {
 public:
 
 	friend bool operator == (const Option &lhs, const Option &rhs) noexcept;
-
-	/**
-	 * \brief Option Id for non-options.
-	 */
-	static constexpr OptionCode NONE = 0;
 
 	/**
 	 * \brief Constructor for options with shorthand and symbol.
@@ -84,7 +80,7 @@ public:
 	 *
 	 * \return Shorthand symbol of this option or '\0' if none
 	 */
-	char shorthand_symbol() const;
+	const char& shorthand_symbol() const;
 
 	/**
 	 * \brief Symbol of this option.
@@ -93,7 +89,7 @@ public:
 	 *
 	 * \return Symbol of this option or empty string if none.
 	 */
-	std::string symbol() const;
+	const std::string& symbol() const;
 
 	/**
 	 *  \brief Returns TRUE iff the option requires a value
@@ -107,19 +103,12 @@ public:
 	 *
 	 * \return Default value of the option
 	 */
-	std::string default_arg() const;
+	const std::string& default_arg() const;
 
 	/**
 	 * \brief Description of the symbol
 	 */
-	std::string description() const;
-
-	/**
-	 * \brief Return command line tokens that represent that option
-	 *
-	 * \return List of tokens
-	 */
-	std::vector<std::string> tokens() const;
+	const std::string& description() const;
 
 	/**
 	 * \brief Return the list of tokens as a comma separated list
@@ -184,43 +173,49 @@ namespace input
 {
 
 /**
+ * \brief OptionCode representing an argument.
+ */
+inline constexpr OptionCode ARGUMENT = 0;
+
+
+/**
  * \brief Uniform representation of an input token.
  *
  * A Token can be an argument or an option with or without a value.
  *
- * An argument is represented as Option with code Option::NONE.
+ * An argument is represented as Option with code ARGUMENT.
  */
-class Token
+class Token final
 {
 public:
 
 	/**
-	 * \brief Construct item with specified code and value.
+	 * \brief Construct token with specified code and value.
 	 *
 	 * \param[in] code  Code for this Token
 	 * \param[in] value Value for this Token
 	 */
-	Token(const OptionCode code, const std::string &value)
+	Token(const OptionCode code, const std::string& value) noexcept
 		: code_  { code }
 		, value_ { value }
 	{ /* empty */ }
 
 	/**
-	 * \brief Construct option item with specified code.
+	 * \brief Construct option token with specified code and empty value.
 	 *
 	 * \param[in] code Code for this option
 	 */
-	Token(const OptionCode code)
-		: Token { code, std::string{} }
+	Token(const OptionCode code) noexcept
+		: Token { code, empty_value() }
 	{ /* empty */ };
 
 	/**
-	 * \brief Construct argument item with specified value.
+	 * \brief Construct argument token with specified value.
 	 *
 	 * \param[in] value Argument value
 	 */
-	Token(const std::string &value)
-		: Token { Option::NONE, value }
+	Token(const std::string& value) noexcept
+		: Token { ARGUMENT, value }
 	{ /* empty */ };
 
 	/**
@@ -228,14 +223,7 @@ public:
 	 *
 	 * \return OptionCode of the Token
 	 */
-	OptionCode code() const { return code_; }
-
-	/**
-	 * \brief Set the value of the Token.
-	 *
-	 * \param[in] value New value of the Token
-	 */
-	void set_value(const std::string &value) { value_ = value; }
+	OptionCode code() const noexcept { return code_; }
 
 	/**
 	 * \brief Get the value of the Token.
@@ -266,6 +254,12 @@ private:
 
 
 /**
+ * \brief Internal type used by Configurator.
+ */
+using OptionRegistry = std::map<OptionCode, Option>;
+
+
+/**
  * \brief Get all CLI input tokens.
  *
  * The returned list will contain the tokens in the same order as the occurred
@@ -277,9 +271,8 @@ private:
  *
  * \return List of tokens
  */
-std::vector<Token> get_tokens(const int argc,
-		const char* const * const argv,
-		const std::vector<std::pair<Option, OptionCode>> &supported);
+std::vector<Token> get_tokens(const int argc, const char* const * const argv,
+		const OptionRegistry& supported);
 
 
 /**
@@ -297,7 +290,7 @@ using option_callback =
  * Parses the argc/argv command line input to a sequence of input tokens. A
  * token is either an option along with its respective value or a non-option
  * (i.e. an argument). Arguments are represented as options of type
- * Option::NONE.
+ * ARGUMENT.
  *
  *  - Syntactically, an option is a hyphen '-' followed by a single alphanumeric
  *    character, like this: <tt>-v</tt>.
@@ -325,8 +318,7 @@ using option_callback =
  * \param[in] pass_token     Function to call on each parsed token
  */
 void parse(const int argc, const char* const * const argv,
-		const std::vector<std::pair<Option, OptionCode>> &supported,
-		const option_callback& pass_token);
+		const OptionRegistry &supported, const option_callback& pass_token);
 
 
 /**
@@ -339,7 +331,7 @@ void parse(const int argc, const char* const * const argv,
  * \param[in] pass_token  Function to call on each parsed token
  */
 void consume_as_symbol(const char * const opt, const char * const val,
-		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos,
+		const OptionRegistry& supported, int &pos,
 		const option_callback& pass_token);
 
 
@@ -352,9 +344,8 @@ void consume_as_symbol(const char * const opt, const char * const val,
  * \param[in,out] pos    Character position in the call string
  * \param[in] pass_token Function to call on each parsed token
  */
-void consume_as_shorthand(const char * const opt,
-		const char * const val,
-		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos,
+void consume_as_shorthand(const char * const opt, const char * const val,
+		const OptionRegistry& supported, int &pos,
 		const option_callback& pass_token);
 
 } // namespace input

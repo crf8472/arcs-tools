@@ -74,16 +74,6 @@ public:
 			const Options &options);
 
 	/**
-	 * \brief Constructor.
-	 */
-	Options();
-
-	/**
-	 * \brief Virtual default destructor.
-	 */
-	virtual ~Options() noexcept;
-
-	/**
 	 * \brief Returns TRUE iff the option is set, otherwise FALSE.
 	 *
 	 * \param[in] option The option to check for
@@ -204,12 +194,11 @@ private:
 /**
  * \brief OptionCode for global options.
  *
- * The order of symbols MUST match the order in global_options_.
  * The symbols must be positive (minimal numerical value is 1).
  */
 struct OPTION
 {
-	static constexpr OptionCode NONE = Option::NONE; // NONE MUST be 0 for this
+	static constexpr OptionCode NONE      = input::ARGUMENT; // MUST be 0
 	static constexpr OptionCode HELP      = 1;
 	static constexpr OptionCode VERSION   = 2;
 	static constexpr OptionCode VERBOSITY = 3;
@@ -218,6 +207,19 @@ struct OPTION
 	static constexpr OptionCode OUTFILE   = 6;
 };
 
+
+/**
+ * \brief An Option with an OptionCode assigned.
+ */
+using OptionWithCode = std::pair<Option, OptionCode>;
+
+
+/**
+ * \brief Internal type used by Configurator.
+ */
+//using OptionRegistry = std::vector<OptionWithCode>;
+using OptionRegistry = std::map<OptionCode, Option>;
+//class OptionRegistry;
 
 /**
  * \brief Abstract base class for Configurators.
@@ -257,11 +259,6 @@ class Configurator
 public:
 
 	/**
-	 * \brief Internal type used by Configurator.
-	 */
-	using OptionRegistry = std::vector<std::pair<Option, OptionCode>>;
-
-	/**
 	 * \brief Constructor.
 	 */
 	Configurator();
@@ -298,48 +295,38 @@ public:
 	 *
 	 * \return List of options supported by this Configurator
 	 */
-	const OptionRegistry& supported_options() const;
+	OptionRegistry supported_options() const;
+
+	/**
+	 * \brief Returns the minimal OptionCode constant to be used by subclasses.
+	 *
+	 * Subclasses may declare their code range starting with this
+	 * OptionCode.
+	 *
+	 * \see ARIdOptions
+	 * \see CALCBASE
+	 */
+	static constexpr OptionCode BASE() { return 7/* last OPTION + 1 */; };
+
+protected:
 
 	/**
 	 * \brief Options common to all subclasses of Configurator.
 	 *
 	 * \return List of options supported by every Configurator.
 	 */
-	static const OptionRegistry& common_options();
-
-	/**
-	 * \brief Returns the minimal OptionCode constant to be used by subclasses.
-	 *
-	 * Subclasses may declare their code range starting with this
-	 * OptionCode + 1.
-	 *
-	 * \see ARIdOptions
-	 * \see CALCBASE
-	 */
-	static constexpr OptionCode BASE() { return 6/*last member in OPTION*/; };
-
-protected:
-
-	/**
-	 * \brief Worker: subclass may want to flush common options to own registry.
-	 *
-	 * \param[in] r Registry to flush common options to
-	 */
-	void flush_common_options_to(OptionRegistry& r) const;
+	OptionRegistry common_options() const;
 
 private:
 
 	/**
-	 * \brief Implements supported_options().
+	 * \brief Flush options supported by this subclass so support list.
 	 *
-	 * The returned options will NOT include the global options.
+	 * Called by supported_options() to collect options provided by subclass.
 	 *
-	 * \return List of options supported by this Configurator
-	 *
-	 * \see global_options()
+	 * \param[in,out] supported List of supported options.
 	 */
-	virtual const std::vector<std::pair<Option, OptionCode>>&
-		do_supported_options() const
+	virtual void flush_local_options(OptionRegistry& supported) const
 	= 0;
 
 	/**
@@ -353,11 +340,6 @@ private:
 	 */
 	virtual std::unique_ptr<Options> do_configure_options(
 			std::unique_ptr<Options> options) const;
-
-	/**
-	 * \brief Registry of supported Options and their respective OptionCodes.
-	 */
-	OptionRegistry supported_options_;
 };
 
 
@@ -372,8 +354,7 @@ public:
 
 private:
 
-	const std::vector<std::pair<Option, OptionCode>>&
-		do_supported_options() const override;
+	void flush_local_options(OptionRegistry& r) const override;
 };
 
 
@@ -393,13 +374,13 @@ public:
 
 	// Info Output Options (no calculation)
 
-	static constexpr OptionCode LIST_TOC_FORMATS   = BASE +  0; // 6
+	static constexpr OptionCode LIST_TOC_FORMATS   = BASE +  0; //  7
 	static constexpr OptionCode LIST_AUDIO_FORMATS = BASE +  1;
 
 	// Tool Selection Options
 
 	static constexpr OptionCode READERID           = BASE +  2;
-	static constexpr OptionCode PARSERID           = BASE +  3; // 9
+	static constexpr OptionCode PARSERID           = BASE +  3; // 10
 
 protected:
 

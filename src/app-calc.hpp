@@ -52,7 +52,7 @@ public:
 
 	// Calculation Input Options
 
-	static constexpr OptionCode METAFILE      = BASE +  0; // 10
+	static constexpr OptionCode METAFILE      = BASE +  0; // 11
 
 	// Calculation Output Options
 
@@ -63,7 +63,7 @@ public:
 	static constexpr OptionCode NOLABELS      = BASE +  5;
 	static constexpr OptionCode COLDELIM      = BASE +  6;
 	static constexpr OptionCode PRINTID       = BASE +  7;
-	static constexpr OptionCode PRINTURL      = BASE +  8; // 18
+	static constexpr OptionCode PRINTURL      = BASE +  8; // 19
 
 protected:
 
@@ -113,7 +113,7 @@ public:
 
 	// Calculation Input Options
 
-	static constexpr OptionCode FIRST        = BASE + 0;  // 19
+	static constexpr OptionCode FIRST        = BASE + 0; // 20
 	static constexpr OptionCode LAST         = BASE + 1;
 	static constexpr OptionCode ALBUM        = BASE + 2;
 
@@ -122,7 +122,7 @@ public:
 	static constexpr OptionCode NOV1         = BASE + 3;
 	static constexpr OptionCode NOV2         = BASE + 4;
 	static constexpr OptionCode SUMSONLY     = BASE + 5;
-	static constexpr OptionCode TRACKSASCOLS = BASE + 6; // 25
+	static constexpr OptionCode TRACKSASCOLS = BASE + 6; // 26
 };
 
 
@@ -139,8 +139,7 @@ public:
 
 private:
 
-	const std::vector<std::pair<Option, OptionCode>>& do_supported_options()
-		const final;
+	void flush_local_options(OptionRegistry& r) const final;
 
 	std::unique_ptr<Options> do_configure_options(
 			std::unique_ptr<Options> options) const final;

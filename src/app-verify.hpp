@@ -79,8 +79,7 @@ public:
 
 private:
 
-	const std::vector<std::pair<Option, OptionCode>>& do_supported_options()
-		const final;
+	void flush_local_options(OptionRegistry& r) const final;
 
 	std::unique_ptr<Options> do_configure_options(
 			std::unique_ptr<Options> options) const final;

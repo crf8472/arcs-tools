@@ -88,105 +88,95 @@ constexpr OptionCode VERIFY::NOOUTPUT;
 // ARVerifyConfigurator
 
 
-const std::vector<std::pair<Option, OptionCode>>&
-	ARVerifyConfigurator::do_supported_options() const
+void ARVerifyConfigurator::flush_local_options(OptionRegistry &r) const
 {
-	const static Configurator::OptionRegistry supported_options =
-	[this](){
-		auto list = Configurator::OptionRegistry
+	r.insert(
 		{
 		// from FORMATBASE
 
-		{{  "reader", true, "auto",
-			"Force use of audio reader with specified id" },
-			VERIFY::READERID},
+		{ VERIFY::READERID ,
+		{  "reader", true, "auto",
+			"Force use of audio reader with specified id" }},
 
-		{{  "parser", true, "auto",
-			"Force use of toc parser with specified id" },
-			VERIFY::PARSERID},
+		{ VERIFY::PARSERID ,
+		{  "parser", true, "auto",
+			"Force use of toc parser with specified id" }},
 
-		{{  "list-toc-formats", false, "FALSE",
-			"List all supported file formats for TOC metadata" },
-			VERIFY::LIST_TOC_FORMATS },
+		{ VERIFY::LIST_TOC_FORMATS ,
+		{  "list-toc-formats", false, "FALSE",
+			"List all supported file formats for TOC metadata" }},
 
-		{{  "list-audio-formats", false, "FALSE",
-			"List all supported audio codec/container formats" },
-			VERIFY::LIST_AUDIO_FORMATS },
+		{ VERIFY::LIST_AUDIO_FORMATS ,
+		{  "list-audio-formats", false, "FALSE",
+			"List all supported audio codec/container formats" }},
 
 		// from CALCBASE
 
-		{{  'm', "metafile", true, "none",
-			"Specify metadata file (TOC) to use" },
-			VERIFY::METAFILE },
+		{ VERIFY::METAFILE ,
+		{  'm', "metafile", true, "none",
+			"Specify metadata file (TOC) to use" }},
 
-		{{  "no-track-nos", false, "FALSE", "Do not print track numbers" },
-			VERIFY::NOTRACKS },
+		{ VERIFY::NOTRACKS ,
+		{  "no-track-nos", false, "FALSE", "Do not print track numbers" }},
 
-		{{  "no-filenames", false, "FALSE",
-			"Do not print the filenames" },
-			VERIFY::NOFILENAMES },
+		{ VERIFY::NOFILENAMES ,
+		{  "no-filenames", false, "FALSE",
+			"Do not print the filenames" }},
 
-		{{  "no-offsets", false, "FALSE", "Do not print track offsets" },
-			VERIFY::NOOFFSETS },
+		{ VERIFY::NOOFFSETS ,
+		{  "no-offsets", false, "FALSE", "Do not print track offsets" }},
 
-		{{  "no-lengths", false, "FALSE", "Do not print track lengths" },
-			VERIFY::NOLENGTHS },
+		{ VERIFY::NOLENGTHS ,
+		{  "no-lengths", false, "FALSE", "Do not print track lengths" }},
 
-		{{  "no-labels", false, "FALSE", "Do not print column or row labels" },
-			VERIFY::NOLABELS },
+		{ VERIFY::NOLABELS ,
+		{  "no-labels", false, "FALSE", "Do not print column or row labels" }},
 
-		{{  "col-delim", true, "ASCII-32", "Specify column delimiter" },
-			VERIFY::COLDELIM },
+		{ VERIFY::COLDELIM ,
+		{  "col-delim", true, "ASCII-32", "Specify column delimiter" }},
 
-		{{  "print-id", false, "FALSE",
-			"Print the AccurateRip Id of the album" },
-			VERIFY::PRINTID },
+		{ VERIFY::PRINTID ,
+		{  "print-id", false, "FALSE",
+			"Print the AccurateRip Id of the album" }},
 
-		{{  "print-url", false, "FALSE",
-			"Print the AccurateRip URL of the album" },
-			VERIFY::PRINTURL },
+		{ VERIFY::PRINTURL ,
+		{  "print-url", false, "FALSE",
+			"Print the AccurateRip URL of the album" }},
 
 		// from VERIFY
 
-		{{  "no-first", false, "FALSE",
-			"Do not treat first audio file as first track" },
-			VERIFY::NOFIRST },
+		{ VERIFY::NOFIRST ,
+		{  "no-first", false, "FALSE",
+			"Do not treat first audio file as first track" }},
 
-		{{  "no-last", false, "FALSE",
-			"Do not treat last audio file as last track" },
-			VERIFY::NOLAST },
+		{ VERIFY::NOLAST ,
+		{  "no-last", false, "FALSE",
+			"Do not treat last audio file as last track" }},
 
-		{{  "no-album", false, "FALSE",
-			"Abbreviates \"--no-first --no-last\"" },
-			VERIFY::NOALBUM },
+		{ VERIFY::NOALBUM ,
+		{  "no-album", false, "FALSE",
+			"Abbreviates \"--no-first --no-last\"" }},
 
-		{{  'r', "response", true, "none",
-			"Specify AccurateRip response file" },
-			VERIFY::RESPONSEFILE },
+		{ VERIFY::RESPONSEFILE ,
+		{  'r', "response", true, "none",
+			"Specify AccurateRip response file" }},
 
-		{{  "refvalues", true, "none",
-			"Specify AccurateRip reference values (as hex value list)" },
-			VERIFY::REFVALUES },
+		{ VERIFY::REFVALUES ,
+		{  "refvalues", true, "none",
+			"Specify AccurateRip reference values (as hex value list)" }},
 
-		{{  "print-all-matches", false, "FALSE",
-			"Print verification results for all blocks" },
-			VERIFY::PRINTALL },
+		{ VERIFY::PRINTALL ,
+		{  "print-all-matches", false, "FALSE",
+			"Print verification results for all blocks" }},
 
-		{{  'b', "boolean", false, "FALSE",
-			"Return number of differing tracks in best match" },
-			VERIFY::BOOLEAN },
+		{ VERIFY::BOOLEAN ,
+		{  'b', "boolean", false, "FALSE",
+			"Return number of differing tracks in best match" }},
 
-		{{  'n', "no-output", false, "FALSE",
-			"Do not print the result (implies --boolean)" },
-			VERIFY::NOOUTPUT},
-		};
-
-		flush_common_options_to(list);
-
-		return list;
-	}();
-
-	return supported_options;
+		{ VERIFY::NOOUTPUT ,
+		{  'n', "no-output", false, "FALSE",
+			"Do not print the result (implies --boolean)" }}
+		});
 }
 
 

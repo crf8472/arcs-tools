@@ -57,8 +57,9 @@ public:
 
 private:
 
-	const std::vector<std::pair<Option, OptionCode>>&
-		do_supported_options() const override;
+	void flush_local_options(OptionRegistry& r) const final;
+
+	// do_configure_options() does nothing
 };
 
 

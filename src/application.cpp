@@ -148,7 +148,7 @@ void Application::print_usage() const
 	for (const auto& entry : options)
 	{
 		// Use option, discard code
-		auto& option = std::get<0>(entry);
+		auto& option = std::get<1>(entry);
 
 		// Add row
 		table(row, 0) = option.tokens_str();

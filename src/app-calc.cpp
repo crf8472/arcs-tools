@@ -133,90 +133,80 @@ std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 // ARCalcConfigurator
 
 
-const std::vector<std::pair<Option, OptionCode>>&
-	ARCalcConfigurator::do_supported_options() const
+void ARCalcConfigurator::flush_local_options(OptionRegistry &r) const
 {
-	const static Configurator::OptionRegistry supported_options =
-	[this](){
-		auto list = Configurator::OptionRegistry
-		{
+	r.insert(
+	{
 		// from FORMATBASE
 
-		{{  "reader", true, "auto",
-			"Force use of audio reader with specified id" },
-			CALC::READERID },
+		{ CALC::READERID,
+		{  "reader", true, "auto",
+			"Force use of audio reader with specified id" }},
 
-		{{  "parser", true, "auto",
-			"Force use of toc parser with specified id" },
-			CALC::PARSERID },
+		{ CALC::PARSERID,
+		{  "parser", true, "auto",
+			"Force use of toc parser with specified id" }},
 
-		{{  "list-toc-formats", false, "FALSE",
-			"List all supported file formats for TOC metadata" },
-			CALC::LIST_TOC_FORMATS },
+		{ CALC::LIST_TOC_FORMATS,
+		{  "list-toc-formats", false, "FALSE",
+			"List all supported file formats for TOC metadata" }},
 
-		{{  "list-audio-formats", false, "FALSE",
-			"List all supported audio codec/container formats" },
-			CALC::LIST_AUDIO_FORMATS },
+		{ CALC::LIST_AUDIO_FORMATS,
+		{  "list-audio-formats", false, "FALSE",
+			"List all supported audio codec/container formats" }},
 
 		// from CALCBASE
 
-		{{  'm', "metafile", true, "none", "Specify toc metadata file to use" },
-			CALC::METAFILE },
+		{ CALC::METAFILE,
+		{  'm', "metafile", true, "none", "Specify toc metadata file to use" }},
 
-		{{  "no-track-nos", false, "FALSE", "Do not print track numbers" },
-			CALC::NOTRACKS },
+		{ CALC::NOTRACKS,
+		{  "no-track-nos", false, "FALSE", "Do not print track numbers" }},
 
-		{{  "no-filenames", false, "FALSE", "Do not print the filenames" },
-			CALC::NOFILENAMES },
+		{ CALC::NOFILENAMES,
+		{  "no-filenames", false, "FALSE", "Do not print the filenames" }},
 
-		{{  "no-offsets", false, "FALSE", "Do not print track offsets" },
-			CALC::NOOFFSETS },
+		{ CALC::NOOFFSETS,
+		{  "no-offsets", false, "FALSE", "Do not print track offsets" }},
 
-		{{  "no-lengths", false, "FALSE", "Do not print track lengths" },
-			CALC::NOLENGTHS },
+		{ CALC::NOLENGTHS,
+		{  "no-lengths", false, "FALSE", "Do not print track lengths" }},
 
-		{{  "no-labels", false, "FALSE", "Do not print column or row labels" },
-			CALC::NOLABELS },
+		{ CALC::NOLABELS,
+		{  "no-labels", false, "FALSE", "Do not print column or row labels" }},
 
-		{{  "col-delim", true, "ASCII-32", "Specify column delimiter" },
-			CALC::COLDELIM },
+		{ CALC::COLDELIM,
+		{  "col-delim", true, "ASCII-32", "Specify column delimiter" }},
 
-		{{  "print-id", false, "FALSE", "Print AccurateRip Id of the album" },
-			CALC::PRINTID },
+		{ CALC::PRINTID,
+		{  "print-id", false, "FALSE", "Print AccurateRip Id of the album" }},
 
-		{{  "print-url", false, "FALSE", "Print AccurateRip URL of the album" },
-			CALC::PRINTURL},
+		{ CALC::PRINTURL,
+		{  "print-url", false, "FALSE", "Print AccurateRip URL of the album" }},
 
 		// from CALC
 
-		{{  "first", false, "FALSE", "Treat first audio file as first track" },
-			CALC::FIRST },
+		{ CALC::FIRST,
+		{  "first", false, "FALSE", "Treat first audio file as first track" }},
 
-		{{  "last", false, "FALSE", "Treat last audio file as last track" },
-			CALC::LAST },
+		{ CALC::LAST,
+		{  "last", false, "FALSE", "Treat last audio file as last track" }},
 
-		{{  "album", false, "FALSE", "Abbreviates \"--first --last\"" },
-			CALC::ALBUM },
+		{ CALC::ALBUM,
+		{  "album", false, "FALSE", "Abbreviates \"--first --last\"" }},
 
-		{{  "no-v1", false, "FALSE", "Do not provide ARCSv1" },
-			CALC::NOV1 },
+		{ CALC::NOV1,
+		{  "no-v1", false, "FALSE", "Do not provide ARCSv1" }},
 
-		{{  "no-v2", false, "FALSE", "Do not provide ARCSv2" },
-			CALC::NOV2 },
+		{ CALC::NOV2,
+		{  "no-v2", false, "FALSE", "Do not provide ARCSv2" }},
 
-		{{  "print-sums-only", false, "FALSE", "Print only checksums" },
-			CALC::SUMSONLY },
+		{ CALC::SUMSONLY,
+		{  "print-sums-only", false, "FALSE", "Print only checksums" }},
 
-		{{  "tracks-as-cols", false, "FALSE", "Print tracks as columns" },
-			CALC::TRACKSASCOLS }
-		};
-
-		flush_common_options_to(list);
-
-		return list;
-	}();
-
-	return supported_options;
+		{ CALC::TRACKSASCOLS,
+		{  "tracks-as-cols", false, "FALSE", "Print tracks as columns" }}
+	});
 }
 
 

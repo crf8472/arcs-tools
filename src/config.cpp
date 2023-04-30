@@ -137,17 +137,6 @@ ConfigurationException::ConfigurationException(const std::string &what_arg)
 // Options
 
 
-Options::Options()
-	: options_   {}
-	, arguments_ {}
-{
-	// empty
-}
-
-
-Options::~Options() noexcept = default;
-
-
 bool Options::is_set(const OptionCode &option) const
 {
 	using std::end;
@@ -271,17 +260,7 @@ Configurator::Configurator()
 	// so initial level is NOT default level but quiet level
 	Logging::instance().set_level(LOGLEVEL::NONE);
 
-	// Reset default Loglevel to value defined by option
-	const auto& options { common_options() };
-	if (options.size() < OPTION::VERBOSITY)
-	{
-		const auto& verbosity {
-			std::get<0>(common_options()[OPTION::VERBOSITY])
-		};
-		auto lvl = to_loglevel(verbosity.default_arg());
-		Logging::instance().set_level(lvl);
-	}
-
+	// TODO Make configurable
 	Logging::instance().set_timestamps(false);
 }
 
@@ -299,7 +278,7 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 		const auto add_option =
 			[&cli_options](const OptionCode c, const std::string& v)
 			{
-				if (Option::NONE == c)
+				if (OPTION::NONE == c)
 				{
 					cli_options->put_argument(v);
 				} else
@@ -309,7 +288,10 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 			};
 
 		input::parse(argc, argv, supported_options(), add_option);
+
+		ARCS_LOG_DEBUG << "Command line input successfully parsed";
 	}
+
 
 	// Activate logging:
 	// The log options --logfile, --verbosity and --quiet take immediate effect
@@ -332,80 +314,61 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 
 		// --quiet, --verbosity
 
-		if (not cli_options->is_set(OPTION::QUIET))
+		if (cli_options->is_set(OPTION::QUIET))
 		{
-			if (cli_options->is_set(OPTION::VERBOSITY))
-			{
-				Logging::instance().set_level(to_loglevel(
-							cli_options->value(OPTION::VERBOSITY)));
-			}
-		} // else do nothing since LOGLEVEL::NONE i.e. --quiet is default
+			// Let verbosity reflect the --quiet request
+			cli_options->set(OPTION::VERBOSITY, "0");
+
+			// Since initial loglevel is NONE, Logging::instance() is fine
+		} else
+		{
+			// Set actual loglevel to either requested verbosity or default
+			auto actual_loglevel = cli_options->is_set(OPTION::VERBOSITY)
+				? to_loglevel(cli_options->value(OPTION::VERBOSITY))
+				: LOGLEVEL::WARNING;
+
+			Logging::instance().set_level(actual_loglevel);
+		}
 
 		ARCS_LOG_DEBUG << "Activate Logging";
-
-		// TODO Make configurable
-		//Logging::instance().set_timestamps(false);
-	}
-
-	ARCS_LOG_DEBUG << "Command line input successfully parsed";
-
-	// Reset verbosity to actual log level
-	{
-		const auto actual_level = static_cast<std::underlying_type_t<LOGLEVEL>>(
-				Logging::instance().level());
-
-		cli_options->set(OPTION::VERBOSITY, std::to_string(actual_level));
 	}
 
 	return this->do_configure_options(std::move(cli_options));
 }
 
 
-const std::vector<std::pair<Option, OptionCode>>&
-	Configurator::supported_options() const
+OptionRegistry Configurator::supported_options() const
 {
-	return this->do_supported_options();
+	auto options { common_options() };
+	this->flush_local_options(options);
+	return options;
 }
 
 
-const Configurator::OptionRegistry& Configurator::common_options()
+OptionRegistry Configurator::common_options() const
 {
-	const static OptionRegistry common_options = {
-		{{ 'h', "help",      false, "FALSE", "Get help on usage" },
-			OPTION::HELP },
+	return {
+		{ OPTION::HELP,
+			{ 'h', "help", false, "FALSE", "Get help on usage" } },
 
-		{{      "version",   false, "FALSE", "Print version and exit,"
-											" ignoring any other options." },
-			OPTION::VERSION },
+		{ OPTION::VERSION,
+			{   "version", false, "FALSE", "Print version and exit,"
+			" ignoring any other options." } },
 
-		{{ 'v', "verbosity", true,  "2", "Verbosity of output (loglevel 0-8)" },
-			OPTION::VERBOSITY },
+		{ OPTION::VERBOSITY,
+			{ 'v', "verbosity", true,  "2", "Verbosity of output (loglevel 0-8)"
+			}} ,
 
-		{{ 'q', "quiet",     false, "FALSE", "Only output results, "
-			"nothing else." },
-			OPTION::QUIET },
+		{ OPTION::QUIET,
+			{ 'q', "quiet", false, "FALSE", "Only output results, "
+			"nothing else." }},
 
-		{{ 'l', "logfile",   true,  "none",  "File for logging output" },
-			OPTION::LOGFILE },
+		{ OPTION::LOGFILE,
+			{ 'l', "logfile",   true,  "none",  "File for logging output" }},
 
-		{{ 'o', "outfile",   true,  "none",  "File for result output" },
-			OPTION::OUTFILE }
+		{ OPTION::OUTFILE,
+			{ 'o', "outfile",   true,  "none",  "File for result output" }}
 	};
-
-	return common_options;
-}
-
-
-void Configurator::flush_common_options_to(OptionRegistry& r) const
-{
-	using std::begin;
-	using std::end;
-
-	std::copy(
-		begin(Configurator::common_options()),
-		end(Configurator::common_options()),
-		std::back_inserter(r)
-	);
 }
 
 
@@ -421,10 +384,9 @@ std::unique_ptr<Options> Configurator::do_configure_options(
 // DefaultConfigurator
 
 
-const std::vector<std::pair<Option, OptionCode>>&
-	DefaultConfigurator::do_supported_options() const
+void DefaultConfigurator::flush_local_options(OptionRegistry& r) const
 {
-	return Configurator::common_options();
+	// empty
 }
 
 

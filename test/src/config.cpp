@@ -90,14 +90,53 @@ TEST_CASE ( "DefaultConfigurator", "[DefaultConfigurator]" )
 TEST_CASE ( "ARCalcConfigurator", "[ARCalcConfigurator]" )
 {
 	using arcsapp::ARCalcConfigurator;
+	using arcsapp::OPTION;
 	using arcsapp::CALC;
+
+	SECTION ("List of supported options is sound and complete")
+	{
+		ARCalcConfigurator conf1;
+		using std::end;
+
+		const auto supported { conf1.supported_options() };
+
+		CHECK ( 26 == supported.size() );
+
+		CHECK ( supported.find(CALC::READERID) != end(supported) );
+		CHECK ( supported.find(CALC::PARSERID) != end(supported) );
+		CHECK ( supported.find(CALC::LIST_TOC_FORMATS) != end(supported) );
+		CHECK ( supported.find(CALC::LIST_AUDIO_FORMATS) != end(supported) );
+		CHECK ( supported.find(CALC::METAFILE) != end(supported) );
+		CHECK ( supported.find(CALC::NOTRACKS) != end(supported) );
+		CHECK ( supported.find(CALC::NOFILENAMES) != end(supported) );
+		CHECK ( supported.find(CALC::NOOFFSETS) != end(supported) );
+		CHECK ( supported.find(CALC::NOLENGTHS) != end(supported) );
+		CHECK ( supported.find(CALC::NOLABELS) != end(supported) );
+		CHECK ( supported.find(CALC::COLDELIM) != end(supported) );
+		CHECK ( supported.find(CALC::PRINTID) != end(supported) );
+		CHECK ( supported.find(CALC::PRINTURL) != end(supported) );
+		CHECK ( supported.find(CALC::FIRST) != end(supported) );
+		CHECK ( supported.find(CALC::LAST) != end(supported) );
+		CHECK ( supported.find(CALC::ALBUM) != end(supported) );
+		CHECK ( supported.find(CALC::NOV1) != end(supported) );
+		CHECK ( supported.find(CALC::NOV2) != end(supported) );
+		CHECK ( supported.find(CALC::SUMSONLY) != end(supported) );
+		CHECK ( supported.find(CALC::TRACKSASCOLS) != end(supported) );
+
+		CHECK ( supported.find(OPTION::HELP) != end(supported) );
+		CHECK ( supported.find(OPTION::VERSION) != end(supported) );
+		CHECK ( supported.find(OPTION::VERBOSITY) != end(supported) );
+		CHECK ( supported.find(OPTION::QUIET) != end(supported) );
+		CHECK ( supported.find(OPTION::LOGFILE) != end(supported) );
+		CHECK ( supported.find(OPTION::OUTFILE) != end(supported) );
+	}
 
 	SECTION ("Option --metafile triggers album mode")
 	{
 		const int argc = 6;
 		const char* input[] = { "arcstk-calc",
 			"--metafile", "foo/foo.cue", "foo/foo.wav",
-			"--list-toc-formats", "--list-audio-formats"
+			"--list-audio-formats", "--list-toc-formats"
 		};
 
 		ARCalcConfigurator conf1;

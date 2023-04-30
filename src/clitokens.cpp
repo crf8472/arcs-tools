@@ -15,6 +15,7 @@
 #include <arcstk/logging.hpp>
 #endif
 
+#include <iostream>
 
 namespace arcsapp
 {
@@ -38,13 +39,13 @@ Option::Option(const char shorthand, const std::string &symbol,
 }
 
 
-char Option::shorthand_symbol() const
+const char& Option::shorthand_symbol() const
 {
 	return shorthand_;
 }
 
 
-std::string Option::symbol() const
+const std::string& Option::symbol() const
 {
 	return symbol_;
 }
@@ -56,34 +57,15 @@ bool Option::needs_value() const
 }
 
 
-std::string Option::default_arg() const
+const std::string& Option::default_arg() const
 {
 	return default_arg_;
 }
 
 
-std::string Option::description() const
+const std::string& Option::description() const
 {
 	return description_;
-}
-
-
-std::vector<std::string> Option::tokens() const
-{
-	std::vector<std::string> tokens;
-	tokens.reserve(2);
-
-	if (!this->symbol().empty())
-	{
-		tokens.push_back("--" + this->symbol());
-	}
-
-	if (this->shorthand_symbol() != '\0')
-	{
-		tokens.push_back({'-', this->shorthand_symbol()});
-	}
-
-	return tokens;
 }
 
 
@@ -91,14 +73,13 @@ std::string Option::tokens_str() const
 {
 	std::ostringstream oss;
 
-	if (const auto tokens { this->tokens() }; !tokens.empty())
+	if (this->shorthand_symbol() != '\0')
 	{
-		using std::begin;
-		using std::end;
-
-		std::copy(begin(tokens), end(tokens) - 1,
-			std::ostream_iterator<std::string>(oss, ","));
-		oss << tokens.back();
+		oss << '-' << this->shorthand_symbol() << ",";
+	}
+	if (!this->symbol().empty())
+	{
+		oss << "--" << this->symbol();
 	}
 
 	return oss.str();
@@ -109,7 +90,8 @@ bool operator == (const Option &lhs, const Option &rhs) noexcept
 {
 	return lhs.symbol() == rhs.symbol()
 		&& lhs.shorthand_symbol() == rhs.shorthand_symbol()
-		&& lhs.needs_value() == rhs.needs_value();
+		&& lhs.needs_value() == rhs.needs_value()
+		&& lhs.default_arg() == rhs.default_arg();
 }
 
 
@@ -128,7 +110,7 @@ namespace input
 
 
 std::vector<Token> get_tokens(const int argc, const char* const * const argv,
-		const std::vector<std::pair<Option, OptionCode>>& supported)
+		const OptionRegistry& supported)
 {
 	std::vector<Token> tokens;
 	tokens.reserve(12);
@@ -143,8 +125,7 @@ std::vector<Token> get_tokens(const int argc, const char* const * const argv,
 
 
 void parse(const int argc, const char* const * const argv,
-		const std::vector<std::pair<Option, OptionCode>> &supported,
-		const option_callback& pass_token)
+		const OptionRegistry& supported, const option_callback& pass_token)
 {
 	if (argc < 2 or !argv)
 	{
@@ -209,21 +190,21 @@ void parse(const int argc, const char* const * const argv,
 			}
 		} else // found an argument
 		{
-			pass_token(Option::NONE, argv[pos]);
+			pass_token(ARGUMENT, argv[pos]);
 			++pos;
 		}
 	} // while
 
 	while (pos < argc)
 	{
-		pass_token(Option::NONE, argv[pos]);
+		pass_token(ARGUMENT, argv[pos]);
 		++pos;
 	}
 }
 
 
 void consume_as_symbol(const char * const token, const char * const next,
-		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos,
+		const OptionRegistry& supported, int &pos,
 		const option_callback& pass_token)
 {
 	// Determine Length of Option Symbol in Token
@@ -231,24 +212,26 @@ void consume_as_symbol(const char * const token, const char * const next,
 	while (token[sym_len + 2] && token[sym_len + 2] != '=') { ++sym_len; }
 
 	// Position of identified Option in 'supported'
-	auto option_pos = int { -1 };
+	//auto option_pos = int { -1 };
+	const Option* found_op = nullptr;
 
 	auto exact    = bool { false }; // Indicates Exact Match
 	auto is_alias = bool { false }; // Indicates an Alias for an Other Option
 
 	// Traverse Supported Options for a Match of the Symbol
-	auto i = int { 0 };
-	auto code = OptionCode { Option::NONE };
+	//auto i = int { 0 };
+	auto code = OptionCode { ARGUMENT };
 	for (const auto& entry : supported)
 	{
-		const auto& option { entry.first };
+		const auto& option { entry.second };
 
 		if (std::strncmp(option.symbol().c_str(), &token[2], sym_len) == 0)
 		{
 			if (option.symbol().length() == sym_len)
 			{
-				option_pos = i;
-				code = entry.second;
+				//option_pos = i;
+				found_op = &option;
+				code = entry.first;
 				exact = true;
 
 				// Exact Match: Stop Search
@@ -260,6 +243,15 @@ void consume_as_symbol(const char * const token, const char * const next,
 				// 'token[2]' is a substring of 'option', but may be a valid
 				// option itself.
 
+				if (!found_op)
+				{
+					found_op = &option;
+				} else
+				{
+					is_alias = (option == *found_op);
+				}
+
+				/*
 				if (option_pos < 0)
 				{
 					// First Substring Match: memorize.
@@ -272,13 +264,15 @@ void consume_as_symbol(const char * const token, const char * const next,
 					// for the Memorized First Match ("abbreviated option").
 					is_alias = (option == supported[option_pos].first);
 				}
+				*/
 			}
 		}
 
-		++i;
+		//++i;
 	}
 
-	if (option_pos < 0)
+	if(!found_op)
+	//if (option_pos < 0)
 	{
 		std::ostringstream msg;
 		msg << "Invalid option '--" << &token[2] << "'";
@@ -289,14 +283,16 @@ void consume_as_symbol(const char * const token, const char * const next,
 	{
 		std::ostringstream msg;
 		msg << "Option '--" << &token[2] << "' is unknown, did you mean '--"
-			<< supported[option_pos].first.symbol() << "'?";
+			<< found_op->symbol() << "'?";
+			//<< supported[option_pos].first.symbol() << "'?";
 		throw CallSyntaxException(msg.str());
 	}
 
 	// Move Token Pointer for Caller
 	++pos;
 
-	const auto& option { supported[option_pos].first };
+	//const auto& option { supported[option_pos].first };
+	const auto& option { *found_op };
 
 	if (token[sym_len + 2]) // Expect syntax '--some-option=foo'
 	{
@@ -351,9 +347,8 @@ void consume_as_symbol(const char * const token, const char * const next,
 }
 
 
-void consume_as_shorthand(const char * const token,
-		const char * const next,
-		const std::vector<std::pair<Option, OptionCode>>& supported, int &pos,
+void consume_as_shorthand(const char * const token, const char * const next,
+		const OptionRegistry& supported, int &pos,
 		const option_callback& pass_token)
 {
 	using unsigned_char = unsigned char;
@@ -362,33 +357,37 @@ void consume_as_shorthand(const char * const token,
 	auto cind  = int { 1 };
 
 	// Position of identified Option in 'supported'
-	auto option_pos = int { -1 };
+	//auto option_pos = int { -1 };
+	const Option* found_op = nullptr;
 
-	auto code = OptionCode { Option::NONE };
+	auto code = OptionCode { ARGUMENT };
 
 	// We may have concatenated options like '-lsbn':
 	// Traverse all characters in token as separate options.
 	while (cind > 0)
 	{
 		const auto c = unsigned_char (token[cind]); // Consider Next Character
-		option_pos = -1; // Flag "nothing found"
+		//option_pos = -1; // Flag "nothing found"
+		found_op = nullptr;
 
 		if (c != 0)
 		{
 			auto i = int { 0 };
 			for (const auto& option : supported)
 			{
-				if (c == option.first.shorthand_symbol())
+				if (c == option.second.shorthand_symbol())
 				{
-					option_pos = i;
-					code = option.second;
+					//option_pos = i;
+					found_op = &option.second;
+					code = option.first;
 					break;
 				}
 				++i;
 			}
 		}
 
-		if (option_pos < 0)
+		if (!found_op)
+		//if (option_pos < 0)
 		{
 			std::ostringstream msg;
 			msg << "Invalid option '-" << c << "'";
@@ -407,7 +406,8 @@ void consume_as_shorthand(const char * const token,
 			++pos;
 		}
 
-		if (supported[option_pos].first.needs_value())
+		if (found_op->needs_value())
+		//if (supported[option_pos].first.needs_value())
 		{
 			if (cind > 0 and token[cind])
 			{
