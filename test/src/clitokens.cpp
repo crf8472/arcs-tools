@@ -22,13 +22,14 @@ TEST_CASE ( "Option", "[option]" )
 }
 
 
-TEST_CASE ( "parse", "[parse]" )
+TEST_CASE ( "parse()", "[parse]" )
 {
 	using arcsapp::OptionCode;
 	using arcsapp::Option;
 	using arcsapp::input::OptionRegistry;
 	using arcsapp::input::ARGUMENT;
 	using arcsapp::input::get_tokens;
+	using arcsapp::CallSyntaxException;
 
 	struct TEST
 	{
@@ -40,7 +41,7 @@ TEST_CASE ( "parse", "[parse]" )
 		const OptionCode SUBSET       = 6;
 		const OptionCode SOMEOPTION   = 7;
 		const OptionCode SOMEOTHER    = 8;
-		const OptionCode LIST_TOC_FORMATS = 9;
+		const OptionCode OTHERSUBSET  = 9;
 	};
 
 	auto my_test = TEST {};
@@ -59,21 +60,24 @@ TEST_CASE ( "parse", "[parse]" )
 		{ my_test.REFVALUES,
 		{      "refvalues", true, "none",
 			"Specify AccurateRip reference values (as hex value list)" }},
-		{ my_test.FULLOPTION,
-		{  'f', "subset-of-full-option", false, "none",
-			"Full option with another option as a subset " }},
 		{ my_test.SUBSET,
 		{  's', "subset-of", false, "none",
 			"Subset of subset-of-full-option" }},
+		{ my_test.FULLOPTION,
+		{  'f', "subset-of-full-option", false, "none",
+			"Full option with another option as a subset " }},
 		{ my_test.SOMEOPTION,
 		{      "some-option-with-value", true, "none",
 			"Some option with a value" }},
 		{ my_test.SOMEOTHER,
 		{  'q', "some-option-without-value", false, "none",
-			"Some option without a value" }}
+			"Some option without a value" }},
+		{ my_test.OTHERSUBSET,
+		{  't', "subset-of-another", false, "none",
+			"Alias for SOMEOTHER" }},
 	};
 
-	SECTION ( "parse() input with distinct options" )
+	SECTION ( "Input with distinct options" )
 	{
 		const char * const argv[] = { "arcstk-ignored",
 			"--metafile", "foo/foo.cue", "foo/foo.wav", "-r", "foo/foo.bin"
@@ -92,10 +96,29 @@ TEST_CASE ( "parse", "[parse]" )
 		CHECK ( (tokens.begin() + 2)->value() == "foo/foo.bin"        );
 	}
 
-	SECTION ( "parse() input with an options that is a subset of another" )
+	SECTION ( "Input with an option that is a subset of another" )
 	{
 		const char * const argv[] = { "arcstk-ignored",
-			"--subset-of-full-option", "--subset-of", "foo/foo.wav"
+			"--subset-of-full-option", "--subset-of",
+			"--subset-of-another", "foo/foo.wav"
+		};
+		const int argc = 5;
+
+		auto tokens = get_tokens(argc, argv, supported_options);
+
+		CHECK ( tokens.size() == 4 );
+
+		CHECK ( (tokens.begin() + 0)->code()  == my_test.FULLOPTION );
+		CHECK ( (tokens.begin() + 1)->code()  == my_test.SUBSET     );
+		CHECK ( (tokens.begin() + 2)->code()  == my_test.OTHERSUBSET);
+		CHECK ( (tokens.begin() + 3)->code()  == ARGUMENT           );
+		CHECK ( (tokens.begin() + 3)->value() == "foo/foo.wav"      );
+	}
+
+	SECTION ( "Input with twice the same unvalued option" )
+	{
+		const char * const argv[] = { "arcstk-ignored",
+			"--subset-of-another", "-t", "foo/foo.wav"
 		};
 		const int argc = 4;
 
@@ -103,13 +126,31 @@ TEST_CASE ( "parse", "[parse]" )
 
 		CHECK ( tokens.size() == 3 );
 
-		CHECK ( (tokens.begin() + 0)->code()  == my_test.FULLOPTION );
-		CHECK ( (tokens.begin() + 1)->code()  == my_test.SUBSET     );
+		CHECK ( (tokens.begin() + 0)->code()  == my_test.OTHERSUBSET);
+		CHECK ( (tokens.begin() + 1)->code()  == my_test.OTHERSUBSET);
 		CHECK ( (tokens.begin() + 2)->code()  == ARGUMENT           );
 		CHECK ( (tokens.begin() + 2)->value() == "foo/foo.wav"      );
 	}
 
-	SECTION ( "parse() valued option with blank as delimiter" )
+	SECTION ( "Input with shorthand valued option without delimiter" )
+	{
+		const char * const argv[] = { "arcstk-ignored",
+			"--subset-of-another", "-r0", "foo/foo.wav"
+		};
+		const int argc = 4;
+
+		auto tokens = get_tokens(argc, argv, supported_options);
+
+		CHECK ( tokens.size() == 3 );
+
+		CHECK ( (tokens.begin() + 0)->code()  == my_test.OTHERSUBSET );
+		CHECK ( (tokens.begin() + 1)->code()  == my_test.RESPONSEFILE);
+		CHECK ( (tokens.begin() + 1)->value() == "0"                 );
+		CHECK ( (tokens.begin() + 2)->code()  == ARGUMENT            );
+		CHECK ( (tokens.begin() + 2)->value() == "foo/foo.wav"       );
+	}
+
+	SECTION ( "Valued option with blank as delimiter" )
 	{
 		const char * const argv[] = { "arcstk-whatever",
 			"--some-option-with-value", "foo/foo.wav"
@@ -124,7 +165,7 @@ TEST_CASE ( "parse", "[parse]" )
 		CHECK ( tokens.begin()->value() == "foo/foo.wav"      );
 	}
 
-	SECTION ( "parse() valued option with '=' as delimiter" )
+	SECTION ( "Valued option with '=' as delimiter" )
 	{
 		const char * const argv[] = { "arcstk-whatever",
 			"--some-option-with-value=foo/foo.wav"
@@ -139,7 +180,7 @@ TEST_CASE ( "parse", "[parse]" )
 		CHECK ( tokens.begin()->value() == "foo/foo.wav"      );
 	}
 
-	SECTION ( "parse() grouped shorthands" )
+	SECTION ( "Grouped shorthands" )
 	{
 		const char * const argv[] = { "arcstk-whatever", "-snf",
 			"--refvalues=1,2,3", "foo/foo.wav"
@@ -161,7 +202,7 @@ TEST_CASE ( "parse", "[parse]" )
 		CHECK ( (tokens.begin() + 4)->value() == "foo/foo.wav"      );
 	}
 
-	SECTION ( "parse() command line without any options and arguments" )
+	SECTION ( "Command line without any options and arguments" )
 	{
 		const char * const argv[] = { "arcstk-whatever" };
 		const int argc = 1;
@@ -170,6 +211,49 @@ TEST_CASE ( "parse", "[parse]" )
 
 		CHECK ( tokens.size() == 0 );
 		CHECK ( tokens.empty() );
+	}
+
+	SECTION ( "Throws CallSyntaxException on invalid option" )
+	{
+		const char * const argv[] = { "arcstk-whatever", "--invalid-option" };
+		const int argc = 2;
+
+		CHECK_THROWS ( get_tokens(argc, argv, supported_options) );
+	}
+
+	// TODO Test path is_alias
+	// TODO Test path !exact && !is_alias
+
+	SECTION ( "Throws CallSyntaxException on missing value after '='" )
+	{
+		const char * const argv[] = { "arcstk-whatever", "--response=" };
+		const int argc = 2;
+
+		CHECK_THROWS ( get_tokens(argc, argv, supported_options) );
+	}
+
+	SECTION ( "Throws CallSyntaxException on trailing characters" )
+	{
+		const char * const argv[] = { "arcstk-whatever", "--no-album0" };
+		const int argc = 2;
+
+		CHECK_THROWS ( get_tokens(argc, argv, supported_options) );
+	}
+
+	SECTION ( "Throws CallSyntaxException on unexpected option value" )
+	{
+		const char * const argv[] = { "arcstk-whatever", "--no-album=42" };
+		const int argc = 2;
+
+		CHECK_THROWS ( get_tokens(argc, argv, supported_options) );
+	}
+
+	SECTION ( "Throws CallSyntaxException on missing value after symbol" )
+	{
+		const char * const argv[] = { "arcstk-whatever", "--response" };
+		const int argc = 2;
+
+		CHECK_THROWS ( get_tokens(argc, argv, supported_options) );
 	}
 }
 
