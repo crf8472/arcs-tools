@@ -193,8 +193,6 @@ private:
 
 /**
  * \brief OptionCode for global options.
- *
- * The symbols must be positive (minimal numerical value is 1).
  */
 struct OPTION
 {
@@ -209,29 +207,22 @@ struct OPTION
 
 
 /**
- * \brief An Option with an OptionCode assigned.
- */
-using OptionWithCode = std::pair<Option, OptionCode>;
-
-
-/**
  * \brief Internal type used by Configurator.
  */
-//using OptionRegistry = std::vector<OptionWithCode>;
 using OptionRegistry = std::map<OptionCode, Option>;
-//class OptionRegistry;
+//FIXME This definition is doubled up from clitokens.hpp
 
 /**
  * \brief Abstract base class for Configurators.
  *
- * A Configurator carries out every step that is necessary to provide the
- * configuration object.
+ * A Configurator performs every step necessary to provide the configuration
+ * object.
  *
  * The following is the responsibility of the Configurator:
  *   - Parse the command line tokens
  *   - Ensure syntactic wellformedness or signal an error
  *   - Verify that mandatory input is present
- *   - Prevent illegal combination of options
+ *   - Prevent illegal combination of common options
  *   - Decide whether input is to be ignored
  *   - Apply default values
  *   - Manage side effects between options, i.e. adjust defaults
@@ -243,13 +234,7 @@ using OptionRegistry = std::map<OptionCode, Option>;
  *
  * The following properties are considered equal for any of the applications
  * and are therefore implemented in the base class: 'help' option, version info,
- * logging, result output.
- *
- * To have logging fully configured at hand while parsing the command line
- * input, the global Logging is configured in the base class to have a common
- * implementation for all Configurator instances. The logging setup properties
- * as there are verbosity level and logging output stream is therefore not part
- * of the resulting Options.
+ * verbosity or quietness, result output.
  *
  * A subclass DefaultConfigurator is provided that does not add any application
  * specific options.
@@ -271,17 +256,23 @@ public:
 	/**
 	 * \brief Parse, validate and configure options.
 	 *
-	 * CLI input is parsed. If the input is not syntactically wellformed or
-	 * unrecognized options are present, a CallSyntaxException is thrown.
+	 * Command line input \c argv is parsed. The caller is responsible that
+	 * \c argc is the exact size of \c argv. Otherwise, crashes are likely.
+	 *
+	 * If the input is not syntactically wellformed or unrecognized options are
+	 * present, a CallSyntaxException is thrown.
+	 *
 	 * The input is checked for semantic validity. It is checked that all valued
 	 * options have legal values and that no illegal combination of options is
-	 * present. Default values to options are applied, if defined. The input
-	 * arguments are validated.
+	 * present. Default values to options are applied, if defined.
+	 *
+	 * After this checks are completed, do_configure_options() is called which
+	 * is defined by subclasses.
 	 *
 	 * \param[in] argc Number of CLI arguments
 	 * \param[in] argv Array of CLI arguments
 	 *
-	 * \return The options object derived from the CLI arguments
+	 * \return The options object derived from the command line arguments
 	 *
 	 * \throws CallSyntaxException If the input is not syntactically wellformed
 	 */
@@ -291,7 +282,7 @@ public:
 	/**
 	 * \brief Return the list of options supported by this Configurator.
 	 *
-	 * This will not contain the content of 'global_options()'.
+	 * The list is generated whenever this function is called.
 	 *
 	 * \return List of options supported by this Configurator
 	 */
@@ -300,7 +291,7 @@ public:
 	/**
 	 * \brief Returns the minimal OptionCode constant to be used by subclasses.
 	 *
-	 * Subclasses may declare their code range starting with this
+	 * Subclasses may declare their numerical range starting with this
 	 * OptionCode.
 	 *
 	 * \see ARIdOptions
@@ -313,6 +304,8 @@ protected:
 	/**
 	 * \brief Options common to all subclasses of Configurator.
 	 *
+	 * The list is generated whenever this function is called.
+	 *
 	 * \return List of options supported by every Configurator.
 	 */
 	OptionRegistry common_options() const;
@@ -322,7 +315,7 @@ private:
 	/**
 	 * \brief Flush options supported by this subclass so support list.
 	 *
-	 * Called by supported_options() to collect options provided by subclass.
+	 * Called by supported_options() to get options provided by subclass.
 	 *
 	 * \param[in,out] supported List of supported options.
 	 */
@@ -330,7 +323,8 @@ private:
 	= 0;
 
 	/**
-	 * \brief Called by provide_options() after all options are parsed.
+	 * \brief Called by provide_options() after all options have
+	 * been parsed.
 	 *
 	 * The default implementation just returns the input.
 	 *

@@ -23,7 +23,7 @@
 #endif
 
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp"                // for CLITokens
+#include "clitokens.hpp"                // for parse
 #endif
 
 namespace arcsapp
@@ -168,9 +168,11 @@ void Options::set(const OptionCode &option, const std::string &value)
 
 void Options::unset(const OptionCode &option)
 {
-	auto o { options_.find(option) };
+	const auto o { options_.find(option) };
 
-	if (o != options_.end())
+	using std::end;
+
+	if (o != end(options_))
 	{
 		options_.erase(o);
 	}
@@ -179,14 +181,16 @@ void Options::unset(const OptionCode &option)
 
 std::string Options::value(const OptionCode &option) const
 {
-	auto o { options_.find(option) };
+	const auto o { options_.find(option) };
 
-	if (o != options_.end())
+	using std::end;
+
+	if (o != end(options_))
 	{
 		return o->second;
 	}
 
-	return std::string{};
+	return std::string{}; // TODO Use a constant
 }
 
 
@@ -206,7 +210,7 @@ std::string const Options::argument(const std::size_t index) const
 {
 	if (index >= arguments_.size())
 	{
-		return std::string{};
+		return std::string{}; // TODO Use a constant
 	}
 
 	return arguments_.at(index);
