@@ -921,11 +921,6 @@ int ARVerifyApplication::do_run(const Options &options)
 
 	// If only info options are present, handle info request
 
-	if (not options.value(OPTION::OUTFILE).empty())
-	{
-		Output::instance().to_file(options.value(OPTION::OUTFILE));
-	}
-
 	if (options.is_set(VERIFY::LIST_TOC_FORMATS))
 	{
 		Output::instance().output(AvailableFileReaders::toc());

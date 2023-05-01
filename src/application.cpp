@@ -218,6 +218,11 @@ int Application::run(int argc, char** argv)
 
 	ARCS_LOG(DEBUG1) << *options;
 
+	if (not options->value(OPTION::OUTFILE).empty())
+	{
+		Output::instance().to_file(options->value(OPTION::OUTFILE));
+	}
+
 	return this->do_run(*options);
 }
 
@@ -325,21 +330,7 @@ void Application::output(std::unique_ptr<Result> result, const Options &options)
 		return;
 	}
 
-	if (not options.value(OPTION::OUTFILE).empty())
-	{
-		// Save previous state of Output and restore it after use
-		const auto filename { Output::instance().filename() };
-		Output::instance().to_file(options.value(OPTION::OUTFILE));
-
-		// Perform output
-		Output::instance().output(*object);
-
-		// Restore previous state
-		Output::instance().to_file(filename);
-	} else
-	{
-		Output::instance().output(*object);
-	}
+	Output::instance().output(*object);
 }
 
 
