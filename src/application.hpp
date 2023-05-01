@@ -10,11 +10,14 @@
  * command line input.
  */
 
-#include <iostream>    // for cout, basic_ostream, endl, cerr
 #include <fstream>     // for ofstream
+#include <ios>         // for ios_base
+#include <iostream>    // for cout
 #include <memory>      // for unique_ptr, allocator
 #include <mutex>       // for mutex, lock_guard
+#include <ostream>     // for ostream
 #include <string>      // for string
+#include <utility>     // for pair
 
 namespace arcsapp
 {
