@@ -15,6 +15,7 @@
 #include <cstddef>       // for size_t
 #include <cstdint>       // for uint64_t
 #include <functional>    // for function
+#include <limits>        // for numeric_limits
 #include <map>           // for map
 #include <stdexcept>     // for runtime_error
 #include <string>        // for string
@@ -169,6 +170,12 @@ public:
 };
 
 
+/**
+ * \brief Internal type used by Configurator.
+ */
+using OptionRegistry = std::map<OptionCode, Option>;
+
+
 namespace input
 {
 
@@ -176,109 +183,14 @@ namespace input
  * \brief OptionCode representing an argument.
  */
 inline constexpr OptionCode ARGUMENT = 0;
-
-
-/**
- * \brief Uniform representation of an input token.
- *
- * A Token can be an argument or an option with or without a value.
- *
- * An argument is represented as Option with code ARGUMENT.
- */
-class Token final
-{
-public:
-
-	/**
-	 * \brief Construct token with specified code and value.
-	 *
-	 * \param[in] code  Code for this Token
-	 * \param[in] value Value for this Token
-	 */
-	Token(const OptionCode code, const std::string& value) noexcept
-		: code_  { code }
-		, value_ { value }
-	{ /* empty */ }
-
-	/**
-	 * \brief Construct option token with specified code and empty value.
-	 *
-	 * \param[in] code Code for this option
-	 */
-	Token(const OptionCode code) noexcept
-		: Token { code, empty_value() }
-	{ /* empty */ };
-
-	/**
-	 * \brief Construct argument token with specified value.
-	 *
-	 * \param[in] value Argument value
-	 */
-	Token(const std::string& value) noexcept
-		: Token { ARGUMENT, value }
-	{ /* empty */ };
-
-	/**
-	 * \brief OptionCode of the Token.
-	 *
-	 * \return OptionCode of the Token
-	 */
-	OptionCode code() const noexcept { return code_; }
-
-	/**
-	 * \brief Get the value of the Token.
-	 *
-	 * \return Value of the Token
-	 */
-	const std::string& value() const noexcept { return value_; }
-
-	/**
-	 * \brief Returns an empty option value.
-	 *
-	 * Convenience: do not have to create empty string objects while parsing.
-	 *
-	 * \return An empty option value
-	 */
-	static const std::string& empty_value() noexcept
-	{
-		static const auto empty_string = std::string{};
-		return empty_string;
-	}
-
-private:
-
-	OptionCode code_;
-
-	std::string value_;
-};
-
-
-/**
- * \brief Internal type used by Configurator.
- */
-using OptionRegistry = std::map<OptionCode, Option>;
-
-
-/**
- * \brief Get all CLI input tokens.
- *
- * The returned list will contain the tokens in the same order as the occurred
- * in the input.
- *
- * \param[in] argc           Number of command line arguments
- * \param[in] argv           Command line arguments
- * \param[in] supported      Supported options
- *
- * \return List of tokens
- */
-std::vector<Token> get_tokens(const int argc, const char* const * const argv,
-		const OptionRegistry& supported);
+inline constexpr OptionCode DASH  = std::numeric_limits<OptionCode>::max() - 0;
+inline constexpr OptionCode DDASH = std::numeric_limits<OptionCode>::max() - 1;
 
 
 /**
  * \brief Type of callback function pointer for notifying about parsed options.
  *
- * Called by parse() whenever a token is parsed.
+ * Parameter of this type is called by parse() whenever a token is parsed.
  */
 using option_callback =
 			std::function<void(const OptionCode, const std::string&)>;
@@ -319,34 +231,6 @@ using option_callback =
  */
 void parse(const int argc, const char* const * const argv,
 		const OptionRegistry &supported, const option_callback& pass_token);
-
-
-/**
- * \brief Consume input chars as an option symbol.
- *
- * \param[in] opt         The option symbol to consume
- * \param[in] val         The option value to consume
- * \param[in] supported   The supported options to match
- * \param[in,out] pos     Character position in the call string
- * \param[in] pass_token  Function to call on each parsed token
- */
-void consume_as_symbol(const char * const opt, const char * const val,
-		const OptionRegistry& supported, int &pos,
-		const option_callback& pass_token);
-
-
-/**
- * \brief Consume input chars as an option shorthand symbol.
- *
- * \param[in] opt        The option symbol to consume
- * \param[in] val        The option value to consume
- * \param[in] supported  The supported options to match
- * \param[in,out] pos    Character position in the call string
- * \param[in] pass_token Function to call on each parsed token
- */
-void consume_as_shorthand(const char * const opt, const char * const val,
-		const OptionRegistry& supported, int &pos,
-		const option_callback& pass_token);
 
 } // namespace input
 

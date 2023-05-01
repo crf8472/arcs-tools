@@ -13,13 +13,9 @@
  * and can apply configuring logic on the resulting object.
  */
 
-#include <array>         // for array
-#include <cstdint>       // for uint8_t
-#include <climits>       // CHAR_BIT
 #include <map>           // for map
 #include <memory>        // for unique_ptr
 #include <string>        // for string
-#include <type_traits>   // for underlying_type
 #include <utility>       // for pair, make_pair, move
 #include <vector>        // for vector
 
@@ -27,12 +23,8 @@
 #include <arcstk/logging.hpp>
 #endif
 
-#ifndef __LIBARCSDEC_SELECTION_HPP__
-#include <arcsdec/selection.hpp>      // for FileReaderSelection
-#endif
-
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp"              // for Option, OptionCode
+#include "clitokens.hpp"          // for Option, OptionCode
 #endif
 
 namespace arcsapp
@@ -242,11 +234,6 @@ using OptionRegistry = std::map<OptionCode, Option>;
 class Configurator
 {
 public:
-
-	/**
-	 * \brief Constructor.
-	 */
-	Configurator();
 
 	/**
 	 * \brief Virtual default destructor.

@@ -12,6 +12,10 @@
 #include <utility>           // for pair
 #include <string>            // for string
 
+#ifndef __LIBARCSTK_LOGGING_HPP__
+#include <arcstk/logging.hpp>  // for Logging
+#endif
+
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"
 #endif
@@ -37,25 +41,35 @@
  */
 int main(int argc, char** argv)
 {
+	using arcstk::Logging;
+	using arcstk::LOGLEVEL;
+
+	// We do not know whether the application is required to run quiet,
+	// so initial level is NOT default level but quiet level.
+	// Application decides about setting the level.
+	Logging::instance().set_level(LOGLEVEL::NONE);
+
+	// TODO Make configurable
+	Logging::instance().set_timestamps(false);
+
 	using arcsapp::ARCSTOOLS_BINARY_NAME;
 	using arcsapp::ARCSTOOLS_VERSION;
 	using arcsapp::ApplicationFactory;
 	using arcsapp::CallSyntaxException;
 
-	const auto& BINARY_NAME = std::string { ARCSTOOLS_BINARY_NAME };
-	const auto  ARGV_0      = std::string { &argv[0] ? argv[0] : "" };
-
 	// Was binary called by some alias?
-	const bool is_call_by_alias =
-		ARGV_0.length() >= BINARY_NAME.length()
+	const auto CALL_NAME = std::string { argv[0] ? argv[0] : "" };
+	const auto is_call_by_alias = bool {
+		CALL_NAME.length() >= ARCSTOOLS_BINARY_NAME.length()
 		and
-		ARGV_0.substr(ARGV_0.length() - BINARY_NAME.length()) != BINARY_NAME;
+		CALL_NAME.substr(CALL_NAME.length() - ARCSTOOLS_BINARY_NAME.length())
+			!= ARCSTOOLS_BINARY_NAME
+	};
 
 	if (argc > 1 or is_call_by_alias)
 	{
-		const auto& requested_name = argv[!is_call_by_alias];
-
-		auto application = ApplicationFactory::lookup(requested_name);
+		const auto* requested_name = argc ? argv[!is_call_by_alias]: argv[0];
+		auto application { ApplicationFactory::lookup(requested_name) };
 
 		if (application)
 		{
@@ -72,30 +86,24 @@ int main(int argc, char** argv)
 			} catch (const arcsapp::CallSyntaxException &cse)
 			{
 				std::cerr << "Syntax error: " << cse.what() << std::endl;
-
 				application->print_usage();
-
 				return EXIT_FAILURE;
 
 			} catch (const std::exception &e)
 			{
 				std::cerr << "Error: " << e.what() << std::endl;
-
 				return EXIT_FAILURE;
 			}
 		} else
 		{
-			std::cout << "No application selected." << std::endl;
+			std::cerr << "No application selected." << std::endl;
 		}
 	}
 
 	// No input? Print usage.
 
 	std::cout << ARCSTOOLS_BINARY_NAME << " " << ARCSTOOLS_VERSION << std::endl;
-
-	std::cout << "Usage: " << ARCSTOOLS_BINARY_NAME
-		<< " [";
-
+	std::cout << "Usage: " << ARCSTOOLS_BINARY_NAME << " [";
 	{
 		const auto apps { ApplicationFactory::registered_names() };
 		auto i = apps.size();
@@ -105,10 +113,7 @@ int main(int argc, char** argv)
 			if (0 <-- i) { std::cout << '|'; }
 		}
 	}
-
-	std::cout << "] "
-		<< "[OPTIONS] <filenames>"
-		<< std::endl;
+	std::cout << "] " << "[OPTIONS] <filenames>" << std::endl;
 
 	return EXIT_SUCCESS;
 }

@@ -2,127 +2,18 @@
 #include "config.hpp"
 #endif
 
-#include <cstdio>        // for stdout
-#include <iterator>      // for ostream_iterator
-#include <map>           // for map
-#include <sstream>       // for ostringstream, operator<<
-#include <string>        // for char_traits, operator<<, operator+
-#include <type_traits>   // for add_const<>::type, __underlying_type_i...
+#include <memory>        // for unique_ptr, make_unique
+#include <ostream>       // for ostream, operator<<
+#include <string>        // for string
 #include <utility>       // for move
 #include <vector>        // for vector
 
-#include <iostream> // debug
-
-#ifndef __LIBARCSTK_LOGGING_HPP__
-#include <arcstk/logging.hpp>
-#endif
-
-#ifndef __LIBARCSDEC_SELECTION_HPP__
-#include <arcsdec/selection.hpp>        // for FileReaderSelection
-										//     FileReaderPreferenceSelection
-#endif
-
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp"                // for parse
+#include "clitokens.hpp"    // for parse
 #endif
 
 namespace arcsapp
 {
-
-using arcstk::Appender;
-using arcstk::Logging;
-using arcstk::LOGLEVEL;
-
-
-/**
- * \brief LOGLEVEL from a string representation.
- *
- * The string is expected to consist of digit symbols.
- *
- * \param[in] lvl_str  A string
- *
- * \throw ConfigurationException Conversion to loglevel failed
- *
- * \return The deduced log level
- */
-LOGLEVEL to_loglevel(const std::string &lvl_str);
-
-
-LOGLEVEL to_loglevel(const std::string &lvl_str)
-{
-	using arcstk::LOGLEVEL_MIN;
-	using arcstk::LOGLEVEL_MAX;
-
-	auto parsed_level = int { -1 };
-
-	try {
-
-		parsed_level = std::stoi(lvl_str);
-
-	} catch (const std::invalid_argument &ia)
-	{
-		std::ostringstream ss;
-
-		ss << "Parsed LOGLEVEL is '" << lvl_str
-			<< "' but must be a non-negative integer in the range "
-			<< LOGLEVEL_MIN << "-"
-			<< LOGLEVEL_MAX << ".";
-
-		throw ConfigurationException(ss.str());
-
-	} catch (const std::out_of_range &oor)
-	{
-		std::ostringstream ss;
-
-		ss << "Parsed LOGLEVEL is '" << lvl_str
-			<< "' which is out of the valid range "
-			<< LOGLEVEL_MIN << "-"
-			<< LOGLEVEL_MAX << "";
-
-		throw ConfigurationException(ss.str());
-	}
-
-	if (parsed_level < LOGLEVEL_MIN or parsed_level > LOGLEVEL_MAX)
-	{
-		std::ostringstream ss;
-
-		ss << "Parsed LOGLEVEL is '" << lvl_str
-			<< "' which does not correspond to a valid loglevel ("
-			<< LOGLEVEL_MIN << "-"
-			<< LOGLEVEL_MAX << ").";
-
-		throw ConfigurationException(ss.str());
-	}
-
-	// We could warn about -q overriding -v but we are quiet.
-
-	auto log_level = LOGLEVEL::NONE;
-
-	switch (parsed_level)
-	{
-		case 0: log_level = LOGLEVEL::NONE;    break;
-		case 1: log_level = LOGLEVEL::ERROR;   break;
-		case 2: log_level = LOGLEVEL::WARNING; break;
-		case 3: log_level = LOGLEVEL::INFO;    break;
-		case 4: log_level = LOGLEVEL::DEBUG;   break;
-		case 5: log_level = LOGLEVEL::DEBUG1;  break;
-		case 6: log_level = LOGLEVEL::DEBUG2;  break;
-		case 7: log_level = LOGLEVEL::DEBUG3;  break;
-		case 8: log_level = LOGLEVEL::DEBUG4;  break;
-		default: {
-			std::ostringstream ss;
-
-			ss << "Illegal value for log_level (must be in range "
-				<< LOGLEVEL_MIN << "-"
-				<< LOGLEVEL_MAX << ").";
-
-			throw ConfigurationException(ss.str());
-		}
-	}
-
-	return log_level;
-}
-
 
 // ConfigurationException
 
@@ -146,7 +37,7 @@ bool Options::is_set(const OptionCode &option) const
 
 void Options::set(const OptionCode &option)
 {
-	this->set(option, std::string{});
+	this->set(option, std::string{}); // TODO Use a constant
 }
 
 
@@ -238,14 +129,21 @@ std::ostream& operator << (std::ostream& out, const Options &options)
 	out << "Options (w/o value):" << std::endl;
 	for (const auto& entry : options.options_)
 	{
-		out << "Option: " << entry.first << " = " << entry.second << std::endl;
+		out << std::setw(2) << entry.first;
+		if (!entry.second.empty())
+		{
+			out << " = '" << entry.second << "'" << std::endl;
+		} else
+		{
+			out << " is set" << std::endl;
+		}
 	}
 
 	out << "Arguments:" << std::endl;
 	auto i = int { 0 };
 	for (const auto& arg : options.arguments())
 	{
-		out << "Arg " << std::setw(2) << i << ": " << arg << std::endl;
+		out << "Arg " << std::setw(2) << i << ": '" << arg << "'" << std::endl;
 		++i;
 	}
 
@@ -258,86 +156,41 @@ std::ostream& operator << (std::ostream& out, const Options &options)
 // Configurator
 
 
-Configurator::Configurator()
-{
-	// We do not know whether the application is required to run quiet,
-	// so initial level is NOT default level but quiet level
-	Logging::instance().set_level(LOGLEVEL::NONE);
-
-	// TODO Make configurable
-	Logging::instance().set_timestamps(false);
-}
-
-
 Configurator::~Configurator() noexcept = default;
 
 
 std::unique_ptr<Options> Configurator::provide_options(const int argc,
 		const char* const * const argv) const
 {
-	// Parse Commandline Input and Match Supported Options
-
-	auto cli_options = std::make_unique<Options>();
+	auto options = std::make_unique<Options>();
 	{
 		const auto add_option =
-			[&cli_options](const OptionCode c, const std::string& v)
+			[&options](const OptionCode c, const std::string& v)
 			{
-				if (OPTION::NONE == c)
+				// Discard dashes
+				if (input::DASH == c || input::DDASH == c) { return; }
+
+				if (input::ARGUMENT == c)
 				{
-					cli_options->put_argument(v);
+					options->put_argument(v);
 				} else
 				{
-					cli_options->set(c, v);
+					options->set(c, v);
 				}
 			};
 
 		input::parse(argc, argv, supported_options(), add_option);
-
-		ARCS_LOG_DEBUG << "Command line input successfully parsed";
 	}
 
+	// Let verbosity reflect the --quiet request
 
-	// Activate logging:
-	// The log options --logfile, --verbosity and --quiet take immediate effect
-	// to have logging available as soon as possible, if requested.
+	if (options->is_set(OPTION::QUIET))
 	{
-		// --logfile (or stdout)
-
-		std::unique_ptr<Appender> appender;
-
-		if (cli_options->is_set(OPTION::LOGFILE))
-		{
-			appender = std::make_unique<Appender>(
-					cli_options->value(OPTION::LOGFILE));
-		} else
-		{
-			appender = std::make_unique<Appender>("stdout", stdout);
-		}
-
-		Logging::instance().add_appender(std::move(appender));
-
-		// --quiet, --verbosity
-
-		if (cli_options->is_set(OPTION::QUIET))
-		{
-			// Let verbosity reflect the --quiet request
-			cli_options->set(OPTION::VERBOSITY, "0");
-
-			// Since initial loglevel is NONE, Logging::instance() is fine
-		} else
-		{
-			// Set actual loglevel to either requested verbosity or default
-			auto actual_loglevel = cli_options->is_set(OPTION::VERBOSITY)
-				? to_loglevel(cli_options->value(OPTION::VERBOSITY))
-				: LOGLEVEL::WARNING;
-
-			Logging::instance().set_level(actual_loglevel);
-		}
-
-		ARCS_LOG_DEBUG << "Activate Logging";
+		// Overwrite value for --verbosity, if any
+		options->set(OPTION::VERBOSITY, "0");
 	}
 
-	return this->do_configure_options(std::move(cli_options));
+	return this->do_configure_options(std::move(options));
 }
 
 

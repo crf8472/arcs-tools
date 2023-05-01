@@ -73,11 +73,108 @@ Output& Output::instance()
 }
 
 
-class Options;
+// Logging
+
+
+using arcstk::Appender;
+using arcstk::Logging;
+using arcstk::LOGLEVEL;
+
+
+/**
+ * \brief LOGLEVEL from a string representation.
+ *
+ * The string is expected to consist of digit symbols.
+ *
+ * \param[in] lvl_str  A string
+ *
+ * \throw ConfigurationException Conversion to loglevel failed
+ *
+ * \return The deduced log level
+ */
+LOGLEVEL to_loglevel(const std::string &lvl_str);
+
+
+LOGLEVEL to_loglevel(const std::string &lvl_str)
+{
+	using arcstk::LOGLEVEL_MIN;
+	using arcstk::LOGLEVEL_MAX;
+
+	auto parsed_level = int { -1 };
+
+	try {
+
+		parsed_level = std::stoi(lvl_str);
+
+	} catch (const std::invalid_argument &ia)
+	{
+		std::ostringstream ss;
+
+		ss << "Parsed LOGLEVEL is '" << lvl_str
+			<< "' but must be a non-negative integer in the range "
+			<< LOGLEVEL_MIN << "-"
+			<< LOGLEVEL_MAX << ".";
+
+		throw ConfigurationException(ss.str());
+
+	} catch (const std::out_of_range &oor)
+	{
+		std::ostringstream ss;
+
+		ss << "Parsed LOGLEVEL is '" << lvl_str
+			<< "' which is out of the valid range "
+			<< LOGLEVEL_MIN << "-"
+			<< LOGLEVEL_MAX << "";
+
+		throw ConfigurationException(ss.str());
+	}
+
+	if (parsed_level < LOGLEVEL_MIN or parsed_level > LOGLEVEL_MAX)
+	{
+		std::ostringstream ss;
+
+		ss << "Parsed LOGLEVEL is '" << lvl_str
+			<< "' which does not correspond to a valid loglevel ("
+			<< LOGLEVEL_MIN << "-"
+			<< LOGLEVEL_MAX << ").";
+
+		throw ConfigurationException(ss.str());
+	}
+
+	// We could warn about -q overriding -v but we are quiet.
+
+	auto log_level = LOGLEVEL::NONE;
+
+	switch (parsed_level)
+	{
+		case 0: log_level = LOGLEVEL::NONE;    break;
+		case 1: log_level = LOGLEVEL::ERROR;   break;
+		case 2: log_level = LOGLEVEL::WARNING; break;
+		case 3: log_level = LOGLEVEL::INFO;    break;
+		case 4: log_level = LOGLEVEL::DEBUG;   break;
+		case 5: log_level = LOGLEVEL::DEBUG1;  break;
+		case 6: log_level = LOGLEVEL::DEBUG2;  break;
+		case 7: log_level = LOGLEVEL::DEBUG3;  break;
+		case 8: log_level = LOGLEVEL::DEBUG4;  break;
+		default: {
+			std::ostringstream ss;
+
+			ss << "Illegal value for log_level (must be in range "
+				<< LOGLEVEL_MIN << "-"
+				<< LOGLEVEL_MAX << ").";
+
+			throw ConfigurationException(ss.str());
+		}
+	}
+
+	return log_level;
+}
 
 
 // Application
 
+
+class Options;
 
 Application::Application() = default;
 
@@ -96,26 +193,26 @@ int Application::run(int argc, char** argv)
 	if (argc == 1)
 	{
 		this->print_usage();
-
 		return EXIT_SUCCESS;
 	}
 
-	// FIXME: This may throw a CallSyntaxException
 	auto options = this->setup_options(argc, argv);
 
 	if (options->is_set(OPTION::HELP))
 	{
 		this->print_usage();
-
 		return EXIT_SUCCESS;
 	}
 
 	if (options->is_set(OPTION::VERSION))
 	{
 		std::cout << this->name() << " " << ARCSTOOLS_VERSION << std::endl;
-
 		return EXIT_SUCCESS;
 	}
+
+	this->setup_logging(*options);
+
+	ARCS_LOG(DEBUG1) << *options;
 
 	return this->do_run(*options);
 }
@@ -164,9 +261,46 @@ void Application::print_usage() const
 
 std::unique_ptr<Options> Application::setup_options(int argc, char** argv) const
 {
-	auto configurator = this->create_configurator();
+	return this->create_configurator()->provide_options(argc, argv);
+}
 
-	return configurator->provide_options(argc, argv);
+
+void Application::setup_logging(Options& options) const
+{
+	// Activate logging:
+	// The log options --logfile, --verbosity and --quiet take immediate effect
+	// to have logging available as soon as possible, if requested.
+
+	using arcstk::Logging;
+	using arcstk::LOGLEVEL;
+	using arcstk::Appender;
+
+	// --logfile (or stdout)
+
+	std::unique_ptr<Appender> appender;
+	if (options.is_set(OPTION::LOGFILE))
+	{
+		appender = std::make_unique<Appender>(
+				options.value(OPTION::LOGFILE));
+	} else
+	{
+		appender = std::make_unique<Appender>("stdout", stdout);
+	}
+	Logging::instance().add_appender(std::move(appender));
+
+	// --quiet, --verbosity
+
+	if (!options.is_set(OPTION::QUIET))
+	{
+		// Set actual loglevel to either requested verbosity or default
+		auto actual_loglevel = options.is_set(OPTION::VERBOSITY)
+			? to_loglevel(options.value(OPTION::VERBOSITY))
+			: LOGLEVEL::WARNING;
+
+		Logging::instance().set_level(actual_loglevel);
+	}
+
+	ARCS_LOG_DEBUG << "Logging activated";
 }
 
 

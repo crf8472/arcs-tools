@@ -160,6 +160,11 @@ protected:
 	std::unique_ptr<Options> setup_options(int argc, char** argv) const;
 
 	/**
+	 * \brief Setup logging according to options.
+	 */
+	void setup_logging(Options& options) const;
+
+	/**
 	 * \brief Generates a fatal error with specified message.
 	 *
 	 * The error message will go to stderr and as well to the internal logging.

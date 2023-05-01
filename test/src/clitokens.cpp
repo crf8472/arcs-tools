@@ -4,6 +4,10 @@
 #include "clitokens.hpp"
 #endif
 
+#ifndef __ARCSTOOLS_MOCKS_PARSE_HPP__
+#include "mocks_parse.hpp"
+#endif
+
 
 TEST_CASE ( "Option", "[option]" )
 {
@@ -26,10 +30,13 @@ TEST_CASE ( "parse()", "[parse]" )
 {
 	using arcsapp::OptionCode;
 	using arcsapp::Option;
-	using arcsapp::input::OptionRegistry;
-	using arcsapp::input::ARGUMENT;
-	using arcsapp::input::get_tokens;
+	using arcsapp::OptionRegistry;
 	using arcsapp::CallSyntaxException;
+
+	using arcsapp::input::ARGUMENT;
+	using arcsapp::input::DASH;
+	using arcsapp::input::DDASH;
+	//using arcsapp::input::get_tokens;
 
 	struct TEST
 	{
@@ -211,6 +218,28 @@ TEST_CASE ( "parse()", "[parse]" )
 
 		CHECK ( tokens.size() == 0 );
 		CHECK ( tokens.empty() );
+	}
+
+	SECTION ( "Command line with only --" )
+	{
+		const char * const argv[] = { "arcstk-whatever", "--" };
+		const int argc = 2;
+
+		auto tokens = get_tokens(argc, argv, supported_options);
+
+		CHECK ( tokens.size() == 1 );
+		CHECK ( tokens.begin()->code() == DDASH );
+	}
+
+	SECTION ( "Command line with only -" )
+	{
+		const char * const argv[] = { "arcstk-whatever", "-" };
+		const int argc = 2;
+
+		auto tokens = get_tokens(argc, argv, supported_options);
+
+		CHECK ( tokens.size() == 1 );
+		CHECK ( tokens.begin()->code() == DASH );
 	}
 
 	SECTION ( "Throws CallSyntaxException on invalid option" )
