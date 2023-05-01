@@ -3,9 +3,10 @@
 #endif
 
 #include <cstdlib>                  // for EXIT_SUCCESS
-#include <memory>                   // for unique_ptr, make_unique, allocator
-#include <string>                   // for string, char_traits, operator<<
-#include <utility>                  // for make_pair
+#include <iterator>                 // for end
+#include <memory>                   // for unique_ptr, make_unique
+#include <string>                   // for string
+#include <utility>                  // for make_pair, move, pair
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>
