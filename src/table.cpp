@@ -1,20 +1,25 @@
 /**
  * \file
  *
- * \brief Implementation of printable tables.
+ * \brief Implementation of a printable table holdings strings.
  */
 
-#include <algorithm>  // for max
-#include <functional> // for bind, function
+#include <algorithm>  // for max, min, find_if, for_each
+#include <cstddef>    // for size_t
+#include <cctype>     // for isspace
+#include <functional> // for bind, function, placeholders
+#include <iomanip>    // for setw, setfill
+#include <ios>        // for left, right
+#include <iterator>   // for begin, end
 #include <map>        // for map
-#include <memory>     // for unique_ptr
-#include <iomanip>    // for left, setw, setfill
+#include <memory>     // for unique_ptr, make_unique
+#include <ostream>    // for ostream
 #include <stdexcept>  // for runtime_error
+#include <sstream>    // for ostringstream
 #include <string>     // for string
 #include <type_traits>// for is_signed
-#include <utility>    // for Swappable
+#include <utility>    // for forward, make_pair, move, swap
 
-#include <iostream>
 
 #ifndef __ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"

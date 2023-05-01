@@ -1,18 +1,23 @@
 #ifndef __ARCSTOOLS_TABLES_HPP__
 #define __ARCSTOOLS_TABLES_HPP__
 
+#include <algorithm>   // for max
+#include <cstddef>     // for size_t
+#include <ios>         // for boolalpha
 #include <memory>      // for unique_ptr
+#include <stdexcept>   // for runtime_error
+#include <ostream>     // for ostream
 #include <sstream>     // for ostringstream
 #include <string>      // for string
-#include <type_traits> // for void_t
+#include <type_traits> // for enable_if, is_unsigned, underlying_type
 #include <utility>     // for forward
 #include <vector>      // for vector
 
 // to_sep_list requirements:
-#include <algorithm>   // for transform
+//#include <algorithm>   // for transform
 #include <functional>  // for function
 #include <iterator>    // for ostream_iterator
-#include <sstream>     // for ostringstream
+//#include <sstream>     // for ostringstream
 
 /**
  * \file
