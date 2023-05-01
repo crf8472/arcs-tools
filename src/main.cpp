@@ -4,12 +4,10 @@
  * \brief arcstk, a toolbox for AccurateRip checksums
  */
 
-#include <algorithm>         // for find_if
 #include <cstdlib>           // for EXIT_SUCCESS, EXIT_FAILURE
-#include <iostream>          // for operator<<, basic_ostream, endl, cerr
-#include <memory>            // for unique_ptr
+#include <iostream>          // for operator<<, endl, cout, cerr
 #include <exception>         // for exception
-#include <utility>           // for pair
+#include <ostream>           // for endl
 #include <string>            // for string
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
