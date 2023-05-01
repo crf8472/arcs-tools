@@ -77,8 +77,7 @@ auto ARParseApplication::run_calculation(const Options &options) const
 
 int ARParseApplication::do_run(const Options &options)
 {
-	auto content_handler = std::make_unique<ARParserContentPrintHandler>(
-		options.value(OPTION::OUTFILE));
+	auto content_handler = std::make_unique<ARParserContentPrintHandler>();
 
 	const auto arguments = options.arguments();
 

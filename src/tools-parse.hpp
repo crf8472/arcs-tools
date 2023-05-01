@@ -100,25 +100,16 @@ private:
 /**
  * \brief Content handler that just prints the parsed content immediately.
  *
- * Printing is performed to stdout by default. If a filename is specified,
- * printing goes to this file instead.
+ * Printing is performed to Output by default.
  */
 class ARParserContentPrintHandler : public ContentHandler
 {
 public:
 
 	/**
-	 * \brief Constructor for printing to a file.
-	 *
-	 * \param[in] filename Name of the out file
+	 * \brief Constructor for printing to output.
 	 */
-	ARParserContentPrintHandler(const std::string &filename);
-
-	/**
-	 * \brief Constructor.
-	 */
-	ARParserContentPrintHandler() : ARParserContentPrintHandler(std::string{})
-	{ /* empty */ };
+	ARParserContentPrintHandler();
 
 	/**
 	 * \brief Virtual default destructor.
@@ -175,6 +166,13 @@ protected:
 	 * \return The print layout used
 	 */
 	ARTripletLayout* triplet_layout();
+
+	/**
+	 * \brief Print the string.
+	 *
+	 * \param[in] str String to print
+	 */
+	void print(const std::string& str) const;
 
 private:
 

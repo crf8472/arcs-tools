@@ -134,15 +134,14 @@ std::size_t StdIn::buf_size() const
 // ARParserContentPrintHandler
 
 
-ARParserContentPrintHandler::ARParserContentPrintHandler(
-		const std::string &filename)
-	: block_counter_(0)
-	, track_(0)
-	, arid_layout_(std::make_unique<ARIdTableLayout>(
-				false, false, false, false, false, false, false, false))
-	, triplet_layout_(std::make_unique<ARTripletLayout>())
+ARParserContentPrintHandler::ARParserContentPrintHandler()
+	: block_counter_  { 0 }
+	, track_          { 0 }
+	, arid_layout_    { std::make_unique<ARIdTableLayout>(false, false, false,
+							false, false, false, false, false) }
+	, triplet_layout_ { std::make_unique<ARTripletLayout>() }
 {
-	Output::instance().to_file(filename);
+	// empty
 }
 
 
@@ -167,6 +166,12 @@ void ARParserContentPrintHandler::set_triplet_layout(
 		std::unique_ptr<ARTripletLayout> format)
 {
 	triplet_layout_ = std::move(format);
+}
+
+
+void ARParserContentPrintHandler::print(const std::string& str) const
+{
+	Output::instance().output(str);
 }
 
 
@@ -200,7 +205,7 @@ void ARParserContentPrintHandler::do_start_block()
 
 	std::ostringstream ss;
 	ss << "---------- Block " << std::dec << block_counter_ << " : ";
-	Output::instance().output(ss.str());
+	this->print(ss.str());
 }
 
 
@@ -212,7 +217,7 @@ void ARParserContentPrintHandler::do_id(const uint8_t track_count,
 
 	auto str = arid_layout()->format(id, std::string{});
 	str += '\n';
-	Output::instance().output(str);
+	this->print(str);
 }
 
 
@@ -223,7 +228,7 @@ void ARParserContentPrintHandler::do_triplet(const Checksum arcs,
 	const ARTriplet triplet(arcs, confidence, frame450_arcs);
 
 	auto str = triplet_layout()->format(track_, triplet);
-	Output::instance().output(str);
+	this->print(str);
 }
 
 
@@ -237,7 +242,7 @@ void ARParserContentPrintHandler::do_triplet(const Checksum arcs,
 			confidence_valid, frame450_arcs_valid);
 
 	auto str = triplet_layout()->format(track_, triplet);
-	Output::instance().output(str);
+	this->print(str);
 }
 
 
@@ -251,7 +256,7 @@ void ARParserContentPrintHandler::do_end_input()
 {
 	std::ostringstream ss;
 	ss << "EOF======= Blocks: " << std::dec << block_counter_ << std::endl;
-	Output::instance().output(ss.str());
+	this->print(ss.str());
 }
 
 
