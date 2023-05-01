@@ -964,7 +964,7 @@ private:
 /**
  * \brief An ARId accompanied by a layout and an optional URL prefix.
  *
- * This object contains all information necessary to be be printed.
+ * This object contains all information necessary to be printed.
  */
 class RichARId
 {
@@ -1271,7 +1271,8 @@ protected:
 	 * \param[in] b          ResultComposer to use
 	 */
 	void their_checksum(const std::vector<Checksum>& checksums,
-		const arcstk::checksum::type t, const int record, ResultComposer* b) const;
+		const arcstk::checksum::type t, const int record, ResultComposer* b)
+		const;
 
 	/**
 	 * \brief Print my checksums.
