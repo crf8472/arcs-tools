@@ -13,10 +13,13 @@
  * and can apply configuring logic on the resulting object.
  */
 
+#include <cstddef>       // for size_t
 #include <map>           // for map
 #include <memory>        // for unique_ptr
+#include <ostream>       // for ostream
+#include <stdexcept>     // for runtime_error
 #include <string>        // for string
-#include <utility>       // for pair, make_pair, move
+#include <utility>       // for pair
 #include <vector>        // for vector
 
 #ifndef __LIBARCSTK_LOGGING_HPP__

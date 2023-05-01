@@ -2,10 +2,14 @@
 #include "config.hpp"
 #endif
 
+#include <cstddef>       // for size_t
+#include <iomanip>       // for setw
+#include <ios>           // for fmtflags
 #include <memory>        // for unique_ptr, make_unique
-#include <ostream>       // for ostream, operator<<
+#include <ostream>       // for ostream, endl, operator<<
+#include <stdexcept>     // for runtime_error
 #include <string>        // for string
-#include <utility>       // for move
+#include <utility>       // for make_pair, move
 #include <vector>        // for vector
 
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
