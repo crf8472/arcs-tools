@@ -11,12 +11,12 @@
  */
 
 #include <algorithm> // for transform
-#include <iterator>  // for iterator
+#include <iterator>  // for inserter
 #include <map>       // for map
-#include <memory>    // for unique_ptr
+#include <memory>    // for unique_ptr, make_unique
 #include <set>       // for set
 #include <string>    // for string
-#include <utility>   // for make_pair
+#include <utility>   // for forward, make_pair
 
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"

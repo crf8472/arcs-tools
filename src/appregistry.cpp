@@ -2,7 +2,7 @@
 #include "appregistry.hpp"
 #endif
 
-#include <map>
+#include <memory>    // for unique_ptr
 
 namespace arcsapp
 {
