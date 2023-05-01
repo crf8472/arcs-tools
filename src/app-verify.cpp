@@ -312,9 +312,9 @@ const std::string& VerifyResultFormatter::match_symbol() const
 void VerifyResultFormatter::assertions(const InputTuple t) const
 {
 	const auto& checksums = std::get<0>(t);
-	const auto  toc       = std::get<6>(t);
-	const auto& arid      = std::get<7>(t);
-	const auto& filenames = std::get<9>(t);
+	const auto  toc       = std::get<5>(t);
+	const auto& arid      = std::get<6>(t);
+	const auto& filenames = std::get<8>(t);
 
 	validate(checksums, toc, arid, filenames);
 
@@ -409,17 +409,10 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 	const auto& refvalues = std::get<2>(t);
 	const auto  match     = std::get<3>(t);
 	const auto  block     = std::get<4>(t);
-	const auto  version   = std::get<5>(t);
-	const auto  toc       = std::get<6>(t);
-	const auto  arid      = std::get<7>(t);
-	const auto& altprefix = std::get<8>(t);
-	const auto& filenames = std::get<9>(t);
-
-	using TYPE = arcstk::checksum::type;
-
-	std::vector<TYPE> types_to_print = version
-		? std::vector<TYPE>{ TYPE::ARCS2 }
-		: std::vector<TYPE>{ TYPE::ARCS2, TYPE::ARCS1 };
+	const auto  toc       = std::get<5>(t);
+	const auto  arid      = std::get<6>(t);
+	const auto& altprefix = std::get<7>(t);
+	const auto& filenames = std::get<8>(t);
 
 	auto result = std::make_unique<ResultList>();
 
@@ -439,7 +432,7 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 
 				result->append(build_result(checksums,
 						sums_in_block(*response, b), match, b,
-						toc, arid, altprefix, filenames, types_to_print));
+						toc, arid, altprefix, filenames, types_to_print()));
 			}
 
 			return result;
@@ -458,7 +451,7 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 		: sums_in_block(*response, block);
 
 	result->append(build_result(checksums, refsums, match, block, toc, arid,
-			altprefix, filenames, types_to_print));
+			altprefix, filenames, types_to_print()));
 
 	return result;
 }
@@ -499,12 +492,15 @@ void VerifyResultFormatter::do_mine_checksum(const Checksums& checksums,
 
 
 std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
-		const Options &options) const
+		const Options &options,
+		const std::vector<arcstk::checksum::type> &types) const
 {
 	auto fmt = std::unique_ptr<VerifyResultFormatter>
 	{
 		std::make_unique<VerifyResultFormatter>()
 	};
+
+	fmt->set_types_to_print(types);
 
 	// Layouts for Checksums + ARId
 
@@ -888,11 +884,30 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 		}
 	}
 
-	const auto layout = configure_layout(options);
+	// TODO Compose set of types to be printed
+	// If all types are requested, insert all types, otherwise insert the
+	// matching only
+	using TYPE = arcstk::checksum::type;
+	std::vector<TYPE> types_to_print;
 
-	auto result { layout->format(checksums, &ref_response, ref_values,
-			diff->match(), best_block, matching_version,
-			toc.get(), arid, alt_prefix, filenames) };
+	if (options.is_set(VERIFY::PRINTALL))
+	{
+		// Print every match computed in the course of the calculation
+		types_to_print = { TYPE::ARCS1, TYPE::ARCS2 };
+	} else
+	{
+		// Print only type that produced the best match
+		types_to_print = matching_version
+			? std::vector<TYPE>{ TYPE::ARCS2 }
+			: std::vector<TYPE>{ TYPE::ARCS1 };
+	}
+
+	const auto layout { configure_layout(options, types_to_print) };
+
+	auto result {
+		layout->format(checksums, &ref_response, ref_values,
+			diff->match(), best_block, toc.get(), arid, alt_prefix, filenames)
+	};
 
 	auto exit_code = options.is_set(VERIFY::BOOLEAN)
 		? diff->best_difference()

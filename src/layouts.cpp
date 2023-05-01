@@ -894,6 +894,19 @@ void ResultFormatter::set_checksum_layout(
 }
 
 
+void ResultFormatter::set_types_to_print(
+		std::vector<arcstk::checksum::type> types)
+{
+	types_ = types;
+}
+
+
+std::vector<arcstk::checksum::type> ResultFormatter::types_to_print() const
+{
+	return types_;
+}
+
+
 const ChecksumLayout* ResultFormatter::checksum_layout() const
 {
 	return checksum_layout_ ? checksum_layout_.get() : nullptr;

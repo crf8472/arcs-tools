@@ -2,9 +2,9 @@
 #include "app-calc.hpp"
 #endif
 
-#include <algorithm>     // for find
+#include <algorithm>     // for find, set_intersection
 #include <cstdlib>       // for EXIT_SUCCESS
-#include <iterator>      // for begin, end
+#include <iterator>      // for begin, end, back_inserter
 #include <memory>        // for unique_ptr, make_unique
 #include <string>        // for string
 #include <tuple>         // for get, make_tuple, tuple
@@ -315,10 +315,10 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 std::vector<ATTR> CalcResultFormatter::do_create_attributes(
 		const bool p_tracks, const bool p_offsets, const bool p_lengths,
 		const bool p_filenames,
-		const std::vector<arcstk::checksum::type>& types_to_print) const
+		const std::vector<arcstk::checksum::type>& requested_types) const
 {
 	const auto total_attributes = p_tracks + p_offsets + p_lengths + p_filenames
-		+ types_to_print.size();
+		+ requested_types.size();
 
 	using checksum = arcstk::checksum::type;
 
@@ -329,7 +329,7 @@ std::vector<ATTR> CalcResultFormatter::do_create_attributes(
 	if (p_lengths)   { attributes.push_back(ATTR::LENGTH);   }
 	if (p_filenames) { attributes.push_back(ATTR::FILENAME); }
 
-	for (const auto& t : types_to_print)
+	for (const auto& t : requested_types)
 	{
 		if (checksum::ARCS1 == t)
 		{
@@ -370,10 +370,8 @@ std::unique_ptr<Result> CalcResultFormatter::do_format(InputTuple t) const
 	const auto& arid      = std::get<3>(t);
 	const auto& altprefix = std::get<4>(t);
 
-	const auto types_to_print = details::ordered_typelist(checksums);
-
 	return build_result(checksums, {}, nullptr, 0, toc, arid,
-			altprefix, filenames, types_to_print);
+			altprefix, filenames, types_to_print());
 }
 
 
@@ -482,29 +480,34 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 
 
 std::unique_ptr<CalcResultFormatter> ARCalcApplication::configure_layout(
-		const Options &options) const
+		const Options &options,
+		const std::vector<arcstk::checksum::type> &types) const
 {
 	auto fmt = std::unique_ptr<CalcResultFormatter>
 	{
 		std::make_unique<CalcResultFormatter>()
 	};
 
+	fmt->set_types_to_print(types);
+
 	// Layouts for Checksums + ARId
 
 	fmt->set_checksum_layout(std::make_unique<HexLayout>());
+
+	// Layout for ARId
 
 	if (options.is_set(CALC::PRINTID) || options.is_set(CALC::PRINTURL))
 	{
 		std::unique_ptr<ARIdLayout> id_layout =
 			std::make_unique<ARIdTableLayout>(
-			!options.is_set(CALC::NOLABELS),
-			options.is_set(CALC::PRINTID),
-			options.is_set(CALC::PRINTURL),
-			false, /* no filenames */
-			false, /* no tracks */
-			false, /* no id 1 */
-			false, /* no id 2 */
-			false  /* no cddb id */
+				!options.is_set(CALC::NOLABELS),
+				options.is_set(CALC::PRINTID),
+				options.is_set(CALC::PRINTURL),
+				false, /* no filenames */
+				false, /* no tracks */
+				false, /* no id 1 */
+				false, /* no id 2 */
+				false  /* no cddb id */
 		);
 
 		fmt->set_arid_layout(std::move(id_layout));
@@ -565,11 +568,11 @@ std::vector<arcstk::checksum::type> ARCalcApplication::requested_types(
 
 	std::vector<arcstk::checksum::type> types = {};
 
-	if (not options.is_set(CALC::NOV1))
+	if (!options.is_set(CALC::NOV1))
 	{
 		types.push_back(arcstk::checksum::type::ARCS1);
 	}
-	if (not options.is_set(CALC::NOV2))
+	if (!options.is_set(CALC::NOV2))
 	{
 		types.push_back(arcstk::checksum::type::ARCS2);
 	}
@@ -624,25 +627,21 @@ auto ARCalcApplication::run_calculation(const Options &options) const
 		this->fatal_error("Calculation returned no checksums");
 	}
 
-	// Postprocessing
-	// A hack: for printing, remove all types from the result that not
-	// have been requested explicitly (implements e.g. --no-v1)
+	// Types to print = all types requested AND computed
 
-	for (auto& track : checksums)
+	std::vector<arcstk::checksum::type> types_to_print;
 	{
-		for (const auto& type : track.types())
-		{
-			if (find(begin(requested_types), end(requested_types), type)
-					== end(requested_types))
-			{
-				track.erase(type);
-			}
-		}
+		using std::begin;
+		using std::end;
+		auto computed_types { begin(checksums)->types() };
+		std::set_intersection(begin(computed_types),  end(computed_types),
+							  begin(requested_types), end(requested_types),
+							  std::back_inserter(types_to_print));
 	}
 
 	// Configure result presentation
 
-	const auto layout { configure_layout(options) };
+	const auto layout { configure_layout(options, types_to_print) };
 
 	auto result { layout->format(
 	/* ARCSs */  checksums,

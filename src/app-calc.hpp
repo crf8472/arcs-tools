@@ -255,11 +255,12 @@ private:
 	 *
 	 * The format object returned will not yet have formatted the checksums.
 	 *
-	 * \param[in] options   The options parsed from command line
-	 * \param[in] checksums The checksums to format
+	 * \param[in] options  The options parsed from command line
+	 * \param[in] types    The requested checksum types
 	 */
 	std::unique_ptr<CalcResultFormatter> configure_layout(
-			const Options &options) const;
+			const Options &options,
+			const std::vector<arcstk::checksum::type> &types) const;
 
 	/**
 	 * \brief Worker: Determine the requested checksum types for calculation.

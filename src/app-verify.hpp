@@ -91,8 +91,8 @@ private:
 /**
  * \brief Interface to format result objects of a verification process.
  */
-using V10L = Layout<std::unique_ptr<Result>, Checksums, const ARResponse*,
-			const std::vector<Checksum>, const Match*, const int, const bool,
+using V9L = Layout<std::unique_ptr<Result>, Checksums, const ARResponse*,
+			const std::vector<Checksum>, const Match*, const int,
 			const TOC*, const ARId, std::string, std::vector<std::string>>;
 
 
@@ -100,7 +100,7 @@ using V10L = Layout<std::unique_ptr<Result>, Checksums, const ARResponse*,
  * \brief Interface for formatting the results of an ARVerifyApplication.
  */
 class VerifyResultFormatter : public ResultFormatter
-							, public V10L
+							, public V9L
 {
 public:
 
@@ -158,7 +158,8 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	 * \param[in] with_filenames Flag to indicate whether to print filenames
 	 */
 	std::unique_ptr<VerifyResultFormatter> configure_layout(
-			const Options &options) const;
+			const Options &options,
+			const std::vector<arcstk::checksum::type> &types) const;
 
 	/**
 	 * \brief Provide reference checksums from options.

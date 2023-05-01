@@ -1081,6 +1081,20 @@ public:
 	const ChecksumLayout* checksum_layout() const;
 
 	/**
+	 * \brief Set the list of requested checksum types.
+	 *
+	 * \param[in] types List of requested checksum types.
+	 */
+	void set_types_to_print(std::vector<arcstk::checksum::type> types);
+
+	/**
+	 * \brief List of requested checksum types.
+	 *
+	 * \return List of requested checksum types.
+	 */
+	std::vector<arcstk::checksum::type> types_to_print() const;
+
+	/**
 	 * \brief Return TRUE iff instance is configured to format the label.
 	 *
 	 * Intended to control the printing of column titles and row labels.
@@ -1342,6 +1356,11 @@ private:
 	 * \brief Format for the Checksums.
 	 */
 	std::unique_ptr<ChecksumLayout> checksum_layout_;
+
+	/**
+	 * \brief List of requested checksum types.
+	 */
+	std::vector<arcstk::checksum::type> types_;
 };
 
 } // namespace arcsapp
