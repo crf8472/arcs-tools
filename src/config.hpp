@@ -198,11 +198,9 @@ struct OPTION
 };
 
 
-/**
- * \brief Internal type used by Configurator.
- */
-using OptionRegistry = std::map<OptionCode, Option>;
-//FIXME This definition is doubled up from clitokens.hpp
+using OptionRegistry = std::vector<std::pair<OptionCode, Option>>;
+//FIXME This definition is repeated from clitokens.hpp
+
 
 /**
  * \brief Abstract base class for Configurators.

@@ -90,8 +90,9 @@ constexpr OptionCode VERIFY::NOOUTPUT;
 
 void ARVerifyConfigurator::flush_local_options(OptionRegistry &r) const
 {
-	r.insert(
-		{
+	using std::end;
+	r.insert(end(r),
+	{
 		// from FORMATBASE
 
 		{ VERIFY::READERID ,
@@ -176,7 +177,7 @@ void ARVerifyConfigurator::flush_local_options(OptionRegistry &r) const
 		{ VERIFY::NOOUTPUT ,
 		{  'n', "no-output", false, "FALSE",
 			"Do not print the result (implies --boolean)" }}
-		});
+	});
 }
 
 

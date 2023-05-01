@@ -38,11 +38,12 @@ public:
 	static constexpr OptionCode CDDBID    = BASE +  0; // 10
 	static constexpr OptionCode URL       = BASE +  1;
 	static constexpr OptionCode DBID      = BASE +  2;
-	static constexpr OptionCode PROFILE   = BASE +  3;
-	static constexpr OptionCode URLPREFIX = BASE +  4;
-	static constexpr OptionCode ID        = BASE +  5;
-	static constexpr OptionCode AUDIOFILE = BASE +  6;
-	static constexpr OptionCode NOLABELS  = BASE +  7; // 17
+	static constexpr OptionCode FILENAME  = BASE +  3;
+	static constexpr OptionCode PROFILE   = BASE +  4;
+	static constexpr OptionCode URLPREFIX = BASE +  5;
+	static constexpr OptionCode ID        = BASE +  6;
+	static constexpr OptionCode AUDIOFILE = BASE +  7;
+	static constexpr OptionCode NOLABELS  = BASE +  8; // 18
 };
 
 
@@ -59,7 +60,8 @@ private:
 
 	void flush_local_options(OptionRegistry& r) const final;
 
-	// do_configure_options() does nothing
+	std::unique_ptr<Options> do_configure_options(
+			std::unique_ptr<Options> options) const final;
 };
 
 

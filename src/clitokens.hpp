@@ -131,29 +131,29 @@ private:
 	/**
 	 * \brief Internal shorthand symbol.
 	 */
-	const char        shorthand_;
+	char        shorthand_;
 
 	/**
 	 * \brief Internal symbol.
 	 */
-	const std::string symbol_;
+	std::string symbol_;
 
 	/**
 	 * \brief Flag to indicate whether the option requires a value.
 	 */
-	const bool        needs_value_;
+	bool        needs_value_;
 
 	/**
 	 * \brief Default argument, if any.
 	 */
-	const std::string default_arg_;
+	std::string default_arg_;
 
 	/**
 	 * \brief Short description.
 	 *
 	 * Can be printed in usage message for example.
 	 */
-	const std::string description_;
+	std::string description_;
 };
 
 
@@ -186,10 +186,11 @@ public:
 /**
  * \brief Type to associate actual OptionCodes with Option objects.
  *
- * It must support iteration over all pairs of options and their associated
- * codes.
+ * The contained type must be a pair with the OptionCode as first element and
+ * the Option as second element. The container must allow iteration.
  */
-using OptionRegistry = std::map<OptionCode, Option>;
+using OptionRegistry = std::vector<std::pair<OptionCode, Option>>;
+// FIXME This definition is repeated in config.hpp
 
 
 namespace input

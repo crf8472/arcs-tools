@@ -135,7 +135,8 @@ std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 
 void ARCalcConfigurator::flush_local_options(OptionRegistry &r) const
 {
-	r.insert(
+	using std::end;
+	r.insert(end(r),
 	{
 		// from FORMATBASE
 

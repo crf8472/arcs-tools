@@ -3,8 +3,6 @@
 #endif
 
 #include <cstdlib>                  // for EXIT_SUCCESS
-#include <fstream>                  // for operator<<, ostream, ofstream
-#include <iostream>                 // for cout
 #include <memory>                   // for unique_ptr, make_unique, allocator
 #include <string>                   // for string, char_traits, operator<<
 #include <utility>                  // for make_pair
@@ -60,8 +58,9 @@ using arcsdec::ARIdCalculator;
 
 void ARIdConfigurator::flush_local_options(OptionRegistry& r) const
 {
-	r.insert({
-
+	using std::end;
+	r.insert(end(r),
+	{
 		// from FORMATBASE
 
 		{ ARIdOptions::READERID,
@@ -89,7 +88,7 @@ void ARIdConfigurator::flush_local_options(OptionRegistry& r) const
 		{ "db-id", false, "FALSE",
 			"Print the AccurateRip DB ID (equivalent to filename)" }},
 
-		{ ARIdOptions::DBID,
+		{ ARIdOptions::FILENAME,
 		{ "filename", false, "FALSE",
 			"Print the AccurateRip DB ID (equivalent to db-id)" }},
 
@@ -111,6 +110,19 @@ void ARIdConfigurator::flush_local_options(OptionRegistry& r) const
 		{ ARIdOptions::AUDIOFILE,
 		{ 'a', "audiofile", true, "none", "Specify input audio file" }}
 	});
+}
+
+
+std::unique_ptr<Options> ARIdConfigurator::do_configure_options(
+			std::unique_ptr<Options> options) const
+{
+	// Use DBID instead of the equivalent FILENAME
+	if (options->is_set(ARIdOptions::FILENAME))
+	{
+		options->set(ARIdOptions::DBID);
+		options->unset(ARIdOptions::FILENAME);
+	}
+	return options;
 }
 
 

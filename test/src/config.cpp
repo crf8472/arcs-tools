@@ -1,5 +1,9 @@
 #include "catch2/catch_test_macros.hpp"
 
+#include <algorithm> // for find_if
+#include <iterator>  // for begin, end
+#include <utility>   // for pair
+
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"
 #endif
@@ -14,12 +18,48 @@
 #endif
 
 
+/**
+ * \brief TRUE iff OptionRegistry r contains a pair with OptionCode c.
+ */
+bool contains(const arcsapp::OptionCode c, const arcsapp::OptionRegistry& r)
+{
+	using std::begin;
+	using std::end;
+	using std::find_if;
+
+	const auto code_equals =
+		[c](const std::pair<arcsapp::OptionCode, arcsapp::Option>& p)
+		{
+			return p.first == c;
+		};
+
+	return find_if(begin(r), end(r), code_equals) != end(r);
+}
+
+
 TEST_CASE ( "DefaultConfigurator", "[DefaultConfigurator]" )
 {
 	using arcsapp::DefaultConfigurator;
 	using arcsapp::OPTION;
 
-	// TODO
+	SECTION ("List of supported options is sound and complete")
+	{
+		using std::find;
+		using std::end;
+
+		DefaultConfigurator conf1;
+
+		const auto supported { conf1.supported_options() };
+
+		CHECK ( 6 == supported.size() );
+
+		CHECK ( contains(OPTION::HELP, supported) );
+		CHECK ( contains(OPTION::VERSION, supported) );
+		CHECK ( contains(OPTION::VERBOSITY, supported) );
+		CHECK ( contains(OPTION::QUIET, supported) );
+		CHECK ( contains(OPTION::LOGFILE, supported) );
+		CHECK ( contains(OPTION::OUTFILE, supported) );
+	}
 
 	SECTION ("Global option: --verbosity")
 	{
@@ -95,40 +135,43 @@ TEST_CASE ( "ARCalcConfigurator", "[ARCalcConfigurator]" )
 
 	SECTION ("List of supported options is sound and complete")
 	{
-		ARCalcConfigurator conf1;
+		using std::find;
 		using std::end;
+
+
+		ARCalcConfigurator conf1;
 
 		const auto supported { conf1.supported_options() };
 
 		CHECK ( 26 == supported.size() );
 
-		CHECK ( supported.find(CALC::READERID) != end(supported) );
-		CHECK ( supported.find(CALC::PARSERID) != end(supported) );
-		CHECK ( supported.find(CALC::LIST_TOC_FORMATS) != end(supported) );
-		CHECK ( supported.find(CALC::LIST_AUDIO_FORMATS) != end(supported) );
-		CHECK ( supported.find(CALC::METAFILE) != end(supported) );
-		CHECK ( supported.find(CALC::NOTRACKS) != end(supported) );
-		CHECK ( supported.find(CALC::NOFILENAMES) != end(supported) );
-		CHECK ( supported.find(CALC::NOOFFSETS) != end(supported) );
-		CHECK ( supported.find(CALC::NOLENGTHS) != end(supported) );
-		CHECK ( supported.find(CALC::NOLABELS) != end(supported) );
-		CHECK ( supported.find(CALC::COLDELIM) != end(supported) );
-		CHECK ( supported.find(CALC::PRINTID) != end(supported) );
-		CHECK ( supported.find(CALC::PRINTURL) != end(supported) );
-		CHECK ( supported.find(CALC::FIRST) != end(supported) );
-		CHECK ( supported.find(CALC::LAST) != end(supported) );
-		CHECK ( supported.find(CALC::ALBUM) != end(supported) );
-		CHECK ( supported.find(CALC::NOV1) != end(supported) );
-		CHECK ( supported.find(CALC::NOV2) != end(supported) );
-		CHECK ( supported.find(CALC::SUMSONLY) != end(supported) );
-		CHECK ( supported.find(CALC::TRACKSASCOLS) != end(supported) );
+		CHECK ( contains(CALC::READERID, supported) );
+		CHECK ( contains(CALC::PARSERID, supported) );
+		CHECK ( contains(CALC::LIST_TOC_FORMATS, supported) );
+		CHECK ( contains(CALC::LIST_AUDIO_FORMATS, supported) );
+		CHECK ( contains(CALC::METAFILE, supported) );
+		CHECK ( contains(CALC::NOTRACKS, supported) );
+		CHECK ( contains(CALC::NOFILENAMES, supported) );
+		CHECK ( contains(CALC::NOOFFSETS, supported) );
+		CHECK ( contains(CALC::NOLENGTHS, supported) );
+		CHECK ( contains(CALC::NOLABELS, supported) );
+		CHECK ( contains(CALC::COLDELIM, supported) );
+		CHECK ( contains(CALC::PRINTID, supported) );
+		CHECK ( contains(CALC::PRINTURL, supported) );
+		CHECK ( contains(CALC::FIRST, supported) );
+		CHECK ( contains(CALC::LAST, supported) );
+		CHECK ( contains(CALC::ALBUM, supported) );
+		CHECK ( contains(CALC::NOV1, supported) );
+		CHECK ( contains(CALC::NOV2, supported) );
+		CHECK ( contains(CALC::SUMSONLY, supported) );
+		CHECK ( contains(CALC::TRACKSASCOLS, supported) );
 
-		CHECK ( supported.find(OPTION::HELP) != end(supported) );
-		CHECK ( supported.find(OPTION::VERSION) != end(supported) );
-		CHECK ( supported.find(OPTION::VERBOSITY) != end(supported) );
-		CHECK ( supported.find(OPTION::QUIET) != end(supported) );
-		CHECK ( supported.find(OPTION::LOGFILE) != end(supported) );
-		CHECK ( supported.find(OPTION::OUTFILE) != end(supported) );
+		CHECK ( contains(OPTION::HELP, supported) );
+		CHECK ( contains(OPTION::VERSION, supported) );
+		CHECK ( contains(OPTION::VERBOSITY, supported) );
+		CHECK ( contains(OPTION::QUIET, supported) );
+		CHECK ( contains(OPTION::LOGFILE, supported) );
+		CHECK ( contains(OPTION::OUTFILE, supported) );
 	}
 
 	SECTION ("Option --metafile triggers album mode")
@@ -215,34 +258,34 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 
 		CHECK ( 27 == supported.size() );
 
-		CHECK ( supported.find(VERIFY::READERID) != end(supported) );
-		CHECK ( supported.find(VERIFY::PARSERID) != end(supported) );
-		CHECK ( supported.find(VERIFY::LIST_TOC_FORMATS) != end(supported) );
-		CHECK ( supported.find(VERIFY::LIST_AUDIO_FORMATS) != end(supported) );
-		CHECK ( supported.find(VERIFY::METAFILE) != end(supported) );
-		CHECK ( supported.find(VERIFY::NOTRACKS) != end(supported) );
-		CHECK ( supported.find(VERIFY::NOFILENAMES) != end(supported) );
-		CHECK ( supported.find(VERIFY::NOOFFSETS) != end(supported) );
-		CHECK ( supported.find(VERIFY::NOLENGTHS) != end(supported) );
-		CHECK ( supported.find(VERIFY::NOLABELS) != end(supported) );
-		CHECK ( supported.find(VERIFY::COLDELIM) != end(supported) );
-		CHECK ( supported.find(VERIFY::PRINTID) != end(supported) );
-		CHECK ( supported.find(VERIFY::PRINTURL) != end(supported) );
-		CHECK ( supported.find(VERIFY::NOFIRST) != end(supported) );
-		CHECK ( supported.find(VERIFY::NOLAST) != end(supported) );
-		CHECK ( supported.find(VERIFY::NOALBUM) != end(supported) );
-		CHECK ( supported.find(VERIFY::RESPONSEFILE) != end(supported) );
-		CHECK ( supported.find(VERIFY::REFVALUES) != end(supported) );
-		CHECK ( supported.find(VERIFY::PRINTALL) != end(supported) );
-		CHECK ( supported.find(VERIFY::BOOLEAN) != end(supported) );
-		CHECK ( supported.find(VERIFY::NOOUTPUT) != end(supported) );
+		CHECK ( contains(VERIFY::READERID, supported) );
+		CHECK ( contains(VERIFY::PARSERID, supported) );
+		CHECK ( contains(VERIFY::LIST_TOC_FORMATS, supported) );
+		CHECK ( contains(VERIFY::LIST_AUDIO_FORMATS, supported) );
+		CHECK ( contains(VERIFY::METAFILE, supported) );
+		CHECK ( contains(VERIFY::NOTRACKS, supported) );
+		CHECK ( contains(VERIFY::NOFILENAMES, supported) );
+		CHECK ( contains(VERIFY::NOOFFSETS, supported) );
+		CHECK ( contains(VERIFY::NOLENGTHS, supported) );
+		CHECK ( contains(VERIFY::NOLABELS, supported) );
+		CHECK ( contains(VERIFY::COLDELIM, supported) );
+		CHECK ( contains(VERIFY::PRINTID, supported) );
+		CHECK ( contains(VERIFY::PRINTURL, supported) );
+		CHECK ( contains(VERIFY::NOFIRST, supported) );
+		CHECK ( contains(VERIFY::NOLAST, supported) );
+		CHECK ( contains(VERIFY::NOALBUM, supported) );
+		CHECK ( contains(VERIFY::RESPONSEFILE, supported) );
+		CHECK ( contains(VERIFY::REFVALUES, supported) );
+		CHECK ( contains(VERIFY::PRINTALL, supported) );
+		CHECK ( contains(VERIFY::BOOLEAN, supported) );
+		CHECK ( contains(VERIFY::NOOUTPUT, supported) );
 
-		CHECK ( supported.find(OPTION::HELP) != end(supported) );
-		CHECK ( supported.find(OPTION::VERSION) != end(supported) );
-		CHECK ( supported.find(OPTION::VERBOSITY) != end(supported) );
-		CHECK ( supported.find(OPTION::QUIET) != end(supported) );
-		CHECK ( supported.find(OPTION::LOGFILE) != end(supported) );
-		CHECK ( supported.find(OPTION::OUTFILE) != end(supported) );
+		CHECK ( contains(OPTION::HELP, supported) );
+		CHECK ( contains(OPTION::VERSION, supported) );
+		CHECK ( contains(OPTION::VERBOSITY, supported) );
+		CHECK ( contains(OPTION::QUIET, supported) );
+		CHECK ( contains(OPTION::LOGFILE, supported) );
+		CHECK ( contains(OPTION::OUTFILE, supported) );
 	}
 
 	SECTION ("Input with -m and -r is ok")
@@ -395,26 +438,27 @@ TEST_CASE ( "ARIdConfigurator", "[ARIdConfigurator]" )
 
 		const auto supported { conf1.supported_options() };
 
-		CHECK ( 17 == supported.size() );
+		CHECK ( 18 == supported.size() );
 
-		CHECK ( supported.find(ARIdOptions::READERID) != end(supported) );
-		CHECK ( supported.find(ARIdOptions::PARSERID) != end(supported) );
-		CHECK ( supported.find(ARIdOptions::LIST_TOC_FORMATS) != end(supported) );
-		CHECK ( supported.find(ARIdOptions::LIST_AUDIO_FORMATS) != end(supported) );
-		CHECK ( supported.find(ARIdOptions::CDDBID) != end(supported) );
-		CHECK ( supported.find(ARIdOptions::DBID) != end(supported) );
-		CHECK ( supported.find(ARIdOptions::NOLABELS) != end(supported) );
-		CHECK ( supported.find(ARIdOptions::URL) != end(supported) );
-		CHECK ( supported.find(ARIdOptions::PROFILE) != end(supported) );
-		CHECK ( supported.find(ARIdOptions::URLPREFIX) != end(supported) );
-		CHECK ( supported.find(ARIdOptions::AUDIOFILE) != end(supported) );
+		CHECK ( contains(ARIdOptions::READERID, supported) );
+		CHECK ( contains(ARIdOptions::PARSERID, supported) );
+		CHECK ( contains(ARIdOptions::LIST_TOC_FORMATS, supported) );
+		CHECK ( contains(ARIdOptions::LIST_AUDIO_FORMATS, supported) );
+		CHECK ( contains(ARIdOptions::CDDBID, supported) );
+		CHECK ( contains(ARIdOptions::DBID, supported) );
+		CHECK ( contains(ARIdOptions::FILENAME, supported) );
+		CHECK ( contains(ARIdOptions::NOLABELS, supported) );
+		CHECK ( contains(ARIdOptions::URL, supported) );
+		CHECK ( contains(ARIdOptions::PROFILE, supported) );
+		CHECK ( contains(ARIdOptions::URLPREFIX, supported) );
+		CHECK ( contains(ARIdOptions::AUDIOFILE, supported) );
 
-		CHECK ( supported.find(OPTION::HELP) != end(supported) );
-		CHECK ( supported.find(OPTION::VERSION) != end(supported) );
-		CHECK ( supported.find(OPTION::VERBOSITY) != end(supported) );
-		CHECK ( supported.find(OPTION::QUIET) != end(supported) );
-		CHECK ( supported.find(OPTION::LOGFILE) != end(supported) );
-		CHECK ( supported.find(OPTION::OUTFILE) != end(supported) );
+		CHECK ( contains(OPTION::HELP, supported) );
+		CHECK ( contains(OPTION::VERSION, supported) );
+		CHECK ( contains(OPTION::VERBOSITY, supported) );
+		CHECK ( contains(OPTION::QUIET, supported) );
+		CHECK ( contains(OPTION::LOGFILE, supported) );
+		CHECK ( contains(OPTION::OUTFILE, supported) );
 	}
 }
 
