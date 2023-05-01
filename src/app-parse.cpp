@@ -3,11 +3,9 @@
 #endif
 
 #include <cstdlib>             // for EXIT_SUCCESS
-#include <iostream>            // for operator<<, cout, ostream, basic_ostream
-#include <memory>              // for make_unique, unique_ptr, allocator
-#include <string>              // for string, operator<<, char_traits
-#include <utility>             // for move
-#include <vector>              // for vector
+#include <memory>              // for make_unique, unique_ptr
+#include <string>              // for string
+#include <utility>             // for move, pair
 
 #ifndef __LIBARCSTK_PARSE_HPP__
 #include <arcstk/parse.hpp>

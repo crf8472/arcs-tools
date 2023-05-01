@@ -13,6 +13,7 @@
 #include <cstdint>          // for uint8_t
 #include <memory>           // for unique_ptr
 #include <string>           // for string
+#include <utility>          // for pair
 
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"     // for Application
