@@ -20,6 +20,9 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"       // for Configurator
 #endif
+#ifndef __ARCSTOOLS_APPCALC_HPP__
+#include "app-calc.hpp"     // for ARCalcApplicationBase
+#endif
 
 
 namespace arcsapp
@@ -69,20 +72,18 @@ private:
 /**
  * \brief Application to calculate AccurateRip Identifiers.
  */
-class ARIdApplication final : public Application
+class ARIdApplication final : public ARCalcApplicationBase
 {
 	std::string do_name() const final;
 
 	std::string do_call_syntax() const final;
 
-	std::unique_ptr<Configurator> create_configurator() const final;
+	std::unique_ptr<Configurator> do_create_configurator() const final;
 
 	bool calculation_requested(const Options &options) const final;
 
 	std::pair<int, std::unique_ptr<Result>> run_calculation(
 			const Options &options) const final;
-
-	int do_run(const Options &options) final;
 };
 
 } // namespace arcsapp

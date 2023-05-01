@@ -149,7 +149,7 @@ private:
 /**
  * \brief Application to verify AccurateRip checksums.
  */
-class ARVerifyApplication final : public Application
+class ARVerifyApplication final : public ARCalcApplicationBase
 {
 	/**
 	 * \brief Configure an output format for the result.
@@ -238,14 +238,10 @@ class ARVerifyApplication final : public Application
 
 	std::string do_call_syntax() const final;
 
-	std::unique_ptr<Configurator> create_configurator() const final;
-
-	bool calculation_requested(const Options &options) const final;
+	std::unique_ptr<Configurator> do_create_configurator() const final;
 
 	std::pair<int, std::unique_ptr<Result>> run_calculation(
 			const Options &options) const final;
-
-	int do_run(const Options &options) final;
 };
 
 } // namespace arcsapp

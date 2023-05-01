@@ -727,15 +727,9 @@ std::string ARVerifyApplication::do_call_syntax() const
 }
 
 
-std::unique_ptr<Configurator> ARVerifyApplication::create_configurator() const
+std::unique_ptr<Configurator> ARVerifyApplication::do_create_configurator() const
 {
 	return std::make_unique<ARVerifyConfigurator>();
-}
-
-
-bool ARVerifyApplication::calculation_requested(const Options &options) const
-{
-	return options.is_set(VERIFY::METAFILE) || not options.no_arguments();
 }
 
 
@@ -907,31 +901,5 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 	return { exit_code, std::move(result) };
 }
 
-
-int ARVerifyApplication::do_run(const Options &options)
-{
-	// Is an actual calculation requested?
-	if (calculation_requested(options))
-	{
-		auto [ exit_code, result ] = this->run_calculation(options);
-
-		this->output(std::move(result), options);
-		return exit_code;
-	}
-
-	// If only info options are present, handle info request
-
-	if (options.is_set(VERIFY::LIST_TOC_FORMATS))
-	{
-		Output::instance().output(AvailableFileReaders::toc());
-	}
-
-	if (options.is_set(VERIFY::LIST_AUDIO_FORMATS))
-	{
-		Output::instance().output(AvailableFileReaders::audio());
-	}
-
-	return EXIT_SUCCESS;
-}
-
 } // namespace arcsapp
+

@@ -142,7 +142,7 @@ std::string ARIdApplication::do_call_syntax() const
 }
 
 
-std::unique_ptr<Configurator> ARIdApplication::create_configurator() const
+std::unique_ptr<Configurator> ARIdApplication::do_create_configurator() const
 {
 	return std::make_unique<ARIdConfigurator>();
 }
@@ -237,42 +237,6 @@ auto ARIdApplication::run_calculation(const Options &options) const
 	//return { EXIT_SUCCESS, std::move(r) };
 	return std::make_pair(EXIT_SUCCESS,
 			std::make_unique<ResultObject<RichARId>>(std::move(id)));
-}
-
-
-int ARIdApplication::do_run(const Options &options)
-{
-	// Is an actual calculation requested?
-	if (calculation_requested(options))
-	{
-		if (options.is_set(ARIdOptions::LIST_TOC_FORMATS))
-		{
-			// TODO Warn about ignored option or do it in Configurator
-		}
-		if (options.is_set(ARIdOptions::LIST_AUDIO_FORMATS))
-		{
-			// TODO Warn about ignored option or do it in Configurator
-		}
-
-		auto [ exit_code, result ] = this->run_calculation(options);
-
-		this->output(std::move(result), options);
-		return exit_code;
-	}
-
-	// If only info options are present, handle info request
-
-	if (options.is_set(ARIdOptions::LIST_TOC_FORMATS))
-	{
-		Output::instance().output(AvailableFileReaders::toc());
-	}
-
-	if (options.is_set(ARIdOptions::LIST_AUDIO_FORMATS))
-	{
-		Output::instance().output(AvailableFileReaders::audio());
-	}
-
-	return EXIT_SUCCESS;
 }
 
 } // namespace arcsapp

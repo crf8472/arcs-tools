@@ -36,12 +36,7 @@ class ARParseApplication final : public Application
 
 	std::string do_call_syntax() const final;
 
-	std::unique_ptr<Configurator> create_configurator() const final;
-
-	bool calculation_requested(const Options &options) const final;
-
-	std::pair<int, std::unique_ptr<Result>> run_calculation(
-			const Options &options) const final;
+	std::unique_ptr<Configurator> do_create_configurator() const final;
 
 	int do_run(const Options &options) final;
 };

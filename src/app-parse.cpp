@@ -56,22 +56,9 @@ std::string ARParseApplication::do_call_syntax() const
 }
 
 
-std::unique_ptr<Configurator> ARParseApplication::create_configurator() const
+std::unique_ptr<Configurator> ARParseApplication::do_create_configurator() const
 {
 	return std::make_unique<DefaultConfigurator>();
-}
-
-
-bool ARParseApplication::calculation_requested(const Options &options) const
-{
-	return false;
-}
-
-
-auto ARParseApplication::run_calculation(const Options &options) const
-	-> std::pair<int, std::unique_ptr<Result>>
-{
-	return { 0, nullptr }; // never called
 }
 
 

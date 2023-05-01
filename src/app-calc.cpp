@@ -82,10 +82,16 @@ constexpr OptionCode CALC::TRACKSASCOLS;
 // ARCalcConfiguratorBase
 
 
+bool ARCalcConfiguratorBase::calculation_requested(const Options &options) const
+{
+	return options.is_set(CALCBASE::METAFILE) || not options.no_arguments();
+}
+
+
 std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 		std::unique_ptr<Options> options) const
 {
-	if (!options->is_set(CALCBASE::METAFILE) || options->no_arguments())
+	if (!calculation_requested(*options))
 	{
 		ARCS_LOG_INFO <<
 			"No calculation task requested, no configuring required";
@@ -392,6 +398,49 @@ void CalcResultFormatter::do_mine_checksum(const Checksums& checksums,
 }
 
 
+// ARCalcApplicationBase
+
+
+int ARCalcApplicationBase::do_run(const Options &options)
+{
+	// Is an actual calculation requested?
+	if (calculation_requested(options))
+	{
+		auto [ exit_code, result ] = this->run_calculation(options);
+
+		this->output(std::move(result), options);
+		return exit_code;
+	}
+
+	// If only info options are present, handle info request
+
+	if (options.is_set(CALC::LIST_TOC_FORMATS))
+	{
+		Output::instance().output(AvailableFileReaders::toc());
+	}
+
+	if (options.is_set(CALC::LIST_AUDIO_FORMATS))
+	{
+		Output::instance().output(AvailableFileReaders::audio());
+	}
+
+	return EXIT_SUCCESS;
+}
+
+
+bool ARCalcApplicationBase::calculation_requested(const Options &options) const
+{
+	const auto configurator { this->create_configurator() };
+	const auto base = dynamic_cast<ARCalcConfiguratorBase*>(configurator.get());
+	if (base)
+	{
+		return base->calculation_requested(options);
+	}
+
+	return false;
+}
+
+
 // ARCalcApplication
 
 
@@ -529,12 +578,6 @@ std::vector<arcstk::checksum::type> ARCalcApplication::requested_types(
 }
 
 
-bool ARCalcApplication::calculation_requested(const Options &options) const
-{
-	return options.is_set(CALC::METAFILE) || not options.no_arguments();
-}
-
-
 auto ARCalcApplication::run_calculation(const Options &options) const
 	-> std::pair<int, std::unique_ptr<Result>>
 {
@@ -625,36 +668,9 @@ std::string ARCalcApplication::do_call_syntax() const
 }
 
 
-std::unique_ptr<Configurator> ARCalcApplication::create_configurator() const
+std::unique_ptr<Configurator> ARCalcApplication::do_create_configurator() const
 {
 	return std::make_unique<ARCalcConfigurator>();
-}
-
-
-int ARCalcApplication::do_run(const Options &options)
-{
-	// Is an actual calculation requested?
-	if (calculation_requested(options))
-	{
-		auto [ exit_code, result ] = this->run_calculation(options);
-
-		this->output(std::move(result), options);
-		return exit_code;
-	}
-
-	// If only info options are present, handle info request
-
-	if (options.is_set(CALC::LIST_TOC_FORMATS))
-	{
-		Output::instance().output(AvailableFileReaders::toc());
-	}
-
-	if (options.is_set(CALC::LIST_AUDIO_FORMATS))
-	{
-		Output::instance().output(AvailableFileReaders::audio());
-	}
-
-	return EXIT_SUCCESS;
 }
 
 } // namespace arcsapp

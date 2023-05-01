@@ -214,14 +214,20 @@ int Application::run(int argc, char** argv)
 		return EXIT_SUCCESS;
 	}
 
+	// Logging
+
 	this->setup_logging(*options);
 
 	ARCS_LOG(DEBUG1) << *options;
+
+	// Output
 
 	if (not options->value(OPTION::OUTFILE).empty())
 	{
 		Output::instance().to_file(options->value(OPTION::OUTFILE));
 	}
+
+	// Specific subclass function
 
 	return this->do_run(*options);
 }
@@ -274,6 +280,12 @@ std::unique_ptr<Options> Application::setup_options(int argc, char** argv) const
 }
 
 
+std::unique_ptr<Configurator> Application::create_configurator() const
+{
+	return this->do_create_configurator();
+}
+
+
 void Application::setup_logging(Options& options) const
 {
 	// Activate logging:
@@ -315,24 +327,21 @@ void Application::setup_logging(Options& options) const
 
 void Application::fatal_error(const std::string &message) const
 {
-	//ARCS_LOG_ERROR << message; // Commented out, just a reminder
 	throw std::runtime_error(message);
 }
 
 
-void Application::output(std::unique_ptr<Result> result, const Options &options)
-	const
+void Application::output(std::unique_ptr<Result> result,
+		const Options &/* options */) const
 {
-	auto object { std::move(result) };
-
-	if (!object)
+	if (result)
 	{
-		return;
+		Output::instance().output(*result);
+	} else
+	{
+		ARCS_LOG_WARNING << "Will not output null pointer";
 	}
-
-	Output::instance().output(*object);
 }
-
 
 } //namespace arcsapp
 

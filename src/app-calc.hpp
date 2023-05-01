@@ -84,6 +84,16 @@ public:
 
 	using Configurator::Configurator;
 
+	/**
+	 * \brief TRUE iff a calculation request is implicit in the Options,
+	 * otherwise FALSE.
+	 *
+	 * \param[in] options The Options to run the application
+	 *
+	 * \return TRUE iff a calculation is requested, otherwise FALSE
+	 */
+	virtual bool calculation_requested(const Options &options) const;
+
 protected:
 
 	/**
@@ -184,9 +194,35 @@ private:
 
 
 /**
+ * \brief Abstract base class for an Application to perform calculations.
+ */
+class ARCalcApplicationBase : public Application
+{
+	/**
+	 * \brief Run the internal calculation.
+	 *
+	 * Can be used as a worker for run().
+	 *
+	 * \param[in] options The options to run the application
+	 *
+	 * \return Application return code and calculation Result
+	 */
+	virtual std::pair<int, std::unique_ptr<Result>> run_calculation(
+			const Options &options) const
+	= 0;
+
+	virtual int do_run(const Options &options) override;
+
+protected:
+
+	virtual bool calculation_requested(const Options &options) const;
+};
+
+
+/**
  * \brief Application to calculate AccurateRip checksums.
  */
-class ARCalcApplication final : public Application
+class ARCalcApplication final : public ARCalcApplicationBase
 {
 public:
 
@@ -240,14 +276,10 @@ private:
 
 	std::string do_call_syntax() const final;
 
-	std::unique_ptr<Configurator> create_configurator() const final;
-
-	bool calculation_requested(const Options &options) const final;
+	std::unique_ptr<Configurator> do_create_configurator() const final;
 
 	std::pair<int, std::unique_ptr<Result>> run_calculation(
 			const Options &options) const final;
-
-	int do_run(const Options &options) final;
 };
 
 } // namespace arcsapp

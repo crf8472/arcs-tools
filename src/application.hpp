@@ -163,6 +163,13 @@ protected:
 	std::unique_ptr<Options> setup_options(int argc, char** argv) const;
 
 	/**
+	 * \brief Create a Configurator for this instance.
+	 *
+	 * \return The configurator for this application
+	 */
+	std::unique_ptr<Configurator> create_configurator() const;
+
+	/**
 	 * \brief Setup logging according to options.
 	 */
 	void setup_logging(Options& options) const;
@@ -205,34 +212,7 @@ private:
 	 *
 	 * \return The configurator for this application
 	 */
-	virtual std::unique_ptr<Configurator> create_configurator() const
-	= 0;
-
-	/**
-	 * \brief Returns TRUE iff a calculation result is requested, otherwise
-	 * FALSE.
-	 *
-	 * This can be used to decide whether run_calculation() has actually to
-	 * be called or the mere info options can be evaluated.
-	 *
-	 * \param[in] options The options to run the application
-	 *
-	 * \return TRUE iff a calculation result is requested
-	 */
-	virtual bool calculation_requested(const Options& options) const
-	= 0;
-
-	/**
-	 * \brief Run the internal calculation.
-	 *
-	 * Can be used as a worker for run().
-	 *
-	 * \param[in] options The options to run the application
-	 *
-	 * \return Application return code and calculation Result
-	 */
-	virtual std::pair<int, std::unique_ptr<Result>> run_calculation(
-			const Options &options) const
+	virtual std::unique_ptr<Configurator> do_create_configurator() const
 	= 0;
 
 	/**
