@@ -7,9 +7,9 @@
 #endif
 
 #include <memory>                   // for unique_ptr, make_unique
-#include <sstream>                  // for ostream
+#include <sstream>                  // for ostringstream
 #include <stdexcept>                // for invalid_argument
-#include <string>                   // for string, char_traits, operator<<
+#include <string>                   // for string
 #include <tuple>                    // for make_tuple, tuple
 #include <unordered_set>            // for unordered_set
 #include <utility>                  // for move

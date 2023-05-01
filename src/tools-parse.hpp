@@ -9,15 +9,14 @@
  * Provides parser handlers for ARParsers.
  */
 
-#include <cerrno>            // for errno
+#include <cstddef>           // for size_t
 #include <cstdint>           // for uint32_t, uint8_t
-#include <cstdio>            // for ferror, stdin, feof, freopen, fread, EOF
-#include <cstring>           // for strerror
-#include <fstream>           // for ofstream, ostream
+#include <exception>         // for exception
+#include <istream>           // for istream
 #include <memory>            // for unique_ptr
-#include <sstream>           // for basic_stringstream
+#include <streambuf>         // for basic_streambuf
 #include <stdexcept>         // for runtime_error, domain_error
-#include <string>            // for string
+#include <string>            // for string, char_traits
 #include <utility>           // for move, swap
 #include <vector>            // for vector
 

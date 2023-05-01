@@ -2,12 +2,11 @@
 #include "tools-info.hpp"
 #endif
 
-#include <algorithm>           // for transform
-#include <cctype>              // for tolower
-#include <iterator>            // for ostream_iterator
-#include <sstream>             // for ostringstream
-
-#include <iostream>
+#include <algorithm>           // for for_each
+#include <functional>          // for functional
+#include <iterator>            // for begin, end
+#include <memory>              // for make_unique
+#include <string>              // for string
 
 #ifndef __LIBARCSDEC_DESCRIPTORS_HPP__
 #include <arcsdec/descriptor.hpp>   // for FileReaderDescriptor

@@ -7,8 +7,7 @@
  * \brief Helper functions for the file system
  */
 
-#include <string>
-#include <vector>
+#include <string> // for string
 
 namespace arcsapp
 {

@@ -1,11 +1,6 @@
 #ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
 #define __ARCSTOOLS_TOOLS_INFO_HPP__
 
-#include <algorithm>   // for transform
-#include <functional>  // for function
-#include <iterator>    // for ostream_iterator
-#include <sstream>     // for ostringstream
-
 /**
  * \file
  *

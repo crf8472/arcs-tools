@@ -2,14 +2,9 @@
 #include "tools-fs.hpp"
 #endif
 
-extern "C" {
-#include <sys/stat.h> // for stat
-#include <unistd.h>   // for stat
-}
-
 #include <filesystem> // for exists, status, perms
 #include <fstream>    // for ifstream
-#include <sstream>    // for ostringstream
+#include <string>     // for string
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>  // for ARCS_LOG_DEBUG
@@ -21,6 +16,7 @@ namespace arcsapp
 namespace file
 {
 
+// TODO Implementations of path() and prepend_path() are heavily redundant
 
 std::string path(const std::string &filename)
 {
@@ -67,10 +63,6 @@ bool file_is_readable(const std::string &filename)
 		return true;
 	}
 	return false;
-
-	// Commented out: Use POSIX stat to check whether file exists
-	//struct stat buffer;
-	//return stat(filename.c_str(), &buffer) == 0;
 }
 
 } // namespace file

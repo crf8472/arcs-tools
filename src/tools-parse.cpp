@@ -9,10 +9,21 @@
 
 #endif
 
-#include <fstream>                // for ostream, dec, ios_base, ios_base::f...
-#include <iostream>               // for cout
-#include <sstream>                // for ostringstream
-#include <utility>                // for move
+#include <cstddef>           // for size_t
+#include <cstdint>           // for uint32_t, uint8_t
+#include <cstdio>            // for feof, ferror, fread, freopen
+#include <cstring>           // for strerror
+#include <exception>         // for exception
+#include <fstream>           // for ifstream
+#include <ios>               // for dec
+#include <iostream>          // for cin
+#include <istream>           // for istream
+#include <memory>            // for unique_ptr, make_unique
+#include <ostream>           // for endl
+#include <sstream>           // for ostringstream
+#include <stdexcept>         // for domain_error, runtime_error
+#include <string>            // for string
+#include <utility>           // for move, swap
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>  // for ARId
