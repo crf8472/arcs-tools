@@ -18,10 +18,10 @@
 #include <cstddef>             // for size_t
 #include <cstdint>             // for uint32_t, uint16_t
 #include <iomanip>             // for operator<<, setw, setfill
-#include <ios>                 // for left, showbase, hex
+#include <ios>                 // for left, showbase, hex, uppercase
 #include <iterator>            // for back_inserter, begin, end
-#include <memory>              // for make_unique
-#include <ostream>             // for endl, ostream
+#include <memory>              // for unique_ptr, make_unique
+#include <ostream>             // for ostream, endl
 #include <sstream>             // for ostringstream
 #include <stdexcept>           // for out_of_range, invalid_argument
 #include <string>              // for string, to_string
