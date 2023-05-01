@@ -27,7 +27,11 @@ namespace arcsapp
 {
 
 /**
- * \brief Unique id of a supported option
+ * \brief Type for the unique id of a supported option
+ *
+ * The OptionCode is the token to which an input option is parsed. While an
+ * input option can be represented by either a symbol or its shorthand version,
+ * the OptionCode is a unique identifier for this option after parsing.
  */
 using OptionCode = uint64_t;
 
@@ -39,10 +43,14 @@ bool operator == (const Option &lhs, const Option &rhs) noexcept;
  * \brief Descriptor for a single command line option.
  *
  * An Option has a symbol (e.g. '--print-all', '--boolean') and may or may not
- * have a shorthand symbol (e.g. '-r'). It may or may not expect a value and
- * most options have some default. Options that do not expect a value are also
- * called 'boolean'. An option has an additional short description that
+ * have a shorthand symbol (e.g. '-p', '-b'). It may or may not expect a value
+ * and most options have some default value. Options that do not expect a value
+ * are also called 'boolean'. An option has an additional short description that
  * can be printed in a usage or help message.
+ *
+ * To options qualify as equal, eg. <tt>option1 == option2</tt> iff their
+ * symbols, shorthand symbols, value requirements and their default argument is
+ * equal. Their description is allowed to differ.
  */
 class Option final
 {
@@ -112,7 +120,7 @@ public:
 	const std::string& description() const;
 
 	/**
-	 * \brief Return the list of tokens as a comma separated list
+	 * \brief Return the list of associated tokens as a comma separated list.
 	 *
 	 * \return List of tokens
 	 */
@@ -151,6 +159,11 @@ private:
 
 /**
  * \brief Reports a syntax error on parsing the command line input.
+ *
+ * This exception may occurr for the following reasons:
+ *   - An invalid option is passed.
+ *   - A non-boolean option without its expected value is passed.
+ *   - A boolean option is passed a value (e.g. as '-t0').
  */
 class CallSyntaxException : public std::runtime_error
 {
@@ -171,7 +184,10 @@ public:
 
 
 /**
- * \brief Internal type used by Configurator.
+ * \brief Type to associate actual OptionCodes with Option objects.
+ *
+ * It must support iteration over all pairs of options and their associated
+ * codes.
  */
 using OptionRegistry = std::map<OptionCode, Option>;
 
@@ -183,7 +199,15 @@ namespace input
  * \brief OptionCode representing an argument.
  */
 inline constexpr OptionCode ARGUMENT = 0;
+
+/**
+ * \brief OptionCode representing a single dash '-'.
+ */
 inline constexpr OptionCode DASH  = std::numeric_limits<OptionCode>::max() - 0;
+
+/**
+ * \brief OptionCode representing a double dash '--'.
+ */
 inline constexpr OptionCode DDASH = std::numeric_limits<OptionCode>::max() - 1;
 
 
@@ -204,25 +228,33 @@ using option_callback =
  * (i.e. an argument). Arguments are represented as options of type
  * ARGUMENT.
  *
- *  - Syntactically, an option is a hyphen '-' followed by a single alphanumeric
- *    character, like this: <tt>-v</tt>.
+ *  - Syntactically, an option is a double hyphen followed by a sequence
+ *    of alphanumeric characters and hyphens like this: <tt>--my-option</tt>.
+ *    The sequence is only allowed to contain single hyphens surrounded by
+ *    alphanumeric characters. Other non-alphanumeric characters are forbidden.
+ *  - Alternatively, an option is a single hyphen '-' followed by a single
+ *    alphanumeric character, like this: <tt>-v</tt>.
  *  - An option may require a value. If a value is expected, it must appear
  *    immediately after the option token. A blank ' ' may or may not separate
- *    the option from its value. Example: <tt>-i argument</tt> or
- *    <tt>-iargument</tt>.
+ *    the option from its value. Example: <tt>-i value</tt> or
+ *    <tt>-ivalue</tt> <tt>--my-option value</tt>.
+ *  - The variant starting with a double hyphen may separate its value by a
+ *    an 'equals' character like in <tt>--my-option=value</tt>.
  *  - Options that do not require values can be grouped after a single hyphen,
  *    so, for example, <tt>-tbn</tt> is equivalent to <tt>-t -b -n</tt>.
  *  - Options can appear in any order, thus -tbn is equivalent to <tt>-ntb</tt>.
  *  - Options can appear multiple times.
  *  - Options typically precede other nonoption arguments:
  *    <tt>-ltr nonoption</tt>.
- *  - The '--' argument terminates options.
+ *  - The '--' argument terminates options. What follows thereafter is parsed
+ *    as arguments.
+ *  - The '-' argument is accepted but not assigned any semantics.
  *
  * This intends to obey the POSIX conventions.
  *
- * CLITokens will never modify any command line input, neither will tokens be
- * erased nor added. CLITokens does not perform any semantic validation of the
- * input.
+ * Function parse() will never modify any command line input, neither will
+ * tokens be erased nor added. Function parse() does not perform any semantic
+ * validation of the input.
  *
  * \param[in] argc           Number of command line arguments
  * \param[in] argv           Command line arguments

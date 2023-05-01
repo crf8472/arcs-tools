@@ -108,9 +108,6 @@ CallSyntaxException::CallSyntaxException(const std::string &what_arg)
 namespace input
 {
 
-
-
-
 /**
  * \brief Parse input chars as an option symbol.
  *
@@ -320,7 +317,7 @@ void parse_symbol(const char * const token, const char * const next,
 		{
 			std::ostringstream msg;
 			msg << "Option '" << token
-				<< "' requires an argument but none is passed";
+				<< "' requires a value but none is passed";
 			throw CallSyntaxException(msg.str());
 		}
 
@@ -399,7 +396,7 @@ void parse_shorthand(const char * const token, const char * const next,
 				{
 					std::ostringstream msg;
 					msg << "Option '-" << token
-						<< "' requires an argument but none was passed";
+						<< "' requires a value but none was passed";
 					throw CallSyntaxException(msg.str());
 				}
 				pass_token(code, next);
