@@ -33,37 +33,6 @@
 namespace arcsapp
 {
 
-namespace details
-{
-
-std::vector<arcstk::checksum::type> ordered_typelist(const Checksums &checksums)
-{
-	// Assume identical type sets in each track
-	const auto& used_types    = checksums[0].types();
-	const auto& defined_types = arcstk::checksum::types;
-
-	// Construct a list of all used types in the order they
-	// appear in arcstk::checksum::types
-
-	std::vector<arcstk::checksum::type> typelist { };
-	typelist.reserve(defined_types.size());
-
-	using std::begin;
-	using std::end;
-
-	std::copy_if(begin(defined_types), end(defined_types),
-			std::back_inserter(typelist),
-			[&used_types](const arcstk::checksum::type& t)
-			{
-				return used_types.find(t) != end(used_types);
-			});
-
-	return typelist;
-}
-
-} // namespace details
-
-
 template<>
 std::string DefaultLabel<ATTR::TRACK>() { return "Track"; };
 
@@ -988,12 +957,6 @@ void ResultFormatter::validate(const Checksums& checksums, const TOC* toc,
 	{
 		throw std::invalid_argument("Missing value: "
 				"Checksums seem to hold no checksums");
-	}
-
-	if (details::ordered_typelist(checksums).empty())
-	{
-		throw std::invalid_argument("Missing value: "
-				"Checksums object does not hold any actual checksums");
 	}
 
 	if (!toc && filenames.empty())

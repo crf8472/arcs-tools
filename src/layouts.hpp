@@ -58,23 +58,6 @@ using arcstk::TOC;
 
 class Result;
 
-namespace details
-{
-
-/**
- * \brief Generate a list of the types used in \c checksums in the order they
- * appear in arcstk::checksum::types.
- *
- * \param[in] checksums The Checksums to inspect for checksums::types
- *
- * \return List of occurring checksum::type in the order libarcstk defines them
- */
-std::vector<arcstk::checksum::type> ordered_typelist(const Checksums
-		&checksums);
-
-} // namespace details
-
-
 using table::StringTable;
 using table::StringTableLayout;
 
