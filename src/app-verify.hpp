@@ -9,10 +9,12 @@
  * Options, Configurator and Application for verify.
  */
 
-#include <cstdint>               // for uint16_t, uint32_t
-#include <memory>                // for unique_ptr
-#include <string>                // for string
-#include <vector>                // for vector
+#include <cstdint>    // for uint16_t, uint32_t
+#include <memory>     // for unique_ptr
+#include <string>     // for string
+#include <tuple>      // for tuple
+#include <utility>    // for pair
+#include <vector>     // for vector
 
 #ifndef __LIBARCSTK_MATCH_HPP__
 #include <arcstk/match.hpp>

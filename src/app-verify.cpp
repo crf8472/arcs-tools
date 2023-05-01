@@ -2,18 +2,21 @@
 #include "app-verify.hpp"
 #endif
 
-#include <algorithm>                // for replace
-#include <cstdlib>                  // for EXIT_SUCCESS
-#include <fstream>                  // for basic_ofstream<>::__filebuf_type
-#include <iostream>                 // for operator<<, ostream, cout, basic_...
-#include <memory>                   // for unique_ptr, make_unique, allocator
-#include <stdexcept>                // for runtime_error
-#include <string>                   // for char_traits, operator<<, string
-#include <tuple>                    // for tuple_element<>::type
-#include <type_traits>              // for add_const<>::type
-#include <utility>                  // for move
+#include <algorithm>       // for replace
+#include <cstddef>         // for size_t
+#include <cstdint>         // for uint32_t
+#include <cstdlib>         // for EXIT_SUCCESS
+#include <exception>       // for exception
+#include <iomanip>         // for setw
+#include <iterator>        // for begin, end
+#include <memory>          // for unique_ptr, make_unique
+#include <stdexcept>       // for invalid_argument, runtime_error
+#include <sstream>         // for istringstream, ostringstream
+#include <string>          // for stoul, string, to_string
+#include <tuple>           // for get, make_tuple, tuple
+#include <type_traits>     // for add_const<>::type
+#include <utility>         // for move, pair
 
-#include <iostream>
 
 #ifndef __LIBARCSTK_MATCH_HPP__
 #include <arcstk/match.hpp>
