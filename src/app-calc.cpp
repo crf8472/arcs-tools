@@ -2,16 +2,14 @@
 #include "app-calc.hpp"
 #endif
 
-#include <array>                    // for array
-#include <cstdlib>                  // for EXIT_SUCCESS
-#include <fstream>                  // for operator<<, ostream, ofstream
-#include <functional>               // for _Bind, bind, _1
-#include <iostream>                 // for cout
-#include <memory>                   // for unique_ptr, allocator, make_unique
-#include <string>                   // for string, char_traits, operator<<
-#include <tuple>                    // for tuple, tuple_element<>::type
-#include <utility>                  // for move, make_pair
-#include <vector>                   // for vector
+#include <algorithm>     // for find
+#include <cstdlib>       // for EXIT_SUCCESS
+#include <iterator>      // for begin, end
+#include <memory>        // for unique_ptr, make_unique
+#include <string>        // for string
+#include <tuple>         // for get, make_tuple, tuple
+#include <utility>       // for move, make_pair, pair
+#include <vector>        // for vector
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>

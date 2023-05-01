@@ -9,11 +9,12 @@
  * Options, Configurator and Application for calc application.
  */
 
-#include <cstdint>                // for uint8_t, uint16_t
-#include <memory>                 // for unique_ptr
-#include <set>                    // for set
-#include <string>                 // for string
-#include <tuple>                  // for tuple
+#include <cstdint>     // for uint8_t, uint16_t
+#include <memory>      // for unique_ptr
+#include <string>      // for string
+#include <tuple>       // for tuple
+#include <utility>     // for pair
+#include <vector>      // for vector
 
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>   // for Checksums, ARId, TOC
