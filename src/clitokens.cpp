@@ -2,20 +2,15 @@
 #include "clitokens.hpp"
 #endif
 
-#include <algorithm>  // for copy, find_if
 #include <cstring>    // for strncmp
-#include <iterator>   // for ostream_iterator, begin, end, cbegin, cend
 #include <sstream>    // for ostringstream
 #include <stdexcept>  // for runtime_error
 #include <string>     // for string
-#include <utility>    // for pair
-#include <vector>     // for vector
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
 #endif
 
-#include <iostream>
 
 namespace arcsapp
 {

@@ -12,11 +12,9 @@
  * input is syntactically valid.
  */
 
-#include <cstddef>       // for size_t
 #include <cstdint>       // for uint64_t
 #include <functional>    // for function
 #include <limits>        // for numeric_limits
-#include <map>           // for map
 #include <stdexcept>     // for runtime_error
 #include <string>        // for string
 #include <utility>       // for pair
