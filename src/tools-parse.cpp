@@ -35,6 +35,9 @@
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"            // for ARIdLayout, ARTripletLayout
 #endif
+#ifndef __ARCSTOOLS_APPLICATION_HPP__
+#include "application.hpp"        // for Output
+#endif
 
 namespace arcsapp
 {

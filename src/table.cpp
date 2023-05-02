@@ -17,7 +17,7 @@
 #include <stdexcept>  // for runtime_error
 #include <sstream>    // for ostringstream
 #include <string>     // for string
-#include <type_traits>// for is_signed
+#include <type_traits>// for underlying_type_t
 #include <utility>    // for forward, make_pair, move, swap
 
 
@@ -701,13 +701,13 @@ bool StringTableLayout::right_outer_delims() const
 
 bool StringTableLayout::flag_get(const Flag f) const
 {
-	return flags_[details::to_underlying(f)];
+	return flags_[static_cast<std::underlying_type_t<Flag>>(f)];
 }
 
 
 void StringTableLayout::flag_set(const Flag f, const bool value)
 {
-	flags_[details::to_underlying(f)] = value;
+	flags_[static_cast<std::underlying_type_t<Flag>>(f)] = value;
 }
 
 
@@ -809,13 +809,13 @@ std::string StringTableLayout::right_outer_delim() const
 
 void StringTableLayout::delim_set(const Index i, const std::string& value)
 {
-	delims_[details::to_underlying(i)] = value;
+	delims_[static_cast<std::underlying_type_t<Flag>>(i)] = value;
 }
 
 
 std::string StringTableLayout::delim_get(const Index i) const
 {
-	return delims_[details::to_underlying(i)];
+	return delims_[static_cast<std::underlying_type_t<Flag>>(i)];
 
 }
 

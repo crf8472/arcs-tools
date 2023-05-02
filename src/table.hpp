@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_TABLES_HPP__
-#define __ARCSTOOLS_TABLES_HPP__
+#ifndef __ARCSTOOLS_TABLE_HPP__
+#define __ARCSTOOLS_TABLE_HPP__
 
 #include <algorithm>   // for max
 #include <cstddef>     // for size_t
@@ -9,7 +9,7 @@
 #include <ostream>     // for ostream
 #include <sstream>     // for ostringstream
 #include <string>      // for string
-#include <type_traits> // for enable_if, is_unsigned, underlying_type
+#include <type_traits> // for enable_if, is_unsigned
 #include <utility>     // for forward
 #include <vector>      // for vector
 
@@ -27,27 +27,8 @@
 
 namespace arcsapp
 {
-
 namespace details
 {
-
-
-/**
- * \brief Convert an object to its underlying value.
- *
- * Convenience function to convert typed enum values to their underlying
- * value.
- *
- * \param[in] e The value to convert
- *
- * \return Underlying type of \c e.
- */
-template <typename E>
-constexpr auto to_underlying(E e) noexcept
-{
-    return static_cast<std::underlying_type_t<E>>(e);
-}
-
 
 /**
  * \brief Convert an object to a std::string.

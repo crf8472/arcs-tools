@@ -14,8 +14,11 @@
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
 #endif
-#ifndef __LIBARCSTK_MATCH_HPP__
-#include <arcstk/match.hpp>         // for ARId, Checksums, TOC
+#ifndef __LIBARCSTK_IDENTIFIER_HPP__
+#include <arcstk/identifier.hpp>    // for ARId, TOC
+#endif
+#ifndef __LIBARCSTK_CALCULATE_HPP__
+#include <arcstk/calculate.hpp>     // for Checksum, Checksums
 #endif
 
 #ifndef __LIBARCSDEC_SELECTION_HPP__
@@ -26,10 +29,10 @@
 #include "appregistry.hpp"          // for RegisterApplicationType
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
-#include "config.hpp"
+#include "config.hpp"               // for Options, Configurator
 #endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"              // for operator<<
+#include "layouts.hpp"              // for ARIdLayout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"           // for ARCSMultifileAlbumCalculator
@@ -40,15 +43,13 @@
 
 namespace arcsapp
 {
-
 namespace registered
 {
 const auto calc = RegisterApplicationType<ARCalcApplication>("calc");
 }
 
-class Options;
-
 using arcstk::ARId;
+using arcstk::Checksum;
 using arcstk::Checksums;
 using arcstk::TOC;
 

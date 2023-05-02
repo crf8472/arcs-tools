@@ -31,7 +31,10 @@
 #include "config.hpp"
 #endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"             // for Layout, ResultFormatter
+#include "layouts.hpp"             // for Layout
+#endif
+#ifndef __ARCSTOOLS_FORMAT_HPP__
+#include "format.hpp"              // for ResultFormatter
 #endif
 
 
@@ -155,6 +158,12 @@ private:
 	std::unique_ptr<Options> do_configure_options(
 			std::unique_ptr<Options> options) const final;
 };
+
+
+using arcstk::ARId;
+using arcstk::Checksums;
+using arcstk::Checksum;
+using arcstk::TOC;
 
 
 /**

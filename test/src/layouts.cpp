@@ -1,22 +1,12 @@
 #include "catch2/catch_test_macros.hpp"
 
+#ifndef __LIBARCSTK_CALCULATE_HPP__
+#include <arcstk/calculate.hpp>   // for Checksum
+#endif
+
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"
 #endif
-
-
-TEST_CASE ( "HexLayout", "[hexlayout]" )
-{
-	using arcsapp::Checksum;
-	using arcsapp::HexLayout;
-
-	auto hex_layout = std::make_unique<HexLayout>();
-
-	CHECK ( hex_layout->format(Checksum { 3456 }, 2) == "D80" );
-	CHECK ( hex_layout->format(Checksum { 3456 }, 3) == "D80" );
-	CHECK ( hex_layout->format(Checksum { 1023 }, 4) == "03FF" );
-	CHECK ( hex_layout->format(Checksum { 1023 }, 6) == "0003FF" );
-}
 
 
 TEST_CASE ( "InternalFlags", "[internalflags]" )
@@ -42,6 +32,20 @@ TEST_CASE ( "InternalFlags", "[internalflags]" )
 
 	REQUIRE ( flags.flag(7) );
 	REQUIRE ( not flags.only(4) );
+}
+
+
+TEST_CASE ( "HexLayout", "[hexlayout]" )
+{
+	using arcstk::Checksum;
+	using arcsapp::HexLayout;
+
+	auto hex_layout = std::make_unique<HexLayout>();
+
+	CHECK ( hex_layout->format(Checksum { 3456 }, 2) == "D80" );
+	CHECK ( hex_layout->format(Checksum { 3456 }, 3) == "D80" );
+	CHECK ( hex_layout->format(Checksum { 1023 }, 4) == "03FF" );
+	CHECK ( hex_layout->format(Checksum { 1023 }, 6) == "0003FF" );
 }
 
 
@@ -75,9 +79,9 @@ TEST_CASE ( "ARIdTableLayout", "[aridtablelayout]" )
 }
 
 
-//TEST_CASE ( "CalcResultLayout", "[calcresultlayout]" )
+//TEST_CASE ( "CalcResultFormatter", "[calcresultformatter]" )
 //{
-//	using arcsapp::CalcResultLayout;
+//	using arcsapp::CalcResultFormatter;
 //
 //	using arcstk::ARId;
 //	using arcstk::checksum::type;
@@ -110,7 +114,7 @@ TEST_CASE ( "ARIdTableLayout", "[aridtablelayout]" )
 //
 //	auto arid = ARId { 2, 0x001b9178, 0x014be24e, 0xb40d2d0f };
 //
-//	CalcResultLayout lyt;//(true, true, true, true, true, ";");
+//	CalcResultFormatter lyt;//(true, true, true, true, true, ";");
 //
 //	CHECK ( !lyt.label() );
 //	CHECK ( !lyt.track() );
@@ -122,9 +126,9 @@ TEST_CASE ( "ARIdTableLayout", "[aridtablelayout]" )
 //}
 //
 //
-//TEST_CASE ( "VerifyResultLayout", "[verifyresultlayout]" )
+//TEST_CASE ( "VerifyResultFormatter", "[verifyresultformatter]" )
 //{
-//	using arcsapp::VerifyResultLayout;
+//	using arcsapp::VerifyResultFormatter;
 //
 //	using arcstk::ARId;
 //	using arcstk::checksum::type;
@@ -171,7 +175,7 @@ TEST_CASE ( "ARIdTableLayout", "[aridtablelayout]" )
 //
 //	auto arid = ARId { 2, 0x001b9178, 0x014be24e, 0xb40d2d0f };
 //
-//	VerifyResultLayout lyt;//(true, true, true, true, true, ";");
+//	VerifyResultFormatter lyt;//(true, true, true, true, true, ";");
 //
 //	CHECK ( !lyt.label() );
 //	CHECK ( !lyt.track() );
