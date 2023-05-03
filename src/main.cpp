@@ -7,7 +7,6 @@
 #include <cstdlib>           // for EXIT_SUCCESS, EXIT_FAILURE
 #include <iostream>          // for operator<<, endl, cout, cerr
 #include <exception>         // for exception
-#include <ostream>           // for endl
 #include <string>            // for string
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
@@ -83,24 +82,24 @@ int main(int argc, char** argv)
 				}
 			} catch (const arcsapp::CallSyntaxException &cse)
 			{
-				std::cerr << "Syntax error: " << cse.what() << std::endl;
+				std::cerr << "Syntax error: " << cse.what() << '\n';
 				application->print_usage();
 				return EXIT_FAILURE;
 
 			} catch (const std::exception &e)
 			{
-				std::cerr << "Error: " << e.what() << std::endl;
+				std::cerr << "Error: " << e.what() << '\n';
 				return EXIT_FAILURE;
 			}
 		} else
 		{
-			std::cerr << "No application selected." << std::endl;
+			std::cerr << "No application selected." << '\n';
 		}
 	}
 
 	// No input? Print usage.
 
-	std::cout << ARCSTOOLS_BINARY_NAME << " " << ARCSTOOLS_VERSION << std::endl;
+	std::cout << ARCSTOOLS_BINARY_NAME << " " << ARCSTOOLS_VERSION << '\n';
 	std::cout << "Usage: " << ARCSTOOLS_BINARY_NAME << " [";
 	{
 		const auto apps { ApplicationFactory::registered_names() };
@@ -111,7 +110,7 @@ int main(int argc, char** argv)
 			if (0 <-- i) { std::cout << '|'; }
 		}
 	}
-	std::cout << "] " << "[OPTIONS] <filenames>" << std::endl;
+	std::cout << "] " << "[OPTIONS] <filenames>" << '\n';
 
 	return EXIT_SUCCESS;
 }

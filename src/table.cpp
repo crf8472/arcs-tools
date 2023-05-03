@@ -921,7 +921,7 @@ void StringTablePrinter::Impl::title(std::ostream &o, const StringTable &t,
 {
 	if (!t.title().empty())
 	{
-		o << t.title() << std::endl;
+		o << t.title() << '\n';
 	}
 }
 
@@ -1053,7 +1053,7 @@ void StringTablePrinter::Impl::row_worker(std::ostream &o, const StringTable& t,
 		right_outer_col_delim(o, t, l);
 	} else
 	{
-		o << std::endl;
+		o << '\n';
 	}
 }
 
@@ -1159,7 +1159,7 @@ void StringTablePrinter::Impl::row_cells_worker(std::ostream &o,
 					// row, since this is done by right_outer_col_delim!)
 					if (1 < lines - line)
 					{
-						o << std::endl;
+						o << '\n';
 					}
 					++line;
 				}
@@ -1215,7 +1215,7 @@ void StringTablePrinter::Impl::inner_col_delim(std::ostream &o,
 void StringTablePrinter::Impl::right_outer_col_delim(std::ostream &o,
 		const StringTable& t, const StringTableLayout& l) const
 {
-	o << l.right_outer_delim() << std::endl;
+	o << l.right_outer_delim() << '\n';
 }
 
 
@@ -1282,7 +1282,7 @@ void StringTablePrinter::Impl::row_delimiters(std::ostream &o,
 		right_outer_col_delim(o, t, l);
 	} else
 	{
-		o << std::endl;
+		o << '\n';
 	}
 }
 

@@ -6,7 +6,6 @@
 #include <iostream>    // for cout
 #include <memory>      // for unique_ptr, make_unique
 #include <mutex>       // for mutex, lock_guard
-#include <ostream>     // for endl
 #include <stdexcept>   // for invalid_argument, out_of_range, runtime_error
 #include <string>      // for string, stoi
 #include <utility>     // for get, move
@@ -210,7 +209,7 @@ int Application::run(int argc, char** argv)
 
 	if (options->is_set(OPTION::VERSION))
 	{
-		std::cout << this->name() << " " << ARCSTOOLS_VERSION << std::endl;
+		std::cout << this->name() << " " << ARCSTOOLS_VERSION << '\n';
 		return EXIT_SUCCESS;
 	}
 
@@ -235,16 +234,16 @@ int Application::run(int argc, char** argv)
 
 void Application::print_usage() const
 {
-	std::cout << "Usage:" << std::endl;
+	std::cout << "Usage:" << '\n';
 
 	// Print call syntax
 
-	std::cout << this->do_name() << " " << this->do_call_syntax() << std::endl;
-	std::cout << std::endl;
+	std::cout << this->do_name() << " " << this->do_call_syntax() << '\n';
+	std::cout << '\n';
 
 	// Print the options
 
-	std::cout << "OPTIONS:" << std::endl;
+	std::cout << "OPTIONS:" << '\n';
 
 	const auto& options { this->create_configurator()->supported_options() };
 	// Reference points to static local member

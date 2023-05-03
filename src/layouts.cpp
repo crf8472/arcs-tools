@@ -12,7 +12,6 @@
 #include <iomanip>             // for setw, setfill
 #include <ios>                 // for left, showbase, hex, uppercase
 #include <memory>              // for unique_ptr, make_unique
-#include <ostream>             // for endl
 #include <sstream>             // for ostringstream
 #include <string>              // for string, to_string
 #include <tuple>               // for get
@@ -193,7 +192,7 @@ std::string ARTripletLayout::do_format(InputTuple t) const
 		out << std::setw(width_arcs) << unparsed_value;
 	}
 
-	out << std::endl;
+	out << '\n';
 
 	return out.str();
 }
@@ -387,7 +386,7 @@ std::string ARIdTableLayout::do_format(InputTuple t) const
 	{
 		if (not flags().flag(details::to_underlying(sflag))) { continue; }
 
-		if (!stream.str().empty()) { stream << std::endl; }
+		if (!stream.str().empty()) { stream << '\n'; }
 
 		if (fieldlabels())
 		{
@@ -432,7 +431,7 @@ std::string ARIdTableLayout::do_format(InputTuple t) const
 		stream << std::setw(value.length()) << value;
 	}
 
-	if (true) { stream << std::endl; } // TODO Make configurable
+	if (true) { stream << '\n'; } // TODO Make configurable
 
 	return stream.str();
 }

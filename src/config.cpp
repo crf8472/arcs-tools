@@ -128,26 +128,26 @@ std::ostream& operator << (std::ostream& out, const Options &options)
 {
 	std::ios_base::fmtflags prev_settings = out.flags();
 
-	out << "Options:" << std::endl;
+	out << "Options:" << '\n';
 
-	out << "Options (w/o value):" << std::endl;
+	out << "Options (w/o value):" << '\n';
 	for (const auto& entry : options.options_)
 	{
 		out << std::setw(2) << entry.first;
 		if (!entry.second.empty())
 		{
-			out << " = '" << entry.second << "'" << std::endl;
+			out << " = '" << entry.second << "'" << '\n';
 		} else
 		{
-			out << " is set" << std::endl;
+			out << " is set" << '\n';
 		}
 	}
 
-	out << "Arguments:" << std::endl;
+	out << "Arguments:" << '\n';
 	auto i = int { 0 };
 	for (const auto& arg : options.arguments())
 	{
-		out << "Arg " << std::setw(2) << i << ": '" << arg << "'" << std::endl;
+		out << "Arg " << std::setw(2) << i << ": '" << arg << "'" << '\n';
 		++i;
 	}
 

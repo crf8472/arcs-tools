@@ -428,7 +428,7 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 			{
 				//result << b;
 				//if (best_block == b) { result << " (BEST)"; }
-				//result << ":" << std::endl;
+				//result << ":" << '\n';
 
 				result->append(build_result(checksums,
 						sums_in_block(*response, b), match, b,
