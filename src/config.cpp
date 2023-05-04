@@ -52,11 +52,11 @@ void Options::set(const OptionCode &option, const std::string &value)
 		throw ConfigurationException("Cannot set OPTION::NONE");
 	}
 
-	auto rc { options_.insert(std::make_pair(option, value)) };
+	const auto& [pos, done] { options_.insert(std::make_pair(option, value)) };
 
-	if (not rc.second) // Insertion failed, but option value can be updated
+	if (not done) // Insertion failed, but option value can be updated
 	{
-		rc.first->second = value;
+		pos->second = value;
 	}
 }
 
@@ -82,7 +82,7 @@ std::string Options::value(const OptionCode &option) const
 
 	if (o != end(options_))
 	{
-		return o->second;
+		return o->second/* value */;
 	}
 
 	return std::string{}; // TODO Use a constant
@@ -131,12 +131,12 @@ std::ostream& operator << (std::ostream& out, const Options &options)
 	out << "Options:" << '\n';
 
 	out << "Options (w/o value):" << '\n';
-	for (const auto& entry : options.options_)
+	for (const auto& [code, value] : options.options_)
 	{
-		out << std::setw(2) << entry.first;
-		if (!entry.second.empty())
+		out << std::setw(2) << code;
+		if (!value.empty())
 		{
-			out << " = '" << entry.second << "'" << '\n';
+			out << " = '" << value << "'" << '\n';
 		} else
 		{
 			out << " is set" << '\n';

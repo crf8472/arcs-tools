@@ -90,11 +90,12 @@ public:
 	 */
 	static std::unique_ptr<Application> lookup(std::string const &callstr)
 	{
-		for (const auto& entry : *get_map())
+		// TODO Use find on a map???
+		for (const auto& [app_name, app_creator] : *get_map())
 		{
-			if (matches_name(entry.first, callstr))
+			if (matches_name(app_name, callstr))
 			{
-				return instantiate(entry.first, entry.second);
+				return instantiate(app_name, app_creator);
 			}
 		}
 
@@ -110,7 +111,7 @@ public:
 	 */
 	static std::unique_ptr<Application> instantiate(std::string const &name)
 	{
-		MapType::iterator it = get_map()->find(name);
+		auto it = MapType::iterator { get_map()->find(name) };
 
 		if (it == get_map()->end())
 		{
@@ -127,9 +128,18 @@ public:
 	 */
 	static std::set<std::string> registered_names()
 	{
-		std::set<std::string> names;
-		std::transform(get_map()->begin(), get_map()->end(),
-				std::inserter(names, names.begin()), RetrieveName());
+		using std::begin;
+		using std::end;
+
+		auto* fmap { get_map() };
+		if (!fmap)
+		{
+			return std::set<std::string>{};
+		}
+
+		std::set<std::string> names{};
+		std::transform(begin(*fmap), end(*fmap),
+				std::inserter(names, begin(names)), RetrieveName());
 		return names;
 	}
 

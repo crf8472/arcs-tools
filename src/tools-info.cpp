@@ -87,13 +87,13 @@ void InfoResultComposer::add(const arcsdec::FileReaderDescriptor &descriptor)
 	std::string deps;
 	{
 		const auto dependencies = descriptor.libraries();
-		for (const auto& dep : dependencies)
+		for (const auto& [dep_name, dep_libs] : dependencies)
 		{
-			deps += dep.second + sep;
+			deps += dep_libs + sep;
 
-			if (table_.max_width(1) < dep.second.length())
+			if (table_.max_width(1) < dep_libs.length())
 			{
-				table_.set_max_width(1, dep.second.length());
+				table_.set_max_width(1, dep_libs.length());
 			}
 		}
 	}

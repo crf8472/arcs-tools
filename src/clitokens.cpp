@@ -349,12 +349,12 @@ void parse_shorthand(const char * const token, const char * const next,
 		if (c != 0)
 		{
 			// Traverse supported options till c is found as shorthand symbol
-			for (const auto& sup_op : supported)
+			for (const auto& [o_code, o] : supported)
 			{
-				if (c == sup_op.second.shorthand_symbol())
+				if (c == o.shorthand_symbol())
 				{
-					option = &sup_op.second;
-					code = sup_op.first;
+					option = &o;
+					code   =  o_code;
 					break;
 				}
 			}
