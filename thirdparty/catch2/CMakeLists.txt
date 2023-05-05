@@ -7,7 +7,7 @@ find_package (Git REQUIRED )
 ## --- Catch2 identifiers
 
 set (CATCH2_REPO_URL    "https://github.com/catchorg/Catch2.git" )
-set (CATCH2_VERSION_TAG "v3.1.0" )
+set (CATCH2_VERSION_TAG "v3.3.2" )
 
 ## --- Define Catch2 to be checked out/updated while configuring
 
