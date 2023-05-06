@@ -59,7 +59,7 @@ TEST_CASE ( "StringTable", "[stringtable]" )
 	{
 		CHECK ( t.title().empty() );
 		CHECK (  5 == t.default_max_height() );
-		CHECK ( 10 == t.default_max_width() );
+		CHECK (  8 == t.default_max_width() );
 		CHECK ( Align::LEFT  == t.align(0) );
 		CHECK ( Align::RIGHT == t.align(1) );
 		CHECK ( Align::LEFT  == t.align(2) );

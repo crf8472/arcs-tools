@@ -117,7 +117,7 @@ StringTable::StringTable(const std::string& title, int rows, int cols)
 	, rows_               { rows }
 	, default_max_height_ {  5 } // Max height for a row is 5 lines
 	, cols_               { cols }
-	, default_max_width_  { 10 } // Max width for a row is 10 characters
+	, default_max_width_  {  8 } // Max width for a col is 8 characters
 	// std::vector constructor calls done with parentheses (size, default value)
 	, row_labels_         ( this->rows() /* empty string */ )
 	, row_max_heights_    ( this->rows(), this->default_max_height() )
@@ -1080,6 +1080,8 @@ void StringTablePrinter::Impl::row_cells_worker(std::ostream &o,
 	auto lines { 0 };
 	auto line  { 0 };
 
+	auto width = std::size_t { 0 };
+
 	// Print multiline row
 	do
 	{
@@ -1091,16 +1093,18 @@ void StringTablePrinter::Impl::row_cells_worker(std::ostream &o,
 			// Call the actual cell printing function
 			if (Align::BLOCK == t.align(c))
 			{
-				if (cell_text.length() <= t.max_width(c))
+				width = t.max_width(c); // col_widths[c] would be optimal width
+										//
+				if (cell_text.length() <= width)
 				{
 					// Cell does not need splitting.
 					// Every line but the first are empty
 					if (line == 0)
 					{
-						cell_f(o, t, row, c, col_widths[c]);
+						cell_f(o, t, row, c, width);
 					} else
 					{
-						empty_cell(o, col_widths[c]);
+						empty_cell(o, width);
 					}
 				} else // Cell must be splitted
 				{
@@ -1112,34 +1116,36 @@ void StringTablePrinter::Impl::row_cells_worker(std::ostream &o,
 						// Does line exist in this column?
 						if (line < field->second.size())
 						{
-							line_n(o, col_widths[c], field->second[line]);
+							line_n(o, width, field->second[line]);
 						} else
 						{
-							empty_cell(o, col_widths[c]);
+							empty_cell(o, width);
 						}
 
 					} else // First line of text field
 					{
 						line = 0;
-						const auto parts { l.split(cell_text, t.max_width(c)) };
+						const auto parts { l.split(cell_text, width) };
 
 						if (parts.size() > lines)
 						{
 							lines = parts.size();
 						}
-						line_n(o, col_widths[c], parts[0]);
+						line_n(o, width, parts[0]);
 
 						fields.insert(std::make_pair(c, parts));
 					}
 				}
 			} else
 			{
+				width = col_widths[c];
+
 				if (line == 0)
 				{
-					cell_f(o, t, row, c, col_widths[c]);
+					cell_f(o, t, row, c, width);
 				} else
 				{
-					empty_cell(o, col_widths[c]);
+					empty_cell(o, width);
 				}
 			}
 

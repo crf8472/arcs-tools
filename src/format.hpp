@@ -98,8 +98,14 @@ class RecordInterface
 {
 public:
 
+	/**
+	 * \brief Size type of the records.
+	 */
 	using size_type = std::size_t;
 
+	/**
+	 * \brief Virtual default destructor.
+	 */
 	virtual ~RecordInterface() noexcept = default;
 
 	/**
@@ -275,6 +281,11 @@ class ResultComposer : public RecordInterface<StringTable, ATTR>
 {
 public:
 
+	/**
+	 * \brief Set the layout for the result table.
+	 *
+	 * \param[in] layout The layout to use for the result table
+	 */
 	void set_layout(std::unique_ptr<StringTableLayout> layout);
 
 	/**
@@ -299,6 +310,8 @@ protected:
 	 *
 	 * \param[in] record_idx  The record to modify
 	 * \param[in] field_idx   The field to modify
+	 *
+	 * \return The string to write
 	 */
 	std::string& value(const int record_idx, const int field_idx);
 
@@ -773,6 +786,13 @@ private:
 	 */
 	virtual void configure_composer(ResultComposer& composer) const
 	= 0;
+
+	/**
+	 * \brief Configure StringTable before build_table() returns it.
+	 *
+	 * Subclasses may intercept the table before it is returned to the caller.
+	 */
+	virtual StringTable configure_table(StringTable&& table) const;
 
 	virtual void do_their_checksum(const std::vector<Checksum>& checksums,
 		const arcstk::checksum::type t, const int record, ResultComposer* b) const

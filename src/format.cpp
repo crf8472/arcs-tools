@@ -265,13 +265,23 @@ RowResultComposer::RowResultComposer(const std::size_t entries,
 	: ResultComposer(order, StringTable { static_cast<int>(entries),
 			static_cast<int>(order.size()) })
 {
-	// Attributes are columns since their alignment depends on their type
+	// Attributes are columns thus their alignment depends on their type
 	for(const auto& c : { this->field_idx(ATTR::TRACK),
 			this->field_idx(ATTR::OFFSET), this->field_idx(ATTR::LENGTH) })
 	{
 		if (c >= 0)
 		{
 			in_table().set_align(c, table::Align::RIGHT);
+		}
+	}
+
+	// Stretch the "mine" columns to a width of 8
+	for (auto i = int { 0 }; i < this->from_table().cols(); ++i)
+	{
+		if (order[i] == ATTR::MINE_ARCS2 || order[i] == ATTR::MINE_ARCS1)
+		{
+			in_table().set_align(i, table::Align::BLOCK);
+			//in_table().set_max_width(i, 8);
 		}
 	}
 
@@ -711,7 +721,7 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 			their_checksum(refsums, t, i, c.get());
 			if (match)
 			{
-				does_match = match->track(block, i, t == TYPE::ARCS2);
+				does_match = match->track(block, i, TYPE::ARCS2 == t);
 			}
 			// If there is only one attribute that contains checksum values,
 			// this is considered a "mine".
@@ -721,7 +731,7 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 
 	c->set_layout(std::make_unique<table::StringTableLayout>(table_layout()));
 
-	return c->table();
+	return configure_table(c->table());
 }
 
 
@@ -753,6 +763,12 @@ void ResultFormatter::checksum_worker(const int record, ATTR a,
 		out << checksum; // via libarcstk's <<
 		b->set_field(record, a, out.str());
 	}
+}
+
+
+StringTable ResultFormatter::configure_table(StringTable&& table) const
+{
+	return table;
 }
 
 } // namespace arcsapp

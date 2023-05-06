@@ -861,8 +861,9 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 
 	// Create result object
 
-	const auto best_block = options.is_set(VERIFY::PRINTALL)
-							? -1 // No best block requested!
+	const auto best_block = options.is_set(VERIFY::PRINTALL) &&
+		options.is_set(VERIFY::RESPONSEFILE)
+							? -1 // Won't be used
 							: diff->best_match();
 
 	const auto matching_version = diff->best_match_is_v2();
