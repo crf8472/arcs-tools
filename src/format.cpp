@@ -729,7 +729,7 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 		}
 	} // records
 
-	c->set_layout(std::make_unique<table::StringTableLayout>(table_layout()));
+	c->set_layout(std::make_unique<StringTableLayout>(table_layout()));
 
 	return configure_table(c->table());
 }

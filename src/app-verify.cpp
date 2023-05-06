@@ -426,10 +426,6 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 
 			for (auto b = blocks_t { 0 }; b < response->size(); ++b)
 			{
-				//result << b;
-				//if (best_block == b) { result << " (BEST)"; }
-				//result << ":" << '\n';
-
 				result->append(build_result(checksums,
 						sums_in_block(*response, b), match, b,
 						toc, arid, altprefix, filenames, types_to_print()));
@@ -444,7 +440,7 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 		}
 	}
 
-	// Print only best matching block (from any ref source)
+	// Print best matching block (from any ref source)
 
 	const auto& refsums = !refvalues.empty()
 		? refvalues
