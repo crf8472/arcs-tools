@@ -802,19 +802,16 @@ void ResultFormatter::mine_checksum(const Checksums& checksums,
 }
 
 
-void ResultFormatter::checksum_worker(const Checksum& checksum,
-		const int record, const int field, ResultComposer* b) const
+std::string ResultFormatter::worker(const Checksum& checksum) const
 {
 	if (checksum_layout())
 	{
-		b->set_field(record, field,
-				checksum_layout()->format(checksum, 8));
-	} else
-	{
-		std::ostringstream out;
-		out << checksum; // via libarcstk's <<
-		b->set_field(record, field, out.str());
+		return checksum_layout()->format(checksum, 8);
 	}
+
+	std::ostringstream out;
+	out << checksum; // via libarcstk's <<
+	return out.str();
 }
 
 
@@ -832,8 +829,8 @@ void ResultFormatter::do_mine_checksum(const Checksums& checksums,
 			? ATTR::CHECKSUM_ARCS2
 			: ATTR::CHECKSUM_ARCS1;
 
-	checksum_worker(checksums.at(record).get(type), record, b->field_idx(attr),
-			b);
+	b->set_field(record, b->field_idx(attr),
+			this->worker(checksums.at(record).get(type)));
 }
 
 

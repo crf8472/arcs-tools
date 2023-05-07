@@ -787,12 +787,10 @@ protected:
 	 * CalcResultFormatter that does not define an attribute 'mine'.)
 	 *
 	 * \param[in] checksum  Result checksum
-	 * \param[in] record    Record index to place checksum
-	 * \param[in] field     Field index to place checksum
-	 * \param[in] b         ResultComposer to use
+	 *
+	 * \return Formatted checksum
 	 */
-	void checksum_worker(const Checksum& checksum, const int record,
-		const int field, ResultComposer* b) const;
+	std::string worker(const Checksum& checksum) const;
 
 private:
 

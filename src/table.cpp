@@ -1094,7 +1094,7 @@ void StringTablePrinter::Impl::row_cells_worker(std::ostream &o,
 			if (Align::BLOCK == t.align(c))
 			{
 				width = t.max_width(c); // col_widths[c] would be optimal width
-										//
+
 				if (cell_text.length() <= width)
 				{
 					// Cell does not need splitting.

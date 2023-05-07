@@ -27,6 +27,9 @@
 #include <arcstk/logging.hpp>       // for ARCS_LOG_DEBUG, ARCS_LOG_ERROR
 #endif
 
+#ifndef __ARCSTOOLS_APPLICATION_HPP__
+#include "application.hpp"          // for color::Modifier
+#endif
 #ifndef __ARCSTOOLS_APPREGISTRY_HPP__
 #include "appregistry.hpp"          // for RegisterApplicationType
 #endif
@@ -415,15 +418,8 @@ void VerifyResultFormatter::do_their_checksum(const Checksum& checksum,
 		const bool does_match, const int record, const int thrs_idx,
 		ResultComposer* b) const
 {
-	if (does_match)
-	{
-		b->set_field(record, b->field_idx(ATTR::THEIRS, thrs_idx),
-				match_symbol());
-	} else
-	{
-		checksum_worker(checksum,
-				record, b->field_idx(ATTR::THEIRS, thrs_idx), b);
-	}
+	b->set_field(record, b->field_idx(ATTR::THEIRS, thrs_idx),
+			does_match ? match_symbol() : this->worker(checksum));
 }
 
 
