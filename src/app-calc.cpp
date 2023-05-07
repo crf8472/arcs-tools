@@ -316,7 +316,8 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 std::vector<ATTR> CalcResultFormatter::do_create_attributes(
 		const bool p_tracks, const bool p_offsets, const bool p_lengths,
 		const bool p_filenames,
-		const std::vector<arcstk::checksum::type>& requested_types) const
+		const std::vector<arcstk::checksum::type>& requested_types,
+		const int /* total_theirs */) const
 {
 	const auto total_attributes = p_tracks + p_offsets + p_lengths + p_filenames
 		+ requested_types.size();
@@ -371,29 +372,8 @@ std::unique_ptr<Result> CalcResultFormatter::do_format(InputTuple t) const
 	const auto& arid      = std::get<3>(t);
 	const auto& altprefix = std::get<4>(t);
 
-	return build_result(checksums, {}, nullptr, 0, toc, arid,
+	return build_result(checksums, nullptr, nullptr, nullptr, 0, toc, arid,
 			altprefix, filenames, types_to_print());
-}
-
-
-void CalcResultFormatter::do_their_checksum(
-		const std::vector<Checksum>& /* checksums */,
-		const arcstk::checksum::type /* t */, const int /* record */,
-		ResultComposer* /* b */) const
-{
-	// do nothing
-}
-
-
-void CalcResultFormatter::do_mine_checksum(const Checksums& checksums,
-		const arcstk::checksum::type type, const int record, ResultComposer* b,
-		const bool /* does_match */) const
-{
-	ATTR attr = type == arcstk::checksum::type::ARCS2
-		? ATTR::CHECKSUM_ARCS2
-		: ATTR::CHECKSUM_ARCS1;
-
-	checksum_worker(record, attr, checksums.at(record).get(type), b);
 }
 
 

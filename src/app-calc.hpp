@@ -184,17 +184,10 @@ private:
 	virtual std::vector<ATTR> do_create_attributes(
 		const bool tracks, const bool offsets, const bool lengths,
 		const bool filenames,
-		const std::vector<arcstk::checksum::type>& types_to_print) const final;
+		const std::vector<arcstk::checksum::type>& types_to_print,
+		const int total_theirs) const final;
 
 	virtual void configure_composer(ResultComposer& composer) const final;
-
-	virtual void do_their_checksum(const std::vector<Checksum>& checksums,
-		const arcstk::checksum::type t, const int entry, ResultComposer* b)
-		const final;
-
-	virtual void do_mine_checksum(const Checksums& checksums,
-		const arcstk::checksum::type t, const int entry, ResultComposer* b,
-		const bool match) const final;
 
 	void assertions(InputTuple t) const final;
 

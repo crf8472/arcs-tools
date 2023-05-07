@@ -29,6 +29,9 @@
 #ifndef __LIBARCSTK_MATCH_HPP__
 #include <arcstk/match.hpp>       // for Match
 #endif
+#ifndef __LIBARCSTK_PARSE_HPP__
+#include <arcstk/parse.hpp>       // for ARResponse
+#endif
 
 #ifndef __ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"              // for StringTable, StringTableLayout
@@ -39,6 +42,7 @@
 
 namespace arcsapp
 {
+
 
 // RichARId
 
@@ -109,22 +113,10 @@ std::string DefaultLabel<ATTR::CHECKSUM_ARCS2>()
 };
 
 template<>
-std::string DefaultLabel<ATTR::THEIRS_ARCS1>()
+std::string DefaultLabel<ATTR::THEIRS>()
 {
-	return "Theirs1";
+	return "Theirs";
 };
-
-template<>
-std::string DefaultLabel<ATTR::MINE_ARCS1>() { return "Mine1"; };
-
-template<>
-std::string DefaultLabel<ATTR::THEIRS_ARCS2>()
-{
-	return "Theirs2";
-};
-
-template<>
-std::string DefaultLabel<ATTR::MINE_ARCS2>() { return "Mine2"; };
 
 
 // ResultComposer
@@ -149,10 +141,7 @@ ResultComposer::ResultComposer(const std::vector<ATTR>& fields,
 				arcstk::checksum::type_name(arcstk::checksum::type::ARCS2) },
 			{ ATTR::CHECKSUM_ARCS1,
 				arcstk::checksum::type_name(arcstk::checksum::type::ARCS1) },
-			{ ATTR::THEIRS_ARCS1, DefaultLabel<ATTR::THEIRS_ARCS1>() },
-			{ ATTR::MINE_ARCS1,   DefaultLabel<ATTR::MINE_ARCS1>()   },
-			{ ATTR::THEIRS_ARCS2, DefaultLabel<ATTR::THEIRS_ARCS2>() },
-			{ ATTR::MINE_ARCS2,   DefaultLabel<ATTR::MINE_ARCS2>()   }
+			{ ATTR::THEIRS,   DefaultLabel<ATTR::THEIRS>() },
 	}
 {
 	// empty
@@ -177,20 +166,46 @@ const StringTable& ResultComposer::from_table() const
 }
 
 
-void ResultComposer::assign_labels()
+void ResultComposer::assign_labels(const std::vector<ATTR>& attributes)
 {
 	using std::begin;
 	using std::end;
 
-	// Assign each field declared its precached label
-	auto fp { end(labels_) };
-	for (const auto& f : fields_)
-	{
-		fp = labels_.find(f);
-		if (end(labels_) != fp)
+	// THEIRS is the only attribute that could occurr multiple times.
+	// If it does, we want to append a counter in the label
+	const auto has_multiple_theirs = [&attributes]()
 		{
-			this->set_label(f, fp->second);
-			// set_label is used polymorphically, therefore this is not in ctor
+			auto theirs = bool { false };
+			for (const auto& a : attributes)
+			{
+				if (ATTR::THEIRS == a)
+				{
+					if (theirs) { return true; }
+					else { theirs = true; }
+				}
+			}
+			return false;
+		}();
+
+	// Add labels from internal label store
+	auto theirs = int { 0 };
+	auto label_p { end(labels_) };
+	for (auto a = int { 0 }; a < attributes.size(); ++a)
+	{
+		label_p = labels_.find(attributes.at(a));
+		if (end(labels_) != label_p)
+		{
+			if (has_multiple_theirs && ATTR::THEIRS == attributes.at(a))
+			{
+				this->set_field_label(a, label_p->second
+						+ (theirs < 10 ? " " : "")
+						+ std::to_string(theirs));
+				++theirs;
+			} else
+			{
+				this->set_field_label(a, label_p->second);
+			}
+			// set_field_label is used polymorphically, but is called in ctor
 		}
 	}
 }
@@ -203,9 +218,9 @@ void ResultComposer::set_layout(std::unique_ptr<StringTableLayout> layout)
 
 
 void ResultComposer::do_set_field(const int record_idx,
-		const ATTR& field_type, const std::string& str)
+		const int field_idx, const std::string& str)
 {
-	this->value(record_idx, this->field_idx(field_type)) = str;
+	this->value(record_idx, field_idx) = str;
 }
 
 
@@ -230,18 +245,23 @@ std::string ResultComposer::do_label(const ATTR& field_type) const
 }
 
 
-int ResultComposer::do_field_idx(const ATTR& field_type) const
+int ResultComposer::do_field_idx(const ATTR& field_type, const int i) const
 {
 	using std::begin;
 	using std::end;
 	using std::find;
 
-	const auto i { find(begin(fields_), end(fields_), field_type) };
-	if (end(fields_) == i)
+	auto o { begin(fields_) };
+	for (auto k = int { 0 }; k < i; ++k)
 	{
-		return -1;
+		o = find(o, end(fields_), field_type);
+		if (end(fields_) == o)
+		{
+			return -1;
+		}
+		++o;
 	}
-	return i - begin(fields_);
+	return o - begin(fields_) - 1;
 }
 
 
@@ -275,19 +295,20 @@ RowResultComposer::RowResultComposer(const std::size_t entries,
 		}
 	}
 
-	// Stretch the "mine" columns to a width of 8
+	// Stretch the "theirs" columns to a width of 8
 	for (auto i = int { 0 }; i < this->from_table().cols(); ++i)
 	{
-		if (order[i] == ATTR::MINE_ARCS2 || order[i] == ATTR::MINE_ARCS1)
+		if (ATTR::THEIRS == order[i])
 		{
 			in_table().set_align(i, table::Align::BLOCK);
-			//in_table().set_max_width(i, 8);
+			// BLOCK makes the table respect max_width for this column,
+			// whose default is 8.
 		}
 	}
 
 	if (with_labels)
 	{
-		this->assign_labels(); // XXX virtual call of set_label() (final)
+		this->assign_labels(order); // XXX virtual call of set_field_label()
 	}
 }
 
@@ -304,7 +325,8 @@ ResultComposer::size_type RowResultComposer::do_fields_per_record() const
 }
 
 
-void RowResultComposer::set_field_label(const int field_idx, const std::string& label)
+void RowResultComposer::set_field_label(const int field_idx,
+		const std::string& label)
 {
 	this->in_table().set_col_label(field_idx, label);
 }
@@ -344,7 +366,7 @@ ColResultComposer::ColResultComposer(const std::size_t total_records,
 
 	if (with_labels)
 	{
-		this->assign_labels(); // XXX virtual call of set_label() (final)
+		this->assign_labels(attrs); // XXX virtual call of set_field_label()
 	}
 }
 
@@ -604,15 +626,17 @@ void ResultFormatter::validate(const Checksums& checksums, const TOC* toc,
 std::vector<ATTR> ResultFormatter::create_attributes(
 		const bool p_tracks, const bool p_offsets, const bool p_lengths,
 		const bool p_filenames,
-		const std::vector<arcstk::checksum::type>& types_to_print) const
+		const std::vector<arcstk::checksum::type>& types_to_print,
+		const int total_theirs) const
 {
 	return do_create_attributes(p_tracks, p_offsets, p_lengths, p_filenames,
-			types_to_print);
+			types_to_print, total_theirs);
 }
 
 
 std::unique_ptr<Result> ResultFormatter::build_result(
-		const Checksums& checksums, const std::vector<Checksum>& refsums,
+		const Checksums& checksums, const ARResponse* response,
+		const std::vector<Checksum>* refsums,
 		const Match* match, int block, const TOC* toc, const ARId& arid,
 		const std::string& alt_prefix,
 		const std::vector<std::string>& filenames,
@@ -631,9 +655,9 @@ std::unique_ptr<Result> ResultFormatter::build_result(
 
 	// Construct result objects
 
-	auto table { build_table(checksums, refsums, match, block, toc, arid,
-			filenames, p_tracks, p_offsets, p_lengths, p_filenames,
-			types_to_print) };
+	auto table { build_table(checksums, response, refsums, match, block,
+			toc, arid, filenames, types_to_print,
+			p_tracks, p_offsets, p_lengths, p_filenames) };
 
 	if (!arid.empty() && arid_layout())
 	{
@@ -669,15 +693,26 @@ RichARId ResultFormatter::build_id(const TOC* /*toc*/, const ARId& arid,
 
 
 StringTable ResultFormatter::build_table(const Checksums& checksums,
-		const std::vector<Checksum>& refsums, const Match* match,
-		const int block, const TOC* toc, const ARId& arid,
+		const ARResponse* response, const std::vector<Checksum>* refvals,
+		const Match* match, const int block, const TOC* toc, const ARId& arid,
 		const std::vector<std::string>& filenames,
+		const std::vector<arcstk::checksum::type>& types_to_print,
 		const bool p_tracks, const bool p_offsets, const bool p_lengths,
-		const bool p_filenames,
-		const std::vector<arcstk::checksum::type>& types_to_print) const
+		const bool p_filenames) const
 {
-	const auto attributes { create_attributes(p_tracks, p_offsets, p_lengths,
-			p_filenames, types_to_print) };
+	// Determine whether to use the ARResponse
+	const auto use_response { response != nullptr && response->size() };
+
+	// Determine total number of 'theirs' attributes to print
+	const auto total_theirs {
+		block < 0  // print all?
+			? (use_response ? response->size() : (refvals ? 1 : 0))
+			: 1
+	};
+
+	const auto attributes { create_attributes(
+			p_tracks, p_offsets, p_lengths, p_filenames,
+			types_to_print, total_theirs) };
 
 	auto c { create_composer(checksums.size(), attributes, label()) };
 
@@ -718,14 +753,30 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 
 		for (const auto& t : types_to_print)
 		{
-			their_checksum(refsums, t, i, c.get());
-			if (match)
-			{
-				does_match = match->track(block, i, TYPE::ARCS2 == t);
-			}
 			// If there is only one attribute that contains checksum values,
 			// this is considered a "mine".
-			mine_checksum(checksums, t, i, c.get(), does_match);
+			mine_checksum(checksums, t, i, c.get());
+		}
+
+		if (use_response)
+		{
+			for (auto b = int { 0 }; b < total_theirs; ++b)
+			{
+				does_match = match->track(b, i, true)
+					|| match->track(b, i, false);
+
+				their_checksum(response->at(b).at(i).arcs(),
+						does_match, i, b+1, c.get());
+			}
+		} else
+		{
+			if (refvals && match)
+			{
+				does_match = match->track(block, i, true)
+					|| match->track(block, i, false);
+
+				their_checksum(refvals->at(i), does_match, i, 1, c.get());
+			}
 		}
 	} // records
 
@@ -735,33 +786,34 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 }
 
 
-void ResultFormatter::their_checksum(const std::vector<Checksum>& checksums,
-		const arcstk::checksum::type t, const int record, ResultComposer* b)
-		const
+void ResultFormatter::their_checksum(const Checksum& checksum,
+		const bool does_match, const int record, const int thrs_idx,
+		ResultComposer* b) const
 {
-	do_their_checksum(checksums, t, record, b);
+	do_their_checksum(checksum, does_match, record, thrs_idx, b);
 }
 
 
 void ResultFormatter::mine_checksum(const Checksums& checksums,
-		const arcstk::checksum::type t, const int record, ResultComposer* b,
-		const bool does_match) const
+		const arcstk::checksum::type t, const int record, ResultComposer* b)
+		const
 {
-	do_mine_checksum(checksums, t, record, b, does_match);
+	do_mine_checksum(checksums, t, record, b);
 }
 
 
-void ResultFormatter::checksum_worker(const int record, ATTR a,
-		const Checksum& checksum, ResultComposer* b) const
+void ResultFormatter::checksum_worker(const Checksum& checksum,
+		const int record, const int field, ResultComposer* b) const
 {
 	if (checksum_layout())
 	{
-		b->set_field(record, a, checksum_layout()->format(checksum, 8));
+		b->set_field(record, field,
+				checksum_layout()->format(checksum, 8));
 	} else
 	{
 		std::ostringstream out;
 		out << checksum; // via libarcstk's <<
-		b->set_field(record, a, out.str());
+		b->set_field(record, field, out.str());
 	}
 }
 
@@ -769,6 +821,28 @@ void ResultFormatter::checksum_worker(const int record, ATTR a,
 StringTable ResultFormatter::configure_table(StringTable&& table) const
 {
 	return table;
+}
+
+
+void ResultFormatter::do_mine_checksum(const Checksums& checksums,
+		const arcstk::checksum::type type, const int record, ResultComposer* b)
+		const
+{
+	ATTR attr = type == arcstk::checksum::type::ARCS2
+			? ATTR::CHECKSUM_ARCS2
+			: ATTR::CHECKSUM_ARCS1;
+
+	checksum_worker(checksums.at(record).get(type), record, b->field_idx(attr),
+			b);
+}
+
+
+void ResultFormatter::do_their_checksum(
+		const Checksum& /* checksum */, const bool /* does_match */,
+		const int /* record */, const int /* thrs_idx */,
+		ResultComposer* /* b */) const
+{
+	// do nothing
 }
 
 } // namespace arcsapp

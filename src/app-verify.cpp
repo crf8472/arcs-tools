@@ -2,7 +2,7 @@
 #include "app-verify.hpp"
 #endif
 
-#include <algorithm>       // for replace
+#include <algorithm>       // for replace, max
 #include <cstddef>         // for size_t
 #include <cstdint>         // for uint32_t
 #include <cstdlib>         // for EXIT_SUCCESS
@@ -16,7 +16,6 @@
 #include <tuple>           // for get, make_tuple, tuple
 #include <type_traits>     // for add_const<>::type
 #include <utility>         // for move, pair
-
 
 #ifndef __LIBARCSTK_MATCH_HPP__
 #include <arcstk/match.hpp>
@@ -272,28 +271,6 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 }
 
 
-/**
- * \brief Return reference checksums from block \c block in order of appearance.
- *
- * \param[in] response The ARResponse to get a checksum block of
- * \param[in] block    Index of the block to read off
- *
- * \return Checksums in block \c block
- */
-std::vector<Checksum> sums_in_block(const ARResponse& response, const int block)
-{
-	auto sums = std::vector<Checksum>{};
-	sums.reserve(response.tracks_per_block());
-
-	for (const auto& triplet : response[block])
-	{
-		sums.push_back(Checksum { triplet.arcs() });
-	}
-
-	return sums;
-}
-
-
 // VerifyResultFormatter
 
 
@@ -364,32 +341,35 @@ void VerifyResultFormatter::assertions(const InputTuple t) const
 std::vector<ATTR> VerifyResultFormatter::do_create_attributes(
 		const bool p_tracks, const bool p_offsets, const bool p_lengths,
 		const bool p_filenames,
-		const std::vector<arcstk::checksum::type>& types_to_print) const
+		const std::vector<arcstk::checksum::type>& types_to_print,
+		const int total_theirs) const
 {
 	const auto total_attributes = p_tracks + p_offsets + p_lengths + p_filenames
-		+ 2 * types_to_print.size();
+		+ types_to_print.size() + total_theirs;
 
 	using checksum = arcstk::checksum::type;
 
 	std::vector<ATTR> attributes;
 	attributes.reserve(total_attributes);
-	if (p_tracks)    { attributes.push_back(ATTR::TRACK);    }
-	if (p_filenames) { attributes.push_back(ATTR::FILENAME); }
-	if (p_offsets)   { attributes.push_back(ATTR::OFFSET);   }
-	if (p_lengths)   { attributes.push_back(ATTR::LENGTH);   }
+	if (p_tracks)    { attributes.emplace_back(ATTR::TRACK);    }
+	if (p_filenames) { attributes.emplace_back(ATTR::FILENAME); }
+	if (p_offsets)   { attributes.emplace_back(ATTR::OFFSET);   }
+	if (p_lengths)   { attributes.emplace_back(ATTR::LENGTH);   }
 
 	for (const auto& t : types_to_print)
 	{
 		if (checksum::ARCS1 == t)
 		{
-			attributes.push_back(ATTR::THEIRS_ARCS1);
-			attributes.push_back(ATTR::MINE_ARCS1);
+			attributes.emplace_back(ATTR::CHECKSUM_ARCS1);
 		} else
 		if (checksum::ARCS2 == t)
 		{
-			attributes.push_back(ATTR::THEIRS_ARCS2);
-			attributes.push_back(ATTR::MINE_ARCS2);
+			attributes.emplace_back(ATTR::CHECKSUM_ARCS2);
 		}
+	}
+	for (auto i = int { 0 }; i < total_theirs; ++i)
+	{
+		attributes.emplace_back(ATTR::THEIRS);
 	}
 
 	return attributes;
@@ -416,70 +396,33 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 
 	auto result = std::make_unique<ResultList>();
 
-	if (response->size() > 0)
+	// If an ARResponse is used for the references with a block (not PRINTALL)
+	if (response != nullptr && response->size() > 0 && block > -1)
 	{
-		// Use ARResponse
-
-		if (block < 0) // No single best block requested? => print all
-		{
-			using blocks_t = ARResponse::size_type;
-
-			for (auto b = blocks_t { 0 }; b < response->size(); ++b)
-			{
-				result->append(build_result(checksums,
-						sums_in_block(*response, b), match, b,
-						toc, arid, altprefix, filenames, types_to_print()));
-			}
-
-			return result;
-		} else
-		{
-			// Use ARId of specified block for "Theirs" ARId
-			result->append(std::make_unique<ResultObject<RichARId>>(
-						build_id(toc, response->at(block).id(), altprefix)));
-		}
+		// Use ARId of specified block for "Theirs" ARId
+		result->append(std::make_unique<ResultObject<RichARId>>(
+				build_id(toc, response->at(block).id(), altprefix)));
 	}
 
-	// Print best matching block (from any ref source)
-
-	const auto& refsums = !refvalues.empty()
-		? refvalues
-		: sums_in_block(*response, block);
-
-	result->append(build_result(checksums, refsums, match, block, toc, arid,
-			altprefix, filenames, types_to_print()));
+	result->append(build_result(checksums, response, &refvalues, match,
+			block, toc, arid, altprefix, filenames, types_to_print()));
 
 	return result;
 }
 
 
-void VerifyResultFormatter::do_their_checksum(
-		const std::vector<Checksum>& checksums,
-		const arcstk::checksum::type type, const int record, ResultComposer* b)
-	const
+void VerifyResultFormatter::do_their_checksum(const Checksum& checksum,
+		const bool does_match, const int record, const int thrs_idx,
+		ResultComposer* b) const
 {
-	ATTR attr = type == arcstk::checksum::type::ARCS2
-		? ATTR::THEIRS_ARCS2
-		: ATTR::THEIRS_ARCS1;
-
-	checksum_worker(record, attr, checksums.at(record), b);
-}
-
-
-void VerifyResultFormatter::do_mine_checksum(const Checksums& checksums,
-		const arcstk::checksum::type type, const int record, ResultComposer* b,
-		const bool does_match) const
-{
-	ATTR attr = type == arcstk::checksum::type::ARCS2
-		? ATTR::MINE_ARCS2
-		: ATTR::MINE_ARCS1;
-
 	if (does_match)
 	{
-		b->set_field(record, attr, match_symbol());
+		b->set_field(record, b->field_idx(ATTR::THEIRS, thrs_idx),
+				match_symbol());
 	} else
 	{
-		checksum_worker(record, attr, checksums.at(record).get(type), b);
+		checksum_worker(checksum,
+				record, b->field_idx(ATTR::THEIRS, thrs_idx), b);
 	}
 }
 

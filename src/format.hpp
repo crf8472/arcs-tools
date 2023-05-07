@@ -25,6 +25,9 @@
 #ifndef __LIBARCSTK_MATCH_HPP__
 #include <arcstk/match.hpp>       // for Match
 #endif
+#ifndef __LIBARCSTK_PARSE_HPP__
+#include <arcstk/parse.hpp>       // for ARResponse
+#endif
 
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"      // for WithInternalFlags, ARIdLayout, ChecksumLayout
@@ -114,7 +117,16 @@ public:
 	inline void set_field(const int i, const F& field_type,
 			const std::string& value)
 	{
-		this->do_set_field(i, field_type, value);
+		this->do_set_field(i, this->field_idx(field_type), value);
+	}
+
+	/**
+	 * \brief Set the value for the specified field in record \c i, field \c j.
+	 */
+	inline void set_field(const int i, const int j,
+			const std::string& value)
+	{
+		this->do_set_field(i, j, value);
 	}
 
 	/**
@@ -142,11 +154,24 @@ public:
 	}
 
 	/**
-	 * \brief Index of specified field type.
+	 * \brief First index of specified field type.
+	 *
+	 * \param[in] field_type  Type of the field
 	 */
 	inline int field_idx(const F& field_type) const
 	{
-		return this->do_field_idx(field_type);
+		return this->do_field_idx(field_type, 1);
+	}
+
+	/**
+	 * \brief I-th index of specified field type.
+	 *
+	 * \param[in] field_type  Type of the field
+	 * \param[in] i           Occurrence of the field_type
+	 */
+	inline int field_idx(const F& field_type, const int i) const
+	{
+		return this->do_field_idx(field_type, i);
 	}
 
 	/**
@@ -203,8 +228,8 @@ protected:
 
 private:
 
-	virtual void do_set_field(const int i, const F& field_type,
-			const std::string& value)
+	virtual void do_set_field(const int record_idx, const int field_idx,
+			const std::string& str)
 	= 0;
 
 	virtual const std::string& do_field(const int i, const F& field_type) const
@@ -216,7 +241,7 @@ private:
 	virtual std::string do_label(const F& field_type) const
 	= 0;
 
-	virtual int do_field_idx(const F& field_type) const
+	virtual int do_field_idx(const F& field_type, const int i) const
 	= 0;
 
 	virtual bool do_has_field(const F& field_type) const
@@ -253,10 +278,7 @@ enum class ATTR: int
 	FILENAME,
 	CHECKSUM_ARCS1,
 	CHECKSUM_ARCS2,
-	THEIRS_ARCS1,
-	MINE_ARCS1,
-	THEIRS_ARCS2,
-	MINE_ARCS2
+	THEIRS
 };
 
 
@@ -334,12 +356,12 @@ protected:
 	 *
 	 * The labels are composed from the default names of the attribute labels.
 	 */
-	void assign_labels();
+	void assign_labels(const std::vector<ATTR>& attributes);
 
 private:
 
-	void do_set_field(const int record_idx, const ATTR& field_type,
-			const std::string& value) final;
+	void do_set_field(const int record_idx, const int field_idx,
+			const std::string& str) final;
 
 	const std::string& do_field(const int i, const ATTR& field_type)
 		const final;
@@ -348,7 +370,7 @@ private:
 
 	std::string do_label(const ATTR& field_type) const final;
 
-	int do_field_idx(const ATTR& field_type) const final;
+	int do_field_idx(const ATTR& field_type, const int i) const final;
 
 	bool do_has_field(const ATTR& field_type) const final;
 
@@ -460,6 +482,7 @@ class ColResultComposerBuilder final : public ResultComposerBuilder
 // Required for ResultFormatter
 
 using arcstk::ARId;
+using arcstk::ARResponse;
 using arcstk::Checksum;
 using arcstk::Checksums;
 using arcstk::Match;
@@ -638,6 +661,7 @@ protected:
 	 * relevant data.
 	 *
 	 * \param[in] checksums      Calculated checksums
+	 * \param[in] response       Reference checksums
 	 * \param[in] refsums        Reference checksums
 	 * \param[in] diff           Match between calculation and reference
 	 * \param[in] block          Best block in \c diff
@@ -648,8 +672,9 @@ protected:
 	 * \param[in] types_to_print List of Checksum types requested for print
 	 */
 	std::unique_ptr<Result> build_result(
-		const Checksums& checksums, const std::vector<Checksum>& refsums,
-		const Match* diff, int block, const TOC* toc, const ARId& arid,
+		const Checksums& checksums, const ARResponse* response,
+		const std::vector<Checksum>* refsums, const Match* diff, int block,
+		const TOC* toc, const ARId& arid,
 		const std::string& alt_prefix,
 		const std::vector<std::string>& filenames,
 		const std::vector<arcstk::checksum::type>& types_to_print) const;
@@ -670,17 +695,18 @@ protected:
 	/**
 	 * \brief Create the result attributes.
 	 *
-	 * \param[in] tracks    Iff TRUE, print tracks
-	 * \param[in] offsets   Iff TRUE, print offsets
-	 * \param[in] lengths   Iff TRUE, print lengths
-	 * \param[in] filenames Iff TRUE, print filenames
-	 * \param[in] types     List of checksum types to print
+	 * \param[in] tracks       Iff TRUE, print tracks
+	 * \param[in] offsets      Iff TRUE, print offsets
+	 * \param[in] lengths      Iff TRUE, print lengths
+	 * \param[in] filenames    Iff TRUE, print filenames
+	 * \param[in] types        List of checksum types to print
 	 *
 	 * \return Sequence of result attributes to form an record
 	 */
 	std::vector<ATTR> create_attributes(const bool tracks,
 		const bool offsets, const bool lengths, const bool filenames,
-		const std::vector<arcstk::checksum::type>& types) const;
+		const std::vector<arcstk::checksum::type>& types,
+		const int total_theirs) const;
 
 	/**
 	 * \brief Build an ARId.
@@ -692,6 +718,7 @@ protected:
 	 * \brief Build the result table.
 	 *
 	 * \param[in] checksums   Checksums as resulted
+	 * \param[in] response    Reference checksums from AccurateRip response
 	 * \param[in] refsums     Reference checksums as specified
 	 * \param[in] match       Match object (maybe null)
 	 * \param[in] block       Index to choose from \c match
@@ -708,13 +735,13 @@ protected:
 	 * \return Table with result data
 	 */
 	StringTable build_table(const Checksums& checksums,
-		const std::vector<Checksum>& refsums,
+		const ARResponse* response, const std::vector<Checksum>* refsums,
 		const Match* match, const int block,
 		const TOC* toc, const ARId& arid,
 		const std::vector<std::string>& filenames,
+		const std::vector<arcstk::checksum::type>& types,
 		const bool p_tracks, const bool p_offsets, const bool p_lengths,
-		const bool p_filenames,
-		const std::vector<arcstk::checksum::type>& types) const;
+		const bool p_filenames) const;
 
 	/**
 	 * \brief Print their checksums.
@@ -723,14 +750,14 @@ protected:
 	 *
 	 * Note that \c record also determines access to \c checksums.
 	 *
-	 * \param[in] checksums  Reference checksums
-	 * \param[in] t          Checksum type to print
-	 * \param[in] record      Index of the record in \c b to edit
+	 * \param[in] checksum   Reference checksum
+	 * \param[in] does_match Print as matching or not matching
+	 * \param[in] record     Index of the record in \c b to edit
+	 * \param[in] thrs_idx   Index of the THEIRS field (e.g. second, i-th...)
 	 * \param[in] b          ResultComposer to use
 	 */
-	void their_checksum(const std::vector<Checksum>& checksums,
-		const arcstk::checksum::type t, const int record, ResultComposer* b)
-		const;
+	void their_checksum(const Checksum& checksums, const bool does_match,
+		const int record, const int thrs_idx, ResultComposer* b) const;
 
 	/**
 	 * \brief Print my checksums.
@@ -743,11 +770,10 @@ protected:
 	 * \param[in] t          Checksum type to print
 	 * \param[in] record      Index of the record in \c b to edit
 	 * \param[in] b          ResultComposer to use
-	 * \param[in] match      Decide to print match_symbol() or checksum
 	 */
 	void mine_checksum(const Checksums& checksums,
-		const arcstk::checksum::type t, const int record, ResultComposer* b,
-		const bool match) const;
+		const arcstk::checksum::type t, const int record, ResultComposer* b)
+		const;
 
 	/**
 	 * \brief Worker for mine_checksums().
@@ -760,20 +786,21 @@ protected:
 	 * in \c b. (E.g. you wont' pass 'mine' in some subclass like
 	 * CalcResultFormatter that does not define an attribute 'mine'.)
 	 *
-	 * \param[in] checksums  Result checksums
-	 * \param[in] type       Checksum type to print
-	 * \param[in] record      Index of the record in \c b to edit
-	 * \param[in] func       Cell reference function to use
+	 * \param[in] checksum  Result checksum
+	 * \param[in] record    Record index to place checksum
+	 * \param[in] field     Field index to place checksum
+	 * \param[in] b         ResultComposer to use
 	 */
-	void checksum_worker(const int record, ATTR a, const Checksum& checksum,
-		ResultComposer* b) const;
+	void checksum_worker(const Checksum& checksum, const int record,
+		const int field, ResultComposer* b) const;
 
 private:
 
 	virtual std::vector<ATTR> do_create_attributes(
 		const bool tracks, const bool offsets, const bool lengths,
 		const bool filenames,
-		const std::vector<arcstk::checksum::type>& types_to_print) const
+		const std::vector<arcstk::checksum::type>& types_to_print,
+		const int total_theirs) const
 	= 0;
 
 	/**
@@ -794,14 +821,13 @@ private:
 	 */
 	virtual StringTable configure_table(StringTable&& table) const;
 
-	virtual void do_their_checksum(const std::vector<Checksum>& checksums,
-		const arcstk::checksum::type t, const int record, ResultComposer* b) const
-	= 0;
-
 	virtual void do_mine_checksum(const Checksums& checksums,
-		const arcstk::checksum::type t, const int record, ResultComposer* b,
-		const bool match) const
-	= 0;
+		const arcstk::checksum::type t, const int record, ResultComposer* b)
+		const;
+
+	virtual void do_their_checksum(const Checksum& checksum,
+		const bool does_match, const int record, const int thrs_idx,
+		ResultComposer* b) const;
 
 	/**
 	 * \brief Internal ResultComposerBuilder.
