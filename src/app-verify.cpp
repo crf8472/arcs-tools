@@ -415,11 +415,18 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 
 
 void VerifyResultFormatter::do_their_checksum(const Checksum& checksum,
-		const bool does_match, const int record, const int thrs_idx,
+		const bool does_match, const int record, const int field,
 		ResultComposer* b) const
 {
-	b->set_field(record, b->field_idx(ATTR::THEIRS, thrs_idx),
-			does_match ? match_symbol() : this->checksum(checksum));
+	b->set_field(record, field,
+			this->format_their_checksum(checksum, does_match));
+}
+
+
+std::string VerifyResultFormatter::format_their_checksum(
+		const Checksum& checksum, const bool does_match) const
+{
+	return does_match ? match_symbol() : this->checksum(checksum);
 }
 
 

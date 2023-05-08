@@ -753,11 +753,11 @@ protected:
 	 * \param[in] checksum   Reference checksum
 	 * \param[in] does_match Print as matching or not matching
 	 * \param[in] record     Index of the record in \c b to edit
-	 * \param[in] thrs_idx   Index of the THEIRS field (e.g. second, i-th...)
-	 * \param[in] b          ResultComposer to use
+	 * \param[in] field      Index of the field in \c b to edit
+	 * \param[in] c          ResultComposer to use
 	 */
 	void their_checksum(const Checksum& checksums, const bool does_match,
-		const int record, const int thrs_idx, ResultComposer* b) const;
+		const int record, const int field, ResultComposer* c) const;
 
 	/**
 	 * \brief Print my checksums.
@@ -767,13 +767,12 @@ protected:
 	 * Note that \c record also determines access to \c checksums.
 	 *
 	 * \param[in] checksums  Result checksums
-	 * \param[in] t          Checksum type to print
-	 * \param[in] record      Index of the record in \c b to edit
-	 * \param[in] b          ResultComposer to use
+	 * \param[in] record     Index of the record in \c c to edit
+	 * \param[in] field      Index of the field in \c c to edit
+	 * \param[in] c          ResultComposer to use
 	 */
-	void mine_checksum(const Checksums& checksums,
-		const arcstk::checksum::type t, const int record, ResultComposer* b)
-		const;
+	void mine_checksum(const Checksum& checksum,
+		const int record, const int field, ResultComposer* c) const;
 
 	/**
 	 * \brief Worker for mine_checksums().
@@ -819,13 +818,12 @@ private:
 	 */
 	virtual StringTable configure_table(StringTable&& table) const;
 
-	virtual void do_mine_checksum(const Checksums& checksums,
-		const arcstk::checksum::type t, const int record, ResultComposer* b)
-		const;
+	virtual void do_mine_checksum(const Checksum& checksum,
+		const int record, const int field, ResultComposer* c) const;
 
 	virtual void do_their_checksum(const Checksum& checksum,
-		const bool does_match, const int record, const int thrs_idx,
-		ResultComposer* b) const;
+		const bool does_match,
+		const int record, const int field, ResultComposer* c) const;
 
 	/**
 	 * \brief Internal ResultComposerBuilder.

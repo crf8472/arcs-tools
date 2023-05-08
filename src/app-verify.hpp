@@ -128,9 +128,12 @@ private:
 
 	virtual void configure_composer(ResultComposer& composer) const final;
 
-	virtual void do_their_checksum(const Checksum& checksums,
-		const bool does_match, const int record, const int thrs_idx,
+	virtual void do_their_checksum(const Checksum& checksum,
+		const bool does_match, const int record, const int field,
 		ResultComposer* b) const final;
+
+	std::string format_their_checksum(const Checksum& checksum,
+		const bool does_match) const;
 
 	void assertions(InputTuple t) const final;
 

@@ -753,9 +753,14 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 
 		for (const auto& t : types_to_print)
 		{
+			ATTR attr = t == arcstk::checksum::type::ARCS2
+				? ATTR::CHECKSUM_ARCS2
+				: ATTR::CHECKSUM_ARCS1;
+
 			// If there is only one attribute that contains checksum values,
 			// this is considered a "mine".
-			mine_checksum(checksums, t, i, c.get());
+			mine_checksum(checksums.at(i).get(t),
+					i, c->field_idx(attr), c.get());
 		}
 
 		if (use_response)
@@ -765,8 +770,8 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 				does_match = match->track(b, i, true)
 					|| match->track(b, i, false);
 
-				their_checksum(response->at(b).at(i).arcs(),
-						does_match, i, b+1, c.get());
+				their_checksum(response->at(b).at(i).arcs(), does_match,
+						i, c->field_idx(ATTR::THEIRS, b + 1), c.get());
 			}
 		} else
 		{
@@ -775,7 +780,8 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 				does_match = match->track(block, i, true)
 					|| match->track(block, i, false);
 
-				their_checksum(refvals->at(i), does_match, i, 1, c.get());
+				their_checksum(refvals->at(i), does_match,
+						i, c->field_idx(ATTR::THEIRS, 1), c.get());
 			}
 		}
 	} // records
@@ -787,18 +793,17 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 
 
 void ResultFormatter::their_checksum(const Checksum& checksum,
-		const bool does_match, const int record, const int thrs_idx,
-		ResultComposer* b) const
+		const bool does_match, const int record, const int field,
+		ResultComposer* c) const
 {
-	do_their_checksum(checksum, does_match, record, thrs_idx, b);
+	do_their_checksum(checksum, does_match, record, field, c);
 }
 
 
-void ResultFormatter::mine_checksum(const Checksums& checksums,
-		const arcstk::checksum::type t, const int record, ResultComposer* b)
-		const
+void ResultFormatter::mine_checksum(const Checksum& checksum,
+		const int record, const int field, ResultComposer* c) const
 {
-	do_mine_checksum(checksums, t, record, b);
+	do_mine_checksum(checksum, record, field, c);
 }
 
 
@@ -821,16 +826,11 @@ StringTable ResultFormatter::configure_table(StringTable&& table) const
 }
 
 
-void ResultFormatter::do_mine_checksum(const Checksums& checksums,
-		const arcstk::checksum::type type, const int record, ResultComposer* b)
+void ResultFormatter::do_mine_checksum(const Checksum& checksum,
+		const int record, const int field, ResultComposer* b)
 		const
 {
-	ATTR attr = type == arcstk::checksum::type::ARCS2
-			? ATTR::CHECKSUM_ARCS2
-			: ATTR::CHECKSUM_ARCS1;
-
-	b->set_field(record, b->field_idx(attr),
-			this->checksum(checksums.at(record).get(type)));
+	b->set_field(record, field, this->checksum(checksum));
 }
 
 
