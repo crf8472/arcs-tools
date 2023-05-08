@@ -802,7 +802,7 @@ void ResultFormatter::mine_checksum(const Checksums& checksums,
 }
 
 
-std::string ResultFormatter::worker(const Checksum& checksum) const
+std::string ResultFormatter::checksum(const Checksum& checksum) const
 {
 	if (checksum_layout())
 	{
@@ -830,7 +830,7 @@ void ResultFormatter::do_mine_checksum(const Checksums& checksums,
 			: ATTR::CHECKSUM_ARCS1;
 
 	b->set_field(record, b->field_idx(attr),
-			this->worker(checksums.at(record).get(type)));
+			this->checksum(checksums.at(record).get(type)));
 }
 
 

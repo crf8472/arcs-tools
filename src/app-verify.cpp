@@ -419,7 +419,7 @@ void VerifyResultFormatter::do_their_checksum(const Checksum& checksum,
 		ResultComposer* b) const
 {
 	b->set_field(record, b->field_idx(ATTR::THEIRS, thrs_idx),
-			does_match ? match_symbol() : this->worker(checksum));
+			does_match ? match_symbol() : this->checksum(checksum));
 }
 
 

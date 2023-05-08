@@ -790,7 +790,7 @@ protected:
 	 *
 	 * \return Formatted checksum
 	 */
-	std::string worker(const Checksum& checksum) const;
+	std::string checksum(const Checksum& checksum) const;
 
 private:
 
