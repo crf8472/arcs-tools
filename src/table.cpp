@@ -111,6 +111,77 @@ void insert_or_resize(std::vector<T>& v, const int rows, const int row,
 namespace table
 {
 
+// PrintableTable
+
+
+std::string PrintableTable::title() const
+{
+	return do_title();
+}
+
+
+const std::string& PrintableTable::ref(int row, int col) const
+{
+	return do_ref(row, col);
+}
+
+
+int PrintableTable::rows() const
+{
+	return do_rows();
+}
+
+
+std::string PrintableTable::row_label(int row) const
+{
+	return do_row_label(row);
+}
+
+
+std::size_t PrintableTable::max_height(int row) const
+{
+	return do_max_height(row);
+}
+
+
+int PrintableTable::cols() const
+{
+	return do_cols();
+}
+
+
+std::string PrintableTable::col_label(int col) const
+{
+	return do_col_label(col);
+}
+
+
+std::size_t PrintableTable::max_width(int col) const
+{
+	return do_max_width(col);
+}
+
+
+Align PrintableTable::align(int col) const
+{
+	return do_align(col);
+}
+
+
+std::size_t PrintableTable::optimal_width(const int col) const
+{
+	return do_optimal_width(col);
+}
+
+
+const StringTableLayout* PrintableTable::layout() const
+{
+	return do_layout();
+}
+
+
+// StringTable
+
 
 StringTable::StringTable(const std::string& title, int rows, int cols)
 	: title_              { title }
@@ -194,7 +265,7 @@ void StringTable::set_title(const std::string &title)
 }
 
 
-std::string StringTable::title() const
+std::string StringTable::do_title() const
 {
 	return title_;
 }
@@ -229,13 +300,13 @@ std::string& StringTable::cell(int row, int col)
 }
 
 
-const std::string& StringTable::ref(int row, int col) const
+const std::string& StringTable::do_ref(int row, int col) const
 {
 	return cells_[safe_index(row, col)];
 }
 
 
-int StringTable::rows() const
+int StringTable::do_rows() const
 {
 	return rows_;
 }
@@ -247,7 +318,7 @@ void StringTable::set_row_label(int row, const std::string& label)
 }
 
 
-std::string StringTable::row_label(int row) const
+std::string StringTable::do_row_label(int row) const
 {
 	return row_labels_[row];
 }
@@ -259,7 +330,7 @@ void StringTable::set_max_height(int row, std::size_t height)
 }
 
 
-std::size_t StringTable::max_height(int row) const
+std::size_t StringTable::do_max_height(int row) const
 {
 	return row_max_heights_[row];
 }
@@ -271,7 +342,7 @@ std::size_t StringTable::default_max_height() const
 }
 
 
-int StringTable::cols() const
+int StringTable::do_cols() const
 {
 	return cols_;
 }
@@ -283,7 +354,7 @@ void StringTable::set_col_label(int col, const std::string& label)
 }
 
 
-std::string StringTable::col_label(int col) const
+std::string StringTable::do_col_label(int col) const
 {
 	return col_labels_[col];
 }
@@ -295,7 +366,7 @@ void StringTable::set_max_width(int col, std::size_t width)
 }
 
 
-std::size_t StringTable::max_width(int col) const
+std::size_t StringTable::do_max_width(int col) const
 {
 	return col_max_widths_[col];
 }
@@ -313,13 +384,13 @@ void StringTable::set_align(int col, Align align)
 }
 
 
-Align StringTable::align(int col) const
+Align StringTable::do_align(int col) const
 {
 	return aligns_[col];
 }
 
 
-std::size_t StringTable::optimal_width(const int col) const
+std::size_t StringTable::do_optimal_width(const int col) const
 {
 	auto width = std::size_t { 0 };
 	auto optimal_width { width };
@@ -404,7 +475,7 @@ void StringTable::set_layout(std::unique_ptr<StringTableLayout> l)
 }
 
 
-const StringTableLayout* StringTable::layout() const
+const StringTableLayout* StringTable::do_layout() const
 {
 	return layout_.get();
 }
@@ -527,7 +598,7 @@ StringTableLayout::StringTableLayout(std::unique_ptr<StringSplitter> s)
 		      , /* COL_LABELS_DELIM */         "|"
 		      , /* COL_INNER_DELIM */          " "
 		      , /* RIGHT_OUTER_DELIM */        "|" }
-	, splitter_ { std::move(s) }
+	, splitter_  { std::move(s) }
 {
 	// empty
 }
@@ -569,67 +640,67 @@ void StringTableLayout::swap(StringTableLayout& rhs) noexcept
 
 void StringTableLayout::set_title(const bool f)
 {
-	return flag_set(Flag::TITLE, f);
+	flag_set(Flag::TITLE, f);
 }
 
 
 void StringTableLayout::set_row_labels(const bool f)
 {
-	return flag_set(Flag::ROW_LABELS, f);
+	flag_set(Flag::ROW_LABELS, f);
 }
 
 
 void StringTableLayout::set_col_labels(const bool f)
 {
-	return flag_set(Flag::COL_LABELS, f);
+	flag_set(Flag::COL_LABELS, f);
 }
 
 
 void StringTableLayout::set_top_delims(const bool f)
 {
-	return flag_set(Flag::ROW_TOP_DELIMS, f);
+	flag_set(Flag::ROW_TOP_DELIMS, f);
 }
 
 
 void StringTableLayout::set_row_header_delims(const bool f)
 {
-	return flag_set(Flag::ROW_HEADER_DELIMS, f);
+	flag_set(Flag::ROW_HEADER_DELIMS, f);
 }
 
 
 void StringTableLayout::set_row_inner_delims(const bool f)
 {
-	return flag_set(Flag::ROW_INNER_DELIMS, f);
+	flag_set(Flag::ROW_INNER_DELIMS, f);
 }
 
 
 void StringTableLayout::set_bottom_delims(const bool f)
 {
-	return flag_set(Flag::ROW_BOTTOM_DELIMS, f);
+	flag_set(Flag::ROW_BOTTOM_DELIMS, f);
 }
 
 
 void StringTableLayout::set_left_outer_delims(const bool f)
 {
-	return flag_set(Flag::COL_LEFT_OUTER_DELIMS, f);
+	flag_set(Flag::COL_LEFT_OUTER_DELIMS, f);
 }
 
 
 void StringTableLayout::set_col_labels_delims(const bool f)
 {
-	return flag_set(Flag::COL_LABELS_DELIMS, f);
+	flag_set(Flag::COL_LABELS_DELIMS, f);
 }
 
 
 void StringTableLayout::set_col_inner_delims(const bool f)
 {
-	return flag_set(Flag::COL_INNER_DELIMS, f);
+	flag_set(Flag::COL_INNER_DELIMS, f);
 }
 
 
 void StringTableLayout::set_right_outer_delims(const bool f)
 {
-	return flag_set(Flag::COL_RIGHT_OUTER_DELIMS, f);
+	flag_set(Flag::COL_RIGHT_OUTER_DELIMS, f);
 }
 
 
@@ -1346,7 +1417,7 @@ void StringTablePrinter::Impl::print(std::ostream &o, const StringTable& t)
 	const
 {
 	const auto prev_settings { o.flags() };
-	const auto l { t.layout() };
+	const auto* l { t.layout() };
 
 	// Print title
 	if (l->title())
