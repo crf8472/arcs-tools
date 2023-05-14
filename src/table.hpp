@@ -230,6 +230,15 @@ public:
 	std::size_t optimal_width(const int col) const;
 
 	/**
+	 * \brief Returns TRUE iff the table does not contain any cells.
+	 *
+	 * Every table is empty after the constructor is finished.
+	 *
+	 * \return TRUE iff the table does not contain cells, otherwise FALSE
+	 */
+	bool empty() const;
+
+	/**
 	 * \brief The layout to be used for printing.
 	 *
 	 * \return Layout for this table
@@ -266,6 +275,9 @@ private:
 	= 0;
 
 	virtual std::size_t do_optimal_width(const int col) const
+	= 0;
+
+	virtual bool do_empty() const
 	= 0;
 
 	virtual const StringTableLayout* do_layout() const
@@ -448,15 +460,6 @@ public:
 	void set_align(int col, Align align);
 
 	/**
-	 * \brief Returns TRUE iff the table does not contain any cells.
-	 *
-	 * Every table is empty after the constructor is finished.
-	 *
-	 * \return TRUE iff the table does not contain cells, otherwise FALSE
-	 */
-	bool empty() const;
-
-	/**
 	 * \brief Description.
 	 *
 	 * \param[in] row  Table row to access
@@ -536,6 +539,8 @@ private:
 	Align do_align(int col) const final;
 
 	std::size_t do_optimal_width(const int col) const final;
+
+	bool do_empty() const final;
 
 	const StringTableLayout* do_layout() const final;
 
@@ -810,13 +815,13 @@ private:
 /**
  * \brief Prints a StringTable.
  */
-class StringTablePrinter
+class TablePrinter
 {
 public:
 
-	StringTablePrinter();
+	TablePrinter();
 
-	~StringTablePrinter() noexcept;
+	~TablePrinter() noexcept;
 
 	/**
 	 * \brief Prints a StringTable with the specified layout to an
@@ -825,7 +830,7 @@ public:
 	 * \param[in] o   The output stream to print to
 	 * \param[in] t   The StringTable to print
 	 */
-	void print(std::ostream &o, const StringTable& t) const;
+	void print(std::ostream &o, const PrintableTable& t) const;
 
 private:
 
@@ -838,7 +843,7 @@ private:
 /**
  * \brief Output stream operator for StringTable.
  */
-std::ostream& operator << (std::ostream &o, const StringTable &table);
+std::ostream& operator << (std::ostream &o, const PrintableTable &table);
 
 } // namespace table
 } // namespace arcsapp

@@ -70,7 +70,7 @@ std::vector<std::string> split(std::string str, const std::size_t max_len)
 }
 
 
-std::vector<std::string> split(std::string str, const std::string& delim)
+std::vector<std::string> split(std::string str, const std::string &delim)
 {
 	if (str.empty())
 	{
@@ -94,7 +94,7 @@ std::vector<std::string> split(std::string str, const std::string& delim)
  * \brief Insert or resize.
  */
 template <typename T>
-void insert_or_resize(std::vector<T>& v, const int rows, const int row,
+void insert_or_resize(std::vector<T> &v, const int rows, const int row,
 		T&& value)
 {
 	if (v.empty())
@@ -174,6 +174,12 @@ std::size_t PrintableTable::optimal_width(const int col) const
 }
 
 
+bool PrintableTable::empty() const
+{
+	return do_empty();
+}
+
+
 const StringTableLayout* PrintableTable::layout() const
 {
 	return do_layout();
@@ -183,7 +189,7 @@ const StringTableLayout* PrintableTable::layout() const
 // StringTable
 
 
-StringTable::StringTable(const std::string& title, int rows, int cols)
+StringTable::StringTable(const std::string &title, int rows, int cols)
 	: title_              { title }
 	, rows_               { rows }
 	, default_max_height_ {  5 } // Max height for a row is 5 lines
@@ -209,7 +215,7 @@ StringTable::StringTable(int rows, int cols)
 }
 
 
-StringTable::StringTable(const StringTable& rhs)
+StringTable::StringTable(const StringTable &rhs)
 	: title_              { rhs.title_ }
 	, rows_               { rhs.rows_ }
 	, default_max_height_ { rhs.default_max_height_ }
@@ -294,7 +300,7 @@ std::string& StringTable::cell(int row, int col)
 }
 
 
-void StringTable::set_row_label(int row, const std::string& label)
+void StringTable::set_row_label(int row, const std::string &label)
 {
 	row_labels_[row] = label;
 }
@@ -312,7 +318,7 @@ std::size_t StringTable::default_max_height() const
 }
 
 
-void StringTable::set_col_label(int col, const std::string& label)
+void StringTable::set_col_label(int col, const std::string &label)
 {
 	col_labels_[col] = label;
 }
@@ -333,12 +339,6 @@ std::size_t StringTable::default_max_width() const
 void StringTable::set_align(int col, Align align)
 {
 	aligns_[col] = align;
-}
-
-
-bool StringTable::empty() const
-{
-	return cells_.empty();
 }
 
 
@@ -406,7 +406,7 @@ void StringTable::set_layout(std::unique_ptr<StringTableLayout> l)
 }
 
 
-void StringTable::swap(StringTable& rhs) noexcept
+void StringTable::swap(StringTable &rhs) noexcept
 {
 	using std::swap;
 	swap(title_, rhs.title_);
@@ -514,6 +514,12 @@ std::size_t StringTable::do_optimal_width(const int col) const
 }
 
 
+bool StringTable::do_empty() const
+{
+	return cells_.empty();
+}
+
+
 const StringTableLayout* StringTable::do_layout() const
 {
 	return layout_.get();
@@ -523,7 +529,7 @@ const StringTableLayout* StringTable::do_layout() const
 // StringSplitter
 
 
-std::vector<std::string> StringSplitter::split(const std::string& str,
+std::vector<std::string> StringSplitter::split(const std::string &str,
 			const std::size_t max_len) const
 {
 		return do_split(str, max_len);
@@ -540,7 +546,7 @@ std::unique_ptr<StringSplitter> StringSplitter::clone() const
 
 
 std::vector<std::string> DefaultSplitter::do_split(
-		const std::string& str, const std::size_t max_len) const
+		const std::string &str, const std::size_t max_len) const
 {
 	const auto separator = std::string { " " };
 
@@ -611,7 +617,7 @@ StringTableLayout::StringTableLayout()
 }
 
 
-StringTableLayout::StringTableLayout(const StringTableLayout& rhs)
+StringTableLayout::StringTableLayout(const StringTableLayout &rhs)
 	: flags_    { rhs.flags_ }
 	, delims_   { rhs.delims_ }
 	, splitter_ { std::move(rhs.splitter_->clone()) }
@@ -620,7 +626,7 @@ StringTableLayout::StringTableLayout(const StringTableLayout& rhs)
 }
 
 
-StringTableLayout& StringTableLayout::operator=(const StringTableLayout& rhs)
+StringTableLayout& StringTableLayout::operator=(const StringTableLayout &rhs)
 {
 	// TODO Implement reasonable copy assignment for StringTableLayout
 	StringTableLayout copy { rhs };
@@ -629,7 +635,7 @@ StringTableLayout& StringTableLayout::operator=(const StringTableLayout& rhs)
 }
 
 
-void StringTableLayout::swap(StringTableLayout& rhs) noexcept
+void StringTableLayout::swap(StringTableLayout &rhs) noexcept
 {
 	using std::swap;
 	swap(flags_, rhs.flags_);
@@ -782,49 +788,49 @@ void StringTableLayout::flag_set(const Flag f, const bool value)
 }
 
 
-void StringTableLayout::set_top_delim(const std::string& d)
+void StringTableLayout::set_top_delim(const std::string &d)
 {
 	delim_set(Index::ROW_TOP_DELIM, d);
 }
 
 
-void StringTableLayout::set_row_header_delim(const std::string& d)
+void StringTableLayout::set_row_header_delim(const std::string &d)
 {
 	delim_set(Index::ROW_HEADER_DELIM, d);
 }
 
 
-void StringTableLayout::set_row_inner_delim(const std::string& d)
+void StringTableLayout::set_row_inner_delim(const std::string &d)
 {
 	delim_set(Index::ROW_INNER_DELIM, d);
 }
 
 
-void StringTableLayout::set_bottom_delim(const std::string& d)
+void StringTableLayout::set_bottom_delim(const std::string &d)
 {
 	delim_set(Index::ROW_BOTTOM_DELIM, d);
 }
 
 
-void StringTableLayout::set_left_outer_delim(const std::string& d)
+void StringTableLayout::set_left_outer_delim(const std::string &d)
 {
 	delim_set(Index::COL_LEFT_OUTER_DELIM, d);
 }
 
 
-void StringTableLayout::set_col_labels_delim(const std::string& d)
+void StringTableLayout::set_col_labels_delim(const std::string &d)
 {
 	delim_set(Index::COL_LABELS_DELIM, d);
 }
 
 
-void StringTableLayout::set_col_inner_delim(const std::string& d)
+void StringTableLayout::set_col_inner_delim(const std::string &d)
 {
 	delim_set(Index::COL_INNER_DELIM, d);
 }
 
 
-void StringTableLayout::set_right_outer_delim(const std::string& d)
+void StringTableLayout::set_right_outer_delim(const std::string &d)
 {
 	delim_set(Index::COL_RIGHT_OUTER_DELIM, d);
 }
@@ -878,7 +884,7 @@ std::string StringTableLayout::right_outer_delim() const
 }
 
 
-void StringTableLayout::delim_set(const Index i, const std::string& value)
+void StringTableLayout::delim_set(const Index i, const std::string &value)
 {
 	delims_[static_cast<std::underlying_type_t<Flag>>(i)] = value;
 }
@@ -891,7 +897,7 @@ std::string StringTableLayout::delim_get(const Index i) const
 }
 
 
-std::vector<std::string> StringTableLayout::split(const std::string& str,
+std::vector<std::string> StringTableLayout::split(const std::string &str,
 			const std::size_t max_len) const
 {
 	return splitter()->split(str, max_len);
@@ -910,84 +916,84 @@ const StringSplitter* StringTableLayout::splitter() const
 }
 
 
-// StringTablePrinter::Impl
+// TablePrinter::Impl
 
 
-class StringTablePrinter::Impl
+class TablePrinter::Impl
 {
 public:
 
-	void print(std::ostream &o, const StringTable& t) const;
+	void print(std::ostream &o, const PrintableTable &t) const;
 
 protected:
 
 	// Those could be virtual since they directly use o <<
 
-	void title(std::ostream &o, const StringTable& t,
-		const StringTableLayout& l) const;
-	void row_label(std::ostream &o, const StringTable& t, const int row,
+	void title(std::ostream &o, const PrintableTable &t,
+		const StringTableLayout &l) const;
+	void row_label(std::ostream &o, const PrintableTable &t, const int row,
 		const std::size_t width) const;
-	void col_label(std::ostream &o, const StringTable& t, const int col,
+	void col_label(std::ostream &o, const PrintableTable &t, const int col,
 		const std::size_t width) const;
-	void cell(std::ostream &o, const StringTable& t, const int row,
+	void cell(std::ostream &o, const PrintableTable &t, const int row,
 		const int col, const std::size_t width) const;
 
 	// All that follows seems to be non-virtual
 
-	void col_labels(std::ostream &o, const StringTable& t,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l) const;
-	void row(std::ostream &o, const StringTable& t, const int row,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l) const;
-	void rows(std::ostream &o, const StringTable& t,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l) const;
+	void col_labels(std::ostream &o, const PrintableTable &t,
+		std::vector<std::size_t> col_widths, const StringTableLayout &l) const;
+	void row(std::ostream &o, const PrintableTable &t, const int row,
+		std::vector<std::size_t> col_widths, const StringTableLayout &l) const;
+	void rows(std::ostream &o, const PrintableTable &t,
+		std::vector<std::size_t> col_widths, const StringTableLayout &l) const;
 
-	void top_delim(std::ostream &o, const StringTable& t,
-		const StringTableLayout& l) const;
-	void left_outer_col_delim(std::ostream &o, const StringTable& t,
-		const StringTableLayout& l) const;
-	void labels_col_delim(std::ostream &o, const StringTable& t,
-		const StringTableLayout& l) const;
-	void inner_col_delim(std::ostream &o, const StringTable& t,
-		const StringTableLayout& l) const;
-	void right_outer_col_delim(std::ostream &o, const StringTable& t,
-		const StringTableLayout& l) const;
-	void bottom_delim(std::ostream &o, const StringTable& t,
-		const StringTableLayout& l) const;
+	void top_delim(std::ostream &o, const PrintableTable &t,
+		const StringTableLayout &l) const;
+	void left_outer_col_delim(std::ostream &o, const PrintableTable &t,
+		const StringTableLayout &l) const;
+	void labels_col_delim(std::ostream &o, const PrintableTable &t,
+		const StringTableLayout &l) const;
+	void inner_col_delim(std::ostream &o, const PrintableTable &t,
+		const StringTableLayout &l) const;
+	void right_outer_col_delim(std::ostream &o, const PrintableTable &t,
+		const StringTableLayout &l) const;
+	void bottom_delim(std::ostream &o, const PrintableTable &t,
+		const StringTableLayout &l) const;
 
-	void row_delim(std::ostream &o, const StringTable& t,
-		const StringTableLayout& l, const std::size_t width) const;
+	void row_delim(std::ostream &o, const PrintableTable &t,
+		const StringTableLayout &l, const std::size_t width) const;
 
-	void row_delimiters(std::ostream &o, const StringTable& t,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l) const;
+	void row_delimiters(std::ostream &o, const PrintableTable &t,
+		std::vector<std::size_t> col_widths, const StringTableLayout &l) const;
 
-	std::vector<std::size_t> printed_widths(const StringTable& t,
-		const StringTableLayout& l) const;
-	std::size_t optimal_row_label_width(const StringTable& t) const;
+	std::vector<std::size_t> printed_widths(const PrintableTable &t,
+		const StringTableLayout &l) const;
+	std::size_t optimal_row_label_width(const PrintableTable &t) const;
 
 	using print_label_func = std::function<void(std::ostream &o,
-			const StringTable& t, const int row, const std::size_t width)>;
+			const PrintableTable &t, const int row, const std::size_t width)>;
 
 	using print_cell_func = std::function<void(std::ostream &o,
-			const StringTable& t, const int row, const int col,
+			const PrintableTable &t, const int row, const int col,
 			const std::size_t width)>;
 
-	void row_worker(std::ostream &o, const StringTable& t,
+	void row_worker(std::ostream &o, const PrintableTable &t,
 		const int row, std::vector<std::size_t> col_widths,
-		const StringTableLayout& l, const print_label_func& label_f,
-		const print_cell_func& cell_f) const;
-	void row_label_worker(std::ostream &o, const StringTable& t, const int row,
-		const print_label_func& f) const;
-	void row_cells_worker(std::ostream &o, const StringTable& t, const int row,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l,
-		const print_cell_func& f) const;
+		const StringTableLayout &l, const print_label_func &label_f,
+		const print_cell_func &cell_f) const;
+	void row_label_worker(std::ostream &o, const PrintableTable &t, const int row,
+		const print_label_func &f) const;
+	void row_cells_worker(std::ostream &o, const PrintableTable &t, const int row,
+		std::vector<std::size_t> col_widths, const StringTableLayout &l,
+		const print_cell_func &f) const;
 
 	void empty_cell(std::ostream &o, const std::size_t width) const;
 	void line_n(std::ostream &o, const std::size_t width,
-		const std::string& text) const;
+		const std::string &text) const;
 };
 
 
-void StringTablePrinter::Impl::title(std::ostream &o, const StringTable &t,
+void TablePrinter::Impl::title(std::ostream &o, const PrintableTable &t,
 		const StringTableLayout& /* l */) const
 {
 	if (!t.title().empty())
@@ -997,7 +1003,7 @@ void StringTablePrinter::Impl::title(std::ostream &o, const StringTable &t,
 }
 
 
-void StringTablePrinter::Impl::row_label(std::ostream &o, const StringTable& t,
+void TablePrinter::Impl::row_label(std::ostream &o, const PrintableTable &t,
 		const int row, const std::size_t width) const
 {
 	o << std::setw(width) << std::left << t.row_label(row) << std::setfill(' ');
@@ -1005,7 +1011,7 @@ void StringTablePrinter::Impl::row_label(std::ostream &o, const StringTable& t,
 }
 
 
-void StringTablePrinter::Impl::col_label(std::ostream &o, const StringTable& t,
+void TablePrinter::Impl::col_label(std::ostream &o, const PrintableTable &t,
 		const int col, const std::size_t width) const
 {
 	o << std::setw(width) << std::left << t.col_label(col) << std::setfill(' ');
@@ -1013,7 +1019,7 @@ void StringTablePrinter::Impl::col_label(std::ostream &o, const StringTable& t,
 }
 
 
-void StringTablePrinter::Impl::cell(std::ostream &o, const StringTable& t,
+void TablePrinter::Impl::cell(std::ostream &o, const PrintableTable &t,
 		const int row, const int col, const std::size_t col_width) const
 {
 	o << std::setw(col_width);
@@ -1022,28 +1028,28 @@ void StringTablePrinter::Impl::cell(std::ostream &o, const StringTable& t,
 	{
 		case Align::LEFT:
 		{
-			o << std::left << t(row, col);
+			o << std::left << t.ref(row, col);
 			break;
 		}
 		case Align::RIGHT:
 		{
-			o << std::right << t(row, col);
+			o << std::right << t.ref(row, col);
 			break;
 		}
 		case Align::BLOCK:
 		{
-			o << t(row, col);
+			o << t.ref(row, col);
 			break;
 		}
 	};
 }
 
 
-void StringTablePrinter::Impl::col_labels(std::ostream &o, const StringTable& t,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l) const
+void TablePrinter::Impl::col_labels(std::ostream &o, const PrintableTable &t,
+		std::vector<std::size_t> col_widths, const StringTableLayout &l) const
 {
 	// Wrapper for row_label()
-	const auto row_label_f = [&](std::ostream &o, const StringTable& t,
+	const auto row_label_f = [&](std::ostream &o, const PrintableTable &t,
 		const int /*ignore*/, std::size_t width)
 	{
 		// Leftmost visual column is the column with the row labels,
@@ -1055,7 +1061,7 @@ void StringTablePrinter::Impl::col_labels(std::ostream &o, const StringTable& t,
 	};
 
 	// Wrapper for col_label()
-	const auto col_label_f = [&](std::ostream &o, const StringTable& t,
+	const auto col_label_f = [&](std::ostream &o, const PrintableTable &t,
 		const int /* ignore */, const int col, std::size_t width)
 	{
 		col_label(o, t, col, width);
@@ -1065,18 +1071,18 @@ void StringTablePrinter::Impl::col_labels(std::ostream &o, const StringTable& t,
 }
 
 
-void StringTablePrinter::Impl::row(std::ostream &o, const StringTable& t,
+void TablePrinter::Impl::row(std::ostream &o, const PrintableTable &t,
 		const int row, std::vector<std::size_t> col_widths,
-		const StringTableLayout& l) const
+		const StringTableLayout &l) const
 {
 	// Wrapper for row_label()
-	const auto row_label_f = std::bind(&StringTablePrinter::Impl::row_label,
+	const auto row_label_f = std::bind(&TablePrinter::Impl::row_label,
 		this,
 		std::placeholders::_1, std::placeholders::_2,
 		std::placeholders::_3, std::placeholders::_4);
 
 	// Wrapper for cell()
-	const auto cell_f = std::bind(&StringTablePrinter::Impl::cell, this,
+	const auto cell_f = std::bind(&TablePrinter::Impl::cell, this,
 		std::placeholders::_1, std::placeholders::_2,
 		std::placeholders::_3, std::placeholders::_4,
 		std::placeholders::_5);
@@ -1085,8 +1091,8 @@ void StringTablePrinter::Impl::row(std::ostream &o, const StringTable& t,
 }
 
 
-void StringTablePrinter::Impl::rows(std::ostream &o, const StringTable& t,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l) const
+void TablePrinter::Impl::rows(std::ostream &o, const PrintableTable &t,
+		std::vector<std::size_t> col_widths, const StringTableLayout &l) const
 {
 	// Table rows
 	for (auto r = 0; r < t.rows(); ++r)
@@ -1098,10 +1104,10 @@ void StringTablePrinter::Impl::rows(std::ostream &o, const StringTable& t,
 }
 
 
-void StringTablePrinter::Impl::row_worker(std::ostream &o, const StringTable& t,
+void TablePrinter::Impl::row_worker(std::ostream &o, const PrintableTable &t,
 		const int row, std::vector<std::size_t> col_widths,
-		const StringTableLayout& l, const print_label_func& row_label_f,
-		const print_cell_func& cell_f) const
+		const StringTableLayout &l, const print_label_func &row_label_f,
+		const print_cell_func &cell_f) const
 {
 	if (l.left_outer_delims())
 	{
@@ -1129,17 +1135,17 @@ void StringTablePrinter::Impl::row_worker(std::ostream &o, const StringTable& t,
 }
 
 
-void StringTablePrinter::Impl::row_label_worker(std::ostream &o,
-		const StringTable& t, const int row, const print_label_func& f) const
+void TablePrinter::Impl::row_label_worker(std::ostream &o,
+		const PrintableTable &t, const int row, const print_label_func &f) const
 {
 	f(o, t, row, optimal_row_label_width(t));
 }
 
 
-void StringTablePrinter::Impl::row_cells_worker(std::ostream &o,
-		const StringTable& t, const int row,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l,
-		const print_cell_func& cell_f) const
+void TablePrinter::Impl::row_cells_worker(std::ostream &o,
+		const PrintableTable &t, const int row,
+		std::vector<std::size_t> col_widths, const StringTableLayout &l,
+		const print_cell_func &cell_f) const
 {
 	const auto rightmost_col = std::max(0, t.cols() - 1);
 
@@ -1159,7 +1165,7 @@ void StringTablePrinter::Impl::row_cells_worker(std::ostream &o,
 		// Print every col in row
 		for (auto c = std::size_t { 0 }; c < t.cols(); ++c)
 		{
-			const auto& cell_text = (row >= 0) ? t(row, c) : t.col_label(c);
+			const auto& cell_text = (row >= 0) ? t.ref(row, c) : t.col_label(c);
 
 			// Call the actual cell printing function
 			if (Align::BLOCK == t.align(c))
@@ -1247,64 +1253,64 @@ void StringTablePrinter::Impl::row_cells_worker(std::ostream &o,
 }
 
 
-void StringTablePrinter::Impl::empty_cell(std::ostream &o,
+void TablePrinter::Impl::empty_cell(std::ostream &o,
 		const std::size_t width) const
 {
 	o << std::setw(width) << ' ' << std::setfill(' ');
 }
 
 
-void StringTablePrinter::Impl::line_n(std::ostream &o, const std::size_t width,
-		const std::string& text) const
+void TablePrinter::Impl::line_n(std::ostream &o, const std::size_t width,
+		const std::string &text) const
 {
 	o << std::setw(width) << std::left << text << std::setfill(' ');
 }
 
 
-void StringTablePrinter::Impl::top_delim(std::ostream &o, const StringTable& t,
-		const StringTableLayout& l) const
+void TablePrinter::Impl::top_delim(std::ostream &o, const PrintableTable &t,
+		const StringTableLayout &l) const
 {
 	o << l.top_delim();
 }
 
 
-void StringTablePrinter::Impl::left_outer_col_delim(std::ostream &o,
-		const StringTable& t, const StringTableLayout& l) const
+void TablePrinter::Impl::left_outer_col_delim(std::ostream &o,
+		const PrintableTable &t, const StringTableLayout &l) const
 {
 	o << l.left_outer_delim();
 }
 
 
-void StringTablePrinter::Impl::labels_col_delim(std::ostream &o,
-		const StringTable& t, const StringTableLayout& l) const
+void TablePrinter::Impl::labels_col_delim(std::ostream &o,
+		const PrintableTable &t, const StringTableLayout &l) const
 {
 	o << l.col_labels_delim();
 }
 
 
-void StringTablePrinter::Impl::inner_col_delim(std::ostream &o,
-		const StringTable& t, const StringTableLayout& l) const
+void TablePrinter::Impl::inner_col_delim(std::ostream &o,
+		const PrintableTable &t, const StringTableLayout &l) const
 {
 	o << l.col_inner_delim();
 }
 
 
-void StringTablePrinter::Impl::right_outer_col_delim(std::ostream &o,
-		const StringTable& t, const StringTableLayout& l) const
+void TablePrinter::Impl::right_outer_col_delim(std::ostream &o,
+		const PrintableTable &t, const StringTableLayout &l) const
 {
 	o << l.right_outer_delim() << '\n';
 }
 
 
-void StringTablePrinter::Impl::bottom_delim(std::ostream &o,
-		const StringTable& t, const StringTableLayout& l) const
+void TablePrinter::Impl::bottom_delim(std::ostream &o,
+		const PrintableTable &t, const StringTableLayout &l) const
 {
 	o << l.bottom_delim();
 }
 
 
-void StringTablePrinter::Impl::row_delim(std::ostream &o, const StringTable& t,
-		const StringTableLayout& l, const std::size_t width) const
+void TablePrinter::Impl::row_delim(std::ostream &o, const PrintableTable &t,
+		const StringTableLayout &l, const std::size_t width) const
 {
 	const auto n { width / l.row_header_delim().length() };
 	// FIXME This won't work for any width that is not a multiple of the
@@ -1319,9 +1325,9 @@ void StringTablePrinter::Impl::row_delim(std::ostream &o, const StringTable& t,
 }
 
 
-void StringTablePrinter::Impl::row_delimiters(std::ostream &o,
-		const StringTable& t, std::vector<std::size_t> col_widths,
-		const StringTableLayout& l) const
+void TablePrinter::Impl::row_delimiters(std::ostream &o,
+		const PrintableTable &t, std::vector<std::size_t> col_widths,
+		const StringTableLayout &l) const
 {
 	// Header row for row labels column
 	if (l.left_outer_delims())
@@ -1364,8 +1370,8 @@ void StringTablePrinter::Impl::row_delimiters(std::ostream &o,
 }
 
 
-std::vector<std::size_t> StringTablePrinter::Impl::printed_widths(
-		const StringTable& t, const StringTableLayout& l) const
+std::vector<std::size_t> TablePrinter::Impl::printed_widths(
+		const PrintableTable &t, const StringTableLayout &l) const
 {
 	std::vector<std::size_t> printed_widths;
 	printed_widths.reserve(t.cols());
@@ -1392,8 +1398,8 @@ std::vector<std::size_t> StringTablePrinter::Impl::printed_widths(
 }
 
 
-std::size_t StringTablePrinter::Impl::optimal_row_label_width(
-		const StringTable& t) const
+std::size_t TablePrinter::Impl::optimal_row_label_width(
+		const PrintableTable &t) const
 {
 	if (!t.rows()) { return 0; }
 
@@ -1413,7 +1419,7 @@ std::size_t StringTablePrinter::Impl::optimal_row_label_width(
 }
 
 
-void StringTablePrinter::Impl::print(std::ostream &o, const StringTable& t)
+void TablePrinter::Impl::print(std::ostream &o, const PrintableTable &t)
 	const
 {
 	const auto prev_settings { o.flags() };
@@ -1460,33 +1466,33 @@ void StringTablePrinter::Impl::print(std::ostream &o, const StringTable& t)
 }
 
 
-// StringTablePrinter
+// TablePrinter
 
 
-StringTablePrinter::StringTablePrinter()
+TablePrinter::TablePrinter()
 	: impl_ { std::make_unique<Impl>() }
 {
 	// empty
 }
 
 
-StringTablePrinter::~StringTablePrinter() noexcept = default;
+TablePrinter::~TablePrinter() noexcept = default;
 
 
-void StringTablePrinter::print(std::ostream &o, const StringTable& t) const
+void TablePrinter::print(std::ostream &o, const PrintableTable &table) const
 {
-	impl_->print(o, t);
+	impl_->print(o, table);
 }
 
 
 // non-member functions
 
 
-std::ostream& operator << (std::ostream &o, const StringTable &table)
+std::ostream& operator << (std::ostream &o, const PrintableTable &table)
 {
 	if (!table.empty())
 	{
-		StringTablePrinter p;
+		TablePrinter p;
 		p.print(o, table);
 	}
 
