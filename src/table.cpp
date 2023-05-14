@@ -265,12 +265,6 @@ void StringTable::set_title(const std::string &title)
 }
 
 
-std::string StringTable::do_title() const
-{
-	return title_;
-}
-
-
 std::string StringTable::operator()(int row, int col) const
 {
 	return cells_[safe_index(row, col)];
@@ -300,27 +294,9 @@ std::string& StringTable::cell(int row, int col)
 }
 
 
-const std::string& StringTable::do_ref(int row, int col) const
-{
-	return cells_[safe_index(row, col)];
-}
-
-
-int StringTable::do_rows() const
-{
-	return rows_;
-}
-
-
 void StringTable::set_row_label(int row, const std::string& label)
 {
 	row_labels_[row] = label;
-}
-
-
-std::string StringTable::do_row_label(int row) const
-{
-	return row_labels_[row];
 }
 
 
@@ -330,21 +306,9 @@ void StringTable::set_max_height(int row, std::size_t height)
 }
 
 
-std::size_t StringTable::do_max_height(int row) const
-{
-	return row_max_heights_[row];
-}
-
-
 std::size_t StringTable::default_max_height() const
 {
 	return default_max_height_;
-}
-
-
-int StringTable::do_cols() const
-{
-	return cols_;
 }
 
 
@@ -354,21 +318,9 @@ void StringTable::set_col_label(int col, const std::string& label)
 }
 
 
-std::string StringTable::do_col_label(int col) const
-{
-	return col_labels_[col];
-}
-
-
 void StringTable::set_max_width(int col, std::size_t width)
 {
 	col_max_widths_[col] = width;
-}
-
-
-std::size_t StringTable::do_max_width(int col) const
-{
-	return col_max_widths_[col];
 }
 
 
@@ -381,27 +333,6 @@ std::size_t StringTable::default_max_width() const
 void StringTable::set_align(int col, Align align)
 {
 	aligns_[col] = align;
-}
-
-
-Align StringTable::do_align(int col) const
-{
-	return aligns_[col];
-}
-
-
-std::size_t StringTable::do_optimal_width(const int col) const
-{
-	auto width = std::size_t { 0 };
-	auto optimal_width { width };
-
-	for(auto row = int { 0 }; row < rows(); ++row)
-	{
-		width = cell(row, col).length();
-		if (width > optimal_width) { optimal_width = width; }
-	}
-
-	return optimal_width;
 }
 
 
@@ -475,12 +406,6 @@ void StringTable::set_layout(std::unique_ptr<StringTableLayout> l)
 }
 
 
-const StringTableLayout* StringTable::do_layout() const
-{
-	return layout_.get();
-}
-
-
 void StringTable::swap(StringTable& rhs) noexcept
 {
 	using std::swap;
@@ -517,6 +442,81 @@ StringTable::index_type StringTable::safe_index(const int row, const int col)
 	std::ostringstream ss;
 	ss << "Cell at " << row << "," << col << " cannot be accessed";
 	throw std::runtime_error(ss.str());
+}
+
+
+std::string StringTable::do_title() const
+{
+	return title_;
+}
+
+
+const std::string& StringTable::do_ref(int row, int col) const
+{
+	return cells_[safe_index(row, col)];
+}
+
+
+int StringTable::do_rows() const
+{
+	return rows_;
+}
+
+
+std::string StringTable::do_row_label(int row) const
+{
+	return row_labels_[row];
+}
+
+
+std::size_t StringTable::do_max_height(int row) const
+{
+	return row_max_heights_[row];
+}
+
+
+int StringTable::do_cols() const
+{
+	return cols_;
+}
+
+
+std::string StringTable::do_col_label(int col) const
+{
+	return col_labels_[col];
+}
+
+
+std::size_t StringTable::do_max_width(int col) const
+{
+	return col_max_widths_[col];
+}
+
+
+Align StringTable::do_align(int col) const
+{
+	return aligns_[col];
+}
+
+
+std::size_t StringTable::do_optimal_width(const int col) const
+{
+	auto width = std::size_t { 0 };
+	auto optimal_width { width };
+
+	for(auto row = int { 0 }; row < rows(); ++row)
+	{
+		width = cell(row, col).length();
+		if (width > optimal_width) { optimal_width = width; }
+	}
+
+	return optimal_width;
+}
+
+
+const StringTableLayout* StringTable::do_layout() const
+{
+	return layout_.get();
 }
 
 

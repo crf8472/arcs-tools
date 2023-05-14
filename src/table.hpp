@@ -140,6 +140,104 @@ class StringTableLayout;
  */
 class PrintableTable
 {
+public:
+
+	/**
+	 * \brief Table title.
+	 *
+	 * \return Table title
+	 */
+	std::string title() const;
+
+	/**
+	 * \brief Read cell by row and column.
+	 *
+	 * Provide a const reference of the cell value.
+	 *
+	 * \param[in] row  Table row to access
+	 * \param[in] col  Table column to access
+	 *
+	 * \return Content of the cell
+	 */
+	const std::string& ref(int row, int col) const;
+
+	/**
+	 * \brief Number of actual rows in the table.
+	 *
+	 * \return Number of rows
+	 */
+	int rows() const;
+
+	/**
+	 * \brief Label of specified row.
+	 *
+	 * \param[in] row Table row to get label from
+	 *
+	 * \return Label of the specified row
+	 */
+	std::string row_label(int row) const;
+
+	/**
+	 * \brief Maximal height for this row.
+	 *
+	 * \param[in] row    Index of row
+	 *
+	 * \return Maximal height in characters
+	 */
+	std::size_t max_height(int row) const;
+
+	/**
+	 * \brief Number of actual columns in the table.
+	 *
+	 * \return Number of columns
+	 */
+	int cols() const;
+
+	/**
+	 * \brief Label of specified column.
+	 *
+	 * \param[in] col Table column to get label from
+	 *
+	 * \return Label of the specified column
+	 */
+	std::string col_label(int col) const;
+
+	/**
+	 * \brief Maximal width for this column.
+	 *
+	 * \param[in] col    Index of column
+	 *
+	 * \return Maximal width in characters
+	 */
+	std::size_t max_width(int col) const;
+
+	/**
+	 * \brief Alignment of the specified column.
+	 *
+	 * \return Alignment applied to the specified column.
+	 */
+	Align align(int col) const;
+
+	/**
+	 * \brief Optimal width of a column ignoring its column label.
+	 *
+	 * The column label if any may have a greater width. The optimal
+	 * width of a column respecting its label can be determined by
+	 * <code>std::max(optimal_width(c), col_label(c).width())</code>.
+	 *
+	 * \return The optimal width of the specified column
+	 */
+	std::size_t optimal_width(const int col) const;
+
+	/**
+	 * \brief The layout to be used for printing.
+	 *
+	 * \return Layout for this table
+	 */
+	const StringTableLayout* layout() const;
+
+private:
+
 	virtual std::string do_title() const
 	= 0;
 
@@ -172,23 +270,6 @@ class PrintableTable
 
 	virtual const StringTableLayout* do_layout() const
 	= 0;
-
-public:
-
-	std::string title() const;
-	const std::string& ref(int row, int col) const;
-
-	int rows() const;
-	std::string row_label(int row) const;
-	std::size_t max_height(int row) const;
-
-	int cols() const;
-	std::string col_label(int col) const;
-	std::size_t max_width(int col) const;
-	Align align(int col) const;
-	std::size_t optimal_width(const int col) const;
-
-	const StringTableLayout* layout() const;
 };
 
 
@@ -436,98 +517,26 @@ public:
 
 private:
 
-	/**
-	 * \brief Table title.
-	 *
-	 * \return Table title
-	 */
 	std::string do_title() const final;
 
-	/**
-	 * \brief Read cell by row and column.
-	 *
-	 * Provide a const reference of the cell value.
-	 *
-	 * \param[in] row  Table row to access
-	 * \param[in] col  Table column to access
-	 *
-	 * \return Content of the cell
-	 */
 	const std::string& do_ref(int row, int col) const final;
 
-	/**
-	 * \brief Number of actual rows in the table.
-	 *
-	 * \return Number of rows
-	 */
 	int do_rows() const final;
 
-	/**
-	 * \brief Label of specified row.
-	 *
-	 * \param[in] row Table row to get label from
-	 *
-	 * \return Label of the specified row
-	 */
 	std::string do_row_label(int row) const final;
 
-	/**
-	 * \brief Maximal height for this row.
-	 *
-	 * \param[in] row    Index of row
-	 *
-	 * \return Maximal height in characters
-	 */
 	std::size_t do_max_height(int row) const final;
 
-	/**
-	 * \brief Number of actual columns in the table.
-	 *
-	 * \return Number of columns
-	 */
 	int do_cols() const final;
 
-	/**
-	 * \brief Label of specified column.
-	 *
-	 * \param[in] col Table column to get label from
-	 *
-	 * \return Label of the specified column
-	 */
 	std::string do_col_label(int col) const final;
 
-	/**
-	 * \brief Maximal width for this column.
-	 *
-	 * \param[in] col    Index of column
-	 *
-	 * \return Maximal width in characters
-	 */
 	std::size_t do_max_width(int col) const final;
 
-	/**
-	 * \brief Alignment of the specified column.
-	 *
-	 * \return Alignment applied to the specified column.
-	 */
 	Align do_align(int col) const final;
 
-	/**
-	 * \brief Optimal width of a column ignoring its column label.
-	 *
-	 * The column label if any may have a greater width. The optimal
-	 * width of a column respecting its label can be determined by
-	 * <code>std::max(optimal_width(c), col_label(c).width())</code>.
-	 *
-	 * \return The optimal width of the specified column
-	 */
 	std::size_t do_optimal_width(const int col) const final;
 
-	/**
-	 * \brief The layout to be used for printing.
-	 *
-	 * \return Layout for this table
-	 */
 	const StringTableLayout* do_layout() const final;
 
 protected:
