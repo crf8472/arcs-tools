@@ -33,6 +33,7 @@
 #include "layouts.hpp"           // for Layout, ResultFormatter
 #endif
 
+
 namespace arcsapp
 {
 
@@ -64,7 +65,8 @@ public:
 	static constexpr OptionCode REFVALUES    = BASE +  4;
 	static constexpr OptionCode PRINTALL     = BASE +  5;
 	static constexpr OptionCode BOOLEAN      = BASE +  6;
-	static constexpr OptionCode NOOUTPUT     = BASE +  7; // 27
+	static constexpr OptionCode NOOUTPUT     = BASE +  7;
+	static constexpr OptionCode COLORED      = BASE +  8; // 28
 };
 
 
@@ -128,9 +130,11 @@ private:
 
 	virtual void configure_composer(ResultComposer& composer) const final;
 
-	virtual void do_their_checksum(const Checksum& checksum,
-		const bool does_match, const int record, const int field,
-		ResultComposer* b) const final;
+	virtual void do_their_match(const Checksum& checksum, const int record,
+			const int field, ResultComposer* c) const final;
+
+	virtual void do_their_mismatch(const Checksum& checksum, const int record,
+			const int field, ResultComposer* c) const final;
 
 	std::string format_their_checksum(const Checksum& checksum,
 		const bool does_match) const;
@@ -159,7 +163,8 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	 */
 	std::unique_ptr<VerifyResultFormatter> configure_layout(
 			const Options &options,
-			const std::vector<arcstk::checksum::type> &types) const;
+			const std::vector<arcstk::checksum::type> &types,
+			const Match &match) const;
 
 	/**
 	 * \brief Provide reference checksums from options.

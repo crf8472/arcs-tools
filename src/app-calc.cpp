@@ -512,13 +512,15 @@ std::unique_ptr<CalcResultFormatter> ARCalcApplication::configure_layout(
 	// Print filenames if they are not forbidden and a TOC is _not_ present
 	fmt->set_filename(options.is_set(CALC::NOFILENAMES) ? false : !has_toc);
 
-	StringTableLayout l;
+	auto layout { std::make_unique<StringTableLayout>() };
 
 	// Define delimiters and switch them on or off
 
-	l.set_col_inner_delim(options.is_set(CALC::COLDELIM)
+	layout->set_col_inner_delim(options.is_set(CALC::COLDELIM)
 		? options.value(CALC::COLDELIM)
 		: " ");
+
+	fmt->set_table_layout(std::move(layout));
 
 	// Print tracks either as columns or as rows
 
@@ -528,15 +530,14 @@ std::unique_ptr<CalcResultFormatter> ARCalcApplication::configure_layout(
 		creator = std::make_unique<ColResultComposerBuilder>();
 
 		// delimiter between labels column and column for first track
-		l.set_col_labels_delim(l.col_inner_delim());
-		l.set_col_labels_delims(true);
+		layout->set_col_labels_delim(layout->col_inner_delim());
+		layout->set_col_labels_delims(true);
 	} else
 	{
 		creator = std::make_unique<RowResultComposerBuilder>();
 	}
 
 	fmt->set_builder_creator(std::move(creator));
-	fmt->set_table_layout(l);
 
 	return fmt;
 }

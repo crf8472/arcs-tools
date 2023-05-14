@@ -27,9 +27,6 @@
 #include <arcstk/logging.hpp>       // for ARCS_LOG_DEBUG, ARCS_LOG_ERROR
 #endif
 
-#ifndef __ARCSTOOLS_APPLICATION_HPP__
-#include "application.hpp"          // for color::Modifier
-#endif
 #ifndef __ARCSTOOLS_APPREGISTRY_HPP__
 #include "appregistry.hpp"          // for RegisterApplicationType
 #endif
@@ -41,6 +38,9 @@
 #endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"              // for ARIdLayout
+#endif
+#ifndef __ARCSTOOLS_TABLE_HPP__
+#include "table.hpp"                // for StringTableLayout, BoolDecorator
 #endif
 #ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
 #include "tools-parse.hpp"          // for ContentHandler
@@ -181,7 +181,11 @@ void ARVerifyConfigurator::flush_local_options(OptionRegistry &r) const
 
 		{ VERIFY::NOOUTPUT ,
 		{  'n', "no-output", false, "FALSE",
-			"Do not print the result (implies --boolean)" }}
+			"Do not print the result (implies --boolean)" }},
+
+		{ VERIFY::COLORED ,
+		{  "colors", false, "FALSE",
+			"Use colored output" }}
 	});
 }
 
@@ -414,19 +418,17 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 }
 
 
-void VerifyResultFormatter::do_their_checksum(const Checksum& checksum,
-		const bool does_match, const int record, const int field,
-		ResultComposer* b) const
+void VerifyResultFormatter::do_their_match(const Checksum& checksum,
+		const int record_idx, const int field_idx, ResultComposer* c) const
 {
-	b->set_field(record, field,
-			this->format_their_checksum(checksum, does_match));
+	c->set_field(record_idx, field_idx, match_symbol());
 }
 
 
-std::string VerifyResultFormatter::format_their_checksum(
-		const Checksum& checksum, const bool does_match) const
+void VerifyResultFormatter::do_their_mismatch(const Checksum& checksum,
+		const int record_idx, const int field_idx, ResultComposer* c) const
 {
-	return does_match ? match_symbol() : this->checksum(checksum);
+	c->set_field(record_idx, field_idx, this->checksum(checksum));
 }
 
 
@@ -435,7 +437,8 @@ std::string VerifyResultFormatter::format_their_checksum(
 
 std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 		const Options &options,
-		const std::vector<arcstk::checksum::type> &types) const
+		const std::vector<arcstk::checksum::type> &types, const Match &match)
+		const
 {
 	auto fmt = std::unique_ptr<VerifyResultFormatter>
 	{
@@ -491,14 +494,20 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 	// Method for creating the result table
 	fmt->set_builder_creator(std::make_unique<RowResultComposerBuilder>());
 
-	StringTableLayout l;
+	auto layout { std::make_unique<StringTableLayout>() };
 
 	// Set inner column delimiter
-	l.set_col_inner_delim(options.is_set(VERIFY::COLDELIM)
+	layout->set_col_inner_delim(options.is_set(VERIFY::COLDELIM)
 		? options.value(VERIFY::COLDELIM)
 		: " ");
 
-	fmt->set_table_layout(l);
+	fmt->set_table_layout(std::move(layout));
+
+	// Set colors
+	if (options.is_set(VERIFY::COLORED))
+	{
+		// TODO Implement option --colors
+	}
 
 	return fmt;
 }
@@ -676,7 +685,7 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 {
 	// Parse reference ARCSs from AccurateRip
 
-	const auto ref_response = options.is_set(VERIFY::REFVALUES)
+	const auto ref_respns = options.is_set(VERIFY::REFVALUES)
 		? ARResponse { /* empty */ }
 		: parse_response(options);
 
@@ -684,7 +693,7 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 		? parse_refvalues(options)
 		: std::vector<Checksum> { /* empty */ };
 
-	if (ref_values.empty() && !ref_response.size())
+	if (ref_values.empty() && !ref_respns.size())
 	{
 		throw std::runtime_error(
 				"No reference checksums for matching available.");
@@ -762,7 +771,7 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 
 		if (!diff) // No ListMatcher for some refvals previously set?
 		{
-			diff = std::make_unique<AlbumMatcher>(checksums, arid, ref_response);
+			diff = std::make_unique<AlbumMatcher>(checksums, arid, ref_respns);
 		}
 
 		print_filenames = !single_audio_file;
@@ -772,7 +781,7 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 
 		if (!diff) // No ListMatcher for some refvals previously set
 		{
-			diff = std::make_unique<TracksetMatcher>(checksums, ref_response);
+			diff = std::make_unique<TracksetMatcher>(checksums, ref_respns);
 		}
 
 		if (Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG))
@@ -845,11 +854,13 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 			: std::vector<TYPE>{ TYPE::ARCS1 };
 	}
 
-	const auto layout { configure_layout(options, types_to_print) };
+	const auto match { diff->match() };
+
+	const auto f { configure_layout(options, types_to_print, *match) };
 
 	auto result {
-		layout->format(checksums, &ref_response, ref_values,
-			diff->match(), best_block, toc.get(), arid, alt_prefix, filenames)
+		f->format(checksums, &ref_respns, ref_values,
+			match, best_block, toc.get(), arid, alt_prefix, filenames)
 	};
 
 	auto exit_code = options.is_set(VERIFY::BOOLEAN)
