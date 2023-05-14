@@ -128,6 +128,18 @@ StringTable ResultComposer::table() const
 }
 
 
+int ResultComposer::get_row(const int i, const int j) const
+{
+	return do_get_row(i, j);
+}
+
+
+int ResultComposer::get_col(const int i, const int j) const
+{
+	return do_get_col(i, j);
+}
+
+
 ResultComposer::ResultComposer(const std::vector<ATTR>& fields,
 		StringTable&& table)
 	: RecordInterface<StringTable, ATTR>  { std::move(table) }
@@ -148,9 +160,9 @@ ResultComposer::ResultComposer(const std::vector<ATTR>& fields,
 }
 
 
-std::string& ResultComposer::value(const int record, const int attribute)
+std::string& ResultComposer::value(const int record, const int field)
 {
-	return in_table()(get_row(record, attribute), get_col(record, attribute));
+	return in_table()(get_row(record, field), get_col(record, field));
 }
 
 
@@ -166,17 +178,17 @@ const StringTable& ResultComposer::from_table() const
 }
 
 
-void ResultComposer::assign_labels(const std::vector<ATTR>& attributes)
+void ResultComposer::assign_labels(const std::vector<ATTR>& fields)
 {
 	using std::begin;
 	using std::end;
 
 	// THEIRS is the only attribute that could occurr multiple times.
 	// If it does, we want to append a counter in the label
-	const auto has_multiple_theirs = [&attributes]()
+	const auto has_multiple_theirs = [&fields]()
 		{
 			auto theirs = bool { false };
-			for (const auto& a : attributes)
+			for (const auto& a : fields)
 			{
 				if (ATTR::THEIRS == a)
 				{
@@ -190,12 +202,12 @@ void ResultComposer::assign_labels(const std::vector<ATTR>& attributes)
 	// Add labels from internal label store
 	auto theirs = int { 0 };
 	auto label_p { end(labels_) };
-	for (auto a = int { 0 }; a < attributes.size(); ++a)
+	for (auto a = int { 0 }; a < fields.size(); ++a)
 	{
-		label_p = labels_.find(attributes.at(a));
+		label_p = labels_.find(fields.at(a));
 		if (end(labels_) != label_p)
 		{
-			if (has_multiple_theirs && ATTR::THEIRS == attributes.at(a))
+			if (has_multiple_theirs && ATTR::THEIRS == fields.at(a))
 			{
 				this->set_field_label(a, label_p->second
 						+ (theirs < 10 ? " " : "")
@@ -338,13 +350,13 @@ std::string RowResultComposer::field_label(const int field_idx) const
 }
 
 
-int RowResultComposer::get_row(const int i, const int j) const
+int RowResultComposer::do_get_row(const int i, const int j) const
 {
 	return i;
 }
 
 
-int RowResultComposer::get_col(const int i, const int j) const
+int RowResultComposer::do_get_col(const int i, const int j) const
 {
 	return j;
 }
@@ -354,9 +366,10 @@ int RowResultComposer::get_col(const int i, const int j) const
 
 
 ColResultComposer::ColResultComposer(const std::size_t total_records,
-		const std::vector<ATTR>& attrs, const bool with_labels)
-	: ResultComposer(attrs, StringTable {
-			static_cast<int>(attrs.size()), static_cast<int>(total_records) })
+		const std::vector<ATTR>& field_types, const bool with_labels)
+	: ResultComposer(field_types, StringTable {
+			static_cast<int>(field_types.size()),
+			static_cast<int>(total_records) })
 {
 	// Each column contains each type, therefore each column is RIGHT
 	for (auto col = int { 0 }; col < from_table().cols(); ++col)
@@ -366,7 +379,8 @@ ColResultComposer::ColResultComposer(const std::size_t total_records,
 
 	if (with_labels)
 	{
-		this->assign_labels(attrs); // XXX virtual call of set_field_label()
+		this->assign_labels(field_types);
+		// XXX virtual call of set_field_label()
 	}
 }
 
@@ -396,13 +410,13 @@ std::string ColResultComposer::field_label(const int field_idx) const
 }
 
 
-int ColResultComposer::get_row(const int i, const int j) const
+int ColResultComposer::do_get_row(const int i, const int j) const
 {
 	return j;
 }
 
 
-int ColResultComposer::get_col(const int i, const int j) const
+int ColResultComposer::do_get_col(const int i, const int j) const
 {
 	return i;
 }
@@ -412,27 +426,27 @@ int ColResultComposer::get_col(const int i, const int j) const
 
 
 std::unique_ptr<ResultComposer> ResultComposerBuilder::create_composer(
-		const std::size_t entries,
-		const std::vector<ATTR>& attributes, const bool with_labels) const
+		const std::size_t records,
+		const std::vector<ATTR>& field_types, const bool with_labels) const
 {
-	return do_create_composer(entries, attributes, with_labels);
+	return do_create_composer(records, field_types, with_labels);
 }
 
 
 std::unique_ptr<ResultComposer> RowResultComposerBuilder::do_create_composer(
-		const std::size_t entries,
-		const std::vector<ATTR>& attributes, const bool with_labels) const
+		const std::size_t records,
+		const std::vector<ATTR>& field_types, const bool with_labels) const
 {
-	return std::make_unique<RowResultComposer>(entries, attributes,
+	return std::make_unique<RowResultComposer>(records, field_types,
 			with_labels);
 }
 
 
 std::unique_ptr<ResultComposer> ColResultComposerBuilder::do_create_composer(
-		const std::size_t entries,
-		const std::vector<ATTR>& attributes, const bool with_labels) const
+		const std::size_t records,
+		const std::vector<ATTR>& field_types, const bool with_labels) const
 {
-	return std::make_unique<ColResultComposer>(entries, attributes,
+	return std::make_unique<ColResultComposer>(records, field_types,
 			with_labels);
 }
 
@@ -455,22 +469,22 @@ const ResultComposerBuilder* ResultFormatter::builder_creator() const
 
 std::unique_ptr<ResultComposer> ResultFormatter::create_composer(
 		const std::size_t entries,
-		const std::vector<ATTR>& attributes, const bool with_labels) const
+		const std::vector<ATTR>& field_types, const bool with_labels) const
 {
-	return builder_creator()->create_composer(entries, attributes,
+	return builder_creator()->create_composer(entries, field_types,
 			with_labels);
 }
 
 
-void ResultFormatter::set_table_layout(const StringTableLayout& l)
+void ResultFormatter::set_table_layout(std::unique_ptr<StringTableLayout> l)
 {
-	table_layout_ = l;
+	table_layout_ = std::move(l);
 }
 
 
-StringTableLayout ResultFormatter::table_layout() const
+StringTableLayout ResultFormatter::copy_table_layout() const
 {
-	return table_layout_;
+	return *table_layout_;
 }
 
 
@@ -642,7 +656,7 @@ std::unique_ptr<Result> ResultFormatter::build_result(
 		const std::vector<std::string>& filenames,
 		const std::vector<arcstk::checksum::type>& types_to_print) const
 {
-	// Flags to indicate whether requested attributes should actually
+	// Flags to indicate whether requested field_types should actually
 	// be printed
 
 	// Only if a TOC is present, we print track information as requested
@@ -703,18 +717,18 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 	// Determine whether to use the ARResponse
 	const auto use_response { response != nullptr && response->size() };
 
-	// Determine total number of 'theirs' attributes to print
+	// Determine total number of 'theirs' field_types to print
 	const auto total_theirs {
 		block < 0  // print all?
 			? (use_response ? response->size() : (refvals ? 1 : 0))
 			: 1
 	};
 
-	const auto attributes { create_attributes(
+	const auto fields { create_attributes(
 			p_tracks, p_offsets, p_lengths, p_filenames,
 			types_to_print, total_theirs) };
 
-	auto c { create_composer(checksums.size(), attributes, label()) };
+	auto c { create_composer(checksums.size(), fields, label()) };
 
 	configure_composer(*c);
 
@@ -723,6 +737,7 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 
 	auto does_match = bool { false };
 	auto track = int { 1 }; // is always i + 1
+	auto field_idx = int { 0 };
 	for (auto i = int { 0 }; i < c->total_records(); ++track, ++i)
 	{
 		if (p_tracks)
@@ -767,36 +782,32 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 		{
 			for (auto b = int { 0 }; b < total_theirs; ++b)
 			{
+				field_idx = c->field_idx(ATTR::THEIRS, b + 1);
+
 				does_match = match->track(b, i, true)
 					|| match->track(b, i, false);
 
 				their_checksum(response->at(b).at(i).arcs(), does_match,
-						i, c->field_idx(ATTR::THEIRS, b + 1), c.get());
+						i, field_idx, c.get());
 			}
 		} else
 		{
 			if (refvals && match)
 			{
+				field_idx = c->field_idx(ATTR::THEIRS, 1);
+
 				does_match = match->track(block, i, true)
 					|| match->track(block, i, false);
 
 				their_checksum(refvals->at(i), does_match,
-						i, c->field_idx(ATTR::THEIRS, 1), c.get());
+						i, field_idx, c.get());
 			}
 		}
 	} // records
 
-	c->set_layout(std::make_unique<StringTableLayout>(table_layout()));
+	c->set_layout(std::make_unique<StringTableLayout>(copy_table_layout()));
 
 	return configure_table(c->table());
-}
-
-
-void ResultFormatter::their_checksum(const Checksum& checksum,
-		const bool does_match, const int record, const int field,
-		ResultComposer* c) const
-{
-	do_their_checksum(checksum, does_match, record, field, c);
 }
 
 
@@ -807,11 +818,26 @@ void ResultFormatter::mine_checksum(const Checksum& checksum,
 }
 
 
+void ResultFormatter::their_checksum(const Checksum& checksum,
+		const bool does_match, const int record, const int field,
+		ResultComposer* c) const
+{
+	if (does_match)
+	{
+		do_their_match(checksum, record, field, c);
+	} else
+	{
+		do_their_mismatch(checksum, record, field, c);
+	}
+}
+
+
 std::string ResultFormatter::checksum(const Checksum& checksum) const
 {
 	if (checksum_layout())
 	{
 		return checksum_layout()->format(checksum, 8);
+		// 8 chars for hexadecimal represented 32 bit checksums
 	}
 
 	std::ostringstream out;
@@ -834,10 +860,15 @@ void ResultFormatter::do_mine_checksum(const Checksum& checksum,
 }
 
 
-void ResultFormatter::do_their_checksum(
-		const Checksum& /* checksum */, const bool /* does_match */,
-		const int /* record */, const int /* thrs_idx */,
-		ResultComposer* /* b */) const
+void ResultFormatter::do_their_match(const Checksum& checksum, const int record,
+		const int field, ResultComposer* c) const
+{
+	// do nothing
+}
+
+
+void ResultFormatter::do_their_mismatch(const Checksum& checksum,
+		const int record, const int field, ResultComposer* c) const
 {
 	// do nothing
 }

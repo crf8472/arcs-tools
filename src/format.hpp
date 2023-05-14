@@ -266,8 +266,8 @@ private:
 /**
  * \brief Attributes for representing result data.
  *
- * Use this attributes to define a layout for printing the result. The concrete
- * ResultComposer will know whether the attributes are rows or columns in the
+ * Use this field_types to define a layout for printing the result. The concrete
+ * ResultComposer will know whether the field_types are rows or columns in the
  * result table to build.
  */
 enum class ATTR: int
@@ -296,7 +296,7 @@ using table::StringTableLayout;
 /**
  * \brief Interface for constructing a result table.
  *
- * A ResultComposer builds a StringTable with entries and attributes. Each
+ * A ResultComposer builds a StringTable with records and field_types. Each
  * record contains a value for each of its defined fields.
  */
 class ResultComposer : public RecordInterface<StringTable, ATTR>
@@ -317,13 +317,23 @@ public:
 	 */
 	StringTable table() const;
 
+	/**
+	 * \brief Get the table row.
+	 */
+	int get_row(const int i, const int j) const;
+
+	/**
+	 * \brief Get the table column.
+	 */
+	int get_col(const int i, const int j) const;
+
 protected:
 
 	/**
 	 * \brief Common constructor.
 	 *
-	 * \param[in] fields   Ordering of attributes
-	 * \param[in] table    Table with dimensions for entries and attributes
+	 * \param[in] fields   Ordering of field_types
+	 * \param[in] table    Table with dimensions for records and field_types
 	 */
 	ResultComposer(const std::vector<ATTR>& fields, StringTable&& table);
 
@@ -356,7 +366,7 @@ protected:
 	 *
 	 * The labels are composed from the default names of the attribute labels.
 	 */
-	void assign_labels(const std::vector<ATTR>& attributes);
+	void assign_labels(const std::vector<ATTR>& field_types);
 
 private:
 
@@ -378,10 +388,10 @@ private:
 
 	//
 
-	virtual int get_row(const int i, const int j) const
+	virtual int do_get_row(const int i, const int j) const
 	= 0;
 
-	virtual int get_col(const int i, const int j) const
+	virtual int do_get_col(const int i, const int j) const
 	= 0;
 
 	virtual void set_field_label(const int field_idx, const std::string& label)
@@ -405,12 +415,12 @@ class RowResultComposer final : public ResultComposer
 
 	void set_field_label(const int field_idx, const std::string& label) final;
 	std::string field_label(const int field_idx) const final;
-	int get_row(const int i, const int j) const final;
-	int get_col(const int i, const int j) const final;
+	int do_get_row(const int i, const int j) const final;
+	int do_get_col(const int i, const int j) const final;
 
 public:
 
-	RowResultComposer(const std::size_t entries,
+	RowResultComposer(const std::size_t records,
 		const std::vector<ATTR>& order, const bool with_labels);
 };
 
@@ -425,12 +435,12 @@ class ColResultComposer final : public ResultComposer
 
 	void set_field_label(const int field_idx, const std::string& label) final;
 	std::string field_label(const int field_idx) const final;
-	int get_row(const int i, const int j) const final;
-	int get_col(const int i, const int j) const final;
+	int do_get_row(const int i, const int j) const final;
+	int do_get_col(const int i, const int j) const final;
 
 public:
 
-	ColResultComposer(const std::size_t entries,
+	ColResultComposer(const std::size_t records,
 		const std::vector<ATTR>& order, const bool with_labels);
 };
 
@@ -443,14 +453,14 @@ class ResultComposerBuilder
 public:
 
 	std::unique_ptr<ResultComposer> create_composer(
-		const std::size_t entries,
-		const std::vector<ATTR>& attributes, const bool with_labels) const;
+		const std::size_t records,
+		const std::vector<ATTR>& field_types, const bool with_labels) const;
 
 private:
 
 	virtual std::unique_ptr<ResultComposer> do_create_composer(
-		const std::size_t entries,
-		const std::vector<ATTR>& attributes, const bool with_labels) const
+		const std::size_t records,
+		const std::vector<ATTR>& field_types, const bool with_labels) const
 	= 0;
 };
 
@@ -461,8 +471,8 @@ private:
 class RowResultComposerBuilder final : public ResultComposerBuilder
 {
 	std::unique_ptr<ResultComposer> do_create_composer(
-		const std::size_t entries,
-		const std::vector<ATTR>& attributes, const bool with_labels) const
+		const std::size_t records,
+		const std::vector<ATTR>& field_types, const bool with_labels) const
 		final;
 };
 
@@ -473,8 +483,8 @@ class RowResultComposerBuilder final : public ResultComposerBuilder
 class ColResultComposerBuilder final : public ResultComposerBuilder
 {
 	std::unique_ptr<ResultComposer> do_create_composer(
-		const std::size_t entries,
-		const std::vector<ATTR>& attributes, const bool with_labels) const
+		const std::size_t records,
+		const std::vector<ATTR>& field_types, const bool with_labels) const
 		final;
 };
 
@@ -516,22 +526,22 @@ public:
 	 * Uses the internal ResultComposer instance.
 	 */
 	std::unique_ptr<ResultComposer> create_composer(
-		const std::size_t entries,
-		const std::vector<ATTR>& attributes, const bool with_labels) const;
+		const std::size_t records,
+		const std::vector<ATTR>& field_types, const bool with_labels) const;
 
 	/**
 	 * \brief Set the layout to use for formatting the output table.
 	 *
 	 * \param[in] table_layout The StringTableLayout to set
 	 */
-	void set_table_layout(const StringTableLayout& table_layout);
+	void set_table_layout(std::unique_ptr<StringTableLayout> layout);
 
 	/**
 	 * \brief Layout to use for formatting the output table.
 	 *
 	 * \return The StringTableLayout to use
 	 */
-	StringTableLayout table_layout() const;
+	StringTableLayout copy_table_layout() const;
 
 	/**
 	 * \brief Set the layout to use for formatting the ARId.
@@ -655,7 +665,7 @@ protected:
 	/**
 	 * \brief Build the result representation.
 	 *
-	 * Calls create_attributes() to determine and create the attributes for the
+	 * Calls create_attributes() to determine and create the field_types for the
 	 * result object, create_composer() to instantiate the ResultComposer
 	 * instance, and build_table() to populate the result table with the
 	 * relevant data.
@@ -693,7 +703,7 @@ protected:
 		const ARId& arid, const std::vector<std::string>& filenames) const;
 
 	/**
-	 * \brief Create the result attributes.
+	 * \brief Create the result field_types.
 	 *
 	 * \param[in] tracks       Iff TRUE, print tracks
 	 * \param[in] offsets      Iff TRUE, print offsets
@@ -701,7 +711,7 @@ protected:
 	 * \param[in] filenames    Iff TRUE, print filenames
 	 * \param[in] types        List of checksum types to print
 	 *
-	 * \return Sequence of result attributes to form an record
+	 * \return Sequence of result field_types to form an record
 	 */
 	std::vector<ATTR> create_attributes(const bool tracks,
 		const bool offsets, const bool lengths, const bool filenames,
@@ -744,6 +754,21 @@ protected:
 		const bool p_filenames) const;
 
 	/**
+	 * \brief Print my checksums.
+	 *
+	 * Used by build_table().
+	 *
+	 * Note that \c record also determines access to \c checksums.
+	 *
+	 * \param[in] checksums  Result checksums
+	 * \param[in] record     Index of the record in \c c to edit
+	 * \param[in] field      Index of the field in \c c to edit
+	 * \param[in] c          ResultComposer to use
+	 */
+	void mine_checksum(const Checksum& checksum,
+		const int record, const int field, ResultComposer* c) const;
+
+	/**
 	 * \brief Print their checksums.
 	 *
 	 * Used by build_table().
@@ -760,30 +785,11 @@ protected:
 		const int record, const int field, ResultComposer* c) const;
 
 	/**
-	 * \brief Print my checksums.
-	 *
-	 * Used by build_table().
-	 *
-	 * Note that \c record also determines access to \c checksums.
-	 *
-	 * \param[in] checksums  Result checksums
-	 * \param[in] record     Index of the record in \c c to edit
-	 * \param[in] field      Index of the field in \c c to edit
-	 * \param[in] c          ResultComposer to use
-	 */
-	void mine_checksum(const Checksum& checksum,
-		const int record, const int field, ResultComposer* c) const;
-
-	/**
-	 * \brief Worker for mine_checksums().
+	 * \brief Worker for printing a checksum to the result object.
 	 *
 	 * If checksum_layout() is available for formatting the checksums, it
 	 * is used, otherwise the fitting implementation of operator '<<' is
 	 * picked (which could be libarcstk's).
-	 *
-	 * The caller is responsible that \c record picks an existing column
-	 * in \c b. (E.g. you wont' pass 'mine' in some subclass like
-	 * CalcResultFormatter that does not define an attribute 'mine'.)
 	 *
 	 * \param[in] checksum  Result checksum
 	 *
@@ -818,12 +824,23 @@ private:
 	 */
 	virtual StringTable configure_table(StringTable&& table) const;
 
+	/**
+	 * \brief Implements mine_checksum().
+	 */
 	virtual void do_mine_checksum(const Checksum& checksum,
 		const int record, const int field, ResultComposer* c) const;
 
-	virtual void do_their_checksum(const Checksum& checksum,
-		const bool does_match,
-		const int record, const int field, ResultComposer* c) const;
+	/**
+	 * \brief Called by their_checksum() on a match.
+	 */
+	virtual void do_their_match(const Checksum& checksum, const int record,
+			const int field, ResultComposer* c) const;
+
+	/**
+	 * \brief Called by their_checksum() on a mismatch.
+	 */
+	virtual void do_their_mismatch(const Checksum& checksum, const int record,
+			const int field, ResultComposer* c) const;
 
 	/**
 	 * \brief Internal ResultComposerBuilder.
@@ -833,7 +850,7 @@ private:
 	/**
 	 * \brief Format for the result StringTable.
 	 */
-	StringTableLayout table_layout_;
+	std::unique_ptr<StringTableLayout> table_layout_;
 
 	/**
 	 * \brief Format for the ARId.
