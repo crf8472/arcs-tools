@@ -126,6 +126,12 @@ const std::string& PrintableTable::ref(int row, int col) const
 }
 
 
+std::string PrintableTable::cell(int row, int col) const
+{
+	return do_cell(row, col);
+}
+
+
 int PrintableTable::rows() const
 {
 	return do_rows();
@@ -280,12 +286,6 @@ std::string StringTable::operator()(int row, int col) const
 std::string& StringTable::operator()(int row, int col)
 {
 	return cells_[safe_index(row, col)];
-}
-
-
-std::string StringTable::cell(int row, int col) const
-{
-	return this->operator()(row, col);
 }
 
 
@@ -454,6 +454,12 @@ std::string StringTable::do_title() const
 const std::string& StringTable::do_ref(int row, int col) const
 {
 	return cells_[safe_index(row, col)];
+}
+
+
+std::string StringTable::do_cell(int row, int col) const
+{
+	return this->operator()(row, col);
 }
 
 
@@ -1028,17 +1034,17 @@ void TablePrinter::Impl::cell(std::ostream &o, const PrintableTable &t,
 	{
 		case Align::LEFT:
 		{
-			o << std::left << t.ref(row, col);
+			o << std::left << t.cell(row, col);
 			break;
 		}
 		case Align::RIGHT:
 		{
-			o << std::right << t.ref(row, col);
+			o << std::right << t.cell(row, col);
 			break;
 		}
 		case Align::BLOCK:
 		{
-			o << t.ref(row, col);
+			o << t.cell(row, col);
 			break;
 		}
 	};
@@ -1497,6 +1503,13 @@ std::ostream& operator << (std::ostream &o, const PrintableTable &table)
 	}
 
 	return o;
+}
+
+
+std::ostream& operator << (std::ostream &o,
+		const std::unique_ptr<PrintableTable> &table)
+{
+	return o << *table;
 }
 
 } // namespace table

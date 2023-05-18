@@ -162,6 +162,18 @@ public:
 	const std::string& ref(int row, int col) const;
 
 	/**
+	 * \brief Read cell by row and column.
+	 *
+	 * Equivalent to operator();
+	 *
+	 * \param[in] row  Table row to access
+	 * \param[in] col  Table column to access
+	 *
+	 * \return Content of the cell
+	 */
+	std::string cell(int row, int col) const;
+
+	/**
 	 * \brief Number of actual rows in the table.
 	 *
 	 * \return Number of rows
@@ -253,6 +265,9 @@ private:
 	virtual const std::string& do_ref(int row, int col) const
 	= 0;
 
+	virtual std::string do_cell(int row, int col) const
+	= 0;
+
 	virtual int do_rows() const
 	= 0;
 
@@ -295,6 +310,8 @@ private:
 class StringTable final : public PrintableTable
 {
 public:
+
+	using PrintableTable::cell; // const-version from base class
 
 	/**
 	 * \brief Constructor.
@@ -357,18 +374,6 @@ public:
 	 * \return Content of the cell
 	 */
 	std::string& operator() (int row, int col);
-
-	/**
-	 * \brief Read cell by row and column.
-	 *
-	 * Equivalent to operator();
-	 *
-	 * \param[in] row  Table row to access
-	 * \param[in] col  Table column to access
-	 *
-	 * \return Content of the cell
-	 */
-	std::string cell(int row, int col) const;
 
 	/**
 	 * \brief Write to cell by row and column.
@@ -523,6 +528,8 @@ private:
 	std::string do_title() const final;
 
 	const std::string& do_ref(int row, int col) const final;
+
+	std::string do_cell(int row, int col) const final;
 
 	int do_rows() const final;
 
@@ -841,9 +848,16 @@ private:
 
 
 /**
- * \brief Output stream operator for StringTable.
+ * \brief Output stream operator for PrintableTable.
  */
 std::ostream& operator << (std::ostream &o, const PrintableTable &table);
+
+
+/**
+ * \brief Output stream operator for PrintableTable.
+ */
+std::ostream& operator << (std::ostream &o,
+		const std::unique_ptr<PrintableTable> &table);
 
 } // namespace table
 } // namespace arcsapp
