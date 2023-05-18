@@ -64,12 +64,20 @@ public:
 	 */
 	inline virtual ~ResultList() noexcept = default;
 
-	void append(std::unique_ptr<Result> r);
+	/**
+	 * \brief Append a result to the list of results.
+	 *
+	 * \param[in] result An additional result to be appended
+	 */
+	void append(std::unique_ptr<Result> result);
 
 private:
 
 	void do_print(std::ostream& o) const final;
 
+	/**
+	 * \brief Internal list of results
+	 */
 	std::vector<std::unique_ptr<Result>> results_;
 };
 
@@ -83,21 +91,38 @@ class ResultObject : public Result
 {
 public:
 
+	/**
+	 * \brief Tuple of the argument types.
+	 */
 	using Tuple = std::tuple<Args...>;
 
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] args Arguments
+	 */
 	inline explicit ResultObject(Args&&... args)
 		: t_ { std::make_tuple(std::forward<Args&&>(args)...) }
 	{
 		// empty
 	}
 
+	/**
+	 * \brief Virtual default destructor.
+	 */
 	virtual ~ResultObject() noexcept = default;
 
+	/**
+	 * \brief Join another ResultObject to the list of arguments.
+	 */
 	inline void join(ResultObject&& r)
 	{
 		t_ = std::tuple_cat(t_, r.object());
 	}
 
+	/**
+	 * \brief Return the tuple of arguments.
+	 */
 	inline const Tuple& object() const
 	{
 		return t_;
@@ -105,7 +130,13 @@ public:
 
 private:
 
-	inline virtual void do_print(std::ostream& o) const final
+	/**
+	 * \brief Print the internal result tuple.
+	 *
+	 * The tuple members are printed in the order they occurr in the tuple.
+	 * Each tuple member is printed using operator '<<'.
+	 */
+	inline void do_print(std::ostream& o) const final
 	{
 		std::apply(
 			[&o](const Args&... elements)
@@ -116,6 +147,9 @@ private:
 		);
 	}
 
+	/**
+	 * \brief Internal list of arguments.
+	 */
 	Tuple t_;
 };
 
