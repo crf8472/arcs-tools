@@ -90,6 +90,96 @@ private:
 };
 
 
+namespace details
+{
+
+/**
+ * \brief Object cache.
+ *
+ * Provides a cache of unique_ptrs for type T.
+ *
+ * \tparam T Type to cache unique_ptrs of
+ */
+template <typename T>
+class TempList
+{
+	std::vector<std::unique_ptr<T>> list_;
+
+	int offset_;
+
+	inline std::size_t index(const int i)
+	{
+		return i - offset();
+	}
+
+	inline bool only_nullptrs() const
+	{
+		for (const auto& p : list_)
+		{
+			if (p != nullptr)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+public:
+
+	inline void set_size(const std::size_t size)
+	{
+		list_.resize(size);
+	}
+
+	inline std::size_t size() const
+	{
+		return list_.size();
+	}
+
+	inline bool empty() const
+	{
+		return list_.empty() || only_nullptrs();
+	}
+
+	inline void set_offset(const int o)
+	{
+		offset_ = o;
+	}
+
+	inline int offset() const
+	{
+		return offset_;
+	}
+
+	inline void add(const std::size_t col, std::unique_ptr<T> ptr)
+	{
+		list_[index(col)] = std::move(ptr);
+	}
+
+	inline std::unique_ptr<T> col(const std::size_t col)
+	{
+		return std::move(list_[index(col)]);
+	}
+
+	inline T* on(const std::size_t i)
+	{
+		return list_[index(i)].get();
+	}
+};
+
+} // namespace details
+
+
+class MatchDecorator : public CellDecorator
+{
+	std::string do_decorate(std::string&& s) const final;
+
+public:
+
+	using CellDecorator::CellDecorator;
+};
+
+
 /**
  * \brief Interface to format result objects of a verification process.
  */
@@ -107,6 +197,11 @@ class VerifyResultFormatter : public ResultFormatter
 public:
 
 	/**
+	 * \brief Default constructor.
+	 */
+	VerifyResultFormatter();
+
+	/**
 	 * \brief Set the symbol to be printed on identity of two checksum values.
 	 *
 	 * \param[in] match_symbol The symbol to represent a match
@@ -120,7 +215,27 @@ public:
 	 */
 	const std::string& match_symbol() const;
 
+protected:
+
+	/**
+	 * \brief Type of decorator cache.
+	 */
+	using decorator_cache_type = details::TempList<CellDecorator>;
+
+	/**
+	 * \brief Access internal cache of decorators.
+	 */
+	decorator_cache_type* decorators() const;
+
 private:
+
+	// V9L
+
+	void assertions(InputTuple t) const final;
+
+	std::unique_ptr<Result> do_format(InputTuple t) const final;
+
+	// ResultFormatter
 
 	virtual std::vector<ATTR> do_create_attributes(
 		const bool tracks, const bool offsets, const bool lengths,
@@ -128,25 +243,62 @@ private:
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const int total_theirs) const final;
 
-	virtual void configure_composer(ResultComposer& composer) const final;
+	// VerifyResultFormatter
+
+	virtual void pre_table(ResultComposer& composer) const;
+
+	virtual std::unique_ptr<PrintableTable> post_table(StringTable&& table)
+		const;
 
 	virtual void do_their_match(const Checksum& checksum, const int record,
-			const int field, ResultComposer* c) const final;
+			const int field, ResultComposer* c) const
+	= 0;
 
 	virtual void do_their_mismatch(const Checksum& checksum, const int record,
-			const int field, ResultComposer* c) const final;
+			const int field, ResultComposer* c) const
+	= 0;
 
 	std::string format_their_checksum(const Checksum& checksum,
 		const bool does_match) const;
-
-	void assertions(InputTuple t) const final;
-
-	std::unique_ptr<Result> do_format(InputTuple t) const final;
 
 	/**
 	 * \brief The symbol to be printed on identity of two checksum values.
 	 */
 	std::string match_symbol_;
+
+	/**
+	 * \brief Temporary list of decorators.
+	 *
+	 * Used for constructing and configuring decorators in the course of
+	 * running build_table().
+	 */
+	std::unique_ptr<decorator_cache_type> decorators_;
+};
+
+
+/**
+ * \brief Format monochrome output.
+ */
+class MonochromeVerifyResultFormatter : public VerifyResultFormatter
+{
+	void do_their_match(const Checksum& checksum, const int record,
+			const int field, ResultComposer* c) const final;
+
+	void do_their_mismatch(const Checksum& checksum, const int record,
+			const int field, ResultComposer* c) const final;
+};
+
+
+/**
+ * \brief Format colorized output.
+ */
+class ColorizingVerifyResultFormatter : public VerifyResultFormatter
+{
+	void do_their_match(const Checksum& checksum, const int record,
+			const int field, ResultComposer* c) const final;
+
+	void do_their_mismatch(const Checksum& checksum, const int record,
+			const int field, ResultComposer* c) const final;
 };
 
 

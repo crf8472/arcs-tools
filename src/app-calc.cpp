@@ -347,12 +347,6 @@ std::vector<ATTR> CalcResultFormatter::do_create_attributes(
 }
 
 
-void CalcResultFormatter::configure_composer(ResultComposer& composer) const
-{
-	// empty
-}
-
-
 void CalcResultFormatter::assertions(InputTuple t) const
 {
 	const auto& checksums = std::get<0>(t);

@@ -42,6 +42,9 @@
 #ifndef __ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"                // for StringTableLayout, BoolDecorator
 #endif
+#ifndef __ARCSTOOLS_ANSI_HPP__
+#include "ansi.hpp"                 // for Colorize
+#endif
 #ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
 #include "tools-parse.hpp"          // for ContentHandler
 #endif
@@ -64,7 +67,6 @@ const auto verify = RegisterApplicationType<ARVerifyApplication>("verify");
 }
 
 using arcstk::ARStreamParser;
-using arcstk::ARId;
 using arcstk::ARResponse;
 using arcstk::Checksum;
 using arcstk::Checksums;
@@ -278,7 +280,27 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 }
 
 
+// MatchDecorator
+
+
+std::string MatchDecorator::do_decorate(std::string&& s) const
+{
+	using ansi::Color;
+	using ansi::Colorize;
+
+	return Colorize<Color::FG_GREEN>{}(s);
+}
+
+
 // VerifyResultFormatter
+
+
+VerifyResultFormatter::VerifyResultFormatter()
+	: match_symbol_ {}
+	, decorators_   { std::make_unique<decorator_cache_type>() }
+{
+	// empty
+}
 
 
 void VerifyResultFormatter::set_match_symbol(const std::string &match_symbol)
@@ -290,6 +312,13 @@ void VerifyResultFormatter::set_match_symbol(const std::string &match_symbol)
 const std::string& VerifyResultFormatter::match_symbol() const
 {
 	return match_symbol_;
+}
+
+
+VerifyResultFormatter::decorator_cache_type*
+	VerifyResultFormatter::decorators() const
+{
+	return decorators_.get();
 }
 
 
@@ -345,50 +374,6 @@ void VerifyResultFormatter::assertions(const InputTuple t) const
 }
 
 
-std::vector<ATTR> VerifyResultFormatter::do_create_attributes(
-		const bool p_tracks, const bool p_offsets, const bool p_lengths,
-		const bool p_filenames,
-		const std::vector<arcstk::checksum::type>& types_to_print,
-		const int total_theirs) const
-{
-	const auto total_attributes = p_tracks + p_offsets + p_lengths + p_filenames
-		+ types_to_print.size() + total_theirs;
-
-	using checksum = arcstk::checksum::type;
-
-	std::vector<ATTR> attributes;
-	attributes.reserve(total_attributes);
-	if (p_tracks)    { attributes.emplace_back(ATTR::TRACK);    }
-	if (p_filenames) { attributes.emplace_back(ATTR::FILENAME); }
-	if (p_offsets)   { attributes.emplace_back(ATTR::OFFSET);   }
-	if (p_lengths)   { attributes.emplace_back(ATTR::LENGTH);   }
-
-	for (const auto& t : types_to_print)
-	{
-		if (checksum::ARCS1 == t)
-		{
-			attributes.emplace_back(ATTR::CHECKSUM_ARCS1);
-		} else
-		if (checksum::ARCS2 == t)
-		{
-			attributes.emplace_back(ATTR::CHECKSUM_ARCS2);
-		}
-	}
-	for (auto i = int { 0 }; i < total_theirs; ++i)
-	{
-		attributes.emplace_back(ATTR::THEIRS);
-	}
-
-	return attributes;
-}
-
-
-void VerifyResultFormatter::configure_composer(ResultComposer& composer) const
-{
-	// empty
-}
-
-
 std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 {
 	const auto& checksums = std::get<0>(t);
@@ -418,14 +403,116 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 }
 
 
-void VerifyResultFormatter::do_their_match(const Checksum& checksum,
-		const int record_idx, const int field_idx, ResultComposer* c) const
+std::vector<ATTR> VerifyResultFormatter::do_create_attributes(
+		const bool p_tracks, const bool p_offsets, const bool p_lengths,
+		const bool p_filenames,
+		const std::vector<arcstk::checksum::type>& types_to_print,
+		const int total_theirs) const
 {
-	c->set_field(record_idx, field_idx, match_symbol());
+	const auto total_fields = p_tracks + p_offsets + p_lengths + p_filenames
+		+ types_to_print.size() + total_theirs;
+
+	using checksum = arcstk::checksum::type;
+
+	std::vector<ATTR> fields;
+	fields.reserve(total_fields);
+	if (p_tracks)    { fields.emplace_back(ATTR::TRACK);    }
+	if (p_filenames) { fields.emplace_back(ATTR::FILENAME); }
+	if (p_offsets)   { fields.emplace_back(ATTR::OFFSET);   }
+	if (p_lengths)   { fields.emplace_back(ATTR::LENGTH);   }
+
+	for (const auto& t : types_to_print)
+	{
+		if (checksum::ARCS1 == t)
+		{
+			fields.emplace_back(ATTR::CHECKSUM_ARCS1);
+		} else
+		if (checksum::ARCS2 == t)
+		{
+			fields.emplace_back(ATTR::CHECKSUM_ARCS2);
+		}
+	}
+
+	decorators_->set_size(total_theirs);
+	decorators_->set_offset(fields.size());
+
+	for (auto i = int { 0 }; i < total_theirs; ++i)
+	{
+		fields.emplace_back(ATTR::THEIRS);
+	}
+
+	return fields;
 }
 
 
-void VerifyResultFormatter::do_their_mismatch(const Checksum& checksum,
+void VerifyResultFormatter::pre_table(ResultComposer& composer) const
+{
+	// do nothing
+}
+
+
+std::unique_ptr<PrintableTable> VerifyResultFormatter::post_table(
+		StringTable&& table) const
+{
+	if (decorators()->empty())
+	{
+		return std::make_unique<StringTable>(table);
+	}
+
+	// If decoration for field types is configured then use it
+
+	auto result_table =
+			std::make_unique<StringTableDecorator>(std::move(table));
+
+	auto field_idx = int { 0 };
+	for (auto i = int { 0 }; i < decorators()->size(); ++i)
+	{
+		field_idx = i + decorators()->offset();
+		result_table->register_to_col(field_idx,
+				result_table->add(decorators()->col(field_idx)));
+	}
+
+	return result_table;
+}
+
+
+// MonochromeVerifyResultFormatter
+
+
+void MonochromeVerifyResultFormatter::do_their_match(const Checksum& checksum,
+		const int record_idx, const int field_idx, ResultComposer* c) const
+{
+	c->set_field(record_idx, field_idx, match_symbol());
+	//c->set_field(record_idx, field_idx, this->checksum(checksum));
+}
+
+
+void MonochromeVerifyResultFormatter::do_their_mismatch(
+		const Checksum& checksum, const int record_idx,
+		const int field_idx, ResultComposer* c) const
+{
+	c->set_field(record_idx, field_idx, this->checksum(checksum));
+}
+
+
+// ColorizingVerifyResultFormatter
+
+
+void ColorizingVerifyResultFormatter::do_their_match(const Checksum& checksum,
+		const int record_idx, const int field_idx, ResultComposer* c) const
+{
+	c->set_field(record_idx, field_idx, this->checksum(checksum));
+
+	if (!decorators()->on(field_idx))
+	{
+		decorators()->add(field_idx,
+				std::make_unique<MatchDecorator>(c->total_records()));
+	}
+	decorators()->on(field_idx)->set(record_idx);
+}
+
+
+void ColorizingVerifyResultFormatter::do_their_mismatch(const Checksum& checksum,
 		const int record_idx, const int field_idx, ResultComposer* c) const
 {
 	c->set_field(record_idx, field_idx, this->checksum(checksum));
@@ -440,10 +527,15 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 		const std::vector<arcstk::checksum::type> &types, const Match &match)
 		const
 {
-	auto fmt = std::unique_ptr<VerifyResultFormatter>
+	auto fmt = std::unique_ptr<VerifyResultFormatter>();
+
+	if (options.is_set(VERIFY::COLORED))
 	{
-		std::make_unique<VerifyResultFormatter>()
-	};
+		fmt = std::make_unique<ColorizingVerifyResultFormatter>();
+	} else
+	{
+		fmt = std::make_unique<MonochromeVerifyResultFormatter>();
+	}
 
 	fmt->set_types_to_print(types);
 
@@ -502,12 +594,6 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 		: " ");
 
 	fmt->set_table_layout(std::move(layout));
-
-	// Set colors
-	if (options.is_set(VERIFY::COLORED))
-	{
-		// TODO Implement option --colors
-	}
 
 	return fmt;
 }
@@ -674,7 +760,8 @@ std::string ARVerifyApplication::do_call_syntax() const
 }
 
 
-std::unique_ptr<Configurator> ARVerifyApplication::do_create_configurator() const
+std::unique_ptr<Configurator> ARVerifyApplication::do_create_configurator()
+	const
 {
 	return std::make_unique<ARVerifyConfigurator>();
 }

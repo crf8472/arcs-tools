@@ -145,6 +145,7 @@ add_library (${PROJECT_NAME}-objects OBJECT
 	${PROJECT_SOURCE_DIR}/app-verify.cpp
 	${PROJECT_SOURCE_DIR}/application.cpp
 	${PROJECT_SOURCE_DIR}/appregistry.cpp
+	${PROJECT_SOURCE_DIR}/ansi.cpp
 	${PROJECT_SOURCE_DIR}/clitokens.cpp
 	${PROJECT_SOURCE_DIR}/config.cpp
 	${PROJECT_SOURCE_DIR}/format.cpp

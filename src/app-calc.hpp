@@ -187,8 +187,6 @@ private:
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const int total_theirs) const final;
 
-	virtual void configure_composer(ResultComposer& composer) const final;
-
 	void assertions(InputTuple t) const final;
 
 	std::unique_ptr<Result> do_format(InputTuple t) const final;

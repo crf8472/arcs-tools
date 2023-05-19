@@ -36,7 +36,7 @@
 #include "result.hpp"       // for Result, ResultObject
 #endif
 #ifndef __ARCSTOOLS_TABLE_HPP__
-#include "table.hpp"        // for StringTable, StringTableLayout
+#include "table.hpp"        // for PrintableTable, StringTable, StringTableLayout
 #endif
 
 
@@ -91,7 +91,7 @@ std::ostream& operator << (std::ostream& o, const RichARId& a);
 
 
 /**
- * \brief Interface for composing a result by records.
+ * \brief Interface for composing a container object holding records.
  *
  * \tparam T Type of the result object
  * \tparam F Type of the field keys
@@ -99,12 +99,18 @@ std::ostream& operator << (std::ostream& o, const RichARId& a);
 template<typename T, typename F>
 class RecordInterface
 {
+	/**
+	 * \brief Internal result object.
+	 */
+	T object_;
+
 public:
 
 	/**
 	 * \brief Size type of the records.
 	 */
 	using size_type = std::size_t;
+	// TODO Define as T::size_type if it exists, otherwise define as size_t
 
 	/**
 	 * \brief Virtual default destructor.
@@ -199,16 +205,16 @@ public:
 	}
 
 	/**
-	 * \brief Get the result.
+	 * \brief Return the object holding the records.
+	 *
+	 * \return Object with records
 	 */
-	inline std::unique_ptr<Result> result() const
+	inline const T& object() const
 	{
-		return this->do_result();
+		return object_;
 	}
 
 protected:
-
-	using result_type = ResultObject<T>;
 
 	inline RecordInterface(T&& object)
 		: object_ { std::move(object) }
@@ -216,12 +222,10 @@ protected:
 		// empty
 	}
 
+	/**
+	 * \brief Read or manipulate the object holding the records.
+	 */
 	inline T& object()
-	{
-		return object_;
-	}
-
-	inline const T& object() const
 	{
 		return object_;
 	}
@@ -252,14 +256,23 @@ private:
 
 	virtual size_type do_fields_per_record() const
 	= 0;
+};
 
+
+/**
+ * \brief Interface for providing a Result object.
+ */
+class ResultProvider
+{
 	virtual std::unique_ptr<Result> do_result() const
 	= 0;
 
+public:
+
 	/**
-	 * \brief Internal result object.
+	 * \brief Return the result object.
 	 */
-	T object_;
+	std::unique_ptr<Result> result() const;
 };
 
 
@@ -289,17 +302,143 @@ template<ATTR A>
 std::string DefaultLabel();
 
 
+/**
+ * \brief Description.
+ */
+class CellDecorator
+{
+	std::vector<bool> flags_;
+
+	virtual std::string do_decorate(std::string&& s) const
+	= 0;
+
+public:
+
+	CellDecorator(const std::size_t n);
+
+	void set(const int i);
+	void unset(const int i);
+
+	bool is_set(const int i) const;
+
+	std::string decorate(const int i, std::string&& s) const;
+};
+
+
+using table::PrintableTable;
 using table::StringTable;
 using table::StringTableLayout;
 
 
+/**
+ * \brief Table decorator.
+ */
+class StringTableDecorator : public PrintableTable
+{
+	StringTable table_;
+
+	std::vector<std::unique_ptr<CellDecorator>> decorators_;
+
+	std::map<int, const CellDecorator*> registry_;
+
+public:
+
+	StringTableDecorator(StringTable&& t);
+
+	void set(const StringTable* t);
+
+	const CellDecorator* add(std::unique_ptr<CellDecorator> d);
+
+	void register_to_row(const int i, const CellDecorator* d);
+
+	const CellDecorator* row_decorator(const int i) const;
+
+	void register_to_col(const int j, const CellDecorator* d);
+
+	const CellDecorator* col_decorator(const int j) const;
+
+protected:
+
+	const StringTable* table() const;
+
+	const CellDecorator* find(const int n) const;
+
+private:
+
+	std::string do_title() const final;
+
+	const std::string& do_ref(int row, int col) const final;
+
+	std::string do_cell(int row, int col) const final;
+
+	int do_rows() const final;
+
+	std::string do_row_label(int row) const final;
+
+	std::size_t do_max_height(int row) const final;
+
+	int do_cols() const final;
+
+	std::string do_col_label(int col) const final;
+
+	std::size_t do_max_width(int col) const final;
+
+	table::Align do_align(int col) const final;
+
+	std::size_t do_optimal_width(const int col) const final;
+
+	bool do_empty() const final;
+
+	const StringTableLayout* do_layout() const final;
+};
+
+
+/**
+ * \brief Record-based interface for decorating a PrintableTable.
+ */
+class TableDecoratorManager
+{
+	virtual void do_register_to_record(const int record_idx,
+			std::unique_ptr<CellDecorator> d)
+	= 0;
+
+	virtual void do_register_to_field(const ATTR field_type, const int f,
+			std::unique_ptr<CellDecorator> d)
+	= 0;
+
+public:
+
+	/**
+	 * \brief Register a decorator for a certain record.
+	 *
+	 * \param[in] record_idx Record index
+	 * \param[in] d          Decorator
+	 */
+	void register_to_record(const int record_idx,
+			std::unique_ptr<CellDecorator> d);
+
+	/**
+	 * \brief Register a decorator for a certain field.
+	 *
+	 * \param[in] field_type Type of field
+	 * \param[in] f          f-th occurence of field_type
+	 * \param[in] d          Decorator
+	 */
+	void register_to_field(const ATTR field_type, const int f,
+			std::unique_ptr<CellDecorator> d);
+};
+
+
+// Rename to TableComposer
 /**
  * \brief Interface for constructing a result table.
  *
  * A ResultComposer builds a StringTable with records and field_types. Each
  * record contains a value for each of its defined fields.
  */
-class ResultComposer : public RecordInterface<StringTable, ATTR>
+class ResultComposer :   public RecordInterface<StringTable, ATTR>
+					   , public TableDecoratorManager
+					   , public ResultProvider
 {
 public:
 
@@ -318,14 +457,24 @@ public:
 	StringTable table() const;
 
 	/**
-	 * \brief Get the table row.
+	 * \brief Get the table row index.
+	 *
+	 * \param[in] record_idx Index of the record
+	 * \param[in] field_idx  Index of the field
+	 *
+	 * \return Row index
 	 */
-	int get_row(const int i, const int j) const;
+	int get_row(const int record_idx, const int field_idx) const;
 
 	/**
-	 * \brief Get the table column.
+	 * \brief Get the table column index.
+	 *
+	 * \param[in] record_idx Index of the record
+	 * \param[in] field_idx  Index of the field
+	 *
+	 * \return Column index
 	 */
-	int get_col(const int i, const int j) const;
+	int get_col(const int record_idx, const int field_idx) const;
 
 protected:
 
@@ -370,6 +519,8 @@ protected:
 
 private:
 
+	// RecordInterface
+
 	void do_set_field(const int record_idx, const int field_idx,
 			const std::string& str) final;
 
@@ -384,9 +535,11 @@ private:
 
 	bool do_has_field(const ATTR& field_type) const final;
 
+	// ResultProvider
+
 	std::unique_ptr<Result> do_result() const final;
 
-	//
+	// ResultComposer
 
 	virtual int do_get_row(const int i, const int j) const
 	= 0;
@@ -410,8 +563,20 @@ private:
  */
 class RowResultComposer final : public ResultComposer
 {
+	// RecordInterface
+
 	size_type do_total_records() const final;
 	size_type do_fields_per_record() const final;
+
+	// TableDecoratorManager
+
+	void do_register_to_record(const int record_idx,
+			std::unique_ptr<CellDecorator> d) final;
+
+	void do_register_to_field(const ATTR field_type, const int f,
+			std::unique_ptr<CellDecorator> d) final;
+
+	// ResultComposer
 
 	void set_field_label(const int field_idx, const std::string& label) final;
 	std::string field_label(const int field_idx) const final;
@@ -430,8 +595,20 @@ public:
  */
 class ColResultComposer final : public ResultComposer
 {
+	// RecordInterface
+
 	size_type do_total_records() const final;
 	size_type do_fields_per_record() const final;
+
+	// TableDecoratorManager
+
+	void do_register_to_record(const int record_idx,
+			std::unique_ptr<CellDecorator> d) final;
+
+	void do_register_to_field(const ATTR field_type, const int f,
+			std::unique_ptr<CellDecorator> d) final;
+
+	// ResultComposer
 
 	void set_field_label(const int field_idx, const std::string& label) final;
 	std::string field_label(const int field_idx) const final;
@@ -744,7 +921,7 @@ protected:
 	 *
 	 * \return Table with result data
 	 */
-	StringTable build_table(const Checksums& checksums,
+	std::unique_ptr<PrintableTable> build_table(const Checksums& checksums,
 		const ARResponse* response, const std::vector<Checksum>* refsums,
 		const Match* match, const int block,
 		const TOC* toc, const ARId& arid,
@@ -814,15 +991,15 @@ private:
 	 *
 	 * \param[in,out] composer The ResultComposer to be configured
 	 */
-	virtual void configure_composer(ResultComposer& composer) const
-	= 0;
+	virtual void pre_table(ResultComposer& composer) const;
 
 	/**
 	 * \brief Configure StringTable before build_table() returns it.
 	 *
 	 * Subclasses may intercept the table before it is returned to the caller.
 	 */
-	virtual StringTable configure_table(StringTable&& table) const;
+	virtual std::unique_ptr<PrintableTable> post_table(StringTable&& table)
+		const;
 
 	/**
 	 * \brief Implements mine_checksum().

@@ -20,6 +20,7 @@
 #include <utility>      // for move
 #include <vector>       // for vector
 
+
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
@@ -117,6 +118,210 @@ std::string DefaultLabel<ATTR::THEIRS>()
 {
 	return "Theirs";
 };
+
+
+// ResultProvider
+
+
+std::unique_ptr<Result> ResultProvider::result() const
+{
+	return do_result();
+}
+
+
+// CellDecorator
+
+
+CellDecorator::CellDecorator(const std::size_t n)
+	: flags_(n) // initializes all to FALSE
+{
+	// empty
+}
+
+
+void CellDecorator::set(const int i)
+{
+	flags_[i] = true;
+}
+
+
+void CellDecorator::unset(const int i)
+{
+	flags_[i] = false;
+}
+
+
+bool CellDecorator::is_set(const int i) const
+{
+	return flags_[i];
+}
+
+
+std::string CellDecorator::decorate(const int i, std::string&& s) const
+{
+	return is_set(i) ? do_decorate(std::move(s)) : s;
+}
+
+
+// StringTableDecorator
+
+
+StringTableDecorator::StringTableDecorator(StringTable&& t)
+	: table_      { std::move(t) }
+	, decorators_ {}
+	, registry_   {}
+{
+	// empty
+}
+
+
+const CellDecorator* StringTableDecorator::add(std::unique_ptr<CellDecorator> d)
+{
+	decorators_.push_back(std::move(d));
+	return decorators_.back().get();
+}
+
+
+void StringTableDecorator::register_to_row(const int i, const CellDecorator* d)
+{
+	// TODO Check for i < 0
+	registry_.insert(std::make_pair(i * (-1), d));
+}
+
+
+const CellDecorator* StringTableDecorator::row_decorator(const int i) const
+{
+	// TODO Check for i < 0
+	return this->find(i * (-1));
+}
+
+
+void StringTableDecorator::register_to_col(const int j, const CellDecorator* d)
+{
+	// TODO Check for i < 0
+	registry_.insert(std::make_pair(j, d));
+}
+
+
+const CellDecorator* StringTableDecorator::col_decorator(const int j) const
+{
+	// TODO Check for i < 0
+	return this->find(j);
+}
+
+
+const StringTable* StringTableDecorator::table() const
+{
+	return &table_;
+}
+
+
+const CellDecorator* StringTableDecorator::find(const int n) const
+{
+	using std::end;
+	auto d { registry_.find(n) };
+	return (end(registry_) != d) ? d->second : nullptr;
+}
+
+
+std::string StringTableDecorator::do_title() const
+{
+	return table()->title();
+}
+
+
+const std::string& StringTableDecorator::do_ref(int row, int col) const
+{
+	return table()->ref(row, col);
+}
+
+
+std::string StringTableDecorator::do_cell(int row, int col) const
+{
+	if (auto d = col_decorator(col))
+	{
+		return d->decorate(row, table()->cell(row, col));
+	}
+
+	return table()->cell(row, col);
+}
+
+
+int StringTableDecorator::do_rows() const
+{
+	return table()->rows();
+}
+
+
+std::string StringTableDecorator::do_row_label(int row) const
+{
+	return table()->row_label(row);
+}
+
+
+std::size_t StringTableDecorator::do_max_height(int row) const
+{
+	return table()->max_height(row);
+}
+
+
+int StringTableDecorator::do_cols() const
+{
+	return table()->cols();
+}
+
+
+std::string StringTableDecorator::do_col_label(int col) const
+{
+	return table()->col_label(col);
+}
+
+
+std::size_t StringTableDecorator::do_max_width(int col) const
+{
+	return table()->max_width(col);
+}
+
+
+table::Align StringTableDecorator::do_align(int col) const
+{
+	return table()->align(col);
+}
+
+
+std::size_t StringTableDecorator::do_optimal_width(const int col) const
+{
+	return table()->optimal_width(col);
+}
+
+
+bool StringTableDecorator::do_empty() const
+{
+	return table()->empty();
+}
+
+
+const StringTableLayout* StringTableDecorator::do_layout() const
+{
+	return table()->layout();
+}
+
+
+// TableDecoratorManager
+
+
+void TableDecoratorManager::register_to_record(const int record_idx,
+		std::unique_ptr<CellDecorator> d)
+{
+	do_register_to_record(record_idx, std::move(d));
+}
+
+
+void TableDecoratorManager::register_to_field(const ATTR field_type,
+		const int f, std::unique_ptr<CellDecorator> d)
+{
+	do_register_to_field(field_type, f, std::move(d));
+}
 
 
 // ResultComposer
@@ -362,6 +567,20 @@ int RowResultComposer::do_get_col(const int i, const int j) const
 }
 
 
+void RowResultComposer::do_register_to_record(const int record_idx,
+			std::unique_ptr<CellDecorator> d)
+{
+	// TODO
+}
+
+
+void RowResultComposer::do_register_to_field(const ATTR field_type, const int f,
+			std::unique_ptr<CellDecorator> d)
+{
+	// TODO
+}
+
+
 // ColResultComposer
 
 
@@ -419,6 +638,20 @@ int ColResultComposer::do_get_row(const int i, const int j) const
 int ColResultComposer::do_get_col(const int i, const int j) const
 {
 	return i;
+}
+
+
+void ColResultComposer::do_register_to_record(const int record_idx,
+			std::unique_ptr<CellDecorator> d)
+{
+	// TODO
+}
+
+
+void ColResultComposer::do_register_to_field(const ATTR field_type, const int f,
+			std::unique_ptr<CellDecorator> d)
+{
+	// TODO
 }
 
 
@@ -648,6 +881,12 @@ std::vector<ATTR> ResultFormatter::create_attributes(
 }
 
 
+void ResultFormatter::pre_table(ResultComposer& composer) const
+{
+	// empty
+}
+
+
 std::unique_ptr<Result> ResultFormatter::build_result(
 		const Checksums& checksums, const ARResponse* response,
 		const std::vector<Checksum>* refsums,
@@ -677,11 +916,13 @@ std::unique_ptr<Result> ResultFormatter::build_result(
 	{
 		auto id { build_id(toc, arid, alt_prefix) };
 
-		return std::make_unique<ResultObject<RichARId, StringTable>>(
+		return std::make_unique<
+			ResultObject<RichARId, std::unique_ptr<PrintableTable>>>(
 				std::move(id), std::move(table));
 	}
 
-	return std::make_unique<ResultObject<StringTable>>(std::move(table));
+	return std::make_unique<ResultObject<std::unique_ptr<PrintableTable>>>(
+			std::move(table));
 }
 
 
@@ -706,7 +947,8 @@ RichARId ResultFormatter::build_id(const TOC* /*toc*/, const ARId& arid,
 }
 
 
-StringTable ResultFormatter::build_table(const Checksums& checksums,
+std::unique_ptr<PrintableTable> ResultFormatter::build_table(
+		const Checksums& checksums,
 		const ARResponse* response, const std::vector<Checksum>* refvals,
 		const Match* match, const int block, const TOC* toc, const ARId& arid,
 		const std::vector<std::string>& filenames,
@@ -730,7 +972,7 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 
 	auto c { create_composer(checksums.size(), fields, label()) };
 
-	configure_composer(*c);
+	pre_table(*c);
 
 	using TYPE = arcstk::checksum::type;
 	using std::to_string;
@@ -740,6 +982,8 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 	auto field_idx = int { 0 };
 	for (auto i = int { 0 }; i < c->total_records(); ++track, ++i)
 	{
+		// i is the record index
+
 		if (p_tracks)
 		{
 			c->set_field(i, ATTR::TRACK, to_string(track));
@@ -780,6 +1024,7 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 
 		if (use_response)
 		{
+			// Iterate over all blocks in the response
 			for (auto b = int { 0 }; b < total_theirs; ++b)
 			{
 				field_idx = c->field_idx(ATTR::THEIRS, b + 1);
@@ -807,7 +1052,7 @@ StringTable ResultFormatter::build_table(const Checksums& checksums,
 
 	c->set_layout(std::make_unique<StringTableLayout>(copy_table_layout()));
 
-	return configure_table(c->table());
+	return post_table(c->table());
 }
 
 
@@ -846,9 +1091,10 @@ std::string ResultFormatter::checksum(const Checksum& checksum) const
 }
 
 
-StringTable ResultFormatter::configure_table(StringTable&& table) const
+std::unique_ptr<PrintableTable> ResultFormatter::post_table(StringTable&& table)
+	const
 {
-	return table;
+	return std::make_unique<StringTable>(std::move(table));
 }
 
 
