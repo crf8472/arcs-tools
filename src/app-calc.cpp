@@ -518,17 +518,17 @@ std::unique_ptr<CalcResultFormatter> ARCalcApplication::configure_layout(
 
 	// Print tracks either as columns or as rows
 
-	std::unique_ptr<ResultComposerBuilder> creator = nullptr;
+	std::unique_ptr<TableComposerBuilder> creator = nullptr;
 	if (options.is_set(CALC::TRACKSASCOLS))
 	{
-		creator = std::make_unique<ColResultComposerBuilder>();
+		creator = std::make_unique<ColTableComposerBuilder>();
 
 		// delimiter between labels column and column for first track
 		layout->set_col_labels_delim(layout->col_inner_delim());
 		layout->set_col_labels_delims(true);
 	} else
 	{
-		creator = std::make_unique<RowResultComposerBuilder>();
+		creator = std::make_unique<RowTableComposerBuilder>();
 	}
 
 	fmt->set_builder_creator(std::move(creator));

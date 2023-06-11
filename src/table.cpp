@@ -20,7 +20,6 @@
 #include <type_traits>// for underlying_type_t
 #include <utility>    // for forward, make_pair, move, swap
 
-
 #ifndef __ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"
 #endif
@@ -195,7 +194,8 @@ const StringTableLayout* PrintableTable::layout() const
 // StringTable
 
 
-StringTable::StringTable(const std::string &title, int rows, int cols)
+StringTable::StringTable(const std::string &title, const int rows,
+		const int cols)
 	: title_              { title }
 	, rows_               { rows }
 	, default_max_height_ {  5 } // Max height for a row is 5 lines
@@ -214,8 +214,8 @@ StringTable::StringTable(const std::string &title, int rows, int cols)
 }
 
 
-StringTable::StringTable(int rows, int cols)
-	: StringTable("" /* empty title */, rows, cols)
+StringTable::StringTable(const int rows, const int cols)
+	: StringTable(std::string{/*empty title*/}, rows, cols)
 {
 	// empty
 }
@@ -529,6 +529,23 @@ bool StringTable::do_empty() const
 const StringTableLayout* StringTable::do_layout() const
 {
 	return layout_.get();
+}
+
+
+bool operator== (const StringTable& lhs, const StringTable& rhs)
+{
+	return lhs.cells_ == rhs.cells_
+		&& lhs.title_ == rhs.title_
+		&& lhs.rows_  == rhs.rows_
+		&& lhs.default_max_height_ == rhs.default_max_height_
+		&& lhs.cols_  == rhs.cols_
+		&& lhs.default_max_width_ == rhs.default_max_width_
+		&& lhs.row_labels_ == rhs.row_labels_
+		&& lhs.row_max_heights_ == rhs.row_max_heights_
+		&& lhs.col_labels_ == rhs.col_labels_
+		&& lhs.col_max_widths_ == rhs.col_max_widths_
+		&& lhs.aligns_ == rhs.aligns_;
+	// Ignore Layout when testing equality
 }
 
 

@@ -143,6 +143,11 @@ class PrintableTable
 public:
 
 	/**
+	 * \brief Virtual default destructor.
+	 */
+	virtual ~PrintableTable() = default;
+
+	/**
 	 * \brief Table title.
 	 *
 	 * \return Table title
@@ -300,6 +305,10 @@ private:
 };
 
 
+class StringTable;
+bool operator== (const StringTable& lhs, const StringTable& rhs);
+
+
 /**
  * \brief A table of strings.
  *
@@ -309,6 +318,8 @@ private:
  */
 class StringTable final : public PrintableTable
 {
+	friend bool operator== (const StringTable& lhs, const StringTable& rhs);
+
 public:
 
 	using PrintableTable::cell; // const-version from base class
@@ -319,7 +330,7 @@ public:
 	 * \param[in] rows Number of rows
 	 * \param[in] cols Number of columns
 	 */
-	StringTable(int rows, int cols);
+	StringTable(const int rows, const int cols);
 
 	/**
 	 * \brief Constructor.
@@ -328,7 +339,7 @@ public:
 	 * \param[in] rows  Number of rows
 	 * \param[in] cols  Number of columns
 	 */
-	StringTable(const std::string& title, int rows, int cols);
+	StringTable(const std::string& title, const int rows, const int cols);
 
 	StringTable(const StringTable& rhs);
 

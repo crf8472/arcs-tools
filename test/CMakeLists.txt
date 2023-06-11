@@ -28,6 +28,7 @@ list (APPEND TEST_SETS tools-parse )
 list (APPEND TEST_SETS table       )
 ## custom test scripts
 list (APPEND TEST_SETS config      )
+list (APPEND TEST_SETS format      )
 
 
 ## --- Add common configuration for all testsuites (catch2 + project deps)

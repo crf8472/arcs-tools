@@ -283,6 +283,20 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 // MatchDecorator
 
 
+MatchDecorator::MatchDecorator(const std::size_t n)
+	: CellDecorator(n)
+{
+	/* empty */
+}
+
+
+MatchDecorator::MatchDecorator(const MatchDecorator& rhs)
+	: CellDecorator(rhs)
+{
+	/* empty */
+}
+
+
 std::string MatchDecorator::do_decorate(std::string&& s) const
 {
 	using ansi::Color;
@@ -292,12 +306,17 @@ std::string MatchDecorator::do_decorate(std::string&& s) const
 }
 
 
+std::unique_ptr<CellDecorator> MatchDecorator::do_clone() const
+{
+	return std::make_unique<MatchDecorator>(*this);
+}
+
+
 // VerifyResultFormatter
 
 
 VerifyResultFormatter::VerifyResultFormatter()
 	: match_symbol_ {}
-	, decorators_   { std::make_unique<decorator_cache_type>() }
 {
 	// empty
 }
@@ -312,13 +331,6 @@ void VerifyResultFormatter::set_match_symbol(const std::string &match_symbol)
 const std::string& VerifyResultFormatter::match_symbol() const
 {
 	return match_symbol_;
-}
-
-
-VerifyResultFormatter::decorator_cache_type*
-	VerifyResultFormatter::decorators() const
-{
-	return decorators_.get();
 }
 
 
@@ -433,9 +445,6 @@ std::vector<ATTR> VerifyResultFormatter::do_create_attributes(
 		}
 	}
 
-	decorators_->set_size(total_theirs);
-	decorators_->set_offset(fields.size());
-
 	for (auto i = int { 0 }; i < total_theirs; ++i)
 	{
 		fields.emplace_back(ATTR::THEIRS);
@@ -445,51 +454,20 @@ std::vector<ATTR> VerifyResultFormatter::do_create_attributes(
 }
 
 
-void VerifyResultFormatter::pre_table(ResultComposer& composer) const
-{
-	// do nothing
-}
-
-
-std::unique_ptr<PrintableTable> VerifyResultFormatter::post_table(
-		StringTable&& table) const
-{
-	if (decorators()->empty())
-	{
-		return std::make_unique<StringTable>(table);
-	}
-
-	// If decoration for field types is configured then use it
-
-	auto result_table =
-			std::make_unique<StringTableDecorator>(std::move(table));
-
-	auto field_idx = int { 0 };
-	for (auto i = int { 0 }; i < decorators()->size(); ++i)
-	{
-		field_idx = i + decorators()->offset();
-		result_table->register_to_col(field_idx,
-				result_table->add(decorators()->col(field_idx)));
-	}
-
-	return result_table;
-}
-
-
 // MonochromeVerifyResultFormatter
 
 
 void MonochromeVerifyResultFormatter::do_their_match(const Checksum& checksum,
-		const int record_idx, const int field_idx, ResultComposer* c) const
+		const int record_idx, const int field_idx, TableComposer* c) const
 {
+	// XXX Why a fixed symbol? Should be configurable by decoration
 	c->set_field(record_idx, field_idx, match_symbol());
-	//c->set_field(record_idx, field_idx, this->checksum(checksum));
 }
 
 
 void MonochromeVerifyResultFormatter::do_their_mismatch(
 		const Checksum& checksum, const int record_idx,
-		const int field_idx, ResultComposer* c) const
+		const int field_idx, TableComposer* c) const
 {
 	c->set_field(record_idx, field_idx, this->checksum(checksum));
 }
@@ -499,21 +477,28 @@ void MonochromeVerifyResultFormatter::do_their_mismatch(
 
 
 void ColorizingVerifyResultFormatter::do_their_match(const Checksum& checksum,
-		const int record_idx, const int field_idx, ResultComposer* c) const
+		const int record_idx, const int field_idx, TableComposer* c) const
 {
 	c->set_field(record_idx, field_idx, this->checksum(checksum));
 
-	if (!decorators()->on(field_idx))
+	if (!c->on_field(field_idx))
 	{
-		decorators()->add(field_idx,
+		ARCS_LOG(DEBUG1) << "Register MatchDecorator to field_idx "
+			<< field_idx;
+
+		c->register_to_field(field_idx,
 				std::make_unique<MatchDecorator>(c->total_records()));
 	}
-	decorators()->on(field_idx)->set(record_idx);
+
+	ARCS_LOG(DEBUG1) << "Mark cell " << record_idx << ", " << field_idx
+		<< "as decorated";
+
+	c->mark(record_idx, field_idx);
 }
 
 
 void ColorizingVerifyResultFormatter::do_their_mismatch(const Checksum& checksum,
-		const int record_idx, const int field_idx, ResultComposer* c) const
+		const int record_idx, const int field_idx, TableComposer* c) const
 {
 	c->set_field(record_idx, field_idx, this->checksum(checksum));
 }
@@ -584,7 +569,7 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 	fmt->set_match_symbol("==");
 
 	// Method for creating the result table
-	fmt->set_builder_creator(std::make_unique<RowResultComposerBuilder>());
+	fmt->set_builder_creator(std::make_unique<RowTableComposerBuilder>());
 
 	auto layout { std::make_unique<StringTableLayout>() };
 
