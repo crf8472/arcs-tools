@@ -1,10 +1,40 @@
 #include "catch2/catch_test_macros.hpp"
 
 #include <type_traits>  // for is_copy_constructible
+#include <memory>       // for unique_ptr
 
 #ifndef __ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"
 #endif
+
+namespace arcsapp
+{
+
+using table::CellDecorator;
+
+/**
+ * \brief Mock for CellDecorator.
+ *
+ * No decoration functionality, cloning implemented.
+ */
+class DecoratorMock final : public CellDecorator
+{
+	std::string do_decorate(std::string&& s) const final { return ""; };
+
+	std::unique_ptr<CellDecorator> do_clone() const final {
+		return std::make_unique<DecoratorMock>(*this);
+	};
+
+public:
+
+	DecoratorMock(const std::size_t n) : CellDecorator(n) {/* empty */};
+
+	DecoratorMock(const DecoratorMock& rhs) : CellDecorator(rhs) {/* empty */};
+
+	~DecoratorMock() noexcept final = default;
+};
+
+} //namespace arcsapp
 
 
 TEST_CASE ( "StringTable", "[stringtable]" )
@@ -351,6 +381,55 @@ TEST_CASE ( "StringTableLayout", "[stringtablelayout]" )
 		CHECK ( m.right_outer_delim() == l.right_outer_delim() );
 
 		CHECK ( m.splitter() != nullptr );
+	}
+}
+
+
+TEST_CASE ( "DecoratedStringTable", "[DecoratedStringTable]" )
+{
+	using arcsapp::table::DecoratedStringTable;
+	using arcsapp::table::Align;
+
+	using arcsapp::DecoratorMock;
+
+	DecoratedStringTable t{ 5, 3 };
+
+	t(0,0) = "foo";
+	t(0,1) = "quux";
+	t(0,2) = "bar";
+
+	t(1,0) = "blubb";
+	t(1,1) = "ti";
+	t(1,2) = "ta";
+
+	t(2,0) = "mor";
+	t(2,1) = "quark";
+	t(2,2) = "sem";
+
+	t(3,0) = "trg";
+	t(3,1) = "hkpn";
+	t(3,2) = "tknr";
+
+	t(4,0) = "plf";
+	t(4,1) = "grb";
+	t(4,2) = "st";
+
+	t.set_align(1, Align::RIGHT);
+
+	// Add decorator to column 2
+
+	auto d0 = std::make_unique<DecoratorMock>(1/* rows */);
+	t.register_to_col(2, std::move(d0));
+
+
+	SECTION ("Decorators added")
+	{
+		CHECK( t.col_decorator(2) != nullptr );
+	}
+
+	SECTION ("Decorator for non-existant column is null")
+	{
+		CHECK( t.col_decorator(3) == nullptr );
 	}
 }
 

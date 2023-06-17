@@ -9,7 +9,6 @@
 
 #include <cstddef>      // for size_t
 #include <cstdint>      // for uint32_t
-#include <map>          // for map
 #include <memory>       // for unique_ptr
 #include <ostream>      // for ostream
 #include <string>       // for string
@@ -36,7 +35,9 @@
 #include "result.hpp"       // for Result, ResultObject
 #endif
 #ifndef __ARCSTOOLS_TABLE_HPP__
-#include "table.hpp"        // for PrintableTable, StringTable, StringTableLayout
+#include "table.hpp"        // for PrintableTable, StringTable,
+                            // StringTableLayout, CellDecorator,
+                            // DecoratedStringTable
 #endif
 
 
@@ -87,6 +88,9 @@ private:
 };
 
 
+/**
+ * \brief Stream insertion operator for RichARId.
+ */
 std::ostream& operator << (std::ostream& o, const RichARId& a);
 
 
@@ -313,324 +317,10 @@ template<ATTR A>
 std::string DefaultLabel();
 
 
-/**
- * \brief Decorator for table cells.
- *
- * A decorator can be registered for rows or columns. It gets an index \c i
- * which can be either a row or column index and decorates the corresponding
- * string passed, iff \c i is set to be decorated.
- */
-class CellDecorator
-{
-	/**
-	 * \brief Internal decoration flags.
-	 */
-	std::vector<bool> flags_;
-
-	virtual std::string do_decorate(std::string&& s) const
-	= 0;
-
-	virtual std::unique_ptr<CellDecorator> do_clone() const
-	= 0;
-
-protected:
-
-	/**
-	 * \brief Copy constructor for subclasses.
-	 *
-	 * \param[in] rhs Instance to copy
-	 */
-	CellDecorator(const CellDecorator& rhs);
-
-public:
-
-	/**
-	 * \brief Constructor for a decorator with \c n entries.
-	 */
-	CellDecorator(const std::size_t n);
-
-	/**
-	 * \brief Virtual default destructor.
-	 */
-	virtual ~CellDecorator() noexcept = default;
-
-	/**
-	 * \brief Set index \c i to be decorated.
-	 *
-	 * \param[in] i Index to be decorated
-	 */
-	void set(const int i);
-
-	/**
-	 * \brief Set index \c i to not be decorated.
-	 *
-	 * \param[in] i Index to not be decorated
-	 */
-	void unset(const int i);
-
-	/**
-	 * \brief Return TRUE iff index \c i is set, otherwise FALSE.
-	 *
-	 * \param[in] i Index to check
-	 *
-	 * \return TRUE iff index \c i is set, otherwise FALSE
-	 */
-	bool is_set(const int i) const;
-
-	/**
-	 * \brief Decorate \c s iff index \c i is set.
-	 *
-	 * \param[in] i Index to be decorated
-	 * \param[in] s String to decorate
-	 *
-	 * \return Decorated string
-	 */
-	std::string decorate(const int i, std::string&& s) const;
-
-	/**
-	 * \brief Clone this instance.
-	 *
-	 * \return Deep copy of this instance.
-	 */
-	std::unique_ptr<CellDecorator> clone() const;
-};
-
-
 using table::PrintableTable;
-using table::StringTable;
 using table::StringTableLayout;
-
-
-class DecoratedStringTable;
-bool operator==(const DecoratedStringTable& lhs,
-		const DecoratedStringTable& rhs);
-
-
-/**
- * \brief PrintableTable with decorators attached.
- */
-class DecoratedStringTable final : public PrintableTable
-{
-	/**
-	 * \brief Inner table.
-	 */
-	std::unique_ptr<StringTable> table_;
-
-	/**
-	 * \brief Registry for decorators registered for rows or columns.
-	 */
-	std::unique_ptr<std::map<int, std::unique_ptr<CellDecorator>>> registry_;
-
-
-	friend bool operator==(const DecoratedStringTable& lhs,
-		const DecoratedStringTable& rhs);
-
-public:
-
-	/**
-	 * \brief Constructor.
-	 *
-	 * \param[in] title Title of the table
-	 * \param[in] rows  Number of rows
-	 * \param[in] cols  Number of columns
-	 */
-	DecoratedStringTable(const std::string &title, const int rows,
-			const int cols);
-
-	/**
-	 * \brief Constructor.
-	 *
-	 * Title of the table will be an empty string.
-	 *
-	 * \param[in] rows  Number of rows
-	 * \param[in] cols  Number of columns
-	 */
-	DecoratedStringTable(const int rows, const int cols);
-
-	/**
-	 * \brief Default destructor.
-	 */
-	~DecoratedStringTable() noexcept final = default;
-
-	/**
-	 * \brief Write to cell by row and column.
-	 *
-	 * A std::runtime_error is thrown if the cell does not exist in the
-	 * table.
-	 *
-	 * \param[in] row  Table row to access
-	 * \param[in] col  Table column to access
-	 *
-	 * \return Content of the cell
-	 */
-	std::string& operator() (int row, int col);
-
-	/**
-	 * \brief Register a decorator for column \c j.
-	 *
-	 * \param[in] j Column to register a decorator for
-	 * \param[in] d CellDecorator to be registered
-	 */
-	void register_to_col(const int j, std::unique_ptr<CellDecorator> d);
-
-	/**
-	 * \brief Return decorator for column \c j or nullptr.
-	 *
-	 * \param[in] j Column to get the decorator for
-	 *
-	 * \return CellDecorator for column \c j
-	 */
-	const CellDecorator* col_decorator(const int j) const;
-
-	/**
-	 * \brief Register a decorator for row \c i.
-	 *
-	 * \param[in] i Row to register a decorator for
-	 * \param[in] d CellDecorator to be registered
-	 */
-	void register_to_row(const int i, std::unique_ptr<CellDecorator> d);
-
-	/**
-	 * \brief Return decorator for row \c i or nullptr.
-	 *
-	 * \param[in] i Row to get the decorator for
-	 *
-	 * \return CellDecorator for row \c i
-	 */
-	const CellDecorator* row_decorator(const int i) const;
-
-	/**
-	 * \brief Set cell \c i, \c j to be decorated.
-	 *
-	 * \param[in] i Row
-	 * \param[in] j Column
-	 */
-	void decorate(const int i, const int j);
-
-	/**
-	 * \brief Set cell \c i, \c j to not be decorated.
-	 *
-	 * \param[in] i Row
-	 * \param[in] j Column
-	 */
-	void undecorate(const int i, const int j);
-
-	/**
-	 * \brief Set the layout to be use for printing.
-	 *
-	 * \param[in] l Layout for this table
-	 */
-	void set_layout(std::unique_ptr<StringTableLayout> l);
-
-	/**
-	 * \brief Set a label for the specified column.
-	 *
-	 * \param[in] col   Table column to set a label to
-	 * \param[in] label Label to set
-	 */
-	void set_col_label(int col, const std::string& label);
-
-	/**
-	 * \brief Set a label for the specified row.
-	 *
-	 * \param[in] row   Table row to set a label to
-	 * \param[in] label Label to set
-	 */
-	void set_row_label(int row, const std::string& label);
-
-	/**
-	 * \brief Set the alignment for the respective column.
-	 *
-	 * \param[in] col   The column to modify
-	 * \param[in] align The alignment to apply to the column
-	 */
-	void set_align(int col, table::Align align);
-
-	/**
-	 * \brief Return the inner (undecorated) table.
-	 *
-	 * This is a way to skip the costs for decoration in the output.
-	 *
-	 * This is useful if either the decoration is decided to be skipped entirely
-	 * or no decoration was requested in the first place.
-	 *
-	 * \return Inner table
-	 */
-	std::unique_ptr<PrintableTable> remove_inner_table();
-
-protected:
-
-	/**
-	 * \brief Read from inner table.
-	 *
-	 * \return Inner table
-	 */
-	const StringTable* table() const;
-
-	/**
-	 * \brief Return decorator for the specified index or nullptr.
-	 *
-	 * \param[in] idx Inner row or column index
-	 *
-	 * \return Decorator for this row or column index or nullptr
-	 */
-	const CellDecorator* decorator(const int idx) const;
-
-	/**
-	 * \brief Set flag for a cell to TRUE or FALSE.
-	 *
-	 * \param[in] i Row
-	 * \param[in] j Column
-	 * \param[in] f Boolean value for flag
-	 */
-	void set_flag(const int i, const int j, const bool f);
-
-	/**
-	 * \brief Convert row to inner row index.
-	 *
-	 * \param[in] row Row
-	 * \return Inner row index
-	 */
-	int row_idx(const int i) const;
-
-	/**
-	 * \brief Convert column to inner column index.
-	 *
-	 * \param[in] col Column
-	 * \return Inner col index
-	 */
-	int col_idx(const int i) const;
-
-private:
-
-	// PrintableTable
-
-	std::string do_title() const final;
-
-	const std::string& do_ref(int row, int col) const final;
-
-	std::string do_cell(int row, int col) const final;
-
-	int do_rows() const final;
-
-	std::string do_row_label(int row) const final;
-
-	std::size_t do_max_height(int row) const final;
-
-	int do_cols() const final;
-
-	std::string do_col_label(int col) const final;
-
-	std::size_t do_max_width(int col) const final;
-
-	table::Align do_align(int col) const final;
-
-	std::size_t do_optimal_width(const int col) const final;
-
-	bool do_empty() const final;
-
-	const StringTableLayout* do_layout() const final;
-};
+using table::CellDecorator;
+using table::DecoratedStringTable;
 
 
 /**
@@ -996,15 +686,6 @@ public:
 	const TableComposerBuilder* builder_creator() const;
 
 	/**
-	 * \brief Create the internal TableComposer to compose the result data.
-	 *
-	 * Uses the internal TableComposer instance.
-	 */
-	std::unique_ptr<TableComposer> create_composer(
-		const std::size_t records,
-		const std::vector<ATTR>& field_types, const bool with_labels) const;
-
-	/**
 	 * \brief Set the layout to use for formatting the output table.
 	 *
 	 * \param[in] table_layout The StringTableLayout to set
@@ -1136,6 +817,15 @@ public:
 	void set_filename(const bool &filename);
 
 protected:
+
+	/**
+	 * \brief Create the internal TableComposer to compose the result data.
+	 *
+	 * Uses the internal TableComposer instance.
+	 */
+	std::unique_ptr<TableComposer> create_composer(
+		const std::size_t records,
+		const std::vector<ATTR>& field_types, const bool with_labels) const;
 
 	/**
 	 * \brief Build the result representation.
