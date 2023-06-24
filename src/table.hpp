@@ -958,6 +958,126 @@ public:
 	std::unique_ptr<CellDecorator> clone() const;
 };
 
+} // namespace table
+
+
+namespace details
+{
+
+using arcsapp::table::CellDecorator;
+
+class DecoratorStore;
+bool operator == (const DecoratorStore &lhs, const DecoratorStore &rhs)
+	noexcept;
+std::ostream& operator << (std::ostream& out, const DecoratorStore &object);
+
+/**
+ * \brief Internal storage interface for CellDecorators.
+ */
+class DecoratorStore final
+{
+public:
+
+	friend std::ostream& operator << (std::ostream& out,
+			const DecoratorStore &object);
+
+	/**
+	 * \brief Register a decorator for column \c j.
+	 *
+	 * \param[in] j Column to register a decorator for
+	 * \param[in] d CellDecorator to be registered
+	 */
+	void register_to_col(const int j, std::unique_ptr<CellDecorator> d);
+
+	/**
+	 * \brief Return decorator for column \c j or nullptr.
+	 *
+	 * \param[in] j Column to get the decorator for
+	 *
+	 * \return CellDecorator for column \c j
+	 */
+	const CellDecorator* col_decorator(const int j) const;
+
+	/**
+	 * \brief Register a decorator for row \c i.
+	 *
+	 * \param[in] i Row to register a decorator for
+	 * \param[in] d CellDecorator to be registered
+	 */
+	void register_to_row(const int i, std::unique_ptr<CellDecorator> d);
+
+	/**
+	 * \brief Return decorator for row \c i or nullptr.
+	 *
+	 * \param[in] i Row to get the decorator for
+	 *
+	 * \return CellDecorator for row \c i
+	 */
+	const CellDecorator* row_decorator(const int i) const;
+
+	/**
+	 * \brief Mark cell \c i, \c j as decorated.
+	 *
+	 * \param[in] i Row
+	 * \param[in] j Column
+	 */
+	void mark_decorated(const int i, const int j);
+
+	/**
+	 * \brief Mark cell \c i, \c j as not decorated.
+	 *
+	 * \param[in] i Row
+	 * \param[in] j Column
+	 */
+	void unmark_decorated(const int i, const int j);
+
+private:
+
+	/**
+	 * \brief Return decorator for the specified index or nullptr.
+	 *
+	 * \param[in] idx Inner row or column index
+	 *
+	 * \return Decorator for this row or column index or nullptr
+	 */
+	const CellDecorator* decorator(const int idx) const;
+
+	/**
+	 * \brief Set flag for a cell to TRUE or FALSE.
+	 *
+	 * \param[in] i Row
+	 * \param[in] j Column
+	 * \param[in] f Boolean value for flag
+	 */
+	void set_flag(const int i, const int j, const bool f);
+
+	/**
+	 * \brief Convert row to inner row index.
+	 *
+	 * \param[in] row Row
+	 * \return Inner row index
+	 */
+	int row_idx(const int i) const;
+
+	/**
+	 * \brief Convert column to inner column index.
+	 *
+	 * \param[in] col Column
+	 * \return Inner col index
+	 */
+	int col_idx(const int i) const;
+
+	/**
+	 * \brief Association of CellDecorators and row/column indices.
+	 */
+	std::map<int, std::unique_ptr<CellDecorator>> registry_;
+};
+
+} // namespace details
+
+
+namespace table
+{
 
 class DecoratedStringTable;
 bool operator==(const DecoratedStringTable& lhs,
@@ -977,7 +1097,7 @@ class DecoratedStringTable final : public PrintableTable
 	/**
 	 * \brief Registry for decorators registered for rows or columns.
 	 */
-	std::unique_ptr<std::map<int, std::unique_ptr<CellDecorator>>> registry_;
+	std::unique_ptr<details::DecoratorStore> registry_;
 
 
 	friend bool operator==(const DecoratedStringTable& lhs,
@@ -1124,40 +1244,6 @@ protected:
 	 * \return Inner table
 	 */
 	const StringTable* table() const;
-
-	/**
-	 * \brief Return decorator for the specified index or nullptr.
-	 *
-	 * \param[in] idx Inner row or column index
-	 *
-	 * \return Decorator for this row or column index or nullptr
-	 */
-	const CellDecorator* decorator(const int idx) const;
-
-	/**
-	 * \brief Set flag for a cell to TRUE or FALSE.
-	 *
-	 * \param[in] i Row
-	 * \param[in] j Column
-	 * \param[in] f Boolean value for flag
-	 */
-	void set_flag(const int i, const int j, const bool f);
-
-	/**
-	 * \brief Convert row to inner row index.
-	 *
-	 * \param[in] row Row
-	 * \return Inner row index
-	 */
-	int row_idx(const int i) const;
-
-	/**
-	 * \brief Convert column to inner column index.
-	 *
-	 * \param[in] col Column
-	 * \return Inner col index
-	 */
-	int col_idx(const int i) const;
 
 private:
 

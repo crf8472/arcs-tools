@@ -107,6 +107,8 @@ void insert_or_resize(std::vector<T> &v, const int rows, const int row,
 
 } // details
 
+
+
 namespace table
 {
 
@@ -385,8 +387,9 @@ void StringTable::insert_rows_after(const int rows, const int row)
 	}
 	rows_ += rows;
 
-	details::insert_or_resize(row_labels_,      rows, row, std::string());
-	details::insert_or_resize(row_max_heights_, rows, row,
+	arcsapp::details::insert_or_resize(row_labels_,      rows, row,
+			std::string());
+	arcsapp::details::insert_or_resize(row_max_heights_, rows, row,
 			default_max_height());
 }
 
@@ -985,6 +988,95 @@ std::unique_ptr<CellDecorator> CellDecorator::clone() const
 	return do_clone();
 }
 
+} // namespace table
+
+
+namespace details
+{
+
+
+void DecoratorStore::mark_decorated(const int i, const int j)
+{
+	set_flag(i, j, true);
+}
+
+
+void DecoratorStore::unmark_decorated(const int i, const int j)
+{
+	set_flag(i, j, false);
+}
+
+
+void DecoratorStore::register_to_row(const int i,
+		std::unique_ptr<CellDecorator> d)
+{
+	registry_.operator[](row_idx(i)) = std::move(d);
+}
+
+
+const CellDecorator* DecoratorStore::row_decorator(const int i) const
+{
+	return this->decorator(row_idx(i));
+}
+
+
+void DecoratorStore::register_to_col(const int j,
+		std::unique_ptr<CellDecorator> d)
+{
+	registry_.operator[](col_idx(j)) = std::move(d);
+}
+
+
+const CellDecorator* DecoratorStore::col_decorator(const int j) const
+{
+	return this->decorator(col_idx(j));
+}
+
+
+const CellDecorator* DecoratorStore::decorator(const int n) const
+{
+	using std::end;
+	auto d { registry_.find(n) };
+	return (end(registry_) != d) ? d->second.get() : nullptr;
+}
+
+
+int DecoratorStore::row_idx(const int i) const
+{
+	return i < 0 ? i : (-1) * i; // Row indices are always < 0
+}
+
+
+int DecoratorStore::col_idx(const int j) const
+{
+	return j < 0 ? (-1) * j : j; // Col indices are always > 0
+}
+
+
+void DecoratorStore::set_flag(const int i, const int j, const bool f)
+{
+	using std::end;
+
+	auto dec { registry_.find(col_idx(j)) }; // decorator for column j
+	if (end(registry_) != dec)
+	{
+		dec->second->set(i);
+	}
+
+	dec = registry_.find(row_idx(i)); // decorator for row i
+	if (end(registry_) != dec)
+	{
+		dec->second->set(j);
+	}
+}
+
+
+} // namespace details
+
+
+
+namespace table
+{
 
 // DecoratedStringTable
 
@@ -992,8 +1084,7 @@ std::unique_ptr<CellDecorator> CellDecorator::clone() const
 DecoratedStringTable::DecoratedStringTable(const std::string& title,
 		const int rows, const int cols)
 	: table_    { std::make_unique<StringTable>(title, rows, cols) }
-	, registry_ { std::make_unique<
-		std::map<int, std::unique_ptr<CellDecorator>>>() }
+	, registry_ { std::make_unique<details::DecoratorStore>() }
 {
 	// empty
 }
@@ -1015,38 +1106,38 @@ std::string& DecoratedStringTable::operator() (int row, int col)
 void DecoratedStringTable::register_to_row(const int i,
 		std::unique_ptr<CellDecorator> d)
 {
-	registry_->operator[](row_idx(i)) = std::move(d);
+	registry_->register_to_row(i, std::move(d));
 }
 
 
 const CellDecorator* DecoratedStringTable::row_decorator(const int i) const
 {
-	return this->decorator(row_idx(i));
+	return registry_->row_decorator(i);
 }
 
 
 void DecoratedStringTable::register_to_col(const int j,
 		std::unique_ptr<CellDecorator> d)
 {
-	registry_->operator[](col_idx(j)) = std::move(d);
+	registry_->register_to_col(j, std::move(d));
 }
 
 
 const CellDecorator* DecoratedStringTable::col_decorator(const int j) const
 {
-	return this->decorator(col_idx(j));
+	return registry_->col_decorator(j);
 }
 
 
 void DecoratedStringTable::decorate(const int i, const int j)
 {
-	set_flag(i, j, true);
+	registry_->mark_decorated(i, j);
 }
 
 
 void DecoratedStringTable::undecorate(const int i, const int j)
 {
-	set_flag(i, j, false);
+	registry_->unmark_decorated(i, j);
 }
 
 
@@ -1060,44 +1151,6 @@ std::unique_ptr<PrintableTable> DecoratedStringTable::remove_inner_table()
 const StringTable* DecoratedStringTable::table() const
 {
 	return table_.get();
-}
-
-
-const CellDecorator* DecoratedStringTable::decorator(const int n) const
-{
-	using std::end;
-	auto d { registry_->find(n) };
-	return (end(*registry_) != d) ? d->second.get() : nullptr;
-}
-
-
-void DecoratedStringTable::set_flag(const int i, const int j, const bool f)
-{
-	using std::end;
-
-	auto dec { registry_->find(col_idx(j)) }; // decorator for column j
-	if (end(*registry_) != dec)
-	{
-		dec->second->set(i);
-	}
-
-	dec = registry_->find(row_idx(i)); // decorator for row i
-	if (end(*registry_) != dec)
-	{
-		dec->second->set(j);
-	}
-}
-
-
-int DecoratedStringTable::row_idx(const int i) const
-{
-	return i < 0 ? i : (-1) * i; // Row indices are always < 0
-}
-
-
-int DecoratedStringTable::col_idx(const int j) const
-{
-	return j < 0 ? (-1) * j : j; // Col indices are always > 0
 }
 
 
