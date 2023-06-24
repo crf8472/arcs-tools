@@ -627,23 +627,64 @@ protected:
 
 private:
 
+	/**
+	 * \brief Title of the table.
+	 */
 	std::string title_;
 
+	/**
+	 * \brief Number of actual rows.
+	 */
 	int rows_;
+
+	/**
+	 * \brief Default maximum height of a cell.
+	 */
 	std::size_t default_max_height_;
 
+	/**
+	 * \brief Number of actual columns.
+	 */
 	int cols_;
+
+	/**
+	 * \brief Default maximum width of a cell
+	 */
 	std::size_t default_max_width_;
 
+	/**
+	 * \brief Internal storage for row labels.
+	 */
 	std::vector<std::string> row_labels_;
+
+	/**
+	 * \brief Actual maximum heights of rows.
+	 */
 	std::vector<std::size_t> row_max_heights_;
 
+	/**
+	 * \brief Internal storage for column labels.
+	 */
 	std::vector<std::string> col_labels_;
+
+	/**
+	 * \brief Actual maximum widths of columns.
+	 */
 	std::vector<std::size_t> col_max_widths_;
+
+	/**
+	 * \brief Internal storage for column alignments.
+	 */
 	std::vector<Align> aligns_;
 
+	/**
+	 * \brief Internal storage for table cells.
+	 */
 	store_type cells_;
 
+	/**
+	 * \brief Layout of the table.
+	 */
 	std::unique_ptr<StringTableLayout> layout_;
 };
 
@@ -672,6 +713,9 @@ public:
 	std::vector<std::string> split(const std::string& str,
 			const std::size_t max_len) const;
 
+	/**
+	 * \brief Deep copy of the instance.
+	 */
 	std::unique_ptr<StringSplitter> clone() const;
 
 private:
@@ -714,6 +758,7 @@ public:
 
 	StringTableLayout(const StringTableLayout& rhs);
 	StringTableLayout& operator=(const StringTableLayout& rhs);
+
 	void swap(StringTableLayout& rhs) noexcept;
 
 	// flags
