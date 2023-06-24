@@ -385,6 +385,20 @@ TEST_CASE ( "StringTableLayout", "[stringtablelayout]" )
 }
 
 
+TEST_CASE ( "DecoratorStore", "[DecoratorStore]" )
+{
+	using arcsapp::details::DecoratorStore;
+
+	DecoratorStore store;
+
+	SECTION ( "Construction" )
+	{
+		CHECK ( &store != nullptr );
+	}
+}
+
+
+
 TEST_CASE ( "DecoratedStringTable", "[DecoratedStringTable]" )
 {
 	using arcsapp::table::DecoratedStringTable;
