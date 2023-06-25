@@ -1097,6 +1097,12 @@ bool DecoratorRegistry::is_decorated_worker(const CellDecorator* d, const int n)
 }
 
 
+bool operator == (const DecoratorRegistry &lhs, const DecoratorRegistry &rhs)
+	noexcept
+{
+	return lhs.internal_registry_ == rhs.internal_registry_;
+}
+
 } // namespace details
 
 
@@ -1218,15 +1224,15 @@ const std::string& DecoratedStringTable::do_ref(int row, int col) const
 
 std::string DecoratedStringTable::do_cell(int row, int col) const
 {
-	if (col_decorator(col))
+	if (auto cold { col_decorator(col) }; cold)
 	{
-		// XXX Rows?
-		if (row_decorator(row))
+		if (auto rowd { row_decorator(row) }; rowd)
 		{
-			// TODO Implement decoration also for rows
+			return rowd->decorate(row,
+					cold->decorate(row, table()->cell(row, col)));
 		}
 
-		return col_decorator(col)->decorate(row, table()->cell(row, col));
+		return cold->decorate(row, table()->cell(row, col));
 	}
 
 	return table()->cell(row, col);

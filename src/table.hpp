@@ -969,7 +969,6 @@ using arcsapp::table::CellDecorator;
 class DecoratorRegistry;
 bool operator == (const DecoratorRegistry &lhs, const DecoratorRegistry &rhs)
 	noexcept;
-std::ostream& operator << (std::ostream& out, const DecoratorRegistry &object);
 
 /**
  * \brief Internal storage interface for CellDecorators.
@@ -978,8 +977,8 @@ class DecoratorRegistry final
 {
 public:
 
-	friend std::ostream& operator << (std::ostream& out,
-			const DecoratorRegistry &object);
+	friend bool operator == (const DecoratorRegistry &lhs,
+			const DecoratorRegistry &rhs) noexcept;
 
 	/**
 	 * \brief Register a decorator for column \c j.
