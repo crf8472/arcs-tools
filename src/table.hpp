@@ -966,20 +966,20 @@ namespace details
 
 using arcsapp::table::CellDecorator;
 
-class DecoratorStore;
-bool operator == (const DecoratorStore &lhs, const DecoratorStore &rhs)
+class DecoratorRegistry;
+bool operator == (const DecoratorRegistry &lhs, const DecoratorRegistry &rhs)
 	noexcept;
-std::ostream& operator << (std::ostream& out, const DecoratorStore &object);
+std::ostream& operator << (std::ostream& out, const DecoratorRegistry &object);
 
 /**
  * \brief Internal storage interface for CellDecorators.
  */
-class DecoratorStore final
+class DecoratorRegistry final
 {
 public:
 
 	friend std::ostream& operator << (std::ostream& out,
-			const DecoratorStore &object);
+			const DecoratorRegistry &object);
 
 	/**
 	 * \brief Register a decorator for column \c j.
@@ -1031,7 +1031,25 @@ public:
 	 */
 	void unmark_decorated(const int i, const int j);
 
+	/**
+	 * \brief TRUE iff \c i, \c j is marked as decorated.
+	 *
+	 * \param[in] i Row
+	 * \param[in] j Column
+	 *
+	 * \return TRUE iff \c i, \c j is marked as decorated
+	 */
+	bool is_decorated(const int i, const int j);
+
 private:
+
+	/**
+	 * \brief Add decorator for the specified index to the registry.
+	 *
+	 * \param[in] d   Decorator to add to the registry
+	 * \param[in] idx Inner row or column index
+	 */
+	void add_decorator(std::unique_ptr<CellDecorator> d, const int idx);
 
 	/**
 	 * \brief Return decorator for the specified index or nullptr.
@@ -1040,16 +1058,7 @@ private:
 	 *
 	 * \return Decorator for this row or column index or nullptr
 	 */
-	const CellDecorator* decorator(const int idx) const;
-
-	/**
-	 * \brief Set flag for a cell to TRUE or FALSE.
-	 *
-	 * \param[in] i Row
-	 * \param[in] j Column
-	 * \param[in] f Boolean value for flag
-	 */
-	void set_flag(const int i, const int j, const bool f);
+	CellDecorator* get_decorator(const int idx) const;
 
 	/**
 	 * \brief Convert row to inner row index.
@@ -1068,9 +1077,37 @@ private:
 	int col_idx(const int i) const;
 
 	/**
+	 * \brief Set flag for a cell to TRUE or FALSE.
+	 *
+	 * \param[in] i Row
+	 * \param[in] j Column
+	 * \param[in] f Boolean value for flag
+	 */
+	void set_flag(const int i, const int j, const bool f);
+
+	/**
+	 * \brief Worker to set a flag to a single decorator.
+	 *
+	 * \param[in] d CellDecorator to set a flag on
+	 * \param[in] n Row or Column to be flagged
+	 * \param[in] f Boolean value for flag
+	 */
+	void set_flag_worker(CellDecorator* d, const int n, const bool f);
+
+	/**
+	 * \brief Worker to check whether decorator is set on entry \c n.
+	 *
+	 * \param[in] d CellDecorator to get a flag from
+	 * \param[in] n Row or Column to check for flag
+	 *
+	 * \return TRUE, if \c n is set in \c d, otherwise FALSE
+	 */
+	bool is_decorated_worker(const CellDecorator* d, const int n);
+
+	/**
 	 * \brief Association of CellDecorators and row/column indices.
 	 */
-	std::map<int, std::unique_ptr<CellDecorator>> registry_;
+	std::map<int, std::unique_ptr<CellDecorator>> internal_registry_;
 };
 
 } // namespace details
@@ -1097,7 +1134,7 @@ class DecoratedStringTable final : public PrintableTable
 	/**
 	 * \brief Registry for decorators registered for rows or columns.
 	 */
-	std::unique_ptr<details::DecoratorStore> registry_;
+	std::unique_ptr<details::DecoratorRegistry> registry_;
 
 
 	friend bool operator==(const DecoratedStringTable& lhs,

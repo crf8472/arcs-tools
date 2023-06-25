@@ -9,6 +9,8 @@
 
 namespace arcsapp
 {
+namespace test
+{
 
 using table::CellDecorator;
 
@@ -34,6 +36,7 @@ public:
 	~DecoratorMock() noexcept final = default;
 };
 
+} //namespace test
 } //namespace arcsapp
 
 
@@ -385,15 +388,63 @@ TEST_CASE ( "StringTableLayout", "[stringtablelayout]" )
 }
 
 
-TEST_CASE ( "DecoratorStore", "[DecoratorStore]" )
+TEST_CASE ( "DecoratorRegistry", "[DecoratorRegistry]" )
 {
-	using arcsapp::details::DecoratorStore;
+	using arcsapp::details::DecoratorRegistry;
+	using arcsapp::test::DecoratorMock;
 
-	DecoratorStore store;
+	DecoratorRegistry store;
 
-	SECTION ( "Construction" )
+	auto c2 = std::make_unique<DecoratorMock>(17/* rows */);
+	store.register_to_col(2, std::move(c2));
+
+	auto r4 = std::make_unique<DecoratorMock>(9/* columns */);
+	store.register_to_row(4, std::move(r4));
+
+	store.mark_decorated(4,7);
+
+	SECTION ( "Default Constructor works correctly" )
 	{
 		CHECK ( &store != nullptr );
+	}
+
+	SECTION ( "Register column decorator" )
+	{
+		CHECK ( store.col_decorator(0) == nullptr );
+		CHECK ( store.col_decorator(1) == nullptr );
+		CHECK ( store.col_decorator(2) != nullptr );
+		CHECK ( store.col_decorator(3) == nullptr );
+	}
+
+	SECTION ( "Register row decorator" )
+	{
+		CHECK ( store.row_decorator(0) == nullptr );
+		CHECK ( store.row_decorator(1) == nullptr );
+		CHECK ( store.row_decorator(2) == nullptr );
+		CHECK ( store.row_decorator(3) == nullptr );
+		CHECK ( store.row_decorator(4) != nullptr );
+	}
+
+	SECTION ( "Mark cell 4,7 as decorated" )
+	{
+		auto d { store.row_decorator(4) };
+		CHECK ( d->is_set(7) );
+
+		CHECK ( !store.is_decorated(0,8) );
+		CHECK ( !store.is_decorated(3,6) );
+		CHECK (  store.is_decorated(4,7) );
+	}
+
+	SECTION ( "Unmark cell 4,7 as decorated" )
+	{
+		store.unmark_decorated(4,7);
+		auto d { store.row_decorator(4) };
+
+		CHECK ( !d->is_set(6) );
+		CHECK ( !d->is_set(7) );
+		CHECK ( !d->is_set(8) );
+
+		CHECK ( !store.is_decorated(4,7) );
 	}
 }
 
@@ -404,7 +455,7 @@ TEST_CASE ( "DecoratedStringTable", "[DecoratedStringTable]" )
 	using arcsapp::table::DecoratedStringTable;
 	using arcsapp::table::Align;
 
-	using arcsapp::DecoratorMock;
+	using arcsapp::test::DecoratorMock;
 
 	DecoratedStringTable t{ 5, 3 };
 
