@@ -325,6 +325,10 @@ using table::DecoratedStringTable;
 
 /**
  * \brief Record-based interface for decorating a PrintableTable.
+ *
+ * This interface allows to decorate a table by declaring decoration on a
+ * record- or field-level. He caller is not required to know whether the records
+ * are rows or columns.
  */
 class DecorationInterface
 {
@@ -354,13 +358,18 @@ public:
 	 * \brief Register a decorator for a certain record.
 	 *
 	 * \param[in] record_idx Record index
-	 * \param[in] d          Decorator
+	 * \param[in] d          Decorator to register
 	 */
 	void register_to_record(const int record_idx,
 			std::unique_ptr<CellDecorator> d);
 
 	/**
 	 * \brief Get decorator for record.
+	 *
+	 * Iff there is no decorator registered for the specified record,
+	 * \c nullptr is returned.
+	 *
+	 * \param[in] record_idx Record index to get decorator for, if any
 	 */
 	const CellDecorator* on_record(const int record_idx) const;
 
@@ -368,23 +377,34 @@ public:
 	 * \brief Register a decorator for a certain field.
 	 *
 	 * \param[in] field_idx Field index
-	 * \param[in] d         Decorator
+	 * \param[in] d         Decorator to register
 	 */
 	void register_to_field(const int field_idx,
 			std::unique_ptr<CellDecorator> d);
 
 	/**
 	 * \brief Get decorator for field.
+	 *
+	 * Iff there is no decorator registered for the specified field,
+	 * \c nullptr is returned.
+	 *
+	 * \param[in] field_idx Field index to get decorator for, if any
 	 */
 	const CellDecorator* on_field(const int field_idx) const;
 
 	/**
 	 * \brief Mark cell as decorated.
+	 *
+	 * \param[in] record_idx Record index
+	 * \param[in] field_idx  Field index
 	 */
 	void mark(const int record_idx, const int field_idx);
 
 	/**
-	 * \brief Mark cell as undecorated.
+	 * \brief Unmark cell, e.g. mark cell as undecorated.
+	 *
+	 * \param[in] record_idx Record index
+	 * \param[in] field_idx  Field index
 	 */
 	void unmark(const int record_idx, const int field_idx);
 };
@@ -617,12 +637,26 @@ class TableComposerBuilder
 {
 public:
 
+	/**
+	 * \brief Create a TableComposer.
+	 *
+	 * If labels are activated, the default labels are printed.
+	 *
+	 * \param[in] records     Total number of records
+	 * \param[in] field_types List of fields for each record
+	 * \param[in] with_labels If TRUE, use default labels
+	 *
+	 * \see DefaultLabel
+	 */
 	std::unique_ptr<TableComposer> create_composer(
 		const std::size_t records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const;
 
 private:
 
+	/**
+	 * \brief Implements create_composer().
+	 */
 	virtual std::unique_ptr<TableComposer> do_create_composer(
 		const std::size_t records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const
@@ -666,6 +700,9 @@ using arcstk::TOC;
 
 /**
  * \brief Abstract base class for result formatting.
+ *
+ * \todo Use one accessor pair for set_flag(COL::OFFSET, true) etc.
+ * \todo Use a bitmask for flags of p_tracks, p_offsets, p_lengths, p_filenames
  */
 class ResultFormatter : public WithInternalFlags
 {
@@ -860,15 +897,17 @@ protected:
 	 * Throws if validation fails.
 	 *
 	 * \param[in] checksums  Checksums as resulted
-	 * \param[in] filenames  Filenames as resulted
 	 * \param[in] toc        TOC as resulted
 	 * \param[in] arid       ARId as resulted
+	 * \param[in] filenames  Filenames as resulted
+	 *
+	 * \throws invalid_argument If validation fails
 	 */
 	void validate(const Checksums& checksums, const TOC* toc,
 		const ARId& arid, const std::vector<std::string>& filenames) const;
 
 	/**
-	 * \brief Create the result field_types.
+	 * \brief Create the result \c field_types.
 	 *
 	 * \param[in] tracks       Iff TRUE, print tracks
 	 * \param[in] offsets      Iff TRUE, print offsets
@@ -884,7 +923,12 @@ protected:
 		const int total_theirs) const;
 
 	/**
-	 * \brief Initialize composer.
+	 * \brief Hook for initializing composer.
+	 *
+	 * You can do things like adding decorators or do some checking/validation.
+	 * Default implementation is empty.
+	 *
+	 * \param[in] c TableComposer to be initialized
 	 */
 	virtual void init_composer(TableComposer* c) const;
 
@@ -902,15 +946,14 @@ protected:
 	 * \param[in] refsums     Reference checksums as specified
 	 * \param[in] match       Match object (maybe null)
 	 * \param[in] block       Index to choose from \c match
-	 * \param[in] filenames   Filenames as resulted
 	 * \param[in] toc         TOC as resulted
 	 * \param[in] arid        ARId as resulted
-	 * \param[in] b           TableComposer to use
+	 * \param[in] filenames   Filenames as resulted
+	 * \param[in] types       List of checksum types to print
 	 * \param[in] p_tracks    Iff TRUE, print tracks
 	 * \param[in] p_offsets   Iff TRUE, print offsets
 	 * \param[in] p_lengths   Iff TRUE, print lengths
 	 * \param[in] p_filenames Iff TRUE, print filenames
-	 * \param[in] types       List of checksum types to print
 	 *
 	 * \return Table with result data
 	 */
@@ -930,7 +973,7 @@ protected:
 	 *
 	 * Note that \c record also determines access to \c checksums.
 	 *
-	 * \param[in] checksums  Result checksums
+	 * \param[in] checksum   Local checksum to be formatted
 	 * \param[in] record     Index of the record in \c c to edit
 	 * \param[in] field      Index of the field in \c c to edit
 	 * \param[in] c          TableComposer to use
@@ -945,8 +988,8 @@ protected:
 	 *
 	 * Note that \c record also determines access to \c checksums.
 	 *
-	 * \param[in] checksum   Reference checksum
-	 * \param[in] does_match Print as matching or not matching
+	 * \param[in] checksum   Reference checksum to be formatted
+	 * \param[in] does_match Print as matching or as not matching
 	 * \param[in] record     Index of the record in \c b to edit
 	 * \param[in] field      Index of the field in \c b to edit
 	 * \param[in] c          TableComposer to use

@@ -98,9 +98,18 @@ private:
  */
 class MatchDecorator final : public CellDecorator
 {
+	/**
+	 * \brief Internal color for coloring matches.
+	 */
 	ansi::Color match_color_;
 
+	/**
+	 * \brief Internal color for coloring mismatches.
+	 */
 	ansi::Color mismatch_color_;
+
+
+	// CellDecorator
 
 	std::string do_decorate_set(std::string&& s) const final;
 
@@ -110,17 +119,49 @@ class MatchDecorator final : public CellDecorator
 
 public:
 
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] n        Total number of decoratable entries
+	 * \param[in] match    Color for coloring matches
+	 * \param[in] mismatch Color for coloring mismatches
+	 */
 	MatchDecorator(const std::size_t n, const ansi::Color match,
 			const ansi::Color mismatch);
 
+	/**
+	 * \brief Constructor.
+	 *
+	 * Uses default colors: bright green for matches, bright red for mismatches.
+	 *
+	 * \param[in] n        Total number of decoratable entries
+	 */
 	MatchDecorator(const std::size_t n);
 
+	/**
+	 * \brief Copy constructor.
+	 *
+	 * \param[in] rhs Instance to copy
+	 */
 	MatchDecorator(const MatchDecorator& rhs);
 
+	/**
+	 * \brief Default destructor.
+	 */
 	~MatchDecorator() noexcept final = default;
 
+	/**
+	 * \brief Return the color for coloring matches.
+	 *
+	 * \return Color for matches
+	 */
 	ansi::Color color_for_match() const;
 
+	/**
+	 * \brief Return the color for coloring mismatches.
+	 *
+	 * \return Color for mismatches
+	 */
 	ansi::Color color_for_mismatch() const;
 };
 
@@ -210,9 +251,12 @@ class MonochromeVerifyResultFormatter : public VerifyResultFormatter
 
 
 /**
- * \brief Output decoration element.
+ * \brief Decoratable output aspects.
+ *
+ * Actually, matches (MATCH), mismatches (MISMATCH) and locally computed
+ * checksums (MINE) can be decorated.
  */
-enum class Deco : int
+enum class DecorationType : int
 {
 	MATCH,
 	MISMATCH,
@@ -221,34 +265,59 @@ enum class Deco : int
 
 
 /**
- * \brief Registry for getting actual output colors.
+ * \brief Registry for getting assigned output colors for DecorationTypes.
  */
-class ColorRegistry
+class ColorRegistry final
 {
 	// TODO Very basic. Should be extended to a std::map.
 
+	/**
+	 * \brief Internal store for colors.
+	 */
 	std::vector<ansi::Color> colors_;
 
 public:
 
+	/**
+	 * \brief Constructor.
+	 */
 	ColorRegistry();
 
-	ansi::Color get(Deco d) const;
+	/**
+	 * \brief Return color for coloring output of type \c d.
+	 *
+	 * \param[in] d  DecorationType to get actual color for
+	 *
+	 * \return Color for coloring output of type \c d.
+	 */
+	ansi::Color get(DecorationType d) const;
 
-	void set(Deco d, ansi::Color c);
+	/**
+	 * \brief Set color for coloring output of type \c d.
+	 *
+	 * \param[in] d  DecorationType to assign an actual color to
+	 * \param[in] c  Color for coloring output of type \c d.
+	 */
+	void set(DecorationType d, ansi::Color c);
 };
 
 
 /**
  * \brief Format colorized output.
  *
- * All cells containing matches are green.
+ * All cells containing matches are green. All cells containing mismatches are
+ * red.
  */
 class ColorizingVerifyResultFormatter : public VerifyResultFormatter
 {
 	ColorRegistry registry_;
 
+
+	// ResultFormatter
+
 	void init_composer(TableComposer* c) const final;
+
+	// VerifyResultFormatter
 
 	void do_their_match(const Checksum& checksum, const int record,
 			const int field, TableComposer* c) const final;
@@ -258,9 +327,22 @@ class ColorizingVerifyResultFormatter : public VerifyResultFormatter
 
 public:
 
-	ansi::Color color(Deco d) const;
+	/**
+	 * \brief Return color for coloring output of type \c d.
+	 *
+	 * \param[in] d  DecorationType to get actual color for
+	 *
+	 * \return Color for coloring output of type \c d.
+	 */
+	ansi::Color color(DecorationType d) const;
 
-	void set_color(Deco d, ansi::Color c);
+	/**
+	 * \brief Set color for coloring output of type \c d.
+	 *
+	 * \param[in] d  DecorationType to assign an actual color to
+	 * \param[in] c  Color for coloring output of type \c d.
+	 */
+	void set_color(DecorationType d, ansi::Color c);
 };
 
 

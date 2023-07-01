@@ -1125,6 +1125,8 @@ bool operator==(const DecoratedStringTable& lhs,
 
 /**
  * \brief PrintableTable with decorators attached.
+ *
+ * Decorators can be registered to columns as well as to rows.
  */
 class DecoratedStringTable final : public PrintableTable
 {
@@ -1217,20 +1219,28 @@ public:
 	const CellDecorator* row_decorator(const int i) const;
 
 	/**
-	 * \brief Set cell \c i, \c j to be decorated.
+	 * \brief Mark cell \c i, \c j as decorated.
+	 *
+	 * This activates decoration for the specified cell.
+	 *
+	 * Calling this function on decorated cells will have no effect.
 	 *
 	 * \param[in] i Row
 	 * \param[in] j Column
 	 */
-	void decorate(const int i, const int j);
+	void mark_decorated(const int i, const int j);
 
 	/**
-	 * \brief Set cell \c i, \c j to not be decorated.
+	 * \brief Mark cell \c i, \c j as not be decorated.
+	 *
+	 * This activates decoration for the specified cell.
+	 *
+	 * Calling this function on undecorated cells will have no effect.
 	 *
 	 * \param[in] i Row
 	 * \param[in] j Column
 	 */
-	void undecorate(const int i, const int j);
+	void unmark_decorated(const int i, const int j);
 
 	/**
 	 * \brief Set the layout to be use for printing.
@@ -1266,7 +1276,7 @@ public:
 	/**
 	 * \brief Return the inner (undecorated) table.
 	 *
-	 * This is a way to skip the costs for decoration in the output.
+	 * This allows to skip the costs for respecting decoration in the output.
 	 *
 	 * This is useful if either the decoration is decided to be skipped entirely
 	 * or no decoration was requested in the first place.
@@ -1319,12 +1329,18 @@ private:
 /**
  * \brief Prints a StringTable.
  */
-class TablePrinter
+class TablePrinter final
 {
 public:
 
+	/**
+	 * \brief Default constructor.
+	 */
 	TablePrinter();
 
+	/**
+	 * \brief Default destructor.
+	 */
 	~TablePrinter() noexcept;
 
 	/**
@@ -1346,15 +1362,26 @@ private:
 
 /**
  * \brief Output stream operator for PrintableTable.
+ *
+ * \param[in] o     Output stream
+ * \param[in] table Table to print
+ *
+ * \return Output stream
  */
 std::ostream& operator << (std::ostream &o, const PrintableTable &table);
 
 
 /**
  * \brief Output stream operator for PrintableTable.
+ *
+ * \param[in] o     Output stream
+ * \param[in] table Table to print
+ *
+ * \return Output stream
  */
 std::ostream& operator << (std::ostream &o,
 		const std::unique_ptr<PrintableTable> &table);
+
 
 } // namespace table
 } // namespace arcsapp

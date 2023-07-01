@@ -515,15 +515,15 @@ ColorRegistry::ColorRegistry()
 }
 
 
-ansi::Color ColorRegistry::get(Deco d) const
+ansi::Color ColorRegistry::get(DecorationType d) const
 {
-	return colors_[std::underlying_type_t<Deco>(d)];
+	return colors_[std::underlying_type_t<DecorationType>(d)];
 }
 
 
-void ColorRegistry::set(Deco d, ansi::Color c)
+void ColorRegistry::set(DecorationType d, ansi::Color c)
 {
-	colors_[std::underlying_type_t<Deco>(d)] = c;
+	colors_[std::underlying_type_t<DecorationType>(d)] = c;
 }
 
 
@@ -533,8 +533,8 @@ void ColorRegistry::set(Deco d, ansi::Color c)
 void ColorizingVerifyResultFormatter::init_composer(TableComposer* c) const
 {
 	const auto r_size    { c->total_records() };
-	const auto color_yes { color(Deco::MATCH) };
-	const auto color_no  { color(Deco::MISMATCH) };
+	const auto color_yes { color(DecorationType::MATCH) };
+	const auto color_no  { color(DecorationType::MISMATCH) };
 
 	// Register Decorators to each "Theirs" field
 
@@ -577,13 +577,13 @@ void ColorizingVerifyResultFormatter::do_their_mismatch(
 }
 
 
-ansi::Color ColorizingVerifyResultFormatter::color(Deco d) const
+ansi::Color ColorizingVerifyResultFormatter::color(DecorationType d) const
 {
 	return registry_.get(d);
 }
 
 
-void ColorizingVerifyResultFormatter::set_color(Deco d, ansi::Color c)
+void ColorizingVerifyResultFormatter::set_color(DecorationType d, ansi::Color c)
 {
 	registry_.set(d, c);
 }

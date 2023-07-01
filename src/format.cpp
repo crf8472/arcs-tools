@@ -198,7 +198,7 @@ int TableComposer::get_col(const int i, const int j) const
 
 std::unique_ptr<PrintableTable> TableComposer::table()
 {
-	// No decorators? Then we will prefer to have just the inner StringTable
+	// No decorators? Then we will prefer to return just the inner StringTable
 	if (from_table().empty())
 	{
 		ARCS_LOG(DEBUG1) << "TableComposer returns undecorated string table";
@@ -357,13 +357,13 @@ bool TableComposer::do_has_field(const ATTR& field_type) const
 
 void TableComposer::do_mark(const int record_idx, const int field_idx)
 {
-	in_table().decorate(record_idx, field_idx);
+	in_table().mark_decorated(record_idx, field_idx);
 }
 
 
 void TableComposer::do_unmark(const int record_idx, const int field_idx)
 {
-	in_table().undecorate(record_idx, field_idx);
+	in_table().unmark_decorated(record_idx, field_idx);
 }
 
 

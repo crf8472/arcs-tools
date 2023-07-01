@@ -1163,13 +1163,13 @@ const CellDecorator* DecoratedStringTable::col_decorator(const int j) const
 }
 
 
-void DecoratedStringTable::decorate(const int i, const int j)
+void DecoratedStringTable::mark_decorated(const int i, const int j)
 {
 	registry_->mark_decorated(i, j);
 }
 
 
-void DecoratedStringTable::undecorate(const int i, const int j)
+void DecoratedStringTable::unmark_decorated(const int i, const int j)
 {
 	registry_->unmark_decorated(i, j);
 }
