@@ -297,12 +297,21 @@ MatchDecorator::MatchDecorator(const MatchDecorator& rhs)
 }
 
 
-std::string MatchDecorator::do_decorate(std::string&& s) const
+std::string MatchDecorator::do_decorate_set(std::string&& s) const
 {
 	using ansi::Color;
 	using ansi::Colorize;
 
 	return Colorize<Color::FG_GREEN>{}(s);
+}
+
+
+std::string MatchDecorator::do_decorate_unset(std::string&& s) const
+{
+	using ansi::Color;
+	using ansi::Colorize;
+
+	return Colorize<Color::FG_RED>{}(s);
 }
 
 
@@ -491,7 +500,7 @@ void ColorizingVerifyResultFormatter::do_their_match(const Checksum& checksum,
 	}
 
 	ARCS_LOG(DEBUG1) << "Mark cell " << record_idx << ", " << field_idx
-		<< "as decorated";
+		<< "as match-decorated";
 
 	c->mark(record_idx, field_idx);
 }
@@ -501,6 +510,18 @@ void ColorizingVerifyResultFormatter::do_their_mismatch(const Checksum& checksum
 		const int record_idx, const int field_idx, TableComposer* c) const
 {
 	c->set_field(record_idx, field_idx, this->checksum(checksum));
+
+	if (!c->on_field(field_idx))
+	{
+		ARCS_LOG(DEBUG1) << "Register MatchDecorator to field_idx "
+			<< field_idx;
+
+		c->register_to_field(field_idx,
+				std::make_unique<MatchDecorator>(c->total_records()));
+	}
+
+	ARCS_LOG(DEBUG1) << "Mark cell " << record_idx << ", " << field_idx
+		<< "as mismatch-decorated";
 }
 
 

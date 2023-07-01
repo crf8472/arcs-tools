@@ -979,7 +979,9 @@ bool CellDecorator::is_set(const int i) const
 
 std::string CellDecorator::decorate(const int i, std::string&& s) const
 {
-	return is_set(i) ? do_decorate(std::move(s)) : s;
+	return is_set(i)
+		? do_decorate_set(std::move(s))
+		: do_decorate_unset(std::move(s));
 }
 
 

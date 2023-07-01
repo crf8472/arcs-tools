@@ -21,7 +21,9 @@ using table::CellDecorator;
  */
 class DecoratorMock final : public CellDecorator
 {
-	std::string do_decorate(std::string&& s) const final { return ""; };
+	std::string do_decorate_set(std::string&& s) const final { return ""; };
+
+	std::string do_decorate_unset(std::string&& s) const final { return ""; };
 
 	std::unique_ptr<CellDecorator> do_clone() const final {
 		return std::make_unique<DecoratorMock>(*this);

@@ -95,7 +95,9 @@ private:
  */
 class MatchDecorator final : public CellDecorator
 {
-	std::string do_decorate(std::string&& s) const final;
+	std::string do_decorate_set(std::string&& s) const final;
+
+	std::string do_decorate_unset(std::string&& s) const final;
 
 	std::unique_ptr<CellDecorator> do_clone() const final;
 

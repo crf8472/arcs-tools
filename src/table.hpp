@@ -890,7 +890,10 @@ class CellDecorator
 	 */
 	std::vector<bool> flags_;
 
-	virtual std::string do_decorate(std::string&& s) const
+	virtual std::string do_decorate_set(std::string&& s) const
+	= 0;
+
+	virtual std::string do_decorate_unset(std::string&& s) const
 	= 0;
 
 	virtual std::unique_ptr<CellDecorator> do_clone() const
