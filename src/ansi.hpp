@@ -87,13 +87,18 @@ public:
 /**
  * \brief Colorize a string.
  */
+std::string colored(Color c, Highlight h, const std::string& s);
+
+
+/**
+ * \brief Colorize a string.
+ */
 template <Color C, Highlight H = Highlight::BRIGHT>
 struct Colorize
 {
 	inline std::string operator() (const std::string& s) const
 	{
-		return Modifier{C, H}.to_string()
-			+ s + Modifier{Color::FG_DEFAULT, Highlight::NORMAL}.to_string();
+		return colored(C, H, s);
 	}
 };
 

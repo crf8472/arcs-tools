@@ -23,6 +23,9 @@
 #include <arcstk/parse.hpp>
 #endif
 
+#ifndef __ARCSTOOLS_ANSI_HPP__
+#include "ansi.hpp"              // for Color
+#endif
 #ifndef __ARCSTOOLS_APPCALC_HPP__
 #include "app-calc.hpp"          // for ARCalcConfigurator, CALC
 #endif
@@ -95,6 +98,10 @@ private:
  */
 class MatchDecorator final : public CellDecorator
 {
+	ansi::Color match_color_;
+
+	ansi::Color mismatch_color_;
+
 	std::string do_decorate_set(std::string&& s) const final;
 
 	std::string do_decorate_unset(std::string&& s) const final;
@@ -103,11 +110,18 @@ class MatchDecorator final : public CellDecorator
 
 public:
 
+	MatchDecorator(const std::size_t n, const ansi::Color match,
+			const ansi::Color mismatch);
+
 	MatchDecorator(const std::size_t n);
 
 	MatchDecorator(const MatchDecorator& rhs);
 
 	~MatchDecorator() noexcept final = default;
+
+	ansi::Color color_for_match() const;
+
+	ansi::Color color_for_mismatch() const;
 };
 
 
@@ -196,12 +210,44 @@ class MonochromeVerifyResultFormatter : public VerifyResultFormatter
 
 
 /**
+ * \brief Output decoration element.
+ */
+enum class Deco : int
+{
+	MATCH,
+	MISMATCH,
+	MINE
+};
+
+
+/**
+ * \brief Registry for getting actual output colors.
+ */
+class ColorRegistry
+{
+	// TODO Very basic. Should be extended to a std::map.
+
+	std::vector<ansi::Color> colors_;
+
+public:
+
+	ColorRegistry();
+
+	ansi::Color get(Deco d) const;
+
+	void set(Deco d, ansi::Color c);
+};
+
+
+/**
  * \brief Format colorized output.
  *
  * All cells containing matches are green.
  */
 class ColorizingVerifyResultFormatter : public VerifyResultFormatter
 {
+	ColorRegistry registry_;
+
 	void init_composer(TableComposer* c) const final;
 
 	void do_their_match(const Checksum& checksum, const int record,
@@ -209,6 +255,12 @@ class ColorizingVerifyResultFormatter : public VerifyResultFormatter
 
 	void do_their_mismatch(const Checksum& checksum, const int record,
 			const int field, TableComposer* c) const final;
+
+public:
+
+	ansi::Color color(Deco d) const;
+
+	void set_color(Deco d, ansi::Color c);
 };
 
 

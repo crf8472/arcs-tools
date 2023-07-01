@@ -283,8 +283,18 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 // MatchDecorator
 
 
-MatchDecorator::MatchDecorator(const std::size_t n)
+MatchDecorator::MatchDecorator(const std::size_t n, const ansi::Color match,
+			const ansi::Color mismatch)
 	: CellDecorator(n)
+	, match_color_    { match }
+	, mismatch_color_ { mismatch }
+{
+	/* empty */
+}
+
+
+MatchDecorator::MatchDecorator(const std::size_t n)
+	: MatchDecorator(n, ansi::Color::FG_GREEN, ansi::Color::FG_RED)
 {
 	/* empty */
 }
@@ -292,26 +302,42 @@ MatchDecorator::MatchDecorator(const std::size_t n)
 
 MatchDecorator::MatchDecorator(const MatchDecorator& rhs)
 	: CellDecorator(rhs)
+	, match_color_    { rhs.match_color_    }
+	, mismatch_color_ { rhs.mismatch_color_ }
 {
 	/* empty */
+}
+
+
+ansi::Color MatchDecorator::color_for_match() const
+{
+	return match_color_;
+}
+
+
+ansi::Color MatchDecorator::color_for_mismatch() const
+{
+	return mismatch_color_;
 }
 
 
 std::string MatchDecorator::do_decorate_set(std::string&& s) const
 {
 	using ansi::Color;
-	using ansi::Colorize;
+	using ansi::Modifier;
+	using ansi::Highlight;
 
-	return Colorize<Color::FG_GREEN>{}(s);
+	return colored(color_for_match(), Highlight::BRIGHT, s);
 }
 
 
 std::string MatchDecorator::do_decorate_unset(std::string&& s) const
 {
 	using ansi::Color;
-	using ansi::Colorize;
+	using ansi::Modifier;
+	using ansi::Highlight;
 
-	return Colorize<Color::FG_RED>{}(s);
+	return colored(color_for_mismatch(), Highlight::BRIGHT, s);
 }
 
 
@@ -378,12 +404,6 @@ void VerifyResultFormatter::assertions(const InputTuple t) const
 		throw std::invalid_argument("Missing match information, "
 				"nothing to print.");
 	}
-
-	//if (block < 0)
-	//{
-	//	throw std::invalid_argument(
-	//		"Index of matching checksum block is negative, nothing to print.");
-	//}
 
 	if (block > match->total_blocks())
 	{
@@ -482,11 +502,40 @@ void MonochromeVerifyResultFormatter::do_their_mismatch(
 }
 
 
+// ColorRegistry
+
+
+ColorRegistry::ColorRegistry()
+	: colors_ {
+		ansi::Color::FG_GREEN,
+		ansi::Color::FG_RED,
+		ansi::Color::FG_DEFAULT }
+{
+	// do nothing
+}
+
+
+ansi::Color ColorRegistry::get(Deco d) const
+{
+	return colors_[std::underlying_type_t<Deco>(d)];
+}
+
+
+void ColorRegistry::set(Deco d, ansi::Color c)
+{
+	colors_[std::underlying_type_t<Deco>(d)] = c;
+}
+
+
 // ColorizingVerifyResultFormatter
 
 
 void ColorizingVerifyResultFormatter::init_composer(TableComposer* c) const
 {
+	const auto r_size    { c->total_records() };
+	const auto color_yes { color(Deco::MATCH) };
+	const auto color_no  { color(Deco::MISMATCH) };
+
 	// Register Decorators to each "Theirs" field
 
 	int i = 0;
@@ -497,7 +546,7 @@ void ColorizingVerifyResultFormatter::init_composer(TableComposer* c) const
 			ARCS_LOG(DEBUG1) << "Register MatchDecorator to field index " << i;
 
 			c->register_to_field(i,
-				std::make_unique<MatchDecorator>(c->total_records()));
+				std::make_unique<MatchDecorator>(r_size, color_yes, color_no));
 		}
 
 		++i;
@@ -511,7 +560,7 @@ void ColorizingVerifyResultFormatter::do_their_match(const Checksum& checksum,
 	c->set_field(record_idx, field_idx, this->checksum(checksum));
 
 	ARCS_LOG(DEBUG1) << "Mark cell " << record_idx << ", " << field_idx
-		<< "as match-decorated";
+		<< " as match-decorated";
 
 	c->mark(record_idx, field_idx);
 }
@@ -524,7 +573,19 @@ void ColorizingVerifyResultFormatter::do_their_mismatch(
 	c->set_field(record_idx, field_idx, this->checksum(checksum));
 
 	ARCS_LOG(DEBUG1) << "Mark cell " << record_idx << ", " << field_idx
-		<< "as mismatch-decorated";
+		<< " as mismatch-decorated";
+}
+
+
+ansi::Color ColorizingVerifyResultFormatter::color(Deco d) const
+{
+	return registry_.get(d);
+}
+
+
+void ColorizingVerifyResultFormatter::set_color(Deco d, ansi::Color c)
+{
+	registry_.set(d, c);
 }
 
 
@@ -541,6 +602,9 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 	if (options.is_set(VERIFY::COLORED))
 	{
 		fmt = std::make_unique<ColorizingVerifyResultFormatter>();
+		// defaults:
+		// THEIRS: green = match, red = mismatch
+		// MINE:   shell default
 	} else
 	{
 		fmt = std::make_unique<MonochromeVerifyResultFormatter>();

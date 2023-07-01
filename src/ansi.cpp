@@ -56,6 +56,16 @@ std::ostream& operator << (std::ostream& o, const Modifier& m)
 }
 
 
+// colored
+
+
+std::string colored(Color c, Highlight h, const std::string& s)
+{
+	return Modifier{c, h}.to_string()
+			+ s + Modifier{Color::FG_DEFAULT, Highlight::NORMAL}.to_string();
+}
+
+
 } // namespace ansi
 } // namespace arcsapp
 
