@@ -827,6 +827,12 @@ std::unique_ptr<Result> ResultFormatter::build_result(
 }
 
 
+void ResultFormatter::init_composer(TableComposer* c) const
+{
+	// do nothing
+}
+
+
 RichARId ResultFormatter::build_id(const TOC* /*toc*/, const ARId& arid,
 		const std::string& alt_prefix) const
 {
@@ -872,6 +878,7 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 			types_to_print, total_theirs) };
 
 	auto c { create_composer(checksums.size(), fields, label()) };
+	this->init_composer(c.get());
 
 	using TYPE = arcstk::checksum::type;
 	using std::to_string;
@@ -991,10 +998,10 @@ std::string ResultFormatter::checksum(const Checksum& checksum) const
 
 
 void ResultFormatter::do_mine_checksum(const Checksum& checksum,
-		const int record, const int field, TableComposer* b)
+		const int record, const int field, TableComposer* c)
 		const
 {
-	b->set_field(record, field, this->checksum(checksum));
+	c->set_field(record, field, this->checksum(checksum));
 }
 
 

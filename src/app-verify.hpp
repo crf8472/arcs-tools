@@ -202,6 +202,8 @@ class MonochromeVerifyResultFormatter : public VerifyResultFormatter
  */
 class ColorizingVerifyResultFormatter : public VerifyResultFormatter
 {
+	void init_composer(TableComposer* c) const final;
+
 	void do_their_match(const Checksum& checksum, const int record,
 			const int field, TableComposer* c) const final;
 

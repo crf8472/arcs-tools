@@ -884,6 +884,11 @@ protected:
 		const int total_theirs) const;
 
 	/**
+	 * \brief Initialize composer.
+	 */
+	virtual void init_composer(TableComposer* c) const;
+
+	/**
 	 * \brief Build an ARId.
 	 */
 	RichARId build_id(const TOC* toc, const ARId& arid,

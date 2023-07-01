@@ -485,19 +485,30 @@ void MonochromeVerifyResultFormatter::do_their_mismatch(
 // ColorizingVerifyResultFormatter
 
 
+void ColorizingVerifyResultFormatter::init_composer(TableComposer* c) const
+{
+	// Register Decorators to each "Theirs" field
+
+	int i = 0;
+	for (const auto& field : c->fields())
+	{
+		if (ATTR::THEIRS == field)
+		{
+			ARCS_LOG(DEBUG1) << "Register MatchDecorator to field index " << i;
+
+			c->register_to_field(i,
+				std::make_unique<MatchDecorator>(c->total_records()));
+		}
+
+		++i;
+	}
+}
+
+
 void ColorizingVerifyResultFormatter::do_their_match(const Checksum& checksum,
 		const int record_idx, const int field_idx, TableComposer* c) const
 {
 	c->set_field(record_idx, field_idx, this->checksum(checksum));
-
-	if (!c->on_field(field_idx))
-	{
-		ARCS_LOG(DEBUG1) << "Register MatchDecorator to field_idx "
-			<< field_idx;
-
-		c->register_to_field(field_idx,
-				std::make_unique<MatchDecorator>(c->total_records()));
-	}
 
 	ARCS_LOG(DEBUG1) << "Mark cell " << record_idx << ", " << field_idx
 		<< "as match-decorated";
@@ -506,19 +517,11 @@ void ColorizingVerifyResultFormatter::do_their_match(const Checksum& checksum,
 }
 
 
-void ColorizingVerifyResultFormatter::do_their_mismatch(const Checksum& checksum,
-		const int record_idx, const int field_idx, TableComposer* c) const
+void ColorizingVerifyResultFormatter::do_their_mismatch(
+		const Checksum& checksum, const int record_idx, const int field_idx,
+		TableComposer* c) const
 {
 	c->set_field(record_idx, field_idx, this->checksum(checksum));
-
-	if (!c->on_field(field_idx))
-	{
-		ARCS_LOG(DEBUG1) << "Register MatchDecorator to field_idx "
-			<< field_idx;
-
-		c->register_to_field(field_idx,
-				std::make_unique<MatchDecorator>(c->total_records()));
-	}
 
 	ARCS_LOG(DEBUG1) << "Mark cell " << record_idx << ", " << field_idx
 		<< "as mismatch-decorated";

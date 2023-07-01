@@ -43,6 +43,12 @@ enum class Color : int
 	BG_DEFAULT  = 49
 };
 
+
+/**
+ * \brief ANSI highlight codes.
+ *
+ * According to https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+ */
 enum class Highlight : int
 {
 	BRIGHT =  0,
@@ -55,7 +61,7 @@ std::ostream& operator << (std::ostream& o, const Modifier& m);
 
 
 /**
- * \brief Modifier.
+ * \brief Color modifier that encodes the color and the highlight.
  */
 class Modifier
 {
