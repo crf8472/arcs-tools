@@ -162,7 +162,6 @@ private:
 
 using arcstk::ARId;
 using arcstk::Checksums;
-using arcstk::Checksum;
 using arcstk::TOC;
 
 
@@ -182,8 +181,7 @@ class CalcResultFormatter final : public ResultFormatter
 private:
 
 	virtual std::vector<ATTR> do_create_attributes(
-		const bool tracks, const bool offsets, const bool lengths,
-		const bool filenames,
+		const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const int total_theirs) const final;
 

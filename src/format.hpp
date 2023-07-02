@@ -311,6 +311,14 @@ enum class ATTR: int
 
 
 /**
+ * \brief Maximal occurring value for an ATTR.
+ *
+ * Must be less than sizeof(print_flags_t).
+ */
+constexpr int MAX_ATTR = 6;
+
+
+/**
  * \brief Produce default label for a specified attribute.
  */
 template<ATTR A>
@@ -698,15 +706,53 @@ using arcstk::Match;
 using arcstk::TOC;
 
 
+class ResultFormatter;
+
+
 /**
- * \brief Types of output data.
+ * \brief A set of flags.
  */
-enum class Data : int
+template <typename T, typename S>
+class Flags final
 {
-	TRACK = 1,
-	OFFSET,
-	LENGTH,
-	FILENAME
+public:
+
+	/**
+	 * \brief Type for flags.
+	 *
+	 * Is an unsigned numeric type.
+	 */
+	using type = S;
+
+	/**
+	 * \brief TRUE iff value for parameter \c t is TRUE, otherwise FALSE.
+	 *
+	 * \param[in] t  Input value to check flag value for
+	 *
+	 * \return TRUE iff \c t has flag value TRUE, otherwise FALSE.
+	 */
+	inline bool operator() (const T t) const
+	{
+		return flags_ & (1 << std::underlying_type_t<T>(t));
+	}
+
+	/**
+	 * \brief Set a flag for input value \c t.
+	 *
+	 * \param[in] t     Input to set value for
+	 * \param[in] value Value to be set for \c t
+	 */
+	inline void set(const T t, const bool value)
+	{
+		flags_ |= (value << std::underlying_type_t<T>(t));
+	}
+
+private:
+
+	/**
+	 * \brief Internal flags.
+	 */
+	type flags_;
 };
 
 
@@ -808,11 +854,11 @@ public:
 	void format_label(const bool &label);
 
 	/**
-	 * \brief TRUE iff data type \c d is to be formatted by this instance.
+	 * \brief TRUE iff data attribute \c a is to be formatted by this instance.
 	 *
-	 * \return TRUE iff \c d is formatted by this instance, otherwise FALSE.
+	 * \return TRUE iff \c a is formatted by this instance, otherwise FALSE.
 	 */
-	bool formats_data(const Data d) const;
+	bool formats_data(const ATTR a) const;
 
 	/**
 	 * \brief Set data type to be formatted in the output.
@@ -820,12 +866,19 @@ public:
 	 * Iff data type \c d is set to false, it will not be contained in the
 	 * printed output.
 	 *
-	 * \param[in] d     Data to be formatted or not
+	 * \param[in] a     Data attributes to be formatted or not
 	 * \param[in] value Flag value to activate or deactivate formatting of \c d
 	 */
-	void format_data(const Data d, const bool value);
+	void format_data(const ATTR a, const bool value);
 
 protected:
+
+	/**
+	 * \brief Type for print flags.
+	 *
+	 * Is an unsigned numeric type.
+	 */
+	using print_flag_t = Flags<ATTR, uint8_t>;
 
 	/**
 	 * \brief Create the internal TableComposer to compose the result data.
@@ -835,6 +888,22 @@ protected:
 	std::unique_ptr<TableComposer> create_composer(
 		const std::size_t records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const;
+
+	/**
+	 * \brief TRUE iff attribute \c a is requested for output.
+	 */
+	bool is_requested(const ATTR a) const;
+
+	/**
+	 * \brief Worker: produce print flags for all printable attributes.
+	 *
+	 * \param[in] toc       TOC available
+	 * \param[in] filenames Filenames available
+	 *
+	 * \return Print flags for all printable attributes
+	 */
+	print_flag_t create_print_flags(const TOC* toc,
+			const std::vector<std::string>& filenames) const;
 
 	/**
 	 * \brief Build the result representation.
@@ -881,16 +950,12 @@ protected:
 	/**
 	 * \brief Create the result \c field_types.
 	 *
-	 * \param[in] tracks       Iff TRUE, print tracks
-	 * \param[in] offsets      Iff TRUE, print offsets
-	 * \param[in] lengths      Iff TRUE, print lengths
-	 * \param[in] filenames    Iff TRUE, print filenames
+	 * \param[in] print_flags  Flags to instruct print of data
 	 * \param[in] types        List of checksum types to print
 	 *
 	 * \return Sequence of result field_types to form an record
 	 */
-	std::vector<ATTR> create_attributes(const bool tracks,
-		const bool offsets, const bool lengths, const bool filenames,
+	std::vector<ATTR> create_attributes(const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types,
 		const int total_theirs) const;
 
@@ -922,10 +987,7 @@ protected:
 	 * \param[in] arid        ARId as resulted
 	 * \param[in] filenames   Filenames as resulted
 	 * \param[in] types       List of checksum types to print
-	 * \param[in] p_tracks    Iff TRUE, print tracks
-	 * \param[in] p_offsets   Iff TRUE, print offsets
-	 * \param[in] p_lengths   Iff TRUE, print lengths
-	 * \param[in] p_filenames Iff TRUE, print filenames
+	 * \param[in] print_flags Flags to instruct print of data
 	 *
 	 * \return Table with result data
 	 */
@@ -935,8 +997,7 @@ protected:
 		const TOC* toc, const ARId& arid,
 		const std::vector<std::string>& filenames,
 		const std::vector<arcstk::checksum::type>& types,
-		const bool p_tracks, const bool p_offsets, const bool p_lengths,
-		const bool p_filenames) const;
+		const print_flag_t print_flags) const;
 
 	/**
 	 * \brief Print my checksums.
@@ -985,8 +1046,7 @@ protected:
 private:
 
 	virtual std::vector<ATTR> do_create_attributes(
-		const bool tracks, const bool offsets, const bool lengths,
-		const bool filenames,
+		const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const int total_theirs) const
 	= 0;

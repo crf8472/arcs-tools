@@ -17,6 +17,7 @@
 #include <sstream>      // for ostringstream
 #include <stdexcept>    // for invalid_argument
 #include <string>       // for string, to_string
+#include <type_traits>  // for underlying_type_t
 #include <utility>      // for move
 #include <vector>       // for vector
 
@@ -664,25 +665,25 @@ const ChecksumLayout* ResultFormatter::checksum_layout() const
 
 bool ResultFormatter::formats_label() const
 {
-	return flags().flag(0);
+	return flags().flag(MAX_ATTR + 1);
 }
 
 
 void ResultFormatter::format_label(const bool &value)
 {
-	flags().set_flag(0, value);
+	flags().set_flag(MAX_ATTR + 1, value);
 }
 
 
-bool ResultFormatter::formats_data(const Data d) const
+bool ResultFormatter::formats_data(const ATTR a) const
 {
-	return flags().flag(std::underlying_type_t<Data>(d));
+	return flags().flag(std::underlying_type_t<ATTR>(a));
 }
 
 
-void ResultFormatter::format_data(const Data d, const bool value)
+void ResultFormatter::format_data(const ATTR a, const bool value)
 {
-	flags().set_flag(std::underlying_type_t<Data>(d), value);
+	flags().set_flag(std::underlying_type_t<ATTR>(a), value);
 }
 
 
@@ -738,13 +739,34 @@ void ResultFormatter::validate(const Checksums& checksums, const TOC* toc,
 
 
 std::vector<ATTR> ResultFormatter::create_attributes(
-		const bool p_tracks, const bool p_offsets, const bool p_lengths,
-		const bool p_filenames,
+		const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const int total_theirs) const
 {
-	return do_create_attributes(p_tracks, p_offsets, p_lengths, p_filenames,
-			types_to_print, total_theirs);
+	return do_create_attributes(print_flags, types_to_print, total_theirs);
+}
+
+
+bool ResultFormatter::is_requested(const ATTR a) const
+{
+	return this->formats_data(a);
+}
+
+
+ResultFormatter::print_flag_t ResultFormatter::create_print_flags(
+		const TOC* toc, const std::vector<std::string>& filenames) const
+{
+	const bool has_toc       { toc != nullptr };
+	const bool has_filenames { !filenames.empty() };
+
+	auto flags = print_flag_t {};
+
+	flags.set(ATTR::TRACK,    has_toc && is_requested(ATTR::TRACK));
+	flags.set(ATTR::OFFSET,   has_toc && is_requested(ATTR::OFFSET));
+	flags.set(ATTR::LENGTH,   has_toc && is_requested(ATTR::LENGTH));
+	flags.set(ATTR::FILENAME, has_filenames && is_requested(ATTR::FILENAME));
+
+	return flags;
 }
 
 
@@ -759,25 +781,20 @@ std::unique_ptr<Result> ResultFormatter::build_result(
 	// Flags to indicate whether requested field_types should actually
 	// be printed
 
-	// Only if a TOC is present, we print track information as requested
-	const auto p_tracks  = toc ? formats_data(Data::TRACK)  : false;
-	const auto p_offsets = toc ? formats_data(Data::OFFSET) : false;
-	const auto p_lengths = toc ? formats_data(Data::LENGTH) : false;
+	const auto print_flags { create_print_flags(toc, filenames) };
 
-	// Only if filenames are actually present, we print them as requested
-	const auto p_filenames = !filenames.empty()
-		? formats_data(Data::FILENAME)
-		: false;
+	ARCS_LOG(DEBUG1) << "Print flags:";
+	ARCS_LOG(DEBUG1) << " tracks=    " << print_flags(ATTR::TRACK);
+	ARCS_LOG(DEBUG1) << " offsets=   " << print_flags(ATTR::OFFSET);
+	ARCS_LOG(DEBUG1) << " lengths=   " << print_flags(ATTR::LENGTH);
+	ARCS_LOG(DEBUG1) << " filenames= " << print_flags(ATTR::FILENAME);
 
 	// Construct result objects
 
-	ARCS_LOG(DEBUG1) << "build_result(): call build_table()";
-
 	auto table { build_table(checksums, response, refsums, match, block,
-			toc, arid, filenames, types_to_print,
-			p_tracks, p_offsets, p_lengths, p_filenames) };
+			toc, arid, filenames, types_to_print, print_flags) };
 
-	ARCS_LOG(DEBUG1) << "build_result(): build_table() returned";
+	ARCS_LOG(DEBUG2) << "build_result(): build_table() returned";
 
 	if (!arid.empty() && arid_layout())
 	{
@@ -826,9 +843,10 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 		const Match* match, const int block, const TOC* toc, const ARId& arid,
 		const std::vector<std::string>& filenames,
 		const std::vector<arcstk::checksum::type>& types_to_print,
-		const bool p_tracks, const bool p_offsets, const bool p_lengths,
-		const bool p_filenames) const
+		const print_flag_t print) const
 {
+	ARCS_LOG(DEBUG2) << "build_table(): start";
+
 	// Determine whether to use the ARResponse
 	const auto use_response { response != nullptr && response->size() };
 
@@ -839,9 +857,8 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 			: 1
 	};
 
-	const auto fields { create_attributes(
-			p_tracks, p_offsets, p_lengths, p_filenames,
-			types_to_print, total_theirs) };
+	const auto fields { create_attributes(print, types_to_print,
+			total_theirs) };
 
 	auto c { create_composer(checksums.size(), fields, formats_label()) };
 	this->init_composer(c.get());
@@ -856,22 +873,22 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 	{
 		// i is the record index
 
-		if (p_tracks)
+		if (print(ATTR::TRACK))
 		{
 			c->set_field(i, ATTR::TRACK, to_string(track));
 		}
 
-		if (p_offsets)
+		if (print(ATTR::OFFSET))
 		{
 			c->set_field(i, ATTR::OFFSET, to_string(toc->offset(track)));
 		}
 
-		if (p_lengths)
+		if (print(ATTR::LENGTH))
 		{
 			c->set_field(i, ATTR::LENGTH, to_string((checksums)[i].length()));
 		}
 
-		if (p_filenames)
+		if (print(ATTR::FILENAME))
 		{
 			if (filenames.size() > 1)
 			{
@@ -923,6 +940,8 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 	} // records
 
 	c->set_layout(std::make_unique<StringTableLayout>(copy_table_layout()));
+
+	ARCS_LOG(DEBUG2) << "build_table(): end";
 
 	return c->table();
 }

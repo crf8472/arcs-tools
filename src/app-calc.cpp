@@ -314,36 +314,39 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 
 
 std::vector<ATTR> CalcResultFormatter::do_create_attributes(
-		const bool p_tracks, const bool p_offsets, const bool p_lengths,
-		const bool p_filenames,
-		const std::vector<arcstk::checksum::type>& requested_types,
+		const print_flag_t print_flags,
+		const std::vector<arcstk::checksum::type>& types_to_print,
 		const int /* total_theirs */) const
 {
-	const auto total_attributes = p_tracks + p_offsets + p_lengths + p_filenames
-		+ requested_types.size();
+	const auto total_fields =
+		  print_flags(ATTR::TRACK)
+		+ print_flags(ATTR::OFFSET)
+		+ print_flags(ATTR::LENGTH)
+		+ print_flags(ATTR::FILENAME)
+		+ types_to_print.size();
 
 	using checksum = arcstk::checksum::type;
 
-	std::vector<ATTR> attributes;
-	attributes.reserve(total_attributes);
-	if (p_tracks)    { attributes.push_back(ATTR::TRACK);    }
-	if (p_offsets)   { attributes.push_back(ATTR::OFFSET);   }
-	if (p_lengths)   { attributes.push_back(ATTR::LENGTH);   }
-	if (p_filenames) { attributes.push_back(ATTR::FILENAME); }
+	std::vector<ATTR> fields;
+	fields.reserve(total_fields);
+	if (print_flags(ATTR::TRACK))    { fields.emplace_back(ATTR::TRACK);    }
+	if (print_flags(ATTR::OFFSET))   { fields.emplace_back(ATTR::OFFSET);   }
+	if (print_flags(ATTR::LENGTH))   { fields.emplace_back(ATTR::LENGTH);   }
+	if (print_flags(ATTR::FILENAME)) { fields.emplace_back(ATTR::FILENAME); }
 
-	for (const auto& t : requested_types)
+	for (const auto& t : types_to_print)
 	{
 		if (checksum::ARCS1 == t)
 		{
-			attributes.push_back(ATTR::CHECKSUM_ARCS1);
+			fields.emplace_back(ATTR::CHECKSUM_ARCS1);
 		} else
 		if (checksum::ARCS2 == t)
 		{
-			attributes.push_back(ATTR::CHECKSUM_ARCS2);
+			fields.emplace_back(ATTR::CHECKSUM_ARCS2);
 		}
 	}
 
-	return attributes;
+	return fields;
 }
 
 
@@ -495,18 +498,18 @@ std::unique_ptr<CalcResultFormatter> ARCalcApplication::configure_layout(
 	const bool has_toc = !options.value(CALC::METAFILE).empty();
 
 	// Print track numbers if they are not forbidden and a TOC is present
-	fmt->format_data(Data::TRACK,
+	fmt->format_data(ATTR::TRACK,
 			options.is_set(CALC::NOTRACKS) ? false : has_toc);
 
 	// Print offsets if they are not forbidden and a TOC is present
-	fmt->format_data(Data::OFFSET,
+	fmt->format_data(ATTR::OFFSET,
 			options.is_set(CALC::NOOFFSETS) ? false : has_toc);
 
 	// Print lengths if they are not forbidden
-	fmt->format_data(Data::LENGTH, !options.is_set(CALC::NOLENGTHS));
+	fmt->format_data(ATTR::LENGTH, !options.is_set(CALC::NOLENGTHS));
 
 	// Print filenames if they are not forbidden and a TOC is _not_ present
-	fmt->format_data(Data::FILENAME,
+	fmt->format_data(ATTR::FILENAME,
 			options.is_set(CALC::NOFILENAMES) ? false : !has_toc);
 
 	auto layout { std::make_unique<StringTableLayout>() };

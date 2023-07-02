@@ -14,7 +14,7 @@
 #include <sstream>         // for istringstream, ostringstream
 #include <string>          // for stoul, string, to_string
 #include <tuple>           // for get, make_tuple, tuple
-#include <type_traits>     // for add_const<>::type
+#include <type_traits>     // for add_const<>::type, underlying_type_t
 #include <utility>         // for move, pair
 
 #ifndef __LIBARCSTK_MATCH_HPP__
@@ -445,22 +445,26 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 
 
 std::vector<ATTR> VerifyResultFormatter::do_create_attributes(
-		const bool p_tracks, const bool p_offsets, const bool p_lengths,
-		const bool p_filenames,
+		const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const int total_theirs) const
 {
-	const auto total_fields = p_tracks + p_offsets + p_lengths + p_filenames
-		+ types_to_print.size() + total_theirs;
+	const auto total_fields =
+		  print_flags(ATTR::TRACK)
+		+ print_flags(ATTR::OFFSET)
+		+ print_flags(ATTR::LENGTH)
+		+ print_flags(ATTR::FILENAME)
+		+ types_to_print.size()
+		+ total_theirs;
 
 	using checksum = arcstk::checksum::type;
 
 	std::vector<ATTR> fields;
 	fields.reserve(total_fields);
-	if (p_tracks)    { fields.emplace_back(ATTR::TRACK);    }
-	if (p_filenames) { fields.emplace_back(ATTR::FILENAME); }
-	if (p_offsets)   { fields.emplace_back(ATTR::OFFSET);   }
-	if (p_lengths)   { fields.emplace_back(ATTR::LENGTH);   }
+	if (print_flags(ATTR::TRACK))    { fields.emplace_back(ATTR::TRACK);    }
+	if (print_flags(ATTR::FILENAME)) { fields.emplace_back(ATTR::FILENAME); }
+	if (print_flags(ATTR::OFFSET))   { fields.emplace_back(ATTR::OFFSET);   }
+	if (print_flags(ATTR::LENGTH))   { fields.emplace_back(ATTR::LENGTH);   }
 
 	for (const auto& t : types_to_print)
 	{
@@ -642,18 +646,18 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 	const bool has_toc = !options.value(VERIFY::METAFILE).empty();
 
 	// Print track numbers if they are not forbidden and a TOC is present
-	fmt->format_data(Data::TRACK,
+	fmt->format_data(ATTR::TRACK,
 			options.is_set(VERIFY::NOTRACKS) ? false : has_toc);
 
 	// Print offsets if they are not forbidden and a TOC is present
-	fmt->format_data(Data::OFFSET,
+	fmt->format_data(ATTR::OFFSET,
 			options.is_set(VERIFY::NOOFFSETS) ? false : has_toc);
 
 	// Print lengths if they are not forbidden
-	fmt->format_data(Data::LENGTH, !options.is_set(VERIFY::NOLENGTHS));
+	fmt->format_data(ATTR::LENGTH, !options.is_set(VERIFY::NOLENGTHS));
 
 	// Print filenames if they are not forbidden and a TOC is _not_ present
-	fmt->format_data(Data::FILENAME,
+	fmt->format_data(ATTR::FILENAME,
 			!options.is_set(VERIFY::NOFILENAMES) || !has_toc);
 
 	// Indicate a matching checksum by this symbol
