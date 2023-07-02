@@ -699,9 +699,20 @@ using arcstk::TOC;
 
 
 /**
+ * \brief Types of output data.
+ */
+enum class Data : int
+{
+	TRACK = 1,
+	OFFSET,
+	LENGTH,
+	FILENAME
+};
+
+
+/**
  * \brief Abstract base class for result formatting.
  *
- * \todo Use one accessor pair for set_flag(COL::OFFSET, true) etc.
  * \todo Use a bitmask for flags of p_tracks, p_offsets, p_lengths, p_filenames
  */
 class ResultFormatter : public WithInternalFlags
@@ -785,7 +796,7 @@ public:
 	 *
 	 * \return Flag for printing the label
 	 */
-	bool label() const;
+	bool formats_label() const;
 
 	/**
 	 * \brief Activate or deactivate the printing of labels.
@@ -794,64 +805,25 @@ public:
 	 *
 	 * \param[in] label Flag to set for printing the labels
 	 */
-	void set_label(const bool &label);
+	void format_label(const bool &label);
 
 	/**
-	 * \brief Returns TRUE iff instance is configured to format the track
-	 * number.
+	 * \brief TRUE iff data type \c d is to be formatted by this instance.
 	 *
-	 * \return Flag for printing the track number
+	 * \return TRUE iff \c d is formatted by this instance, otherwise FALSE.
 	 */
-	bool track() const;
+	bool formats_data(const Data d) const;
 
 	/**
-	 * \brief Activate or deactivate the printing of the track number.
+	 * \brief Set data type to be formatted in the output.
 	 *
-	 * \param[in] track Flag to set for printing the track number
-	 */
-	void set_track(const bool &track);
-
-	/**
-	 * \brief Returns TRUE iff instance is configured to format the offset.
+	 * Iff data type \c d is set to false, it will not be contained in the
+	 * printed output.
 	 *
-	 * \return Flag for printing the offset
+	 * \param[in] d     Data to be formatted or not
+	 * \param[in] value Flag value to activate or deactivate formatting of \c d
 	 */
-	bool offset() const;
-
-	/**
-	 * \brief Activate or deactivate the printing of the offsets.
-	 *
-	 * \param[in] offset Flag to set for printing the offset
-	 */
-	void set_offset(const bool &offset);
-
-	/**
-	 * \brief Returns TRUE iff instance is configured to format the length.
-	 *
-	 * \return Flag for printing the length
-	 */
-	bool length() const;
-
-	/**
-	 * \brief Activate or deactivate the printing of the lengths.
-	 *
-	 * \param[in] length Flag to set for printing the length
-	 */
-	void set_length(const bool &length);
-
-	/**
-	 * \brief Returns TRUE iff instance is configured to format the filename.
-	 *
-	 * \return Flag for printing the filename
-	 */
-	bool filename() const;
-
-	/**
-	 * \brief Activate or deactivate the printing of the filenames.
-	 *
-	 * \param[in] filename Flag to set for printing the filename
-	 */
-	void set_filename(const bool &filename);
+	void format_data(const Data d, const bool value);
 
 protected:
 

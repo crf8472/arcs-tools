@@ -662,63 +662,27 @@ const ChecksumLayout* ResultFormatter::checksum_layout() const
 }
 
 
-bool ResultFormatter::label() const
+bool ResultFormatter::formats_label() const
 {
 	return flags().flag(0);
 }
 
 
-void ResultFormatter::set_label(const bool &label)
+void ResultFormatter::format_label(const bool &value)
 {
-	flags().set_flag(0, label);
+	flags().set_flag(0, value);
 }
 
 
-bool ResultFormatter::track() const
+bool ResultFormatter::formats_data(const Data d) const
 {
-	return flags().flag(1);
+	return flags().flag(std::underlying_type_t<Data>(d));
 }
 
 
-void ResultFormatter::set_track(const bool &track)
+void ResultFormatter::format_data(const Data d, const bool value)
 {
-	flags().set_flag(1, track);
-}
-
-
-bool ResultFormatter::offset() const
-{
-	return flags().flag(2);
-}
-
-
-void ResultFormatter::set_offset(const bool &offset)
-{
-	flags().set_flag(2, offset);
-}
-
-
-bool ResultFormatter::length() const
-{
-	return flags().flag(3);
-}
-
-
-void ResultFormatter::set_length(const bool &length)
-{
-	flags().set_flag(3, length);
-}
-
-
-bool ResultFormatter::filename() const
-{
-	return flags().flag(4);
-}
-
-
-void ResultFormatter::set_filename(const bool &filename)
-{
-	flags().set_flag(4, filename);
+	flags().set_flag(std::underlying_type_t<Data>(d), value);
 }
 
 
@@ -796,12 +760,14 @@ std::unique_ptr<Result> ResultFormatter::build_result(
 	// be printed
 
 	// Only if a TOC is present, we print track information as requested
-	const auto p_tracks  = toc ? track()  : false;
-	const auto p_offsets = toc ? offset() : false;
-	const auto p_lengths = toc ? length() : false;
+	const auto p_tracks  = toc ? formats_data(Data::TRACK)  : false;
+	const auto p_offsets = toc ? formats_data(Data::OFFSET) : false;
+	const auto p_lengths = toc ? formats_data(Data::LENGTH) : false;
 
 	// Only if filenames are actually present, we print them as requested
-	const auto p_filenames = !filenames.empty() ? filename() : false;
+	const auto p_filenames = !filenames.empty()
+		? formats_data(Data::FILENAME)
+		: false;
 
 	// Construct result objects
 
@@ -842,7 +808,7 @@ RichARId ResultFormatter::build_id(const TOC* /*toc*/, const ARId& arid,
 	}
 
 	return RichARId { arid, std::make_unique<ARIdTableLayout>(/* default */
-				label(), /* field label */
+				formats_label(), /* field label */
 				true,  /* print ID */
 				true,  /* print URL */
 				false, /* no filenames */
@@ -877,7 +843,7 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 			p_tracks, p_offsets, p_lengths, p_filenames,
 			types_to_print, total_theirs) };
 
-	auto c { create_composer(checksums.size(), fields, label()) };
+	auto c { create_composer(checksums.size(), fields, formats_label()) };
 	this->init_composer(c.get());
 
 	using TYPE = arcstk::checksum::type;

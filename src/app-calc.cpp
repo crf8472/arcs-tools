@@ -489,22 +489,25 @@ std::unique_ptr<CalcResultFormatter> ARCalcApplication::configure_layout(
 	}
 
 	// Print labels or not
-	fmt->set_label(!options.is_set(CALC::NOLABELS));
+	fmt->format_label(!options.is_set(CALC::NOLABELS));
 
 	// TOC present? Helper for determining other properties
 	const bool has_toc = !options.value(CALC::METAFILE).empty();
 
 	// Print track numbers if they are not forbidden and a TOC is present
-	fmt->set_track(options.is_set(CALC::NOTRACKS) ? false : has_toc);
+	fmt->format_data(Data::TRACK,
+			options.is_set(CALC::NOTRACKS) ? false : has_toc);
 
 	// Print offsets if they are not forbidden and a TOC is present
-	fmt->set_offset(options.is_set(CALC::NOOFFSETS) ? false : has_toc);
+	fmt->format_data(Data::OFFSET,
+			options.is_set(CALC::NOOFFSETS) ? false : has_toc);
 
 	// Print lengths if they are not forbidden
-	fmt->set_length(!options.is_set(CALC::NOLENGTHS));
+	fmt->format_data(Data::LENGTH, !options.is_set(CALC::NOLENGTHS));
 
 	// Print filenames if they are not forbidden and a TOC is _not_ present
-	fmt->set_filename(options.is_set(CALC::NOFILENAMES) ? false : !has_toc);
+	fmt->format_data(Data::FILENAME,
+			options.is_set(CALC::NOFILENAMES) ? false : !has_toc);
 
 	auto layout { std::make_unique<StringTableLayout>() };
 
