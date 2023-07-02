@@ -881,15 +881,6 @@ protected:
 	using print_flag_t = Flags<ATTR, uint8_t>;
 
 	/**
-	 * \brief Create the internal TableComposer to compose the result data.
-	 *
-	 * Uses the internal TableComposer instance.
-	 */
-	std::unique_ptr<TableComposer> create_composer(
-		const std::size_t records,
-		const std::vector<ATTR>& field_types, const bool with_labels) const;
-
-	/**
 	 * \brief TRUE iff attribute \c a is requested for output.
 	 */
 	bool is_requested(const ATTR a) const;
@@ -958,6 +949,15 @@ protected:
 	std::vector<ATTR> create_attributes(const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types,
 		const int total_theirs) const;
+
+	/**
+	 * \brief Create the internal TableComposer to compose the result data.
+	 *
+	 * Uses the internal TableComposer instance.
+	 */
+	std::unique_ptr<TableComposer> create_composer(
+		const std::size_t records,
+		const std::vector<ATTR>& field_types, const bool with_labels) const;
 
 	/**
 	 * \brief Hook for initializing composer.

@@ -604,14 +604,6 @@ const TableComposerBuilder* ResultFormatter::builder() const
 }
 
 
-std::unique_ptr<TableComposer> ResultFormatter::create_composer(
-		const std::size_t entries,
-		const std::vector<ATTR>& field_types, const bool with_labels) const
-{
-	return builder()->build(entries, field_types, with_labels);
-}
-
-
 void ResultFormatter::set_table_layout(std::unique_ptr<StringTableLayout> l)
 {
 	table_layout_ = std::move(l);
@@ -743,6 +735,14 @@ std::vector<ATTR> ResultFormatter::create_attributes(
 		const int total_theirs) const
 {
 	return do_create_attributes(print_flags, types_to_print, total_theirs);
+}
+
+
+std::unique_ptr<TableComposer> ResultFormatter::create_composer(
+		const std::size_t entries,
+		const std::vector<ATTR>& field_types, const bool with_labels) const
+{
+	return builder()->build(entries, field_types, with_labels);
 }
 
 
