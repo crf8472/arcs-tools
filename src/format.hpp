@@ -656,7 +656,7 @@ public:
 	 *
 	 * \see DefaultLabel
 	 */
-	std::unique_ptr<TableComposer> create_composer(
+	std::unique_ptr<TableComposer> build(
 		const std::size_t records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const;
 
@@ -665,7 +665,7 @@ private:
 	/**
 	 * \brief Implements create_composer().
 	 */
-	virtual std::unique_ptr<TableComposer> do_create_composer(
+	virtual std::unique_ptr<TableComposer> do_build(
 		const std::size_t records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const
 	= 0;
@@ -677,7 +677,7 @@ private:
  */
 class RowTableComposerBuilder final : public TableComposerBuilder
 {
-	std::unique_ptr<TableComposer> do_create_composer(
+	std::unique_ptr<TableComposer> do_build(
 		const std::size_t records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const
 		final;
@@ -689,7 +689,7 @@ class RowTableComposerBuilder final : public TableComposerBuilder
  */
 class ColTableComposerBuilder final : public TableComposerBuilder
 {
-	std::unique_ptr<TableComposer> do_create_composer(
+	std::unique_ptr<TableComposer> do_build(
 		const std::size_t records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const
 		final;
@@ -770,14 +770,14 @@ public:
 	 *
 	 * \param[in] c The TableComposerBuilder to use
 	 */
-	void set_builder_creator(std::unique_ptr<TableComposerBuilder> c);
+	void set_builder(std::unique_ptr<TableComposerBuilder> c);
 
 	/**
 	 * \brief The TableComposerBuilder to use.
 	 *
 	 * \return The TableComposerBuilder to use
 	 */
-	const TableComposerBuilder* builder_creator() const;
+	const TableComposerBuilder* builder() const;
 
 	/**
 	 * \brief Set the layout to use for formatting the output table.

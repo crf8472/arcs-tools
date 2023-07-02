@@ -664,7 +664,7 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 	fmt->set_match_symbol("==");
 
 	// Method for creating the result table
-	fmt->set_builder_creator(std::make_unique<RowTableComposerBuilder>());
+	fmt->set_builder(std::make_unique<RowTableComposerBuilder>());
 
 	auto layout { std::make_unique<StringTableLayout>() };
 

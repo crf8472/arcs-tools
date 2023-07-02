@@ -556,18 +556,18 @@ const CellDecorator* ColTableComposer::do_on_field(const int field_idx) const
 // TableComposerBuilder
 
 
-std::unique_ptr<TableComposer> TableComposerBuilder::create_composer(
+std::unique_ptr<TableComposer> TableComposerBuilder::build(
 		const std::size_t records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const
 {
-	return do_create_composer(records, field_types, with_labels);
+	return do_build(records, field_types, with_labels);
 }
 
 
 // RowTableComposerBuilder
 
 
-std::unique_ptr<TableComposer> RowTableComposerBuilder::do_create_composer(
+std::unique_ptr<TableComposer> RowTableComposerBuilder::do_build(
 		const std::size_t records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const
 {
@@ -579,7 +579,7 @@ std::unique_ptr<TableComposer> RowTableComposerBuilder::do_create_composer(
 // ColTableComposerBuilder
 
 
-std::unique_ptr<TableComposer> ColTableComposerBuilder::do_create_composer(
+std::unique_ptr<TableComposer> ColTableComposerBuilder::do_build(
 		const std::size_t records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const
 {
@@ -591,14 +591,14 @@ std::unique_ptr<TableComposer> ColTableComposerBuilder::do_create_composer(
 // ResultFormatter
 
 
-void ResultFormatter::set_builder_creator(
+void ResultFormatter::set_builder(
 		std::unique_ptr<TableComposerBuilder> c)
 {
 	builder_creator_ = std::move(c);
 }
 
 
-const TableComposerBuilder* ResultFormatter::builder_creator() const
+const TableComposerBuilder* ResultFormatter::builder() const
 {
 	return builder_creator_.get();
 }
@@ -608,8 +608,7 @@ std::unique_ptr<TableComposer> ResultFormatter::create_composer(
 		const std::size_t entries,
 		const std::vector<ATTR>& field_types, const bool with_labels) const
 {
-	return builder_creator()->create_composer(entries, field_types,
-			with_labels);
+	return builder()->build(entries, field_types, with_labels);
 }
 
 
