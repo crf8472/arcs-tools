@@ -2,7 +2,8 @@
 #include "app-verify.hpp"
 #endif
 
-#include <algorithm>       // for replace, max
+#include <algorithm>       // for replace, max, transform
+#include <cctype>          // for toupper
 #include <cstddef>         // for size_t
 #include <cstdint>         // for uint32_t
 #include <cstdlib>         // for EXIT_SUCCESS
@@ -186,8 +187,8 @@ void ARVerifyConfigurator::flush_local_options(OptionRegistry &r) const
 			"Do not print the result (implies --boolean)" }},
 
 		{ VERIFY::COLORED ,
-		{  "colors", false, "FALSE",
-			"Use colored output" }}
+		{  "colors", true, "default",
+			"Use colored output and optionally specify colors" }}
 	});
 }
 
@@ -506,32 +507,87 @@ void MonochromeVerifyResultFormatter::do_their_mismatch(
 }
 
 
+//
+
+
+DecorationType get_decorationtype(const std::string& name)
+{
+	using map_type = std::unordered_map<std::string, DecorationType>;
+
+	static map_type types = [](){
+		map_type t;
+		t["MATCH"]    = DecorationType::MATCH;
+		t["MISMATCH"] = DecorationType::MISMATCH;
+		t["MINE"]     = DecorationType::MINE;
+		return t;
+	}();
+
+	return types[name];
+}
+
+
 // ColorRegistry
 
 
 ColorRegistry::ColorRegistry()
 	: colors_ {
-		ansi::Color::FG_GREEN,
-		ansi::Color::FG_RED,
-		ansi::Color::FG_DEFAULT }
+		{ DecorationType::MATCH,    ansi::Color::FG_GREEN,  },
+		{ DecorationType::MISMATCH, ansi::Color::FG_RED,    },
+		{ DecorationType::MINE,     ansi::Color::FG_DEFAULT }
+	}
 {
 	// do nothing
 }
 
 
+bool ColorRegistry::has(DecorationType d) const
+{
+	using std::end;
+	return colors_.find(d) != end(colors_);
+}
+
+
 ansi::Color ColorRegistry::get(DecorationType d) const
 {
-	return colors_[std::underlying_type_t<DecorationType>(d)];
+	const auto c = colors_.find(d);
+	using std::end;
+	if (end(colors_) == c)
+	{
+		return ansi::Color::FG_DEFAULT;
+	}
+
+	return c->second;
 }
 
 
 void ColorRegistry::set(DecorationType d, ansi::Color c)
 {
-	colors_[std::underlying_type_t<DecorationType>(d)] = c;
+	colors_.insert({ d, c });
+}
+
+
+void ColorRegistry::clear()
+{
+	colors_.clear();
 }
 
 
 // ColorizingVerifyResultFormatter
+
+
+ColorizingVerifyResultFormatter::ColorizingVerifyResultFormatter()
+	: ColorizingVerifyResultFormatter(ColorRegistry{})
+{
+	// empty
+}
+
+
+ColorizingVerifyResultFormatter::
+	ColorizingVerifyResultFormatter(ColorRegistry&& colors)
+	: colors_ { colors }
+{
+	// empty
+}
 
 
 void ColorizingVerifyResultFormatter::init_composer(TableComposer* c) const
@@ -583,13 +639,13 @@ void ColorizingVerifyResultFormatter::do_their_mismatch(
 
 ansi::Color ColorizingVerifyResultFormatter::color(DecorationType d) const
 {
-	return registry_.get(d);
+	return colors_.has(d) ? colors_.get(d) : ansi::Color::FG_DEFAULT;
 }
 
 
 void ColorizingVerifyResultFormatter::set_color(DecorationType d, ansi::Color c)
 {
-	registry_.set(d, c);
+	colors_.set(d, c);
 }
 
 
@@ -605,10 +661,13 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 
 	if (options.is_set(VERIFY::COLORED))
 	{
-		fmt = std::make_unique<ColorizingVerifyResultFormatter>();
+		auto colors { this->parse_color_request(options) };
 		// defaults:
 		// THEIRS: green = match, red = mismatch
 		// MINE:   shell default
+
+		fmt = std::make_unique<ColorizingVerifyResultFormatter>(
+					std::move(colors));
 	} else
 	{
 		fmt = std::make_unique<MonochromeVerifyResultFormatter>();
@@ -676,6 +735,52 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 	fmt->set_table_layout(std::move(layout));
 
 	return fmt;
+}
+
+
+ColorRegistry ARVerifyApplication::parse_color_request(const Options &options)
+	const
+{
+	const auto input { options.value(VERIFY::COLORED) };
+
+	if (input.empty() || input == "default") // FIXME use some option.default()
+	{
+		return ColorRegistry{};
+	}
+
+	const std::string sep = ":"; // name-value separator
+
+	ColorRegistry r;
+	r.clear();
+
+	parse_cli_list(input, ',',
+			[&r,&sep](const std::string& s)
+			{
+				const auto pos = s.find(sep);
+				if (pos == std::string::npos)
+				{
+					return;
+				}
+
+				using std::begin;
+				using std::end;
+
+				const auto uppercase = [](unsigned char c)
+				{
+					return std::toupper(c);
+				};
+
+				auto type { s.substr(0, pos) };
+				std::transform(begin(type), end(type), begin(type), uppercase);
+
+				auto color { s.substr(pos + sep.length()) };
+				std::transform(begin(color), end(color), begin(color),
+						uppercase);
+
+				r.set(get_decorationtype(type), ansi::get_color(color));
+			});
+
+	return r;
 }
 
 
@@ -748,7 +853,14 @@ ARResponse ARVerifyApplication::parse_response(const Options &options) const
 std::vector<Checksum> ARVerifyApplication::parse_refvalues(
 		const Options &options) const
 {
-	auto refvals = parse_refvalues_sequence(options.value(VERIFY::REFVALUES));
+	auto refvals = parse_cli_option_list<Checksum>(
+				options.value(VERIFY::REFVALUES),
+				',',
+				[](const std::string& s) -> Checksum
+				{
+					Checksum::value_type value = std::stoul(s, 0, 16);
+					return Checksum { value };
+				});
 
 	// Log the parsing result
 
@@ -761,45 +873,6 @@ std::vector<Checksum> ARVerifyApplication::parse_refvalues(
 	}
 
 	return refvals;
-}
-
-
-std::vector<Checksum> ARVerifyApplication::parse_refvalues_sequence(
-		const std::string &input) const
-{
-	if (input.empty())
-	{
-		return {};
-	}
-
-	auto in { input };
-	{
-		using std::begin;
-		using std::end;
-		const char delim = ',';
-		std::replace(begin(in), end(in), delim, ' '); // erase commas
-	}
-
-	auto refvals = std::istringstream { in };
-	auto value   = std::string {};
-	auto refsum  = uint32_t { 0 };
-	auto refsums = std::vector<Checksum> {};
-	auto t       = int { 1 };
-
-	while (refvals >> value)
-	{
-		refsum = std::stoul(value, 0, 16);
-
-		ARCS_LOG_DEBUG << "Input reference sum " << value
-			<< " for track/file " << std::setw(2) << t
-			<< " is parsed as " << refsum;
-
-		refsums.push_back(Checksum { refsum });
-		value.clear();
-		++t;
-	}
-
-	return refsums;
 }
 
 

@@ -29,14 +29,44 @@ class Output
 {
 public:
 
+	/**
+	 * \brief Default constructor.
+	 */
 	Output();
 
+	/**
+	 * \brief TRUE iff output appends to previous output.
+	 *
+	 * This is only relevant for file output.
+	 *
+	 * \return TRUE otherwise FALSE
+	 */
 	bool is_appending() const;
 
+	/**
+	 * \brief Set whether further output will be appended to previous output.
+	 *
+	 * Iff set to TRUE, further output will not overwrite previous output but
+	 * just append.
+	 *
+	 * This is only relevant for file output.
+	 *
+	 * \param[in] append Flag for appending
+	 */
 	void set_append(const bool append);
 
+	/**
+	 * \brief Name of the output file.
+	 *
+	 * \return Name of file to output to
+	 */
 	const std::string& filename() const;
 
+	/**
+	 * \brief Set output file.
+	 *
+	 * \param[in] filename  Name of file to output to
+	 */
 	void to_file(const std::string &filename);
 
 	/**
@@ -93,14 +123,26 @@ public:
 		append_ = true; // first call overwrites, subsequent calls append
 	}
 
+	/**
+	 * \brief Acquire singleton instance.
+	 */
 	static Output& instance();
 
 private:
 
+	/**
+	 * \brief Internal guard.
+	 */
 	std::mutex mutex_;
 
+	/**
+	 * \brief Internal output filename.
+	 */
 	std::string filename_;
 
+	/**
+	 * \brief Internall append flag.
+	 */
 	bool append_;
 };
 

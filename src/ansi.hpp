@@ -45,6 +45,16 @@ enum class Color : int
 
 
 /**
+ * \brief Return color for name.
+ *
+ * \param[in] name Name of the requested color
+ *
+ * \return Color for the passed name
+ */
+Color get_color(const std::string& name);
+
+
+/**
  * \brief ANSI highlight codes.
  *
  * According to https://en.wikipedia.org/wiki/ANSI_escape_code#Colors

@@ -94,7 +94,13 @@ private:
 
 
 /**
- * \brief Decorator to hilight matching checksums by color.
+ * \brief Decorator to highlight matching checksums by color.
+ *
+ * If a cell is \c decorate_set() to TRUE, it will be printed in
+ * \c color_for_match(). The default color for match is FG_GREEN (BRIGHT).
+ *
+ * If a cell is \c decorate_set() to FALSE, it will be printed in
+ * \c color_for_mismatch(). The default color for mismatch is FG_RED (BRIGHT).
  */
 class MatchDecorator final : public CellDecorator
 {
@@ -132,7 +138,8 @@ public:
 	/**
 	 * \brief Constructor.
 	 *
-	 * Uses default colors: bright green for matches, bright red for mismatches.
+	 * This constructor initializes the instance with the following defaults:
+	 * FG_GREEN (BRIGHT) for matches, FG_RED (BRIGHT) for mismatches.
 	 *
 	 * \param[in] n        Total number of decoratable entries
 	 */
@@ -168,17 +175,21 @@ public:
 
 /**
  * \brief Interface to format result objects of a verification process.
+ *
+ * Formatter for VERIFY results can use this interface for inheriting the
+ * appropriate Layout interface.
  */
-using V9L = Layout<std::unique_ptr<Result>, Checksums, const ARResponse*,
-			const std::vector<Checksum>, const Match*, const int,
-			const TOC*, const ARId, std::string, std::vector<std::string>>;
+using Verify9Layout = Layout<std::unique_ptr<Result>, Checksums,
+		const ARResponse*, const std::vector<Checksum>, const Match*,
+		const int, const TOC*, const ARId, std::string,
+		std::vector<std::string>>;
 
 
 /**
  * \brief Interface for formatting the results of an ARVerifyApplication.
  */
 class VerifyResultFormatter : public ResultFormatter
-							, public V9L
+							, public Verify9Layout
 {
 public:
 
@@ -203,7 +214,7 @@ public:
 
 private:
 
-	// V9L
+	// Verify9Layout
 
 	void assertions(InputTuple t) const final;
 
@@ -241,6 +252,8 @@ private:
  */
 class MonochromeVerifyResultFormatter : public VerifyResultFormatter
 {
+	// VerifyResultFormatter
+
 	void do_their_match(const Checksum& checksum, const int record,
 			const int field, TableComposer* c) const final;
 
@@ -250,10 +263,10 @@ class MonochromeVerifyResultFormatter : public VerifyResultFormatter
 
 
 /**
- * \brief Decoratable output aspects.
+ * \brief Decoratable output cell categories.
  *
- * Actually, matches (MATCH), mismatches (MISMATCH) and locally computed
- * checksums (MINE) can be decorated.
+ * Decoratable cell categories are matches with "theirs" (MATCH), mismatches
+ * with "theirs" (MISMATCH), and locally computed checksums (MINE).
  */
 enum class DecorationType : int
 {
@@ -264,16 +277,24 @@ enum class DecorationType : int
 
 
 /**
- * \brief Registry for getting assigned output colors for DecorationTypes.
+ * \brief Get a DecorationType by its name.
+ *
+ * \param[in] type Name of the decoration type
+ *
+ * \return The DecorationType named as in \c type
+ */
+DecorationType get_decorationtype(const std::string& type);
+
+
+/**
+ * \brief Registry assigning output colors for DecorationTypes.
  */
 class ColorRegistry final
 {
-	// TODO Very basic. Should be extended to a std::map.
-
 	/**
 	 * \brief Internal store for colors.
 	 */
-	std::vector<ansi::Color> colors_;
+	std::map<DecorationType, ansi::Color> colors_;
 
 public:
 
@@ -281,6 +302,8 @@ public:
 	 * \brief Constructor.
 	 */
 	ColorRegistry();
+
+	bool has(DecorationType d) const;
 
 	/**
 	 * \brief Return color for coloring output of type \c d.
@@ -298,6 +321,11 @@ public:
 	 * \param[in] c  Color for coloring output of type \c d.
 	 */
 	void set(DecorationType d, ansi::Color c);
+
+	/**
+	 * \brief Delete all colors.
+	 */
+	void clear();
 };
 
 
@@ -309,7 +337,10 @@ public:
  */
 class ColorizingVerifyResultFormatter : public VerifyResultFormatter
 {
-	ColorRegistry registry_;
+	/**
+	 * \brief Internal color registry.
+	 */
+	ColorRegistry colors_;
 
 
 	// ResultFormatter
@@ -325,6 +356,18 @@ class ColorizingVerifyResultFormatter : public VerifyResultFormatter
 			const int field, TableComposer* c) const final;
 
 public:
+
+	/**
+	 * \brief Default constructor.
+	 */
+	ColorizingVerifyResultFormatter();
+
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] colors Colorset to use
+	 */
+	ColorizingVerifyResultFormatter(ColorRegistry&& colors);
 
 	/**
 	 * \brief Return color for coloring output of type \c d.
@@ -353,13 +396,23 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	/**
 	 * \brief Configure an output format for the result.
 	 *
-	 * \param[in] options        The options to run the application
-	 * \param[in] with_filenames Flag to indicate whether to print filenames
+	 * \param[in] options  The options passed to the application
+	 * \param[in] types    Checksum types to print
+	 * \param[in] match    Match object to print
 	 */
 	std::unique_ptr<VerifyResultFormatter> configure_layout(
 			const Options &options,
 			const std::vector<arcstk::checksum::type> &types,
 			const Match &match) const;
+
+	/**
+	 * \brief Parse the colors requested by cli.
+	 *
+	 * \param[in] options  The options passed to the application
+	 *
+	 * \return Colors as requested.
+	 */
+	ColorRegistry parse_color_request(const Options &options) const;
 
 	/**
 	 * \brief Provide reference checksums from options.
@@ -370,6 +423,8 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	 *
 	 * The caller is responsible to interpreting the resulting tuple.
 	 *
+	 * \param[in] options  The options passed to the application
+	 *
 	 * \return Tuple of possible reference checksum representations
 	 */
 	std::tuple<ARResponse, std::vector<Checksum>> get_reference_checksums(
@@ -378,7 +433,7 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	/**
 	 * \brief Worker: parse the input for an ARResponse.
 	 *
-	 * \param[in] options The options to run the application
+	 * \param[in] options The options passed to the application
 	 *
 	 * \return ARResponse object
 	 */
@@ -387,21 +442,11 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	/**
 	 * \brief Worker: parse the input reference values.
 	 *
-	 * \param[in] values The reference values as passed from the cli
+	 * \param[in] options The options passed to the application
 	 *
 	 * \return Parsed checksums
 	 */
 	std::vector<Checksum> parse_refvalues(const Options &options) const;
-
-	/**
-	 * \brief Worker: parse the input reference values.
-	 *
-	 * \param[in] values The reference values as passed from the cli
-	 *
-	 * \return Parsed checksums
-	 */
-	std::vector<Checksum> parse_refvalues_sequence(const std::string &values)
-		const;
 
 	/**
 	 * \brief Worker: Log matching files from a file list.
@@ -435,11 +480,15 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 			const std::vector<std::string>& print_filenames) const;
 
 
+	// Application
+
 	std::string do_name() const final;
 
 	std::string do_call_syntax() const final;
 
 	std::unique_ptr<Configurator> do_create_configurator() const final;
+
+	// ARCalcApplicationBase
 
 	std::pair<int, std::unique_ptr<Result>> run_calculation(
 			const Options &options) const final;

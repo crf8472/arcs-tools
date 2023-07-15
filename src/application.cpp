@@ -34,9 +34,9 @@ namespace arcsapp
 
 
 Output::Output()
-	: mutex_ {}
-	, filename_ {}
-	, append_ { false }
+	: mutex_    { }
+	, filename_ { }
+	, append_   { false }
 {
 	// empty
 }

@@ -308,18 +308,30 @@ void parse_symbol(const char * const token, const char * const next,
 		pass_token(code, &token[sym_len + 3]);
 	} else if (option->needs_value()) // Expect syntax '--foo bar'
 	{
-		if (!next or !next[0])
+		if (!next or !next[0] or next[0] == '-')
 		{
-			std::ostringstream msg;
-			msg << "Option '" << token
-				<< "' requires a value but none is passed";
-			throw CallSyntaxException(msg.str());
+			if (option->default_arg().empty()
+					|| option->default_arg() == "none")
+			{
+				std::ostringstream msg;
+				msg << "Option '" << token
+					<< "' requires a value but none is passed";
+				throw CallSyntaxException(msg.str());
+			} else
+			{
+				// Move Token Pointer for Caller
+				++pos;
+
+				// If option is present and requires a value but no value
+				// is passed, then set default
+				pass_token(code, option->default_arg().c_str());
+			}
+		} else
+		{
+			// Move Token Pointer for Caller
+			++pos;
+			pass_token(code, next);
 		}
-
-		// Move Token Pointer for Caller
-		++pos;
-
-		pass_token(code, next);
 	} else
 	{
 		pass_token(code, "");

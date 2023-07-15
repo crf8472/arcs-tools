@@ -8,12 +8,41 @@
 #include "ansi.hpp"
 #endif
 
+#include <unordered_map>               // for unordered_map
 #include <type_traits>                 // for underlying_type_t
 
 namespace arcsapp
 {
 namespace ansi
 {
+
+
+Color get_color(const std::string& name)
+{
+	static const std::unordered_map<std::string, Color> values = {
+		{ "FG_BLACK",   Color::FG_BLACK },
+		{ "FG_RED",     Color::FG_RED },
+		{ "FG_GREEN",   Color::FG_GREEN },
+		{ "FG_YELLOW",  Color::FG_YELLOW },
+		{ "FG_BLUE",    Color::FG_BLUE },
+		{ "FG_MAGENTA", Color::FG_MAGENTA },
+		{ "FG_CYAN",    Color::FG_CYAN },
+		{ "FG_WHITE",   Color::FG_WHITE },
+		{ "FG_DEFAULT", Color::FG_DEFAULT },
+		{ "BG_BLACK",   Color::BG_BLACK },
+		{ "BG_RED",     Color::BG_RED },
+		{ "BG_GREEN",   Color::BG_GREEN },
+		{ "BG_YELLOW",  Color::BG_YELLOW },
+		{ "BG_BLUE",    Color::BG_BLUE },
+		{ "BG_MAGENTA", Color::BG_MAGENTA },
+		{ "BG_CYAN",    Color::BG_CYAN },
+		{ "BG_WHITE",   Color::BG_WHITE },
+		{ "BG_DEFAULT", Color::BG_DEFAULT }
+	};
+
+	return values.find(name)->second;
+}
+
 
 // Modifier
 

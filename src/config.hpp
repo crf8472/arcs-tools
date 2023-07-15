@@ -13,7 +13,9 @@
  * and can apply configuring logic on the resulting object.
  */
 
+#include <algorithm>     // for replace
 #include <cstddef>       // for size_t
+#include <functional>    // for function
 #include <map>           // for map
 #include <memory>        // for unique_ptr
 #include <ostream>       // for ostream
@@ -368,6 +370,51 @@ protected:
 
 	static constexpr OptionCode SUBCLASS_BASE      = BASE + 4;
 };
+
+
+//
+
+
+/**
+ * \brief Parse \c list as a sequence of strings separated by \c delim and call
+ * \c entry_hook on each of them.
+ *
+ * \param[in] list       Input string to parse as a list
+ * \param[in] delim      Delimiter for list entries
+ * \param[in] entry_hook Call this function on each entry
+ */
+void parse_cli_list(const std::string& list, const char delim,
+		std::function<void(const std::string& s)> entry_hook);
+
+
+/**
+ * \brief Parse \c list as a sequence of strings separated by \c delim and
+ * convert each entry by \c convert_func.
+ *
+ * \tparam Type of requested objects
+ *
+ * \param[in] list         Input string to parse as a list
+ * \param[in] delim        Delimiter for list entries
+ * \param[in] convert_func Function to convert std::string to T
+ *
+ * \return Sequence of input values converted from strings
+ */
+template <typename T>
+std::vector<T> parse_cli_option_list(const std::string& list, const char delim,
+		const std::function<T(const std::string& s)>& convert_func)
+{
+	auto results = std::vector<T> {};
+	// TODO reserve default?
+
+	parse_cli_list(list, delim,
+			[&convert_func,&results](const std::string& s)
+			{
+				results.emplace_back(convert_func(s));
+			});
+
+	return results;
+}
+
 
 } // namespace arcsapp
 

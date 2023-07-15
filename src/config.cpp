@@ -261,5 +261,37 @@ constexpr OptionCode FORMATBASE::PARSERID;
 
 constexpr OptionCode FORMATBASE::SUBCLASS_BASE;
 
+
+//
+
+
+void parse_cli_list(const std::string& list, const char delim,
+		std::function<void(const std::string& s)> value_hook)
+{
+	if (list.empty())
+	{
+		return;
+	}
+
+	auto in { list }; // copy
+
+	// replace delimiters by spaces
+	if (delim != ' ')
+	{
+		using std::begin;
+		using std::end;
+		std::replace(begin(in), end(in), delim, ' ');
+	}
+
+	auto input = std::istringstream { in };
+	auto value = std::string {};
+
+	while (input >> value)
+	{
+		value_hook(value);
+		value.clear();
+	}
+}
+
 } // namespace arcsapp
 
