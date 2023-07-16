@@ -156,6 +156,19 @@ private:
 
 
 /**
+ * \brief Option values to check for.
+ */
+struct OP_VALUE
+{
+	static constexpr const char* NONE        = "none";     // no value
+	static constexpr const char* USE_DEFAULT = "default";  // existing default
+	static constexpr const char* FALSE       = "FALSE";    // false
+	static constexpr const char* TRUE        = "TRUE";     // true
+	static constexpr const char* AUTO        = "auto";     // auto assign
+};
+
+
+/**
  * \brief Reports a syntax error on parsing the command line input.
  *
  * This exception may occurr for the following reasons:
