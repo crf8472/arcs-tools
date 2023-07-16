@@ -656,15 +656,15 @@ void ColorizingVerifyResultFormatter::set_color(DecorationType d, ansi::Color c)
 // ARVerifyApplication
 
 
-std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
-		const Options &options,
+std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::create_formatter(
+		const Configuration& config,
 		ColorRegistry&& colors,
 		const std::vector<arcstk::checksum::type> &types, const Match &match)
 		const
 {
 	auto fmt = std::unique_ptr<VerifyResultFormatter>();
 
-	if (options.is_set(VERIFY::COLORED))
+	if (config.is_set(VERIFY::COLORED))
 	{
 		fmt = std::make_unique<ColorizingVerifyResultFormatter>(
 					std::move(colors));
@@ -681,13 +681,13 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 
 	// Layout for ARId
 
-	if (options.is_set(VERIFY::PRINTID) || options.is_set(VERIFY::PRINTURL))
+	if (config.is_set(VERIFY::PRINTID) || config.is_set(VERIFY::PRINTURL))
 	{
 		std::unique_ptr<ARIdLayout> id_layout =
 			std::make_unique<ARIdTableLayout>(
-				!options.is_set(VERIFY::NOLABELS),
-				options.is_set(VERIFY::PRINTID),
-				options.is_set(VERIFY::PRINTURL),
+				!config.is_set(VERIFY::NOLABELS),
+				config.is_set(VERIFY::PRINTID),
+				config.is_set(VERIFY::PRINTURL),
 				false, /* no filenames */
 				false, /* no tracks */
 				false, /* no id 1 */
@@ -699,25 +699,25 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 	}
 
 	// Print labels or not
-	fmt->format_label(!options.is_set(VERIFY::NOLABELS));
+	fmt->format_label(!config.is_set(VERIFY::NOLABELS));
 
 	// TOC present? Helper for determining other properties
-	const bool has_toc = !options.value(VERIFY::METAFILE).empty();
+	const bool has_toc = !config.value(VERIFY::METAFILE).empty();
 
 	// Print track numbers if they are not forbidden and a TOC is present
 	fmt->format_data(ATTR::TRACK,
-			options.is_set(VERIFY::NOTRACKS) ? false : has_toc);
+			config.is_set(VERIFY::NOTRACKS) ? false : has_toc);
 
 	// Print offsets if they are not forbidden and a TOC is present
 	fmt->format_data(ATTR::OFFSET,
-			options.is_set(VERIFY::NOOFFSETS) ? false : has_toc);
+			config.is_set(VERIFY::NOOFFSETS) ? false : has_toc);
 
 	// Print lengths if they are not forbidden
-	fmt->format_data(ATTR::LENGTH, !options.is_set(VERIFY::NOLENGTHS));
+	fmt->format_data(ATTR::LENGTH, !config.is_set(VERIFY::NOLENGTHS));
 
 	// Print filenames if they are not forbidden and a TOC is _not_ present
 	fmt->format_data(ATTR::FILENAME,
-			!options.is_set(VERIFY::NOFILENAMES) || !has_toc);
+			!config.is_set(VERIFY::NOFILENAMES) || !has_toc);
 
 	// Indicate a matching checksum by this symbol
 	fmt->set_match_symbol("==");
@@ -728,8 +728,8 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 	auto layout { std::make_unique<StringTableLayout>() };
 
 	// Set inner column delimiter
-	layout->set_col_inner_delim(options.is_set(VERIFY::COLDELIM)
-		? options.value(VERIFY::COLDELIM)
+	layout->set_col_inner_delim(config.is_set(VERIFY::COLDELIM)
+		? config.value(VERIFY::COLDELIM)
 		: " ");
 
 	fmt->set_table_layout(std::move(layout));
@@ -902,17 +902,17 @@ std::unique_ptr<Configurator> ARVerifyApplication::do_create_configurator()
 }
 
 
-auto ARVerifyApplication::run_calculation(const Options &options) const
+auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	-> std::pair<int, std::unique_ptr<Result>>
 {
 	// Parse reference ARCSs from AccurateRip
 
-	const auto ref_respns = options.is_set(VERIFY::REFVALUES)
+	const auto ref_respns = config.is_set(VERIFY::REFVALUES)
 		? ARResponse { /* empty */ }
-		: parse_response(options.value(VERIFY::RESPONSEFILE));
+		: parse_response(config.value(VERIFY::RESPONSEFILE));
 
-	const auto ref_values = options.is_set(VERIFY::REFVALUES)
-		? parse_refvalues(options.value(VERIFY::REFVALUES))
+	const auto ref_values = config.is_set(VERIFY::REFVALUES)
+		? parse_refvalues(config.value(VERIFY::REFVALUES))
 		: std::vector<Checksum> { /* empty */ };
 
 	// No reference values at all? => Error
@@ -929,9 +929,9 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 	// THEIRS: green = match, red = mismatch
 	// MINE:   shell default
 
-	if (options.is_set(VERIFY::COLORED))
+	if (config.is_set(VERIFY::COLORED))
 	{
-		colors = this->parse_color_request(options.value(VERIFY::COLORED));
+		colors = this->parse_color_request(config.value(VERIFY::COLORED));
 	}
 
 	// DO NOT DO ANY MORE CLI PARSING AFTER THIS POINT !
@@ -940,12 +940,12 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 
 	const calc::IdSelection id_selection;
 
-	auto audio_selection = options.is_set(VERIFY::READERID)
-		? id_selection(options.value(VERIFY::READERID))
+	auto audio_selection = config.is_set(VERIFY::READERID)
+		? id_selection(config.value(VERIFY::READERID))
 		: nullptr;
 
-	auto toc_selection = options.is_set(VERIFY::PARSERID)
-		? id_selection(options.value(VERIFY::PARSERID))
+	auto toc_selection = config.is_set(VERIFY::PARSERID)
+		? id_selection(config.value(VERIFY::PARSERID))
 		: nullptr;
 
 	// If no selections are assigned, the libarcsdec default selections
@@ -954,10 +954,10 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 	// Calculate the actual ARCSs from input files
 
 	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(
-			options.value(VERIFY::METAFILE),
-			options.arguments(),
-			!options.is_set(VERIFY::NOFIRST),
-			!options.is_set(VERIFY::NOLAST),
+			config.value(VERIFY::METAFILE),
+			config.arguments(),
+			!config.is_set(VERIFY::NOFIRST),
+			!config.is_set(VERIFY::NOLAST),
 			{ arcstk::checksum::type::ARCS2 }, /* force ARCSv1 + ARCSv2 */
 			audio_selection.get(),
 			toc_selection.get()
@@ -972,14 +972,14 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 
 	std::unique_ptr<const Matcher> diff;
 
-	if (options.is_set(VERIFY::REFVALUES))
+	if (config.is_set(VERIFY::REFVALUES))
 	{
 		diff = std::make_unique<ListMatcher>(checksums, ref_values);
 	}
 
 	bool print_filenames = true;
 
-	if (/* Album requested? */not options.is_set(VERIFY::NOALBUM))
+	if (/* Album requested? */not config.is_set(VERIFY::NOALBUM))
 	{
 		// Do verification for Offsets, ARId and TOC
 
@@ -1041,7 +1041,7 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 			<< " in response, having difference " << diff->best_difference();
 	}
 
-	if (options.is_set(VERIFY::NOOUTPUT)) // implies BOOLEAN
+	if (config.is_set(VERIFY::NOOUTPUT)) // implies BOOLEAN
 	{
 		// 0 on accurate match, else > 0
 		return { diff->best_difference(), nullptr };
@@ -1049,8 +1049,8 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 
 	// Create result object
 
-	const auto best_block = options.is_set(VERIFY::PRINTALL) &&
-		options.is_set(VERIFY::RESPONSEFILE)
+	const auto best_block = config.is_set(VERIFY::PRINTALL) &&
+		config.is_set(VERIFY::RESPONSEFILE)
 							? -1 // Won't be used
 							: diff->best_match();
 
@@ -1061,7 +1061,7 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 	auto filenames = std::vector<std::string> { };
 	if (print_filenames)
 	{
-		if (options.no_arguments())
+		if (config.no_arguments())
 		{
 			if (toc)
 			{
@@ -1069,7 +1069,7 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 			}
 		} else
 		{
-			filenames = options.arguments();
+			filenames = config.arguments();
 		}
 	}
 
@@ -1079,7 +1079,7 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 	using TYPE = arcstk::checksum::type;
 	std::vector<TYPE> types_to_print;
 
-	if (options.is_set(VERIFY::PRINTALL))
+	if (config.is_set(VERIFY::PRINTALL))
 	{
 		// Print every match computed in the course of the calculation
 		types_to_print = { TYPE::ARCS1, TYPE::ARCS2 };
@@ -1093,7 +1093,7 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 
 	const auto match { diff->match() };
 
-	const auto f { configure_layout(options, std::move(colors),
+	const auto f { create_formatter(config, std::move(colors),
 			types_to_print, *match) };
 
 	auto result {
@@ -1101,7 +1101,7 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 			match, best_block, toc.get(), arid, alt_prefix, filenames)
 	};
 
-	auto exit_code = options.is_set(VERIFY::BOOLEAN)
+	auto exit_code = config.is_set(VERIFY::BOOLEAN)
 		? diff->best_difference()
 		: EXIT_SUCCESS;
 

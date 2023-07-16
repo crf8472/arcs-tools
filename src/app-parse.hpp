@@ -38,7 +38,7 @@ class ARParseApplication final : public Application
 
 	std::unique_ptr<Configurator> do_create_configurator() const final;
 
-	int do_run(const Options &options) final;
+	int do_run(const Configuration& config) final;
 };
 
 } // namespace arcsapp

@@ -14,6 +14,7 @@
  */
 
 #include <algorithm>     // for replace
+#include <any>           // for any
 #include <cstddef>       // for size_t
 #include <functional>    // for function
 #include <map>           // for map
@@ -207,6 +208,8 @@ using OptionRegistry = std::vector<std::pair<OptionCode, Option>>;
 //FIXME This definition is repeated from clitokens.hpp
 
 
+class Configuration;
+
 /**
  * \brief Abstract base class for Configurators.
  *
@@ -289,6 +292,16 @@ public:
 	 */
 	static constexpr OptionCode BASE() { return 7/* last OPTION + 1 */; };
 
+	/**
+	 * \brief Load the specified options into a Configuration.
+	 *
+	 * This includes the parsing of all option value strings. The subclass is
+	 * responsible for doing this completely.
+	 *
+	 * \param[in] options Options as provided by this configurator.
+	 */
+	std::unique_ptr<Configuration> load(std::unique_ptr<Options> options) const;
+
 protected:
 
 	/**
@@ -324,6 +337,117 @@ private:
 	 */
 	virtual std::unique_ptr<Options> do_configure_options(
 			std::unique_ptr<Options> options) const;
+
+	/**
+	 * \brief Load the configuration from the options.
+	 */
+	virtual std::unique_ptr<Configuration> do_load(
+			std::unique_ptr<Options> options) const;
+};
+
+
+/**
+ * \brief Application input as there is configuration and arguments.
+ */
+class Configuration
+{
+	/**
+	 * \brief Options.
+	 */
+	std::unique_ptr<Options> options_;
+
+	/**
+	 * \brief Configuration objects.
+	 */
+	std::map<OptionCode, std::any> objects_;
+
+protected:
+
+	/**
+	 * \brief Worker: parse an option string to an object.
+	 */
+	template <typename T>
+	auto parse(const OptionCode &option,
+			const std::function<T(const std::string& s)>& parse) -> T
+	{
+	}
+
+public:
+
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] options Options to configure the application
+	 */
+	Configuration(std::unique_ptr<Options> options);
+
+	/**
+	 * \brief Get a configuration object.
+	 *
+	 * \param[in] option The option to get the value object for
+	 *
+	 * \return Value object for the option passed
+	 */
+	template <typename T>
+	auto object(const OptionCode &option) -> T*
+	{
+		auto o { objects_.find(option) };
+
+		using std::end;
+		if (end(objects_) == o)
+		{
+			return options_->value(option);
+		}
+
+		return &std::any_cast<T>(o->second);
+	}
+
+	// Provide interface for options
+
+	/**
+	 * \brief Returns TRUE iff the option is set, otherwise FALSE.
+	 *
+	 * \param[in] option The option to check for
+	 *
+	 * \return TRUE iff the option is set, otherwise FALSE
+	 */
+	bool is_set(const OptionCode &option) const;
+
+	/**
+	 * \brief Get the value for a specified option.
+	 *
+	 * If the option is currently unset, the resulting value is empty.
+	 *
+	 * \param[in] option The option whose value to get
+	 *
+	 * \return The n-th value of the option passed
+	 */
+	std::string value(const OptionCode &option) const;
+
+	/**
+	 * \brief Get an input argument by 0-based index.
+	 *
+	 * Will return the \c i-th argument inserted on command line.
+	 *
+	 * \param[in] i Index of the argument in the argument list
+	 *
+	 * \return Argument
+	 */
+	std::string const argument(const std::size_t i) const;
+
+	/**
+	 * \brief Get all input arguments in order of occurrence.
+	 *
+	 * \return All input arguments
+	 */
+	std::vector<std::string> const arguments() const;
+
+	/**
+	 * \brief Returns TRUE iff no arguments are present.
+	 *
+	 * \return TRUE iff no arguments are present otherwise FALSE
+	 */
+	bool no_arguments() const;
 };
 
 

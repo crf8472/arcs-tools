@@ -130,37 +130,19 @@ std::unique_ptr<Options> ARIdConfigurator::do_configure_options(
 // ARIdApplication
 
 
-std::string ARIdApplication::do_name() const
+bool ARIdApplication::do_calculation_requested(const Configuration& config) const
 {
-	return "id";
+	return config.is_set(ARIdOptions::AUDIOFILE) || not config.no_arguments();
 }
 
 
-std::string ARIdApplication::do_call_syntax() const
-{
-	return "[OPTIONS] FILENAME";
-}
-
-
-std::unique_ptr<Configurator> ARIdApplication::do_create_configurator() const
-{
-	return std::make_unique<ARIdConfigurator>();
-}
-
-
-bool ARIdApplication::calculation_requested(const Options &options) const
-{
-	return options.is_set(ARIdOptions::AUDIOFILE) || not options.no_arguments();
-}
-
-
-auto ARIdApplication::run_calculation(const Options &options) const
+auto ARIdApplication::do_run_calculation(const Configuration& config) const
 	-> std::pair<int, std::unique_ptr<Result>>
 {
 	// Compute requested values
 
-	const auto metafilename  = options.argument(0);
-	const auto audiofilename = options.value(ARIdOptions::AUDIOFILE);
+	const auto metafilename  = config.argument(0);
+	const auto audiofilename = config.value(ARIdOptions::AUDIOFILE);
 
 	std::unique_ptr<ARId> arid = nullptr;
 
@@ -169,18 +151,18 @@ auto ARIdApplication::run_calculation(const Options &options) const
 
 		const calc::IdSelection id_selection;
 
-		auto audio_selection = options.is_set(ARIdOptions::READERID)
-			? id_selection(options.value(ARIdOptions::READERID))
+		auto audio_selection = config.is_set(ARIdOptions::READERID)
+			? id_selection(config.value(ARIdOptions::READERID))
 			: nullptr;
 
-		auto toc_selection = options.is_set(ARIdOptions::PARSERID)
-			? id_selection(options.value(ARIdOptions::PARSERID))
+		auto toc_selection = config.is_set(ARIdOptions::PARSERID)
+			? id_selection(config.value(ARIdOptions::PARSERID))
 			: nullptr;
 
 		if (toc_selection)
 		{
 			ARCS_LOG_INFO << "Select parser " <<
-				options.value(ARIdOptions::PARSERID);
+				config.value(ARIdOptions::PARSERID);
 		}
 
 		// If no selections are assigned, the libarcsdec default selections
@@ -200,34 +182,34 @@ auto ARIdApplication::run_calculation(const Options &options) const
 
 	std::unique_ptr<ARIdLayout> layout;
 
-	if (options.is_set(ARIdOptions::PROFILE))
+	if (config.is_set(ARIdOptions::PROFILE))
 	{
 		layout = std::make_unique<ARIdTableLayout>(
 			true, true, true, true, true, true, true, true);
 	} else
 	{
 		// Use labels iff allowed and more than one property is to be printed
-		const bool print_labels = !options.is_set(ARIdOptions::NOLABELS)
+		const bool print_labels = !config.is_set(ARIdOptions::NOLABELS)
 			and (
-			1 < options.is_set(ARIdOptions::ID)
-			+ options.is_set(ARIdOptions::URL)
-			+ options.is_set(ARIdOptions::DBID)
-			+ options.is_set(ARIdOptions::CDDBID));
+			1 < config.is_set(ARIdOptions::ID)
+			+ config.is_set(ARIdOptions::URL)
+			+ config.is_set(ARIdOptions::DBID)
+			+ config.is_set(ARIdOptions::CDDBID));
 
 		layout = std::make_unique<ARIdTableLayout>(
 			print_labels,
-			options.is_set(ARIdOptions::ID),
-			options.is_set(ARIdOptions::URL),
-			options.is_set(ARIdOptions::DBID),
+			config.is_set(ARIdOptions::ID),
+			config.is_set(ARIdOptions::URL),
+			config.is_set(ARIdOptions::DBID),
 			false /* no track count */,
 			false /* no disc id 1 */,
 			false /* no disc id 2 */,
-			options.is_set(ARIdOptions::CDDBID)
+			config.is_set(ARIdOptions::CDDBID)
 		);
 	}
 
 	auto id = RichARId{*arid, std::move(layout),
-		options.value(ARIdOptions::URLPREFIX)};
+		config.value(ARIdOptions::URLPREFIX)};
 
 	//if (not result_str.empty() and result_str.back() != '\n')
 	//{
@@ -237,6 +219,24 @@ auto ARIdApplication::run_calculation(const Options &options) const
 	//return { EXIT_SUCCESS, std::move(r) };
 	return std::make_pair(EXIT_SUCCESS,
 			std::make_unique<ResultObject<RichARId>>(std::move(id)));
+}
+
+
+std::string ARIdApplication::do_name() const
+{
+	return "id";
+}
+
+
+std::string ARIdApplication::do_call_syntax() const
+{
+	return "[OPTIONS] FILENAME";
+}
+
+
+std::unique_ptr<Configurator> ARIdApplication::do_create_configurator() const
+{
+	return std::make_unique<ARIdConfigurator>();
 }
 
 } // namespace arcsapp

@@ -149,6 +149,7 @@ private:
 
 // forward declare instead of include
 class Configurator;
+class Configuration;
 class Options;
 class Result;
 
@@ -195,16 +196,6 @@ public:
 protected:
 
 	/**
-	 * \brief Setup the Options for this application.
-	 *
-	 * \param[in] argc Number of command line input arguments
-	 * \param[in] argv Array of command line input arguments
-	 *
-	 * \return Options instance representing the command line input
-	 */
-	std::unique_ptr<Options> setup_options(int argc, char** argv) const;
-
-	/**
 	 * \brief Create a Configurator for this instance.
 	 *
 	 * \return The configurator for this application
@@ -214,7 +205,7 @@ protected:
 	/**
 	 * \brief Setup logging according to options.
 	 */
-	void setup_logging(Options& options) const;
+	void setup_logging(const Options& options) const;
 
 	/**
 	 * \brief Generates a fatal error with specified message.
@@ -229,9 +220,8 @@ protected:
 	 * \brief Output the result.
 	 *
 	 * \param[in] result  Result object to output
-	 * \param[in] options The options to run the application
 	 */
-	void output(std::unique_ptr<Result> result, const Options &options) const;
+	void output(std::unique_ptr<Result> result) const;
 
 private:
 
@@ -260,11 +250,11 @@ private:
 	/**
 	 * \brief Implements run().
 	 *
-	 * \param[in] options The options to run the application
+	 * \param[in] config The configuration to run the application
 	 *
 	 * \return Application return code
 	 */
-	virtual int do_run(const Options &options)
+	virtual int do_run(const Configuration &config)
 	= 0;
 };
 

@@ -74,16 +74,20 @@ private:
  */
 class ARIdApplication final : public ARCalcApplicationBase
 {
+	// ARCalcApplicationBase
+
+	bool do_calculation_requested(const Configuration &config) const final;
+
+	std::pair<int, std::unique_ptr<Result>> do_run_calculation(
+			const Configuration& config) const final;
+
+	// Application
+
 	std::string do_name() const final;
 
 	std::string do_call_syntax() const final;
 
 	std::unique_ptr<Configurator> do_create_configurator() const final;
-
-	bool calculation_requested(const Options &options) const final;
-
-	std::pair<int, std::unique_ptr<Result>> run_calculation(
-			const Options &options) const final;
 };
 
 } // namespace arcsapp

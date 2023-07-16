@@ -87,16 +87,6 @@ public:
 
 	using Configurator::Configurator;
 
-	/**
-	 * \brief TRUE iff a calculation request is implicit in the Options,
-	 * otherwise FALSE.
-	 *
-	 * \param[in] options The Options to run the application
-	 *
-	 * \return TRUE iff a calculation is requested, otherwise FALSE
-	 */
-	virtual bool calculation_requested(const Options &options) const;
-
 protected:
 
 	/**
@@ -196,24 +186,54 @@ private:
  */
 class ARCalcApplicationBase : public Application
 {
-	/**
-	 * \brief Run the internal calculation.
-	 *
-	 * Can be used as a worker for run().
-	 *
-	 * \param[in] options The options to run the application
-	 *
-	 * \return Application return code and calculation Result
-	 */
-	virtual std::pair<int, std::unique_ptr<Result>> run_calculation(
-			const Options &options) const
+	virtual bool do_calculation_requested(const Configuration& config) const;
+
+	virtual std::vector<arcstk::checksum::type> do_requested_types(
+			const Configuration &options) const;
+
+	virtual std::pair<int, std::unique_ptr<Result>> do_run_calculation(
+			const Configuration &config) const
 	= 0;
 
-	virtual int do_run(const Options &options) override;
+	// Application
+
+	virtual int do_run(const Configuration &config) override;
 
 protected:
 
-	virtual bool calculation_requested(const Options &options) const;
+	/**
+	 * \brief Return TRUE iff the configuration requires a calculation.
+	 *
+	 * The result of this function is used to decide whether
+	 * \c run_calculation() will actually be called.
+	 *
+	 * \param[in] config Application configuration
+	 *
+	 * \return TRUE iff a calculation is actually requested
+	 */
+	bool calculation_requested(const Configuration& config) const;
+
+	/**
+	 * \brief Worker: Determine the requested checksum types for calculation.
+	 *
+	 * \param[in] options The options parsed from command line
+	 *
+	 * \return Checksum types to calculate.
+	 */
+	std::vector<arcstk::checksum::type> requested_types(
+			const Configuration &options) const;
+
+	/**
+	 * \brief Run the actual calculation.
+	 *
+	 * Can be used as a worker for run().
+	 *
+	 * \param[in] config Application configuration
+	 *
+	 * \return Exit code and calculation result
+	 */
+	std::pair<int, std::unique_ptr<Result>> run_calculation(
+			const Configuration &config) const;
 };
 
 
@@ -256,29 +276,23 @@ private:
 	 * \param[in] options  The options parsed from command line
 	 * \param[in] types    The requested checksum types
 	 */
-	std::unique_ptr<CalcResultFormatter> configure_layout(
-			const Options &options,
+	std::unique_ptr<CalcResultFormatter> create_formatter(
+			const Configuration &config,
 			const std::vector<arcstk::checksum::type> &types) const;
 
-	/**
-	 * \brief Worker: Determine the requested checksum types for calculation.
-	 *
-	 * \param[in] options The options parsed from command line
-	 *
-	 * \return Checksum types to calculate.
-	 */
-	std::vector<arcstk::checksum::type> requested_types(const Options &options)
-			const;
 
+	// ARCalcApplicationBase
+
+	std::pair<int, std::unique_ptr<Result>> do_run_calculation(
+			const Configuration &config) const final;
+
+	// Application
 
 	std::string do_name() const final;
 
 	std::string do_call_syntax() const final;
 
 	std::unique_ptr<Configurator> do_create_configurator() const final;
-
-	std::pair<int, std::unique_ptr<Result>> run_calculation(
-			const Options &options) const final;
 };
 
 } // namespace arcsapp

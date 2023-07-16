@@ -199,7 +199,9 @@ int Application::run(int argc, char** argv)
 		return EXIT_SUCCESS;
 	}
 
-	auto options = this->setup_options(argc, argv);
+	auto configurator = this->create_configurator();
+
+	auto options = configurator->provide_options(argc, argv);
 
 	if (options->is_set(OPTION::HELP))
 	{
@@ -226,9 +228,13 @@ int Application::run(int argc, char** argv)
 		Output::instance().to_file(options->value(OPTION::OUTFILE));
 	}
 
+	// Load configuration
+
 	// Specific subclass function
 
-	return this->do_run(*options);
+	auto app_configuration = configurator->load(std::move(options));
+
+	return this->do_run(*app_configuration);
 }
 
 
@@ -273,19 +279,13 @@ void Application::print_usage() const
 }
 
 
-std::unique_ptr<Options> Application::setup_options(int argc, char** argv) const
-{
-	return this->create_configurator()->provide_options(argc, argv);
-}
-
-
 std::unique_ptr<Configurator> Application::create_configurator() const
 {
 	return this->do_create_configurator();
 }
 
 
-void Application::setup_logging(Options& options) const
+void Application::setup_logging(const Options& options) const
 {
 	// Activate logging:
 	// The log options --logfile, --verbosity and --quiet take immediate effect
@@ -330,8 +330,7 @@ void Application::fatal_error(const std::string &message) const
 }
 
 
-void Application::output(std::unique_ptr<Result> result,
-		const Options &/* options */) const
+void Application::output(std::unique_ptr<Result> result) const
 {
 	if (result)
 	{

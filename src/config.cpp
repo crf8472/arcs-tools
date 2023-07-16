@@ -242,6 +242,60 @@ std::unique_ptr<Options> Configurator::do_configure_options(
 }
 
 
+std::unique_ptr<Configuration> Configurator::load(
+		std::unique_ptr<Options> options) const
+{
+	return this->do_load(std::move(options));
+}
+
+
+std::unique_ptr<Configuration> Configurator::do_load(
+		std::unique_ptr<Options> options) const
+{
+	return std::make_unique<Configuration>(std::move(options));
+}
+
+
+// Configuration
+
+
+Configuration::Configuration(std::unique_ptr<Options> options)
+	: options_ { std::move(options) }
+{
+	// empty
+}
+
+
+bool Configuration::is_set(const OptionCode &option) const
+{
+	return options_->is_set(option);
+}
+
+
+std::string Configuration::value(const OptionCode &option) const
+{
+	return options_->value(option);
+}
+
+
+std::string const Configuration::argument(const std::size_t i) const
+{
+	return options_->argument(i);
+}
+
+
+std::vector<std::string> const Configuration::arguments() const
+{
+	return options_->arguments();
+}
+
+
+bool Configuration::no_arguments() const
+{
+	return options_->no_arguments();
+}
+
+
 // DefaultConfigurator
 
 

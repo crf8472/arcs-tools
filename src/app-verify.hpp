@@ -396,12 +396,12 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	/**
 	 * \brief Configure an output format for the result.
 	 *
-	 * \param[in] options  The options passed to the application
+	 * \param[in] config   The Application configuration
 	 * \param[in] types    Checksum types to print
 	 * \param[in] match    Match object to print
 	 */
-	std::unique_ptr<VerifyResultFormatter> configure_layout(
-			const Options &options,
+	std::unique_ptr<VerifyResultFormatter> create_formatter(
+			const Configuration& config,
 			ColorRegistry&& colors,
 			const std::vector<arcstk::checksum::type> &types,
 			const Match &match) const;
@@ -465,6 +465,11 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 			const std::vector<std::string>& print_filenames) const;
 
 
+	// ARCalcApplicationBase
+
+	std::pair<int, std::unique_ptr<Result>> do_run_calculation(
+			const Configuration& config) const final;
+
 	// Application
 
 	std::string do_name() const final;
@@ -472,11 +477,6 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	std::string do_call_syntax() const final;
 
 	std::unique_ptr<Configurator> do_create_configurator() const final;
-
-	// ARCalcApplicationBase
-
-	std::pair<int, std::unique_ptr<Result>> run_calculation(
-			const Options &options) const final;
 };
 
 } // namespace arcsapp

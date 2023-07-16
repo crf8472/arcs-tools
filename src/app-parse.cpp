@@ -62,11 +62,11 @@ std::unique_ptr<Configurator> ARParseApplication::do_create_configurator() const
 }
 
 
-int ARParseApplication::do_run(const Options &options)
+int ARParseApplication::do_run(const Configuration& config)
 {
 	auto content_handler = std::make_unique<ARParserContentPrintHandler>();
 
-	const auto arguments = options.arguments();
+	const auto arguments = config.arguments();
 
 	if (not arguments.empty()) // read from file(s)
 	{
