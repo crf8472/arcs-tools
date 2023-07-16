@@ -17,6 +17,9 @@
 #ifndef __ARCSTOOLS_APPARVERIFY_HPP__
 #include "app-verify.hpp"
 #endif
+#ifndef __ARCSTOOLS_ANSI_HPP__
+#include "ansi.hpp"
+#endif
 
 
 /**
@@ -249,6 +252,10 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 	using arcsapp::ARVerifyConfigurator;
 	using arcsapp::OPTION;
 	using arcsapp::VERIFY;
+	using arcsapp::Configuration;
+	using arcsapp::DecorationType;
+	using arcsapp::ColorRegistry;
+	using arcsapp::ansi::Color;
 
 	SECTION ("List of supported options is sound and complete")
 	{
@@ -424,6 +431,32 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 
 		CHECK_THROWS( conf1.provide_options(argc, input) );
 	}
+
+	SECTION ("Configuration is loaded with correct color string")
+	{
+		using arcstk::Checksum;
+
+		const int argc = 4;
+		const char* argv[] = { "arcstk-verify",
+			"--colors=match:fg_magenta,mismatch:fg_blue", "--refvalues=1,2,3",
+			"foo/foo.wav",
+		};
+
+		const ARVerifyConfigurator conf1;
+		auto o = conf1.provide_options(argc, argv);
+		const auto c = conf1.create(std::move(o));
+
+		CHECK ( Color::FG_MAGENTA ==
+				c->object<ColorRegistry>(VERIFY::COLORED).get(
+					DecorationType::MATCH) );
+
+		CHECK ( Color::FG_BLUE ==
+				c->object<ColorRegistry>(VERIFY::COLORED).get(
+					DecorationType::MISMATCH) );
+
+		CHECK ( std::vector<Checksum>{ Checksum(1), Checksum(2), Checksum(3) }
+				== c->object<std::vector<Checksum>>(VERIFY::REFVALUES) );
+	}
 }
 
 TEST_CASE ( "ARIdConfigurator", "[ARIdConfigurator]" )
@@ -462,6 +495,7 @@ TEST_CASE ( "ARIdConfigurator", "[ARIdConfigurator]" )
 		CHECK ( contains(OPTION::OUTFILE, supported) );
 	}
 }
+
 
 TEST_CASE ( "parse_cli_option_list()", "[parse_cli_option_list]" )
 {
