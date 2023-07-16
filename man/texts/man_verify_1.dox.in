@@ -54,7 +54,7 @@ by AccurateRip is expected on stdin.
 \par --refvalues=0x111,0x222,0x333,...
 Comma-separated list of hexadecimal values (with or without leading base marker
 '0x') that are treated as reference values for verification. When using
-\b --refvalues, any \b --metafile is ignored and therefore, no TOC information
+\b --refvalues any \b --metafile is ignored and therefore no TOC information
 and no AccurateRip URL or ID is available. Therefore \b --print-id and
 \b --print-url are without effect if \b --refvalues is present.
 
@@ -80,6 +80,31 @@ album are to be verified.
 
 \copydoc inc_calcoutoptions
 
+\par --colors,--colors=[TYPE:COLOR]
+\manonly
+.sp 1
+TYPE is one of: MATCH, MISMATCH, MINE
+.sp 1
+COLOR is one of:
+FG_BLACK, FG_RED, FG_GREEN, FG_YELLOW, FG_BLUE, FG_MAGENTA, FG_CYAN, FG_WHITE,
+FG_DEFAULT,
+BG_BLACK, BG_RED, BG_GREEN, BG_YELLOW, BG_BLUE, BG_MAGENTA, BG_CYAN, BG_WHITE,
+BG_DEFAULT
+.sp 1
+\endmanonly
+Use colored output for match results. This is only useful for output printed to
+CLI. Output to a file will be cluttered with ANSI escape sequences. If used
+without a parameter, \b --colors will use the default colors, which are FG_GREEN
+for matches, FG_RED for mismatches and FG_DEFAULT for locally computed checksums
+a.k.a. "MINE". A comma-separated list of pairs of a type name and color name
+separated by a colon ':' is accepted as an optional parameter. Both names are
+parsed case insensitive. If a list of colors is passed, all default colors will
+be ignored, hence every TYPE that is not assigned a color in the list is printed
+as FG_DEFAULT regardless whether it has a default color. MATCH defines the color
+for "Theirs" matching "Mine". Accordingly, MISMATCH defines the color for
+"Theirs" checksums not matching "Mine". MINE defines the color for "Mine"
+checksums.
+
 \par --print-id
 Print the AccurateRip id of the reference data, if available.
 
@@ -87,11 +112,9 @@ Print the AccurateRip id of the reference data, if available.
 Print the AccurateRip URL of the reference data, if available.
 
 \par --print-all-matches
-Print each match trial for each reference block regardless of the result. This
-entails that one output table for each reference block will be printed, showing
-the match results for ARCSv1 as well as ARCSv2 for this particular block. If
-\b --refvalues is used, the effect is just to activate the output of the match
-result for ARCSv2 as well as ARCSv1.
+Print each match result for each reference block. If combined with
+\b --refvalues, the effect is just to activate the output of the match result
+for ARCSv2 as well as ARCSv1.
 
 \par -b,--boolean
 Return the difference of the best match. Hence, 0 indicates a successful
