@@ -73,6 +73,19 @@ public:
 };
 
 
+class ARVerifyConfiguration final : public Configuration
+{
+	void do_load();
+
+public:
+
+	using Configuration::Configuration;
+};
+
+
+class ColorRegistry;
+
+
 /**
  * \brief Configurator for ARVerifyApplication instances.
  *
@@ -86,9 +99,41 @@ public:
 
 private:
 
-	void flush_local_options(OptionRegistry& r) const final;
+	/**
+	 * \brief Worker: parse the input for an ARResponse.
+	 *
+	 * \param[in] responsefile  The request string as passed from the cli
+	 *
+	 * \return ARResponse object
+	 */
+	ARResponse parse_response(const std::string &responsefile) const;
+
+	/**
+	 * \brief Worker: parse the input reference values.
+	 *
+	 * \param[in] value_list  The request string as passed from the cli
+	 *
+	 * \return Parsed checksums
+	 */
+	std::vector<Checksum> parse_refvalues(const std::string &value_list) const;
+
+	/**
+	 * \brief Parse the colors requested by cli.
+	 *
+	 * \param[in] colors  The request string as passed from the cli
+	 *
+	 * \return Colors as requested.
+	 */
+	ColorRegistry parse_color_request(const std::string colors) const;
+
+	// Configurator
+
+	void do_flush_local_options(OptionRegistry& r) const final;
 
 	std::unique_ptr<Options> do_configure_options(
+			std::unique_ptr<Options> options) const final;
+
+	std::unique_ptr<Configuration>do_create(
 			std::unique_ptr<Options> options) const final;
 };
 
@@ -342,7 +387,6 @@ class ColorizingVerifyResultFormatter : public VerifyResultFormatter
 	 */
 	ColorRegistry colors_;
 
-
 	// ResultFormatter
 
 	void init_composer(TableComposer* c) const final;
@@ -367,7 +411,7 @@ public:
 	 *
 	 * \param[in] colors Colorset to use
 	 */
-	ColorizingVerifyResultFormatter(ColorRegistry&& colors);
+	ColorizingVerifyResultFormatter(const ColorRegistry& colors);
 
 	/**
 	 * \brief Return color for coloring output of type \c d.
@@ -402,36 +446,8 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	 */
 	std::unique_ptr<VerifyResultFormatter> create_formatter(
 			const Configuration& config,
-			ColorRegistry&& colors,
 			const std::vector<arcstk::checksum::type> &types,
 			const Match &match) const;
-
-	/**
-	 * \brief Parse the colors requested by cli.
-	 *
-	 * \param[in] colors  The request string as passed from the cli
-	 *
-	 * \return Colors as requested.
-	 */
-	ColorRegistry parse_color_request(const std::string colors) const;
-
-	/**
-	 * \brief Worker: parse the input for an ARResponse.
-	 *
-	 * \param[in] responsefile  The request string as passed from the cli
-	 *
-	 * \return ARResponse object
-	 */
-	ARResponse parse_response(const std::string &responsefile) const;
-
-	/**
-	 * \brief Worker: parse the input reference values.
-	 *
-	 * \param[in] value_list  The request string as passed from the cli
-	 *
-	 * \return Parsed checksums
-	 */
-	std::vector<Checksum> parse_refvalues(const std::string &value_list) const;
 
 	/**
 	 * \brief Worker: Log matching files from a file list.

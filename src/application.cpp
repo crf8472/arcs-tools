@@ -230,9 +230,9 @@ int Application::run(int argc, char** argv)
 
 	// Load configuration
 
-	// Specific subclass function
+	auto app_configuration = configurator->create(std::move(options));
 
-	auto app_configuration = configurator->load(std::move(options));
+	// Specific subclass function
 
 	return this->do_run(*app_configuration);
 }

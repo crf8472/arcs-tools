@@ -201,7 +201,7 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 OptionRegistry Configurator::supported_options() const
 {
 	auto options { common_options() };
-	this->flush_local_options(options);
+	this->do_flush_local_options(options);
 	return options;
 }
 
@@ -242,16 +242,18 @@ std::unique_ptr<Options> Configurator::do_configure_options(
 }
 
 
-std::unique_ptr<Configuration> Configurator::load(
+std::unique_ptr<Configuration> Configurator::create(
 		std::unique_ptr<Options> options) const
 {
-	return this->do_load(std::move(options));
+	return this->do_create(std::move(options));
 }
 
 
-std::unique_ptr<Configuration> Configurator::do_load(
-		std::unique_ptr<Options> options) const
+std::unique_ptr<Configuration> Configurator::do_create(
+			std::unique_ptr<Options> options) const
 {
+	// Default implementation can be used when no string input is to be parsed
+
 	return std::make_unique<Configuration>(std::move(options));
 }
 
@@ -261,8 +263,15 @@ std::unique_ptr<Configuration> Configurator::do_load(
 
 Configuration::Configuration(std::unique_ptr<Options> options)
 	: options_ { std::move(options) }
+	, objects_ { /* empty */ }
 {
 	// empty
+}
+
+
+void Configuration::put(const OptionCode &option, std::any object)
+{
+	objects_[option] = object;
 }
 
 
@@ -299,7 +308,7 @@ bool Configuration::no_arguments() const
 // DefaultConfigurator
 
 
-void DefaultConfigurator::flush_local_options(OptionRegistry& r) const
+void DefaultConfigurator::do_flush_local_options(OptionRegistry& r) const
 {
 	// empty
 }

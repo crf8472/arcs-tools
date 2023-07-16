@@ -57,7 +57,7 @@ using arcsdec::ARIdCalculator;
 // ARIdConfigurator
 
 
-void ARIdConfigurator::flush_local_options(OptionRegistry& r) const
+void ARIdConfigurator::do_flush_local_options(OptionRegistry& r) const
 {
 	using std::end;
 	r.insert(end(r),

@@ -92,11 +92,18 @@ constexpr OptionCode VERIFY::PRINTALL;
 constexpr OptionCode VERIFY::BOOLEAN;
 constexpr OptionCode VERIFY::NOOUTPUT;
 
+// ARVerifyConfiguration
+
+
+void ARVerifyConfiguration::do_load()
+{
+}
+
 
 // ARVerifyConfigurator
 
 
-void ARVerifyConfigurator::flush_local_options(OptionRegistry &r) const
+void ARVerifyConfigurator::do_flush_local_options(OptionRegistry &r) const
 {
 	using std::end;
 	r.insert(end(r),
@@ -282,6 +289,159 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 	}
 
 	return voptions;
+}
+
+
+std::unique_ptr<Configuration> ARVerifyConfigurator::do_create(
+			std::unique_ptr<Options> options) const
+{
+	// Parse reference ARCSs from AccurateRip
+
+	const auto ref_respns = options->is_set(VERIFY::REFVALUES)
+		? ARResponse { /* empty */ }
+		: this->parse_response(options->value(VERIFY::RESPONSEFILE));
+
+	const auto ref_values = options->is_set(VERIFY::REFVALUES)
+		? this->parse_refvalues(options->value(VERIFY::REFVALUES))
+		: std::vector<Checksum> { /* empty */ };
+
+	// No reference values at all? => Error
+	if (ref_values.empty() && !ref_respns.size())
+	{
+		throw std::runtime_error(
+				"No reference checksums for matching available.");
+	}
+
+	const auto colors = this->parse_color_request(
+			options->value(VERIFY::COLORED));
+
+	auto c = std::make_unique<Configuration>(std::move(options));
+
+	c->put(VERIFY::RESPONSEFILE, ref_respns);
+	c->put(VERIFY::REFVALUES,    ref_values);
+	c->put(VERIFY::COLORED,      colors);
+
+	return c;
+}
+
+
+ARResponse ARVerifyConfigurator::parse_response(const std::string &responsefile)
+	const
+{
+	// Parse the AccurateRip response
+
+	std::unique_ptr<ARStreamParser> parser;
+
+	if (responsefile.empty())
+	{
+		ARCS_LOG_DEBUG << "Parse response from stdin";
+
+		parser = std::make_unique<ARStdinParser>();
+
+	} else
+	{
+		ARCS_LOG_DEBUG << "Parse response from file " << responsefile;
+
+		parser = std::make_unique<ARFileParser>(responsefile);
+	}
+
+	ARResponse response;
+	auto c_handler { std::make_unique<DefaultContentHandler>() };
+	c_handler->set_object(response);
+	auto e_handler { std::make_unique<DefaultErrorHandler>() };
+
+	parser->set_content_handler(std::move(c_handler));
+	parser->set_error_handler(std::move(e_handler));
+
+	try
+	{
+		if (parser->parse() == 0)
+		{
+			throw CallSyntaxException("No bytes parsed, exit");
+		}
+	} catch (const std::exception& e)
+	{
+		throw CallSyntaxException(e.what());
+	}
+
+	ARCS_LOG_DEBUG << "Response object created";
+
+	return response;
+}
+
+
+std::vector<Checksum> ARVerifyConfigurator::parse_refvalues(
+		const std::string &value_list) const
+{
+	auto refvals = parse_cli_option_list<Checksum>(
+				value_list,
+				',',
+				[](const std::string& s) -> Checksum
+				{
+					Checksum::value_type value = std::stoul(s, 0, 16);
+					return Checksum { value };
+				});
+
+	// Log the parsing result
+
+	if (Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG))
+	{
+		std::ostringstream outlist;
+		for (const auto& v : refvals) { outlist << v << " "; }
+		ARCS_LOG_DEBUG << "Option --refvals was passed the following values: "
+				<< outlist.str();
+	}
+
+	return refvals;
+}
+
+
+ColorRegistry ARVerifyConfigurator::parse_color_request(const std::string input)
+	const
+{
+	if (input.empty() || input == OP_VALUE::USE_DEFAULT)
+	{
+		return ColorRegistry{ /* default colors */ };
+	}
+
+	const std::string sep = ":"; // name-value separator
+
+	ColorRegistry r;
+	r.clear();
+
+	parse_cli_list(input, ',',
+			[&r,&sep](const std::string& s)
+			{
+				const auto pos = s.find(sep);
+				if (pos == std::string::npos)
+				{
+					std::ostringstream msg;
+					msg << "Could not parse --colors input: '"
+						<< s << "'. Expected a "
+						"comma-separated sequence of pairs like "
+						"'type1:color1,type2:color2,...'";
+					throw CallSyntaxException(msg.str());
+				}
+
+				using std::begin;
+				using std::end;
+
+				const auto to_upper = [](unsigned char c)
+				{
+					return std::toupper(c);
+				};
+
+				auto type { s.substr(0, pos) };
+				std::transform(begin(type), end(type), begin(type), to_upper);
+
+				auto color { s.substr(pos + sep.length()) };
+				std::transform(begin(color), end(color), begin(color),
+						to_upper);
+
+				r.set(get_decorationtype(type), ansi::get_color(color));
+			});
+
+	return r;
 }
 
 
@@ -587,7 +747,7 @@ ColorizingVerifyResultFormatter::ColorizingVerifyResultFormatter()
 
 
 ColorizingVerifyResultFormatter::
-	ColorizingVerifyResultFormatter(ColorRegistry&& colors)
+	ColorizingVerifyResultFormatter(const ColorRegistry& colors)
 	: colors_ { colors }
 {
 	// empty
@@ -658,7 +818,6 @@ void ColorizingVerifyResultFormatter::set_color(DecorationType d, ansi::Color c)
 
 std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::create_formatter(
 		const Configuration& config,
-		ColorRegistry&& colors,
 		const std::vector<arcstk::checksum::type> &types, const Match &match)
 		const
 {
@@ -667,7 +826,7 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::create_formatter(
 	if (config.is_set(VERIFY::COLORED))
 	{
 		fmt = std::make_unique<ColorizingVerifyResultFormatter>(
-					std::move(colors));
+				config.object<ColorRegistry>(VERIFY::COLORED));
 	} else
 	{
 		fmt = std::make_unique<MonochromeVerifyResultFormatter>();
@@ -738,126 +897,6 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::create_formatter(
 }
 
 
-ColorRegistry ARVerifyApplication::parse_color_request(const std::string input)
-	const
-{
-	if (input.empty() || input == OP_VALUE::USE_DEFAULT)
-	{
-		return ColorRegistry{ /* default colors */ };
-	}
-
-	const std::string sep = ":"; // name-value separator
-
-	ColorRegistry r;
-	r.clear();
-
-	parse_cli_list(input, ',',
-			[&r,&sep](const std::string& s)
-			{
-				const auto pos = s.find(sep);
-				if (pos == std::string::npos)
-				{
-					std::ostringstream msg;
-					msg << "Could not parse --colors input: '"
-						<< s << "'. Expected a "
-						"comma-separated sequence of pairs like "
-						"'type1:color1,type2:color2,...'";
-					throw CallSyntaxException(msg.str());
-				}
-
-				using std::begin;
-				using std::end;
-
-				const auto to_upper = [](unsigned char c)
-				{
-					return std::toupper(c);
-				};
-
-				auto type { s.substr(0, pos) };
-				std::transform(begin(type), end(type), begin(type), to_upper);
-
-				auto color { s.substr(pos + sep.length()) };
-				std::transform(begin(color), end(color), begin(color),
-						to_upper);
-
-				r.set(get_decorationtype(type), ansi::get_color(color));
-			});
-
-	return r;
-}
-
-
-ARResponse ARVerifyApplication::parse_response(const std::string &responsefile)
-	const
-{
-	// Parse the AccurateRip response
-
-	std::unique_ptr<ARStreamParser> parser;
-
-	if (responsefile.empty())
-	{
-		ARCS_LOG_DEBUG << "Parse response from stdin";
-
-		parser = std::make_unique<ARStdinParser>();
-
-	} else
-	{
-		ARCS_LOG_DEBUG << "Parse response from file " << responsefile;
-
-		parser = std::make_unique<ARFileParser>(responsefile);
-	}
-
-	ARResponse response;
-	auto c_handler { std::make_unique<DefaultContentHandler>() };
-	c_handler->set_object(response);
-	auto e_handler { std::make_unique<DefaultErrorHandler>() };
-
-	parser->set_content_handler(std::move(c_handler));
-	parser->set_error_handler(std::move(e_handler));
-
-	try
-	{
-		if (parser->parse() == 0)
-		{
-			this->fatal_error("No bytes parsed, exit");
-		}
-	} catch (const std::exception& e)
-	{
-		this->fatal_error(e.what());
-	}
-
-	ARCS_LOG_DEBUG << "Response object created";
-
-	return response;
-}
-
-
-std::vector<Checksum> ARVerifyApplication::parse_refvalues(
-		const std::string &value_list) const
-{
-	auto refvals = parse_cli_option_list<Checksum>(
-				value_list,
-				',',
-				[](const std::string& s) -> Checksum
-				{
-					Checksum::value_type value = std::stoul(s, 0, 16);
-					return Checksum { value };
-				});
-
-	// Log the parsing result
-
-	if (Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG))
-	{
-		std::ostringstream outlist;
-		for (const auto& v : refvals) { outlist << v << " "; }
-		ARCS_LOG_DEBUG << "Option --refvals was passed the following values: "
-				<< outlist.str();
-	}
-
-	return refvals;
-}
-
-
 void ARVerifyApplication::log_matching_files(const Checksums &checksums,
 		const Match &match, const uint32_t block,
 		const bool version) const
@@ -905,36 +944,9 @@ std::unique_ptr<Configurator> ARVerifyApplication::do_create_configurator()
 auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	-> std::pair<int, std::unique_ptr<Result>>
 {
-	// Parse reference ARCSs from AccurateRip
+	auto ref_respns = config.object<ARResponse>(VERIFY::RESPONSEFILE);
 
-	const auto ref_respns = config.is_set(VERIFY::REFVALUES)
-		? ARResponse { /* empty */ }
-		: parse_response(config.value(VERIFY::RESPONSEFILE));
-
-	const auto ref_values = config.is_set(VERIFY::REFVALUES)
-		? parse_refvalues(config.value(VERIFY::REFVALUES))
-		: std::vector<Checksum> { /* empty */ };
-
-	// No reference values at all? => Error
-	if (ref_values.empty() && !ref_respns.size())
-	{
-		throw std::runtime_error(
-				"No reference checksums for matching available.");
-	}
-
-	// Parse (potentially absent) output colors
-
-	ColorRegistry colors{};
-	// defaults:
-	// THEIRS: green = match, red = mismatch
-	// MINE:   shell default
-
-	if (config.is_set(VERIFY::COLORED))
-	{
-		colors = this->parse_color_request(config.value(VERIFY::COLORED));
-	}
-
-	// DO NOT DO ANY MORE CLI PARSING AFTER THIS POINT !
+	auto ref_values = config.object<std::vector<Checksum>>(VERIFY::REFVALUES);
 
 	// Configure selections (e.g. --reader and --parser)
 
@@ -1093,8 +1105,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	const auto match { diff->match() };
 
-	const auto f { create_formatter(config, std::move(colors),
-			types_to_print, *match) };
+	const auto f { create_formatter(config, types_to_print, *match) };
 
 	auto result {
 		f->format(checksums, &ref_respns, ref_values,

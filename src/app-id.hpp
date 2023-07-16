@@ -62,7 +62,7 @@ public:
 
 private:
 
-	void flush_local_options(OptionRegistry& r) const final;
+	void do_flush_local_options(OptionRegistry& r) const final;
 
 	std::unique_ptr<Options> do_configure_options(
 			std::unique_ptr<Options> options) const final;

@@ -300,7 +300,8 @@ public:
 	 *
 	 * \param[in] options Options as provided by this configurator.
 	 */
-	std::unique_ptr<Configuration> load(std::unique_ptr<Options> options) const;
+	std::unique_ptr<Configuration> create(std::unique_ptr<Options> options)
+		const;
 
 protected:
 
@@ -322,7 +323,7 @@ private:
 	 *
 	 * \param[in,out] supported List of supported options.
 	 */
-	virtual void flush_local_options(OptionRegistry& supported) const
+	virtual void do_flush_local_options(OptionRegistry& supported) const
 	= 0;
 
 	/**
@@ -339,9 +340,13 @@ private:
 			std::unique_ptr<Options> options) const;
 
 	/**
-	 * \brief Load the configuration from the options.
+	 * \brief Create the configuration from the options.
+	 *
+	 * \param[in] options The Options to configure
+	 *
+	 * \return The Configuration instance derived from the command line input
 	 */
-	virtual std::unique_ptr<Configuration> do_load(
+	virtual std::unique_ptr<Configuration> do_create(
 			std::unique_ptr<Options> options) const;
 };
 
@@ -361,17 +366,6 @@ class Configuration
 	 */
 	std::map<OptionCode, std::any> objects_;
 
-protected:
-
-	/**
-	 * \brief Worker: parse an option string to an object.
-	 */
-	template <typename T>
-	auto parse(const OptionCode &option,
-			const std::function<T(const std::string& s)>& parse) -> T
-	{
-	}
-
 public:
 
 	/**
@@ -382,6 +376,14 @@ public:
 	Configuration(std::unique_ptr<Options> options);
 
 	/**
+	 * \brief Put an object into the Configuration.
+	 *
+	 * Inspect the internal Options and parse all their input strings to
+	 * objects.
+	 */
+	void put(const OptionCode &option, std::any object);
+
+	/**
 	 * \brief Get a configuration object.
 	 *
 	 * \param[in] option The option to get the value object for
@@ -389,17 +391,17 @@ public:
 	 * \return Value object for the option passed
 	 */
 	template <typename T>
-	auto object(const OptionCode &option) -> T*
+	auto object(const OptionCode &option) const -> T
 	{
 		auto o { objects_.find(option) };
 
 		using std::end;
 		if (end(objects_) == o)
 		{
-			return options_->value(option);
+			return T{};
 		}
 
-		return &std::any_cast<T>(o->second);
+		return std::any_cast<T>(o->second);
 	}
 
 	// Provide interface for options
@@ -462,7 +464,7 @@ public:
 
 private:
 
-	void flush_local_options(OptionRegistry& r) const override;
+	void do_flush_local_options(OptionRegistry& r) const override;
 };
 
 
