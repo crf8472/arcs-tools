@@ -348,6 +348,13 @@ public:
 	 */
 	ColorRegistry();
 
+	/**
+	 * \brief Return TRUE iff registry has a color associated to specified type.
+	 *
+	 * \param[in] d  DecorationType to check
+	 *
+	 * \return Color for type \c d
+	 */
 	bool has(DecorationType d) const;
 
 	/**
