@@ -658,6 +658,7 @@ void ColorizingVerifyResultFormatter::set_color(DecorationType d, ansi::Color c)
 
 std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 		const Options &options,
+		ColorRegistry&& colors,
 		const std::vector<arcstk::checksum::type> &types, const Match &match)
 		const
 {
@@ -665,11 +666,6 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 
 	if (options.is_set(VERIFY::COLORED))
 	{
-		auto colors { this->parse_color_request(options) };
-		// defaults:
-		// THEIRS: green = match, red = mismatch
-		// MINE:   shell default
-
 		fmt = std::make_unique<ColorizingVerifyResultFormatter>(
 					std::move(colors));
 	} else
@@ -742,11 +738,9 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::configure_layout(
 }
 
 
-ColorRegistry ARVerifyApplication::parse_color_request(const Options &options)
+ColorRegistry ARVerifyApplication::parse_color_request(const std::string input)
 	const
 {
-	const auto input { options.value(VERIFY::COLORED) };
-
 	if (input.empty() || input == OP_VALUE::USE_DEFAULT)
 	{
 		return ColorRegistry{ /* default colors */ };
@@ -774,17 +768,17 @@ ColorRegistry ARVerifyApplication::parse_color_request(const Options &options)
 				using std::begin;
 				using std::end;
 
-				const auto uppercase = [](unsigned char c)
+				const auto to_upper = [](unsigned char c)
 				{
 					return std::toupper(c);
 				};
 
 				auto type { s.substr(0, pos) };
-				std::transform(begin(type), end(type), begin(type), uppercase);
+				std::transform(begin(type), end(type), begin(type), to_upper);
 
 				auto color { s.substr(pos + sep.length()) };
 				std::transform(begin(color), end(color), begin(color),
-						uppercase);
+						to_upper);
 
 				r.set(get_decorationtype(type), ansi::get_color(color));
 			});
@@ -793,33 +787,12 @@ ColorRegistry ARVerifyApplication::parse_color_request(const Options &options)
 }
 
 
-std::tuple<ARResponse, std::vector<Checksum>>
-	ARVerifyApplication::get_reference_checksums(const Options &options) const
-{
-	auto response = ARResponse {};
-	auto refsums  = std::vector<Checksum> {};
-
-	if (options.is_set(VERIFY::REFVALUES))
-	{
-		// use referene checksums passed on command line
-		refsums = parse_refvalues(options);
-	} else
-	{
-		// stdin or accuraterip .bin-file
-		response = parse_response(options);
-	}
-
-	return std::make_tuple(response, refsums);
-}
-
-
-ARResponse ARVerifyApplication::parse_response(const Options &options) const
+ARResponse ARVerifyApplication::parse_response(const std::string &responsefile)
+	const
 {
 	// Parse the AccurateRip response
 
 	std::unique_ptr<ARStreamParser> parser;
-
-	std::string responsefile { options.value(VERIFY::RESPONSEFILE) };
 
 	if (responsefile.empty())
 	{
@@ -860,10 +833,10 @@ ARResponse ARVerifyApplication::parse_response(const Options &options) const
 
 
 std::vector<Checksum> ARVerifyApplication::parse_refvalues(
-		const Options &options) const
+		const std::string &value_list) const
 {
 	auto refvals = parse_cli_option_list<Checksum>(
-				options.value(VERIFY::REFVALUES),
+				value_list,
 				',',
 				[](const std::string& s) -> Checksum
 				{
@@ -936,17 +909,32 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 
 	const auto ref_respns = options.is_set(VERIFY::REFVALUES)
 		? ARResponse { /* empty */ }
-		: parse_response(options);
+		: parse_response(options.value(VERIFY::RESPONSEFILE));
 
 	const auto ref_values = options.is_set(VERIFY::REFVALUES)
-		? parse_refvalues(options)
+		? parse_refvalues(options.value(VERIFY::REFVALUES))
 		: std::vector<Checksum> { /* empty */ };
 
+	// No reference values at all? => Error
 	if (ref_values.empty() && !ref_respns.size())
 	{
 		throw std::runtime_error(
 				"No reference checksums for matching available.");
 	}
+
+	// Parse (potentially absent) output colors
+
+	ColorRegistry colors{};
+	// defaults:
+	// THEIRS: green = match, red = mismatch
+	// MINE:   shell default
+
+	if (options.is_set(VERIFY::COLORED))
+	{
+		colors = this->parse_color_request(options.value(VERIFY::COLORED));
+	}
+
+	// DO NOT DO ANY MORE CLI PARSING AFTER THIS POINT !
 
 	// Configure selections (e.g. --reader and --parser)
 
@@ -1105,7 +1093,8 @@ auto ARVerifyApplication::run_calculation(const Options &options) const
 
 	const auto match { diff->match() };
 
-	const auto f { configure_layout(options, types_to_print, *match) };
+	const auto f { configure_layout(options, std::move(colors),
+			types_to_print, *match) };
 
 	auto result {
 		f->format(checksums, &ref_respns, ref_values,

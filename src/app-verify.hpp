@@ -402,51 +402,36 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	 */
 	std::unique_ptr<VerifyResultFormatter> configure_layout(
 			const Options &options,
+			ColorRegistry&& colors,
 			const std::vector<arcstk::checksum::type> &types,
 			const Match &match) const;
 
 	/**
 	 * \brief Parse the colors requested by cli.
 	 *
-	 * \param[in] options  The options passed to the application
+	 * \param[in] colors  The request string as passed from the cli
 	 *
 	 * \return Colors as requested.
 	 */
-	ColorRegistry parse_color_request(const Options &options) const;
-
-	/**
-	 * \brief Provide reference checksums from options.
-	 *
-	 * Reference checksums are either represented as binary data provided by
-	 * AccurateRip or as a list of numeric values provided the caller. Hence,
-	 * the are either an ARResponse instance or a vector of Checksum instances.
-	 *
-	 * The caller is responsible to interpreting the resulting tuple.
-	 *
-	 * \param[in] options  The options passed to the application
-	 *
-	 * \return Tuple of possible reference checksum representations
-	 */
-	std::tuple<ARResponse, std::vector<Checksum>> get_reference_checksums(
-			const Options &options) const;
+	ColorRegistry parse_color_request(const std::string colors) const;
 
 	/**
 	 * \brief Worker: parse the input for an ARResponse.
 	 *
-	 * \param[in] options The options passed to the application
+	 * \param[in] responsefile  The request string as passed from the cli
 	 *
 	 * \return ARResponse object
 	 */
-	ARResponse parse_response(const Options &options) const;
+	ARResponse parse_response(const std::string &responsefile) const;
 
 	/**
 	 * \brief Worker: parse the input reference values.
 	 *
-	 * \param[in] options The options passed to the application
+	 * \param[in] value_list  The request string as passed from the cli
 	 *
 	 * \return Parsed checksums
 	 */
-	std::vector<Checksum> parse_refvalues(const Options &options) const;
+	std::vector<Checksum> parse_refvalues(const std::string &value_list) const;
 
 	/**
 	 * \brief Worker: Log matching files from a file list.
