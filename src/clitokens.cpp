@@ -310,8 +310,8 @@ void parse_symbol(const char * const token, const char * const next,
 	{
 		if (!next or !next[0] or next[0] == '-')
 		{
-			if (option->default_arg().empty()
-					|| option->default_arg() == "none")
+			if (OP_VALUE::NONE == option->default_arg()
+					|| option->default_arg().empty())
 			{
 				std::ostringstream msg;
 				msg << "Option '" << token
@@ -319,11 +319,8 @@ void parse_symbol(const char * const token, const char * const next,
 				throw CallSyntaxException(msg.str());
 			} else
 			{
-				// Move Token Pointer for Caller
-				++pos;
-
-				// If option is present and requires a value but no value
-				// is passed, then set default
+				// If option is present, requires a value and has a default
+				// but no actual value is passed, then use the default
 				pass_token(code, option->default_arg().c_str());
 			}
 		} else
