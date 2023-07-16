@@ -104,90 +104,94 @@ void ARVerifyConfigurator::flush_local_options(OptionRegistry &r) const
 		// from FORMATBASE
 
 		{ VERIFY::READERID ,
-		{  "reader", true, "auto",
+		{  "reader", true, OP_VALUE::AUTO,
 			"Force use of audio reader with specified id" }},
 
 		{ VERIFY::PARSERID ,
-		{  "parser", true, "auto",
+		{  "parser", true, OP_VALUE::AUTO,
 			"Force use of toc parser with specified id" }},
 
 		{ VERIFY::LIST_TOC_FORMATS ,
-		{  "list-toc-formats", false, "FALSE",
+		{  "list-toc-formats", false, OP_VALUE::FALSE,
 			"List all supported file formats for TOC metadata" }},
 
 		{ VERIFY::LIST_AUDIO_FORMATS ,
-		{  "list-audio-formats", false, "FALSE",
+		{  "list-audio-formats", false, OP_VALUE::FALSE,
 			"List all supported audio codec/container formats" }},
 
 		// from CALCBASE
 
 		{ VERIFY::METAFILE ,
-		{  'm', "metafile", true, "none",
+		{  'm', "metafile", true, OP_VALUE::NONE,
 			"Specify metadata file (TOC) to use" }},
 
 		{ VERIFY::NOTRACKS ,
-		{  "no-track-nos", false, "FALSE", "Do not print track numbers" }},
+		{  "no-track-nos", false, OP_VALUE::FALSE,
+			"Do not print track numbers" }},
 
 		{ VERIFY::NOFILENAMES ,
-		{  "no-filenames", false, "FALSE",
+		{  "no-filenames", false, OP_VALUE::FALSE,
 			"Do not print the filenames" }},
 
 		{ VERIFY::NOOFFSETS ,
-		{  "no-offsets", false, "FALSE", "Do not print track offsets" }},
+		{  "no-offsets", false, OP_VALUE::FALSE,
+			"Do not print track offsets" }},
 
 		{ VERIFY::NOLENGTHS ,
-		{  "no-lengths", false, "FALSE", "Do not print track lengths" }},
+		{  "no-lengths", false, OP_VALUE::FALSE,
+			"Do not print track lengths" }},
 
 		{ VERIFY::NOLABELS ,
-		{  "no-labels", false, "FALSE", "Do not print column or row labels" }},
+		{  "no-labels", false, OP_VALUE::FALSE,
+			"Do not print column or row labels" }},
 
 		{ VERIFY::COLDELIM ,
 		{  "col-delim", true, "ASCII-32", "Specify column delimiter" }},
 
 		{ VERIFY::PRINTID ,
-		{  "print-id", false, "FALSE",
+		{  "print-id", false, OP_VALUE::FALSE,
 			"Print the AccurateRip Id of the album" }},
 
 		{ VERIFY::PRINTURL ,
-		{  "print-url", false, "FALSE",
+		{  "print-url", false, OP_VALUE::FALSE,
 			"Print the AccurateRip URL of the album" }},
 
 		// from VERIFY
 
 		{ VERIFY::NOFIRST ,
-		{  "no-first", false, "FALSE",
+		{  "no-first", false, OP_VALUE::FALSE,
 			"Do not treat first audio file as first track" }},
 
 		{ VERIFY::NOLAST ,
-		{  "no-last", false, "FALSE",
+		{  "no-last", false, OP_VALUE::FALSE,
 			"Do not treat last audio file as last track" }},
 
 		{ VERIFY::NOALBUM ,
-		{  "no-album", false, "FALSE",
+		{  "no-album", false, OP_VALUE::FALSE,
 			"Abbreviates \"--no-first --no-last\"" }},
 
 		{ VERIFY::RESPONSEFILE ,
-		{  'r', "response", true, "none",
+		{  'r', "response", true, OP_VALUE::NONE,
 			"Specify AccurateRip response file" }},
 
 		{ VERIFY::REFVALUES ,
-		{  "refvalues", true, "none",
+		{  "refvalues", true, OP_VALUE::NONE,
 			"Specify AccurateRip reference values (as hex value list)" }},
 
 		{ VERIFY::PRINTALL ,
-		{  "print-all-matches", false, "FALSE",
+		{  "print-all-matches", false, OP_VALUE::FALSE,
 			"Print verification results for all blocks" }},
 
 		{ VERIFY::BOOLEAN ,
-		{  'b', "boolean", false, "FALSE",
+		{  'b', "boolean", false, OP_VALUE::FALSE,
 			"Return number of differing tracks in best match" }},
 
 		{ VERIFY::NOOUTPUT ,
-		{  'n', "no-output", false, "FALSE",
+		{  'n', "no-output", false, OP_VALUE::FALSE,
 			"Do not print the result (implies --boolean)" }},
 
 		{ VERIFY::COLORED ,
-		{  "colors", true, "default",
+		{  "colors", true, OP_VALUE::USE_DEFAULT,
 			"Use colored output and optionally specify colors" }}
 	});
 }
@@ -743,9 +747,9 @@ ColorRegistry ARVerifyApplication::parse_color_request(const Options &options)
 {
 	const auto input { options.value(VERIFY::COLORED) };
 
-	if (input.empty() || input == "default") // FIXME use some option.default()
+	if (input.empty() || input == OP_VALUE::USE_DEFAULT)
 	{
-		return ColorRegistry{};
+		return ColorRegistry{ /* default colors */ };
 	}
 
 	const std::string sep = ":"; // name-value separator
@@ -759,7 +763,12 @@ ColorRegistry ARVerifyApplication::parse_color_request(const Options &options)
 				const auto pos = s.find(sep);
 				if (pos == std::string::npos)
 				{
-					return;
+					std::ostringstream msg;
+					msg << "Could not parse --colors input: '"
+						<< s << "'. Expected a "
+						"comma-separated sequence of pairs like "
+						"'type1:color1,type2:color2,...'";
+					throw CallSyntaxException(msg.str());
 				}
 
 				using std::begin;
