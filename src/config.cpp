@@ -282,6 +282,11 @@ void parse_cli_list(const std::string& list, const char delim,
 		using std::end;
 		std::replace(begin(in), end(in), delim, ' ');
 	}
+	// FIXME If the cli input list contains spaces, parsing will break
+	// Like "a:b,c:d e,f:g" (with quotes containing spaces)?
+	// Parsed as: a:b,c:d,e,f:g
+	// In this example, "c" will not have the value "d e" but "d" and "e" will
+	// be a name instead of a value having no value by itself.
 
 	auto input = std::istringstream { in };
 	auto value = std::string {};
