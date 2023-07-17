@@ -380,8 +380,11 @@ public:
 	 *
 	 * Inspect the internal Options and parse all their input strings to
 	 * objects.
+	 *
+	 * \param[in] option The option to put the value object for
+	 * \param[in] object The value object to put
 	 */
-	void put(const OptionCode &option, std::any object);
+	void put(const OptionCode &option, const std::any& object);
 
 	/**
 	 * \brief Get a configuration object.
@@ -391,17 +394,17 @@ public:
 	 * \return Value object for the option passed
 	 */
 	template <typename T>
-	auto object(const OptionCode &option) const -> T
+	auto object(const OptionCode &option) const -> const T*
 	{
 		auto o { objects_.find(option) };
 
 		using std::end;
 		if (end(objects_) == o)
 		{
-			return T{};
+			return nullptr;
 		}
 
-		return std::any_cast<T>(o->second);
+		return std::any_cast<T>(&o->second);
 	}
 
 	// Provide interface for options
@@ -496,9 +499,6 @@ protected:
 
 	static constexpr OptionCode SUBCLASS_BASE      = BASE + 4;
 };
-
-
-//
 
 
 /**

@@ -269,7 +269,7 @@ Configuration::Configuration(std::unique_ptr<Options> options)
 }
 
 
-void Configuration::put(const OptionCode &option, std::any object)
+void Configuration::put(const OptionCode &option, const std::any& object)
 {
 	objects_[option] = object;
 }

@@ -826,7 +826,7 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::create_formatter(
 	if (config.is_set(VERIFY::COLORED))
 	{
 		fmt = std::make_unique<ColorizingVerifyResultFormatter>(
-				config.object<ColorRegistry>(VERIFY::COLORED));
+				*config.object<ColorRegistry>(VERIFY::COLORED));
 	} else
 	{
 		fmt = std::make_unique<MonochromeVerifyResultFormatter>();
@@ -986,7 +986,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	if (config.is_set(VERIFY::REFVALUES))
 	{
-		diff = std::make_unique<ListMatcher>(checksums, ref_values);
+		diff = std::make_unique<ListMatcher>(checksums, *ref_values);
 	}
 
 	bool print_filenames = true;
@@ -1020,7 +1020,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 		if (!diff) // No ListMatcher for some refvals previously set?
 		{
-			diff = std::make_unique<AlbumMatcher>(checksums, arid, ref_respns);
+			diff = std::make_unique<AlbumMatcher>(checksums, arid, *ref_respns);
 		}
 
 		print_filenames = !single_audio_file;
@@ -1030,7 +1030,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 		if (!diff) // No ListMatcher for some refvals previously set
 		{
-			diff = std::make_unique<TracksetMatcher>(checksums, ref_respns);
+			diff = std::make_unique<TracksetMatcher>(checksums, *ref_respns);
 		}
 
 		if (Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG))
@@ -1108,7 +1108,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	const auto f { create_formatter(config, types_to_print, *match) };
 
 	auto result {
-		f->format(checksums, &ref_respns, ref_values,
+		f->format(checksums, ref_respns, *ref_values,
 			match, best_block, toc.get(), arid, alt_prefix, filenames)
 	};
 
