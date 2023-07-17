@@ -118,13 +118,14 @@ private:
 	std::vector<Checksum> parse_refvalues(const std::string &value_list) const;
 
 	/**
-	 * \brief Parse the colors requested by cli.
+	 * \brief Worker: parse the colors requested by cli.
 	 *
 	 * \param[in] colors  The request string as passed from the cli
 	 *
 	 * \return Colors as requested.
 	 */
 	ColorRegistry parse_color_request(const std::string colors) const;
+
 
 	// Configurator
 

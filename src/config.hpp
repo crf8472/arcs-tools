@@ -509,7 +509,7 @@ protected:
  * \param[in] delim      Delimiter for list entries
  * \param[in] entry_hook Call this function on each entry
  */
-void parse_cli_list(const std::string& list, const char delim,
+void parse_list(const std::string& list, const char delim,
 		std::function<void(const std::string& s)> entry_hook);
 
 
@@ -526,13 +526,13 @@ void parse_cli_list(const std::string& list, const char delim,
  * \return Sequence of input values converted from strings
  */
 template <typename T>
-std::vector<T> parse_cli_option_list(const std::string& list, const char delim,
+std::vector<T> parse_list_to_objects(const std::string& list, const char delim,
 		const std::function<T(const std::string& s)>& convert_func)
 {
 	auto results = std::vector<T> {};
 	// TODO reserve default?
 
-	parse_cli_list(list, delim,
+	parse_list(list, delim,
 			[&convert_func,&results](const std::string& s)
 			{
 				results.emplace_back(convert_func(s));

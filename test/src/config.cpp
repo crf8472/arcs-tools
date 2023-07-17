@@ -497,15 +497,15 @@ TEST_CASE ( "ARIdConfigurator", "[ARIdConfigurator]" )
 }
 
 
-TEST_CASE ( "parse_cli_option_list()", "[parse_cli_option_list]" )
+TEST_CASE ( "parse_list_to_objects()", "[parse_list_to_objects]" )
 {
-	using arcsapp::parse_cli_option_list;
+	using arcsapp::parse_list_to_objects;
 
 	SECTION ("Parse non-empty lists of hex values successfully")
 	{
 		const auto list1 { "0x98B10E0F,0x475F57E9,0x7304F1C4" };
 
-		const auto res1 { parse_cli_option_list<uint32_t>(list1, ',',
+		const auto res1 { parse_list_to_objects<uint32_t>(list1, ',',
 				[](const std::string& s) -> uint32_t
 				{
 					return std::stoul(s, 0, 16);
@@ -518,7 +518,7 @@ TEST_CASE ( "parse_cli_option_list()", "[parse_cli_option_list]" )
 
 		const auto list2 { "98B10E0F,475F57E9,7304F1C4" };
 
-		const auto res2 { parse_cli_option_list<uint32_t>(list2, ',',
+		const auto res2 { parse_list_to_objects<uint32_t>(list2, ',',
 				[](const std::string& s) -> uint32_t
 				{
 					return std::stoul(s, 0, 16);

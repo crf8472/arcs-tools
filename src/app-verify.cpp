@@ -348,14 +348,12 @@ ARResponse ARVerifyConfigurator::parse_response(const std::string &responsefile)
 	ARResponse response;
 	auto c_handler { std::make_unique<DefaultContentHandler>() };
 	c_handler->set_object(response);
-	auto e_handler { std::make_unique<DefaultErrorHandler>() };
-
 	parser->set_content_handler(std::move(c_handler));
-	parser->set_error_handler(std::move(e_handler));
+	parser->set_error_handler(std::make_unique<DefaultErrorHandler>());
 
 	try
 	{
-		if (parser->parse() == 0)
+		if (!parser->parse())
 		{
 			throw CallSyntaxException("No bytes parsed, exit");
 		}
@@ -373,7 +371,7 @@ ARResponse ARVerifyConfigurator::parse_response(const std::string &responsefile)
 std::vector<Checksum> ARVerifyConfigurator::parse_refvalues(
 		const std::string &value_list) const
 {
-	auto refvals = parse_cli_option_list<Checksum>(
+	auto refvals = parse_list_to_objects<Checksum>(
 				value_list,
 				',',
 				[](const std::string& s) -> Checksum
@@ -407,12 +405,13 @@ ColorRegistry ARVerifyConfigurator::parse_color_request(const std::string input)
 	const std::string sep = ":"; // name-value separator
 
 	ColorRegistry r;
-	r.clear();
+	r.clear(); // remove defaults, use only values from input string
 
-	parse_cli_list(input, ',',
+	parse_list(input, ',',
 			[&r,&sep](const std::string& s)
 			{
 				const auto pos = s.find(sep);
+
 				if (pos == std::string::npos)
 				{
 					std::ostringstream msg;
@@ -423,20 +422,17 @@ ColorRegistry ARVerifyConfigurator::parse_color_request(const std::string input)
 					throw CallSyntaxException(msg.str());
 				}
 
-				using std::begin;
-				using std::end;
-
-				const auto to_upper = [](unsigned char c)
+				const auto to_uppercase = [](std::string str) -> std::string
 				{
-					return std::toupper(c);
+					using std::begin;
+					using std::end;
+					std::transform(begin(str), end(str), begin(str),
+						[](unsigned char c) { return std::toupper(c); });
+					return str;
 				};
 
-				auto type { s.substr(0, pos) };
-				std::transform(begin(type), end(type), begin(type), to_upper);
-
-				auto color { s.substr(pos + sep.length()) };
-				std::transform(begin(color), end(color), begin(color),
-						to_upper);
+				const auto type  { to_uppercase(s.substr(0, pos)) };
+				const auto color { to_uppercase(s.substr(pos + sep.length())) };
 
 				r.set(get_decorationtype(type), ansi::get_color(color));
 			});

@@ -328,7 +328,7 @@ constexpr OptionCode FORMATBASE::SUBCLASS_BASE;
 //
 
 
-void parse_cli_list(const std::string& list, const char delim,
+void parse_list(const std::string& list, const char delim,
 		std::function<void(const std::string& s)> value_hook)
 {
 	if (list.empty())
