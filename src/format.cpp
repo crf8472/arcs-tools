@@ -920,16 +920,19 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 
 		if (use_response)
 		{
-			// Iterate over all blocks in the response
-			for (auto b = int { 0 }; b < total_theirs; ++b)
+			if (match)
 			{
-				field_idx = c->field_idx(ATTR::THEIRS, b + 1);
+				// Iterate over all blocks in the response
+				for (auto b = int { 0 }; b < total_theirs; ++b)
+				{
+					field_idx = c->field_idx(ATTR::THEIRS, b + 1);
 
-				does_match = match->track(b, i, true)
-					|| match->track(b, i, false);
+					does_match = match->track(b, i, true)
+						|| match->track(b, i, false);
 
-				their_checksum(response.at(b).at(i).arcs(), does_match,
-						i, field_idx, c.get());
+					their_checksum(response.at(b).at(i).arcs(), does_match,
+							i, field_idx, c.get());
+				}
 			}
 		} else
 		{
