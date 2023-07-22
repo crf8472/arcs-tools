@@ -532,30 +532,30 @@ const std::string& VerifyResultFormatter::match_symbol() const
 
 void VerifyResultFormatter::assertions(const InputTuple t) const
 {
-	const auto& checksums = std::get<0>(t);
+	const auto  checksums = std::get<0>(t);
 	const auto  toc       = std::get<5>(t);
-	const auto& arid      = std::get<6>(t);
-	const auto& filenames = std::get<8>(t);
+	const auto  arid      = std::get<6>(t);
+	const auto  filenames = std::get<8>(t);
 
 	validate(checksums, toc, arid, filenames);
 
 	// Specific for verify
 
-	const auto& response  = std::get<1>(t);
-	const auto& refsums   = std::get<2>(t);
-	const auto& match     = std::get<3>(t);
+	const auto  response  = std::get<1>(t);
+	const auto  refsums   = std::get<2>(t);
+	const auto  match     = std::get<3>(t);
 	const auto  block     = std::get<4>(t);
 
-	if (refsums.empty() && !response->size())
+	if (refsums->empty() && !response->size())
 	{
 		throw std::invalid_argument("Missing reference checksums, "
 				"nothing to print.");
 	}
 
-	if (!refsums.empty() && refsums.size() != checksums.size())
+	if (!refsums->empty() && refsums->size() != checksums.size())
 	{
 		throw std::invalid_argument("Mismatch: "
-				"Reference for " + std::to_string(refsums.size())
+				"Reference for " + std::to_string(refsums->size())
 				+ " tracks, but Checksums specify "
 				+ std::to_string(checksums.size()) + " tracks.");
 	}
@@ -580,7 +580,7 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 {
 	const auto& checksums = std::get<0>(t);
 	const auto  response  = std::get<1>(t);
-	const auto& refvalues = std::get<2>(t);
+	const auto  refvalues = std::get<2>(t);
 	const auto  match     = std::get<3>(t);
 	const auto  block     = std::get<4>(t);
 	const auto  toc       = std::get<5>(t);
@@ -598,7 +598,7 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 				build_id(toc, response->at(block).id(), altprefix)));
 	}
 
-	result->append(build_result(checksums, response, &refvalues, match,
+	result->append(build_result(checksums, response, refvalues, match,
 			block, toc, arid, altprefix, filenames, types_to_print()));
 
 	return result;
@@ -667,7 +667,7 @@ void MonochromeVerifyResultFormatter::do_their_mismatch(
 }
 
 
-//
+// get_decorationType()
 
 
 DecorationType get_decorationtype(const std::string& name)
@@ -1104,7 +1104,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	const auto f { create_formatter(config, types_to_print, *match) };
 
 	auto result {
-		f->format(checksums, ref_respns, *ref_values,
+		f->format(checksums, ref_respns, ref_values,
 			match, best_block, toc.get(), arid, alt_prefix, filenames)
 	};
 

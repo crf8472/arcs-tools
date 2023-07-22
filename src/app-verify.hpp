@@ -226,7 +226,7 @@ public:
  * appropriate Layout interface.
  */
 using Verify9Layout = Layout<std::unique_ptr<Result>, Checksums,
-		const ARResponse*, const std::vector<Checksum>, const Match*,
+		const ARResponse*, const std::vector<Checksum>*, const Match*,
 		const int, const TOC*, const ARId, std::string,
 		std::vector<std::string>>;
 
