@@ -344,10 +344,10 @@ std::vector<ATTR> CalcResultFormatter::do_create_attributes(
 
 void CalcResultFormatter::assertions(InputTuple t) const
 {
-	const auto& checksums = std::get<0>(t);
-	const auto& filenames = std::get<1>(t);
-	const auto  toc       = std::get<2>(t);
-	const auto& arid      = std::get<3>(t);
+	const auto checksums = std::get<0>(t);
+	const auto arid      = std::get<1>(t);
+	const auto toc       = std::get<2>(t);
+	const auto filenames = std::get<3>(t);
 
 	validate(checksums, toc, arid, filenames);
 }
@@ -355,14 +355,23 @@ void CalcResultFormatter::assertions(InputTuple t) const
 
 std::unique_ptr<Result> CalcResultFormatter::do_format(InputTuple t) const
 {
-	const auto& checksums = std::get<0>(t);
-	const auto& filenames = std::get<1>(t);
-	const auto  toc       = std::get<2>(t);
-	const auto& arid      = std::get<3>(t);
-	const auto& altprefix = std::get<4>(t);
+	const auto checksums = std::get<0>(t);
+	const auto arid      = std::get<1>(t);
+	const auto toc       = std::get<2>(t);
+	const auto filenames = std::get<3>(t);
+	const auto altprefix = std::get<4>(t);
 
-	return build_result(checksums, nullptr, nullptr, nullptr, 0, toc, arid,
-			altprefix, filenames, types_to_print());
+	return build_result(
+			/* no match */ nullptr,
+			/* no block */ 0,
+			checksums,
+			arid,
+			toc,
+			/* no ARResponse */ ARResponse{},
+			{ /* no reference ARCSs */ },
+			filenames,
+			altprefix,
+			types_to_print());
 }
 
 
@@ -603,7 +612,7 @@ auto ARCalcApplication::do_run_calculation(const Configuration &config) const
 
 	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(
 			config.value(CALC::METAFILE),
-			config.arguments(),
+			*config.arguments(),
 			config.is_set(CALC::FIRST),
 			config.is_set(CALC::LAST),
 			requested_types,
@@ -630,13 +639,13 @@ auto ARCalcApplication::do_run_calculation(const Configuration &config) const
 
 	// Configure result presentation
 
-	const auto layout { create_formatter(config, types_to_print) };
+	const auto f { create_formatter(config, types_to_print) };
 
-	auto result { layout->format(
+	auto result { f->format(
 	/* ARCSs */  checksums,
-	/* files */  toc ? arcstk::toc::get_filenames(toc) : config.arguments(),
-	/* TOC   */  toc ? toc.get() : nullptr,
 	/* ARId */   arid,
+	/* TOC   */  toc ? toc.get() : nullptr,
+	/* files */  toc ? arcstk::toc::get_filenames(toc) : *config.arguments(),
 	/* Prefix */ std::string { /* TODO Implement Alt-Prefix */ }
 	)};
 

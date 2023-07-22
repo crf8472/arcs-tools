@@ -158,15 +158,20 @@ using arcstk::TOC;
 /**
  * \brief Interface to format result objects of a calculation process.
  */
-using C5L = Layout<std::unique_ptr<Result>, Checksums, std::vector<std::string>,
-			const TOC*, ARId, std::string>;
+using Calc5Layout = Layout<std::unique_ptr<Result>
+	,const Checksums&                /* mandatory: locally computed checksums */
+	,const ARId&                     /* optional: ARId */
+	,const TOC*                      /* optional: TOC */
+	,const std::vector<std::string>& /* optional: input audio filenames */
+	,const std::string&              /* optional: AccurateRip URL prefix */
+>;
 
 
 /**
  * \brief Format the results of the ARCalcApplication.
  */
 class CalcResultFormatter final : public ResultFormatter
-								, public C5L
+								, public Calc5Layout
 {
 private:
 

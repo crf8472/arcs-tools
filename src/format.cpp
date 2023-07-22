@@ -770,11 +770,15 @@ ResultFormatter::print_flag_t ResultFormatter::create_print_flags(
 
 
 std::unique_ptr<Result> ResultFormatter::build_result(
-		const Checksums& checksums, const ARResponse* response,
-		const std::vector<Checksum>* refsums,
-		const Match* match, int block, const TOC* toc, const ARId& arid,
-		const std::string& alt_prefix,
+		const Match* match,
+		const int block,
+		const Checksums& checksums,
+		const ARId& arid,
+		const TOC* toc,
+		const ARResponse& response,
+		const std::vector<Checksum>& refvalues,
 		const std::vector<std::string>& filenames,
+		const std::string& alt_prefix,
 		const std::vector<arcstk::checksum::type>& types_to_print) const
 {
 	// Flags to indicate whether requested field_types should actually
@@ -790,8 +794,8 @@ std::unique_ptr<Result> ResultFormatter::build_result(
 
 	// Construct result objects
 
-	auto table { build_table(checksums, response, refsums, match, block,
-			toc, arid, filenames, types_to_print, print_flags) };
+	auto table { build_table(match, block, checksums, arid, toc,
+			response, refvalues, filenames, types_to_print, print_flags) };
 
 	ARCS_LOG(DEBUG2) << "build_result(): build_table() returned";
 
@@ -837,9 +841,13 @@ RichARId ResultFormatter::build_id(const TOC* /*toc*/, const ARId& arid,
 
 
 std::unique_ptr<PrintableTable> ResultFormatter::build_table(
+		const Match* match,
+		const int block,
 		const Checksums& checksums,
-		const ARResponse* response, const std::vector<Checksum>* refvals,
-		const Match* match, const int block, const TOC* toc, const ARId& arid,
+		const ARId& arid,
+		const TOC* toc,
+		const ARResponse& response,
+		const std::vector<Checksum>& refvals,
 		const std::vector<std::string>& filenames,
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const print_flag_t print) const
@@ -847,12 +855,12 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 	ARCS_LOG(DEBUG2) << "build_table(): start";
 
 	// Determine whether to use the ARResponse
-	const auto use_response { response != nullptr && response->size() };
+	const auto use_response { response.size() };
 
 	// Determine total number of 'theirs' field_types to print
 	const auto total_theirs {
 		block < 0  // print all?
-			? (use_response ? response->size() : (refvals ? 1 : 0))
+			? (use_response ? response.size() : (refvals.empty() ? 0 : 1))
 			: 1
 	};
 
@@ -920,19 +928,19 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 				does_match = match->track(b, i, true)
 					|| match->track(b, i, false);
 
-				their_checksum(response->at(b).at(i).arcs(), does_match,
+				their_checksum(response.at(b).at(i).arcs(), does_match,
 						i, field_idx, c.get());
 			}
 		} else
 		{
-			if (refvals && match)
+			if (!refvals.empty() && match)
 			{
 				field_idx = c->field_idx(ATTR::THEIRS, 1);
 
 				does_match = match->track(block, i, true)
 					|| match->track(block, i, false);
 
-				their_checksum(refvals->at(i), does_match,
+				their_checksum(refvals.at(i), does_match,
 						i, field_idx, c.get());
 			}
 		}

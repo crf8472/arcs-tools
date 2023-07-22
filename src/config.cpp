@@ -95,13 +95,13 @@ void Options::put_argument(const std::string &argument)
 }
 
 
-std::vector<std::string> const Options::arguments() const
+const std::vector<std::string>* Options::arguments() const
 {
-	return arguments_;
+	return &arguments_;
 }
 
 
-std::string const Options::argument(const std::size_t index) const
+std::string Options::argument(const std::size_t index) const
 {
 	if (index >= arguments_.size())
 	{
@@ -145,7 +145,7 @@ std::ostream& operator << (std::ostream& out, const Options &options)
 
 	out << "Arguments:" << '\n';
 	auto i = int { 0 };
-	for (const auto& arg : options.arguments())
+	for (const auto& arg : *options.arguments())
 	{
 		out << "Arg " << std::setw(2) << i << ": '" << arg << "'" << '\n';
 		++i;
@@ -287,13 +287,13 @@ std::string Configuration::value(const OptionCode &option) const
 }
 
 
-std::string const Configuration::argument(const std::size_t i) const
+std::string Configuration::argument(const std::size_t i) const
 {
 	return options_->argument(i);
 }
 
 
-std::vector<std::string> const Configuration::arguments() const
+const std::vector<std::string>* Configuration::arguments() const
 {
 	return options_->arguments();
 }

@@ -68,13 +68,13 @@ int ARParseApplication::do_run(const Configuration& config)
 
 	const auto arguments = config.arguments();
 
-	if (not arguments.empty()) // read from file(s)
+	if (arguments && !arguments->empty()) // read from file(s)
 	{
 		ARFileParser parser;
 		parser.set_content_handler(std::move(content_handler));
 		parser.set_error_handler(std::make_unique<DefaultErrorHandler>());
 
-		for (const auto& file : arguments)
+		for (const auto& file : *arguments)
 		{
 			parser.set_file(file);
 			parser.parse();

@@ -148,14 +148,14 @@ public:
 	 *
 	 * \return Argument
 	 */
-	std::string const argument(const std::size_t i) const;
+	std::string argument(const std::size_t i) const;
 
 	/**
 	 * \brief Get all input arguments in order of occurrence.
 	 *
 	 * \return All input arguments
 	 */
-	std::vector<std::string> const arguments() const;
+	const std::vector<std::string>* arguments() const;
 
 	/**
 	 * \brief Returns TRUE iff no arguments are present.
@@ -394,7 +394,7 @@ public:
 	 * \return Value object for the option passed
 	 */
 	template <typename T>
-	auto object(const OptionCode &option) const -> const T*
+	auto object_ptr(const OptionCode &option) const -> const T*
 	{
 		auto o { objects_.find(option) };
 
@@ -405,6 +405,16 @@ public:
 		}
 
 		return std::any_cast<T>(&o->second);
+	}
+
+	/**
+	 * \brief Get a configuration object.
+	 */
+	template <typename T>
+	auto object(const OptionCode &option) const -> T
+	{
+		auto p { this->object_ptr<T>(option) };
+		return p != nullptr ? *p : T{ /* empty */ };
 	}
 
 	// Provide interface for options
@@ -438,14 +448,14 @@ public:
 	 *
 	 * \return Argument
 	 */
-	std::string const argument(const std::size_t i) const;
+	std::string argument(const std::size_t i) const;
 
 	/**
 	 * \brief Get all input arguments in order of occurrence.
 	 *
 	 * \return All input arguments
 	 */
-	std::vector<std::string> const arguments() const;
+	const std::vector<std::string>* arguments() const;
 
 	/**
 	 * \brief Returns TRUE iff no arguments are present.

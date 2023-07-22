@@ -532,30 +532,30 @@ const std::string& VerifyResultFormatter::match_symbol() const
 
 void VerifyResultFormatter::assertions(const InputTuple t) const
 {
-	const auto  checksums = std::get<0>(t);
-	const auto  toc       = std::get<5>(t);
-	const auto  arid      = std::get<6>(t);
-	const auto  filenames = std::get<8>(t);
+	const auto checksums = std::get<2>(t);
+	const auto arid      = std::get<3>(t);
+	const auto toc       = std::get<4>(t);
+	const auto filenames = std::get<7>(t);
 
 	validate(checksums, toc, arid, filenames);
 
 	// Specific for verify
 
-	const auto  response  = std::get<1>(t);
-	const auto  refsums   = std::get<2>(t);
-	const auto  match     = std::get<3>(t);
-	const auto  block     = std::get<4>(t);
+	const auto response  = std::get<5>(t);
+	const auto refvalues = std::get<6>(t);
+	const auto match     = std::get<0>(t);
+	const auto block     = std::get<1>(t);
 
-	if (refsums->empty() && !response->size())
+	if (refvalues.empty() && !response.size())
 	{
 		throw std::invalid_argument("Missing reference checksums, "
 				"nothing to print.");
 	}
 
-	if (!refsums->empty() && refsums->size() != checksums.size())
+	if (!refvalues.empty() && refvalues.size() != checksums.size())
 	{
 		throw std::invalid_argument("Mismatch: "
-				"Reference for " + std::to_string(refsums->size())
+				"Reference for " + std::to_string(refvalues.size())
 				+ " tracks, but Checksums specify "
 				+ std::to_string(checksums.size()) + " tracks.");
 	}
@@ -578,28 +578,37 @@ void VerifyResultFormatter::assertions(const InputTuple t) const
 
 std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 {
-	const auto& checksums = std::get<0>(t);
-	const auto  response  = std::get<1>(t);
-	const auto  refvalues = std::get<2>(t);
-	const auto  match     = std::get<3>(t);
-	const auto  block     = std::get<4>(t);
-	const auto  toc       = std::get<5>(t);
-	const auto  arid      = std::get<6>(t);
-	const auto& altprefix = std::get<7>(t);
-	const auto& filenames = std::get<8>(t);
+	const auto match      = std::get<0>(t);
+	const auto block      = std::get<1>(t);
+	const auto checksums  = std::get<2>(t);
+	const auto arid       = std::get<3>(t);
+	const auto toc        = std::get<4>(t);
+	const auto response   = std::get<5>(t);
+	const auto refvalues  = std::get<6>(t);
+	const auto filenames  = std::get<7>(t);
+	const auto alt_prefix = std::get<8>(t);
 
 	auto result = std::make_unique<ResultList>();
 
 	// If an ARResponse is used for the references with a block (not PRINTALL)
-	if (response != nullptr && response->size() > 0 && block > -1)
+	if (response.size() > 0 && block > -1)
 	{
 		// Use ARId of specified block for "Theirs" ARId
 		result->append(std::make_unique<ResultObject<RichARId>>(
-				build_id(toc, response->at(block).id(), altprefix)));
+				build_id(toc, response.at(block).id(), alt_prefix)));
 	}
 
-	result->append(build_result(checksums, response, refvalues, match,
-			block, toc, arid, altprefix, filenames, types_to_print()));
+	result->append(build_result(
+				match,
+				block,
+				checksums,
+				arid,
+				toc,
+				response,
+				refvalues,
+				filenames,
+				alt_prefix,
+				types_to_print()));
 
 	return result;
 }
@@ -822,7 +831,7 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::create_formatter(
 	if (config.is_set(VERIFY::COLORED))
 	{
 		fmt = std::make_unique<ColorizingVerifyResultFormatter>(
-				*config.object<ColorRegistry>(VERIFY::COLORED));
+				config.object<ColorRegistry>(VERIFY::COLORED));
 	} else
 	{
 		fmt = std::make_unique<MonochromeVerifyResultFormatter>();
@@ -963,7 +972,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(
 			config.value(VERIFY::METAFILE),
-			config.arguments(),
+			*config.arguments(),
 			!config.is_set(VERIFY::NOFIRST),
 			!config.is_set(VERIFY::NOLAST),
 			{ arcstk::checksum::type::ARCS2 }, /* force ARCSv1 + ARCSv2 */
@@ -982,7 +991,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	if (config.is_set(VERIFY::REFVALUES))
 	{
-		diff = std::make_unique<ListMatcher>(checksums, *ref_values);
+		diff = std::make_unique<ListMatcher>(checksums, ref_values);
 	}
 
 	bool print_filenames = true;
@@ -1016,7 +1025,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 		if (!diff) // No ListMatcher for some refvals previously set?
 		{
-			diff = std::make_unique<AlbumMatcher>(checksums, arid, *ref_respns);
+			diff = std::make_unique<AlbumMatcher>(checksums, arid, ref_respns);
 		}
 
 		print_filenames = !single_audio_file;
@@ -1026,7 +1035,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 		if (!diff) // No ListMatcher for some refvals previously set
 		{
-			diff = std::make_unique<TracksetMatcher>(checksums, *ref_respns);
+			diff = std::make_unique<TracksetMatcher>(checksums, ref_respns);
 		}
 
 		if (Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG))
@@ -1064,8 +1073,6 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	const auto matching_version = diff->best_match_is_v2();
 
-	const auto alt_prefix = std::string {/* TODO Alt-Prefix */};
-
 	auto filenames = std::vector<std::string> { };
 	if (print_filenames)
 	{
@@ -1077,9 +1084,11 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 			}
 		} else
 		{
-			filenames = config.arguments();
+			filenames = *config.arguments();
 		}
 	}
+
+	const auto alt_prefix = std::string {/* TODO Alt-Prefix */};
 
 	// TODO Compose set of types to be printed
 	// If all types are requested, insert all types, otherwise insert the
@@ -1103,10 +1112,17 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	const auto f { create_formatter(config, types_to_print, *match) };
 
-	auto result {
-		f->format(checksums, ref_respns, ref_values,
-			match, best_block, toc.get(), arid, alt_prefix, filenames)
-	};
+	auto result { f->format(
+		/* match results */            match,
+		/* optional best match */      best_block,
+		/* mine ARCSs */               checksums,
+		/* optional mine ARId */       arid,
+		/* optional TOC */             toc.get(),
+		/* optional ARResponse */      ref_respns,
+		/* optional input ref sums */  ref_values,
+		/* input audio filenames */    filenames,
+		/* optional URL prefix */      alt_prefix
+	)};
 
 	auto exit_code = config.is_set(VERIFY::BOOLEAN)
 		? diff->best_difference()

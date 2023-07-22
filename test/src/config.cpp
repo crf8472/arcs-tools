@@ -306,7 +306,7 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 		ARVerifyConfigurator conf1;
 
 		auto options1 = conf1.provide_options(argc, input);
-		auto arguments1 = options1->arguments();
+		auto arguments1 = *options1->arguments();
 
 		CHECK ( options1->is_set(VERIFY::METAFILE) );
 		CHECK ( options1->value(VERIFY::METAFILE) == "foo/foo.cue" );
@@ -447,15 +447,15 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 		const auto c = conf1.create(std::move(o));
 
 		CHECK ( Color::FG_MAGENTA ==
-				c->object<ColorRegistry>(VERIFY::COLORED)->get(
+				c->object<ColorRegistry>(VERIFY::COLORED).get(
 					DecorationType::MATCH) );
 
 		CHECK ( Color::FG_BLUE ==
-				c->object<ColorRegistry>(VERIFY::COLORED)->get(
+				c->object<ColorRegistry>(VERIFY::COLORED).get(
 					DecorationType::MISMATCH) );
 
 		CHECK ( std::vector<Checksum>{ Checksum(1), Checksum(2), Checksum(3) }
-				== *c->object<std::vector<Checksum>>(VERIFY::REFVALUES) );
+				== c->object<std::vector<Checksum>>(VERIFY::REFVALUES) );
 	}
 }
 

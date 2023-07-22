@@ -904,23 +904,27 @@ protected:
 	 * instance, and build_table() to populate the result table with the
 	 * relevant data.
 	 *
+	 * \param[in] match          Match between calculation and reference
+	 * \param[in] block          Best block in \c diff
 	 * \param[in] checksums      Calculated checksums
 	 * \param[in] response       Reference checksums
-	 * \param[in] refsums        Reference checksums
-	 * \param[in] diff           Match between calculation and reference
-	 * \param[in] block          Best block in \c diff
-	 * \param[in] toc            TOC for calculated checksums
+	 * \param[in] refvalues      Reference checksums
 	 * \param[in] arid           ARId of input
+	 * \param[in] toc            TOC for calculated checksums
 	 * \param[in] alt_prefix     Alternative AccurateRip URL prefix
 	 * \param[in] filenames      List of input filenames
 	 * \param[in] types_to_print List of Checksum types requested for print
 	 */
 	std::unique_ptr<Result> build_result(
-		const Checksums& checksums, const ARResponse* response,
-		const std::vector<Checksum>* refsums, const Match* diff, int block,
-		const TOC* toc, const ARId& arid,
-		const std::string& alt_prefix,
+		const Match* match,
+		const int block,
+		const Checksums& checksums,
+		const ARId& arid,
+		const TOC* toc,
+		const ARResponse& response,
+		const std::vector<Checksum>& refvalues,
 		const std::vector<std::string>& filenames,
+		const std::string& alt_prefix,
 		const std::vector<arcstk::checksum::type>& types_to_print) const;
 
 	/**
@@ -978,23 +982,27 @@ protected:
 	/**
 	 * \brief Build the result table.
 	 *
-	 * \param[in] checksums   Checksums as resulted
-	 * \param[in] response    Reference checksums from AccurateRip response
-	 * \param[in] refsums     Reference checksums as specified
 	 * \param[in] match       Match object (maybe null)
 	 * \param[in] block       Index to choose from \c match
-	 * \param[in] toc         TOC as resulted
+	 * \param[in] checksums   Checksums as resulted
 	 * \param[in] arid        ARId as resulted
+	 * \param[in] toc         TOC as resulted
+	 * \param[in] response    Reference checksums from AccurateRip response
+	 * \param[in] refvalues   Reference checksums as specified
 	 * \param[in] filenames   Filenames as resulted
 	 * \param[in] types       List of checksum types to print
 	 * \param[in] print_flags Flags to instruct print of data
 	 *
 	 * \return Table with result data
 	 */
-	std::unique_ptr<PrintableTable> build_table(const Checksums& checksums,
-		const ARResponse* response, const std::vector<Checksum>* refsums,
-		const Match* match, const int block,
-		const TOC* toc, const ARId& arid,
+	std::unique_ptr<PrintableTable> build_table(
+		const Match* match,
+		const int block,
+		const Checksums& checksums,
+		const ARId& arid,
+		const TOC* toc,
+		const ARResponse& response,
+		const std::vector<Checksum>& refvalues,
 		const std::vector<std::string>& filenames,
 		const std::vector<arcstk::checksum::type>& types,
 		const print_flag_t print_flags) const;

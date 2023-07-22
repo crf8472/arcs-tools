@@ -225,10 +225,17 @@ public:
  * Formatter for VERIFY results can use this interface for inheriting the
  * appropriate Layout interface.
  */
-using Verify9Layout = Layout<std::unique_ptr<Result>, Checksums,
-		const ARResponse*, const std::vector<Checksum>*, const Match*,
-		const int, const TOC*, const ARId, std::string,
-		std::vector<std::string>>;
+using Verify9Layout = Layout<std::unique_ptr<Result>
+	,const Match*                     /* mandatory: match results          */
+	,const int                        /* optional:  best block             */
+	,const Checksums&                 /* mandatory: "mine" checksums       */
+	,const ARId&                      /* optional:  "mine" ARId            */
+	,const TOC*                       /* optional:  "mine" TOC             */
+	,const ARResponse&                /* optional:  ref sums in ARResponse */
+	,const std::vector<Checksum>&     /* optional:  ref sums passed        */
+	,const std::vector<std::string>&  /* optional:  input audio filenames  */
+	,const std::string&               /* optional:  AccurateRip URL prefix */
+>;
 
 
 /**
@@ -468,25 +475,6 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	void log_matching_files(const Checksums &checksums,
 		const Match &match, const uint32_t block,
 		const bool version = true) const;
-
-	/**
-	 * \brief Print the result of the matching operation.
-	 *
-	 * \param[in] options         Call options
-	 * \param[in] actual_sums     Actual checksums
-	 * \param[in] reference_sums  Reference checksums
-	 * \param[in] diff            Matcher result
-	 * \param[in] toc             TOC
-	 * \param[in] id              Album ARId
-	 * \param[in] print_filenames Flag to print filenames
-	 *
-	 * \return A string representation of the result
-	 */
-	std::unique_ptr<Result> format_result(const Options &options,
-			const Checksums &actual_sums,
-			const std::tuple<ARResponse, std::vector<Checksum>> &reference_sums,
-			const Matcher &diff, const TOC *toc, const ARId &id,
-			const std::vector<std::string>& print_filenames) const;
 
 
 	// ARCalcApplicationBase
