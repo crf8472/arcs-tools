@@ -91,7 +91,9 @@ std::ostream& operator << (std::ostream& o, const Modifier& m)
 std::string colored(Color c, Highlight h, const std::string& s)
 {
 	return Modifier{c, h}.to_string()
-			+ s + Modifier{Color::FG_DEFAULT, Highlight::NORMAL}.to_string();
+			+ s
+			+ Modifier{Color::FG_DEFAULT, Highlight::NORMAL}.to_string()
+			+ Modifier{Color::BG_DEFAULT, Highlight::NORMAL}.to_string();
 }
 
 

@@ -75,33 +75,80 @@ std::ostream& operator << (std::ostream& o, const Modifier& m);
  */
 class Modifier
 {
-	Color     color_;
+	/**
+	 * \brief Internal color.
+	 */
+	Color color_;
+
+	/**
+	 * \brief Internal highlight.
+	 */
 	Highlight hl_;
 
 public:
 
-	explicit Modifier(Color c, Highlight hl);
+	friend std::ostream& operator << (std::ostream& o, const Modifier& m);
 
-	Modifier(Color c);
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] c  Color to set
+	 * \param[in] hl Highlight to set
+	 */
+	Modifier(Color c, Highlight hl);
 
+	/**
+	 * \brief Constructor.
+	 *
+	 * Set the highlight to BRIGHT.
+	 *
+	 * \param[in] hl Highlight to set
+	 */
+	explicit Modifier(Color c);
+
+	/**
+	 * \brief Color of this modifier.
+	 *
+	 * \return String representation of the color of this modifier
+	 */
 	std::string color() const;
 
+	/**
+	 * \brief Highlight of this modifier.
+	 *
+	 * \return String representation of the highlight of this modifier
+	 */
 	std::string highlight() const;
 
+	/**
+	 * \brief Modifier string
+	 *
+	 * \return String representation of this modifier
+	 */
 	std::string to_string() const;
-
-	friend std::ostream& operator << (std::ostream& o, const Modifier& m);
 };
 
 
 /**
  * \brief Colorize a string.
+ *
+ * The colorized string will have trailing modifiers for FG_NORMAL and BG_NORMAL
+ * colors and NORMAL brightness
+ *
+ * \param[in] c Foreground color to use
+ * \param[in] h Highlight to use
+ * \param[in] s The string to be colorized
+ *
+ * \return Colorized string
  */
 std::string colored(Color c, Highlight h, const std::string& s);
 
 
 /**
  * \brief Colorize a string.
+ *
+ * \tparam C Foreground color to use
+ * \tparam H Highlight to use, default is BRIGHT
  */
 template <Color C, Highlight H = Highlight::BRIGHT>
 struct Colorize
