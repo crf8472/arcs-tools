@@ -7,6 +7,7 @@
  * \brief Formatter for result objects.
  */
 
+#include <cmath>        // for ceil
 #include <cstddef>      // for size_t
 #include <cstdint>      // for uint32_t
 #include <memory>       // for unique_ptr
@@ -755,7 +756,44 @@ using arcstk::TOC;
 
 
 /**
- * \brief Source for checksums to access.
+ * \brief Functor for inserting a specified field.
+ */
+class FieldCreator
+{
+	virtual void do_create(TableComposer* c, const int record_idx)
+		const
+	= 0;
+
+protected:
+
+	/**
+	 * \brief Track represented by the specified record index.
+	 *
+	 * \param[in] record_idx The record index to get the track for
+	 */
+	int track(const int record_idx) const
+	{
+		return record_idx + 1;
+	}
+
+public:
+
+	/**
+	 * \brief Use specified TableComposer to create the field in the specified
+	 * record.
+	 *
+	 * \param[in] c          The TableComposer to use
+	 * \param[in] record_idx The current record index
+	 */
+	void create(TableComposer* c, const int record_idx) const
+	{
+		this->do_create(c, record_idx);
+	}
+};
+
+
+/**
+ * \brief Interface for checksum sources.
  */
 class ChecksumSource
 {
@@ -764,6 +802,9 @@ class ChecksumSource
 
 public:
 
+	/**
+	 * \brief Read checksum \c idx in section with the specified \c block_idx.
+	 */
 	Checksum read(const int block_idx, const int idx) const
 	{
 		return this->do_read(block_idx, idx);
@@ -772,7 +813,7 @@ public:
 
 
 /**
- * \brief Universal access to some checksum container.
+ * \brief Provide unified access method to checksum containers.
  */
 template <typename T>
 class GetChecksum : public ChecksumSource
@@ -781,6 +822,11 @@ class GetChecksum : public ChecksumSource
 
 protected:
 
+	/**
+	 * \brief The checksum source.
+	 *
+	 * \return The checksum source.
+	 */
 	const T* source() const
 	{
 		return checksum_source_;
@@ -788,6 +834,11 @@ protected:
 
 public:
 
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] t The primary checksum source
+	 */
 	GetChecksum(const T* t)
 		: checksum_source_ { t }
 	{
@@ -825,6 +876,25 @@ class EmptyChecksums final : public ChecksumSource
 };
 
 
+/**
+ * \brief Functor for filling fields in the table.
+ */
+template <enum ATTR>
+class AddField
+{
+	// empty
+};
+
+
+template <>
+class AddField<ATTR::CHECKSUM_ARCS1>;
+
+template <>
+class AddField<ATTR::CHECKSUM_ARCS2>;
+
+template <>
+class AddField<ATTR::THEIRS>;
+
 
 /**
  * \brief Abstract base class for result formatting.
@@ -833,6 +903,10 @@ class EmptyChecksums final : public ChecksumSource
  */
 class ResultFormatter : public WithInternalFlags
 {
+	friend AddField<ATTR::CHECKSUM_ARCS1>;
+	friend AddField<ATTR::CHECKSUM_ARCS2>;
+	friend AddField<ATTR::THEIRS>;
+
 public:
 
 	/**
@@ -1171,6 +1245,219 @@ private:
 	 * \brief List of requested checksum types.
 	 */
 	std::vector<arcstk::checksum::type> types_;
+};
+
+
+// RecordCreator
+
+
+/**
+ * \brief Creates records.
+ *
+ * Accepts functors for adding fields to the TableComposer. Hence it is possible
+ * to "queue" the production of fields by calling \c add_fields() and then
+ * produce the entire table when calling \c create_records().
+ */
+class RecordCreator final
+{
+	std::vector<std::unique_ptr<FieldCreator>> fields_;
+	TableComposer* composer_;
+
+	/**
+	 * \brief Create a record containing every field previously added.
+	 */
+	void create_record(const int record_idx) const;
+
+public:
+
+	/**
+	 * \brief Create records using the specified TableComposer.
+	 *
+	 * \param[in] c TableComposer to be used
+	 */
+	RecordCreator(TableComposer* c);
+
+	/**
+	 * \brief Add field.
+	 */
+	void add_fields(std::unique_ptr<FieldCreator> f);
+
+	/**
+	 * \brief Create specified number of records.
+	 */
+	void create_records() const;
+};
+
+
+// Specializations for AddField
+
+
+template <>
+class AddField<ATTR::TRACK> final : public FieldCreator
+{
+	void do_create(TableComposer* c, const int record_idx) const
+	{
+		using std::to_string;
+		c->set_field(record_idx, ATTR::TRACK,
+				to_string(this->track(record_idx)));
+	}
+};
+
+
+template <>
+class AddField<ATTR::OFFSET> final : public FieldCreator
+{
+	const TOC* toc_;
+
+	void do_create(TableComposer* c, const int record_idx) const
+	{
+		using std::to_string;
+		c->set_field(record_idx, ATTR::OFFSET,
+				to_string(toc_->offset(track(record_idx))));
+	}
+
+public:
+
+	AddField(const TOC* toc) : toc_ { toc } { /* empty */ }
+};
+
+
+template <>
+class AddField<ATTR::LENGTH> final : public FieldCreator
+{
+	const Checksums* checksums_;
+
+	void do_create(TableComposer* c, const int record_idx) const
+	{
+		using std::to_string;
+		c->set_field(record_idx, ATTR::LENGTH,
+				to_string((*checksums_)[record_idx].length()));
+	}
+
+public:
+
+	AddField(const Checksums* checksums) : checksums_ { checksums }
+	{ /* empty */ }
+};
+
+
+template <>
+class AddField<ATTR::FILENAME> final : public FieldCreator
+{
+	const std::vector<std::string>* filenames_;
+
+	void do_create(TableComposer* c, const int record_idx) const
+	{
+		if (filenames_->size() > 1)
+		{
+			c->set_field(record_idx, ATTR::FILENAME, filenames_->at(record_idx));
+		} else
+		{
+			c->set_field(record_idx, ATTR::FILENAME, *(filenames_->begin()));
+		}
+	}
+
+public:
+
+	AddField(const std::vector<std::string>* filenames)
+		: filenames_ { filenames }
+	{ /* empty */ }
+};
+
+
+template <>
+class AddField<ATTR::CHECKSUM_ARCS1> final : public FieldCreator
+{
+	const Checksums* checksums_;
+	const ResultFormatter* formatter_;
+
+	void do_create(TableComposer* c, const int record_idx) const
+	{
+		formatter_->mine_checksum(
+				checksums_->at(record_idx).get(arcstk::checksum::type::ARCS1),
+				record_idx, c->field_idx(ATTR::CHECKSUM_ARCS1), c);
+	}
+
+public:
+
+	AddField(const Checksums* checksums, const ResultFormatter* formatter)
+		: checksums_ { checksums }
+		, formatter_ { formatter }
+	{ /* empty */ }
+};
+
+
+template <>
+class AddField<ATTR::CHECKSUM_ARCS2> final : public FieldCreator
+{
+	const Checksums* checksums_;
+	const ResultFormatter* formatter_;
+
+	void do_create(TableComposer* c, const int record_idx) const
+	{
+		formatter_->mine_checksum(
+				checksums_->at(record_idx).get(arcstk::checksum::type::ARCS2),
+				record_idx, c->field_idx(ATTR::CHECKSUM_ARCS2), c);
+	}
+
+public:
+
+	AddField(const Checksums* checksums, const ResultFormatter* formatter)
+		: checksums_ { checksums }
+		, formatter_ { formatter }
+	{ /* empty */ }
+};
+
+
+template <>
+class AddField<ATTR::THEIRS> final : public FieldCreator
+{
+	const Match* match_;
+	const ChecksumSource*  checksums_;
+	const std::vector<arcstk::checksum::type>* types_to_print_;
+	const ResultFormatter* formatter_;
+	const int total_theirs_per_block_;
+
+	void do_create(TableComposer* c, const int record_idx) const
+	{
+		auto block_idx  = int { 0 }; // Iterate over blocks of checksums
+		auto curr_type  { types_to_print_->at(0) }; // Current checksum type
+		auto does_match = bool { false }; // Is current checksum a match?
+
+		// Total number of THEIRS fields in the entire record type
+		const auto total_theirs =
+			total_theirs_per_block_ * types_to_print_->size();
+
+		// Create all theirs fields
+		for (auto b = int { 0 }; b < total_theirs; ++b)
+		{
+			block_idx = b % total_theirs_per_block_;
+
+			curr_type =
+				types_to_print_->at(std::ceil(b / total_theirs_per_block_));
+
+			does_match = match_->track(block_idx, record_idx,
+							curr_type == arcstk::checksum::type::ARCS2);
+
+			formatter_->their_checksum(
+					checksums_->read(block_idx, record_idx), does_match,
+					record_idx, c->field_idx(ATTR::THEIRS, b + 1), c);
+		}
+	}
+
+public:
+
+	AddField(const Match* match,
+			const ChecksumSource* checksums,
+			const std::vector<arcstk::checksum::type>* types,
+			const ResultFormatter* formatter,
+			const int total_theirs_per_block)
+		: match_ { match }
+		, checksums_ { checksums }
+		, types_to_print_ { types }
+		, formatter_ { formatter }
+		, total_theirs_per_block_ { total_theirs_per_block }
+	{ /* empty */ }
 };
 
 
