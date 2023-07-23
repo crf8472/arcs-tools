@@ -696,19 +696,6 @@ class ColTableComposerBuilder final : public TableComposerBuilder
 };
 
 
-// Required for ResultFormatter
-
-using arcstk::ARId;
-using arcstk::ARResponse;
-using arcstk::Checksum;
-using arcstk::Checksums;
-using arcstk::Match;
-using arcstk::TOC;
-
-
-class ResultFormatter;
-
-
 /**
  * \brief A set of flags.
  */
@@ -754,6 +741,89 @@ private:
 	 */
 	type flags_;
 };
+
+
+// Required for ResultFormatter
+
+
+using arcstk::ARId;
+using arcstk::ARResponse;
+using arcstk::Checksum;
+using arcstk::Checksums;
+using arcstk::Match;
+using arcstk::TOC;
+
+
+/**
+ * \brief Source for checksums to access.
+ */
+class ChecksumSource
+{
+	virtual Checksum do_read(const int block_idx, const int idx) const
+	= 0;
+
+public:
+
+	Checksum read(const int block_idx, const int idx) const
+	{
+		return this->do_read(block_idx, idx);
+	}
+};
+
+
+/**
+ * \brief Universal access to some checksum container.
+ */
+template <typename T>
+class GetChecksum : public ChecksumSource
+{
+	const T* checksum_source_;
+
+protected:
+
+	const T* source() const
+	{
+		return checksum_source_;
+	}
+
+public:
+
+	GetChecksum(const T* t)
+		: checksum_source_ { t }
+	{
+		// empty
+	}
+};
+
+
+/**
+ * \brief Access an ARResponse by block and index.
+ */
+class FromResponse final : public GetChecksum<ARResponse>
+{
+	using GetChecksum::GetChecksum;
+	Checksum do_read(const int block_idx, const int idx) const final;
+};
+
+
+/**
+ * \brief Access references values by block and index.
+ */
+class FromRefvalues final : public GetChecksum<std::vector<Checksum>>
+{
+	using GetChecksum::GetChecksum;
+	Checksum do_read(const int block_idx, const int idx) const final;
+};
+
+
+/**
+ * \brief Dummy source for providing only empty checksums.
+ */
+class EmptyChecksums final : public ChecksumSource
+{
+	Checksum do_read(const int block_idx, const int idx) const final;
+};
+
 
 
 /**

@@ -9,6 +9,7 @@
 #endif
 
 #include <algorithm>    // for find
+#include <cmath>        // for floor
 #include <cstddef>      // for size_t
 #include <cstdint>      // for uint16_t
 #include <iterator>     // for begin, end
@@ -588,6 +589,26 @@ std::unique_ptr<TableComposer> ColTableComposerBuilder::do_build(
 }
 
 
+Checksum FromResponse::do_read(const int block_idx, const int idx) const
+{
+	return source()->at(block_idx).at(idx).arcs();
+}
+
+
+Checksum FromRefvalues::do_read(const int /* block_idx */, const int idx)
+	const
+{
+	return source()->at(idx);
+}
+
+
+Checksum EmptyChecksums::do_read(const int /* block_idx */,
+		const int /* idx */ ) const
+{
+	return arcstk::EmptyChecksum;
+}
+
+
 // ResultFormatter
 
 
@@ -857,29 +878,50 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 	// Determine whether to use the ARResponse
 	const auto use_response { response.size() };
 
-	// Determine total number of 'theirs' field_types to print
-	const auto total_theirs {
-		block < 0  // print all?
+	// Determine total number of 'theirs' field_types per reference block
+	const auto total_theirs_per_block {
+		block < 0  // print all match results?
 			? (use_response ? response.size() : (refvals.empty() ? 0 : 1))
-			: 1
+			: 1 // no best match declared
 	};
 
+	// Create field layout / record type
 	const auto fields { create_attributes(print, types_to_print,
-			total_theirs) };
+			total_theirs_per_block) };
 
+	// Create table composer
 	auto c { create_composer(checksums.size(), fields, formats_label()) };
 	this->init_composer(c.get());
 
-	using TYPE = arcstk::checksum::type;
-	using std::to_string;
+	auto track      = int { 1 }; // is always i + 1
+	auto block_idx  = int { 0 }; // index of the reference block to read from
+	auto curr_type  { types_to_print[0] }; // current checksum type to match
+	auto does_match = bool { false }; // is current checksum matching?
+	auto curr_arcs  { arcstk::EmptyChecksum }; // current checksum
 
-	auto does_match = bool { false };
-	auto track = int { 1 }; // is always i + 1
-	auto field_idx = int { 0 };
+	// Determine total number of 'theirs' field_types to print
+	const auto total_theirs = total_theirs_per_block * types_to_print.size();
+
+	// Configure source of checksums to print
+	std::unique_ptr<const ChecksumSource> arcs_values;
+	if (use_response)
+	{
+		arcs_values = std::make_unique<FromResponse>(&response);
+	} else
+	{
+		if (!refvals.empty())
+		{
+			arcs_values = std::make_unique<FromRefvalues>(&refvals);
+		} else
+		{
+			arcs_values = std::make_unique<EmptyChecksums>();
+		}
+	}
+
+	// Build table line by line (record by record)
+	using std::to_string;
 	for (auto i = int { 0 }; i < c->total_records(); ++track, ++i)
 	{
-		// i is the record index
-
 		if (print(ATTR::TRACK))
 		{
 			c->set_field(i, ATTR::TRACK, to_string(track));
@@ -906,48 +948,35 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 			}
 		}
 
+		// Locally computed checksums fill all "mine" columns
 		for (const auto& t : types_to_print)
 		{
 			ATTR attr = t == arcstk::checksum::type::ARCS2
 				? ATTR::CHECKSUM_ARCS2
 				: ATTR::CHECKSUM_ARCS1;
 
-			// If there is only one attribute that contains checksum values,
-			// this is considered a "mine".
-			mine_checksum(checksums.at(i).get(t),
-					i, c->field_idx(attr), c.get());
+			mine_checksum(checksums.at(i).get(t), i, c->field_idx(attr),
+					c.get());
 		}
 
-		if (use_response)
+		// Reference checksums ("theirs") if any. Fill all "theirs" columns.
+		if (match)
 		{
-			if (match)
+			for (auto b = int { 0 }; b < total_theirs; ++b)
 			{
-				// Iterate over all blocks in the response
-				for (auto b = int { 0 }; b < total_theirs; ++b)
-				{
-					field_idx = c->field_idx(ATTR::THEIRS, b + 1);
+				block_idx = b % total_theirs_per_block;
 
-					does_match = match->track(b, i, true)
-						|| match->track(b, i, false);
+				curr_type =
+					types_to_print[std::ceil(b / total_theirs_per_block)];
 
-					their_checksum(response.at(b).at(i).arcs(), does_match,
-							i, field_idx, c.get());
-				}
+				does_match = match->track(block_idx, i,
+								curr_type == arcstk::checksum::type::ARCS2);
+
+				their_checksum(arcs_values->read(block_idx, i), does_match, i,
+						c->field_idx(ATTR::THEIRS, b + 1), c.get());
 			}
-		} else
-		{
-			if (!refvals.empty() && match)
-			{
-				field_idx = c->field_idx(ATTR::THEIRS, 1);
-
-				does_match = match->track(block, i, true)
-					|| match->track(block, i, false);
-
-				their_checksum(refvals.at(i), does_match,
-						i, field_idx, c.get());
-			}
-		}
-	} // records
+		} // if match
+	} // for i
 
 	c->set_layout(std::make_unique<StringTableLayout>(copy_table_layout()));
 
