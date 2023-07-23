@@ -642,15 +642,17 @@ std::vector<ATTR> VerifyResultFormatter::do_create_attributes(
 		{
 			fields.emplace_back(ATTR::CHECKSUM_ARCS1);
 		} else
-		if (checksum::ARCS2 == t)
 		{
-			fields.emplace_back(ATTR::CHECKSUM_ARCS2);
+			if (checksum::ARCS2 == t)
+			{
+				fields.emplace_back(ATTR::CHECKSUM_ARCS2);
+			}
 		}
-	}
 
-	for (auto i = int { 0 }; i < total_theirs; ++i)
-	{
-		fields.emplace_back(ATTR::THEIRS);
+		for (auto i = int { 0 }; i < total_theirs; ++i)
+		{
+			fields.emplace_back(ATTR::THEIRS);
+		}
 	}
 
 	return fields;
