@@ -265,19 +265,8 @@ void TableComposer::assign_labels(const std::vector<ATTR>& fields)
 
 	// THEIRS is the only attribute that could occurr multiple times.
 	// If it does, we want to append a counter in the label
-	const auto has_multiple_theirs = [&fields]()
-		{
-			auto theirs = bool { false };
-			for (const auto& a : fields)
-			{
-				if (ATTR::THEIRS == a)
-				{
-					if (theirs) { return true; }
-					else { theirs = true; }
-				}
-			}
-			return false;
-		}();
+	const auto total_theirs = std::count(begin(fields), end(fields),
+			ATTR::THEIRS);
 
 	// Add labels from internal label store
 	auto theirs = int { 0 };
@@ -287,15 +276,37 @@ void TableComposer::assign_labels(const std::vector<ATTR>& fields)
 		label_p = labels_.find(fields.at(a));
 		if (end(labels_) != label_p)
 		{
-			if (has_multiple_theirs && ATTR::THEIRS == fields.at(a))
+			// Name a THEIRS in the presence of multiple THEIRSs?
+			if (total_theirs > 1 && ATTR::THEIRS == fields.at(a))
 			{
+				// XXX This will screw up the table for more than 99 blocks
 				this->set_field_label(a, label_p->second
 						+ (theirs < 10 ? " " : "")
 						+ std::to_string(theirs));
 				++theirs;
 			} else
 			{
-				this->set_field_label(a, label_p->second);
+				// If there is at least 1 THEIRS, we will name the
+				// locally computed fields "Mine" instead of the default label
+				if (total_theirs > 0)
+				{
+					if (ATTR::CHECKSUM_ARCS2 == fields.at(a))
+					{
+						this->set_field_label(a, "Mine(v2)");
+					} else
+					if (ATTR::CHECKSUM_ARCS1 == fields.at(a))
+					{
+						this->set_field_label(a, "Mine(v1)");
+					} else
+					{
+						this->set_field_label(a, label_p->second);
+					}
+				} else
+				{
+					this->set_field_label(a, label_p->second);
+				}
+
+				theirs = 0;
 			}
 			// set_field_label is used polymorphically, but is called in ctor
 		}
