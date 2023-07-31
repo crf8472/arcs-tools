@@ -73,19 +73,6 @@ public:
 };
 
 
-class ARVerifyConfiguration final : public Configuration
-{
-	void do_load();
-
-public:
-
-	using Configuration::Configuration;
-};
-
-
-class ColorRegistry;
-
-
 /**
  * \brief Configurator for ARVerifyApplication instances.
  *
@@ -99,34 +86,6 @@ public:
 
 private:
 
-	/**
-	 * \brief Worker: parse the input for an ARResponse.
-	 *
-	 * \param[in] responsefile  The request string as passed from the cli
-	 *
-	 * \return ARResponse object
-	 */
-	ARResponse parse_response(const std::string &responsefile) const;
-
-	/**
-	 * \brief Worker: parse the input reference values.
-	 *
-	 * \param[in] value_list  The request string as passed from the cli
-	 *
-	 * \return Parsed checksums
-	 */
-	std::vector<Checksum> parse_refvalues(const std::string &value_list) const;
-
-	/**
-	 * \brief Worker: parse the colors requested by cli.
-	 *
-	 * \param[in] colors  The request string as passed from the cli
-	 *
-	 * \return Colors as requested.
-	 */
-	ColorRegistry parse_color_request(const std::string colors) const;
-
-
 	// Configurator
 
 	void do_flush_local_options(OptionRegistry& r) const final;
@@ -134,8 +93,11 @@ private:
 	std::unique_ptr<Options> do_configure_options(
 			std::unique_ptr<Options> options) const final;
 
-	std::unique_ptr<Configuration>do_create(
-			std::unique_ptr<Options> options) const final;
+	void do_validate(const Options& o) const final;
+
+	OptionParsers do_parser_list() const final;
+
+	void do_validate(const Configuration& c) const final;
 };
 
 
@@ -563,6 +525,55 @@ public:
 	 * \param[in] c  Color for coloring output of type \c d.
 	 */
 	void set_color_bg(DecorationType d, Color c);
+};
+
+
+/**
+ * \brief Parser for an ARResponse, either from a file or from stdin.
+ *
+ * Accepts binary input for option VERIFY::RESPONSEFILE.
+ */
+class ARResponseParser final : public InputStringParser<ARResponse>
+{
+	/**
+	 * \brief Load response from file or from stdin.
+	 *
+	 * In case the filename is empty, input is expected from stdin.
+	 *
+	 * \param[in] file The name of the response file
+	 */
+	ARResponse load_response(const std::string& file) const;
+
+	// InputStringParser
+
+	ARResponse do_parse_empty() const override;
+
+	ARResponse do_parse_nonempty(const std::string& s) const final;
+};
+
+
+/**
+ * \brief Parser for a checksum list.
+ *
+ * Accepts a comma-separated list of hexadecimal values as input for option
+ * VERIFY::REFVALUES.
+ */
+class ChecksumListParser final : public InputStringParser<std::vector<Checksum>>
+{
+	std::vector<Checksum> do_parse_nonempty(const std::string& s) const final;
+};
+
+
+/**
+ * \brief Parser for a color specification.
+ *
+ * Accepts a comma-separated list of colon-separated name-value pairs. The name
+ * is the name of a DecorationType. The value is a color specification, which is
+ * either a single color name or a pair of color names separated by '+' (plus).
+ */
+class ColorSpecParser final : public InputStringParser<ColorRegistry>
+{
+	ColorRegistry do_parse_nonempty(const std::string& s) const final;
 };
 
 

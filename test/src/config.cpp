@@ -68,11 +68,11 @@ TEST_CASE ( "DefaultConfigurator", "[DefaultConfigurator]" )
 	SECTION ("Global option: --verbosity")
 	{
 		const int argc = 4;
-		const char* input[] = { "arcstk-calc", "-v", "4", "foo/foo.wav" };
+		const char* argv[] = { "arcstk-calc", "-v", "4", "foo/foo.wav" };
 
 		DefaultConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, input);
+		auto options1 = conf1.provide_options(argc, argv);
 
 		CHECK ( options1->is_set(OPTION::VERBOSITY) );
 		CHECK ( options1->value(OPTION::VERBOSITY) == "4" );
@@ -81,11 +81,11 @@ TEST_CASE ( "DefaultConfigurator", "[DefaultConfigurator]" )
 	SECTION ("Global option: --quiet")
 	{
 		const int argc = 3;
-		const char* input[] = { "arcstk-calc", "-q", "foo/foo.wav" };
+		const char* argv[] = { "arcstk-calc", "-q", "foo/foo.wav" };
 
 		DefaultConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, input);
+		auto options1 = conf1.provide_options(argc, argv);
 
 		CHECK ( options1->is_set(OPTION::QUIET) );
 		CHECK ( options1->is_set(OPTION::VERBOSITY) );
@@ -95,11 +95,11 @@ TEST_CASE ( "DefaultConfigurator", "[DefaultConfigurator]" )
 	SECTION ("Global option: --logfile")
 	{
 		const int argc = 4;
-		const char* input[] = { "arcstk-calc", "-l", "logfile", "foo/foo.wav" };
+		const char* argv[] = { "arcstk-calc", "-l", "logfile", "foo/foo.wav" };
 
 		DefaultConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, input);
+		auto options1 = conf1.provide_options(argc, argv);
 
 		CHECK ( options1->is_set(OPTION::LOGFILE) );
 		CHECK ( options1->value(OPTION::LOGFILE) == "logfile" );
@@ -108,11 +108,11 @@ TEST_CASE ( "DefaultConfigurator", "[DefaultConfigurator]" )
 	SECTION ("Global option: --version")
 	{
 		const int argc = 3;
-		const char* input[] = { "arcstk-calc", "--version", "foo/foo.wav" };
+		const char* argv[] = { "arcstk-calc", "--version", "foo/foo.wav" };
 
 		DefaultConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, input);
+		auto options1 = conf1.provide_options(argc, argv);
 
 		CHECK ( options1->is_set(OPTION::VERSION) );
 	}
@@ -120,11 +120,11 @@ TEST_CASE ( "DefaultConfigurator", "[DefaultConfigurator]" )
 	SECTION ("Global option: --help")
 	{
 		const int argc = 3;
-		const char* input[] = { "arcstk-calc", "--help", "foo/foo.wav" };
+		const char* argv[] = { "arcstk-calc", "--help", "foo/foo.wav" };
 
 		DefaultConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, input);
+		auto options1 = conf1.provide_options(argc, argv);
 
 		CHECK ( options1->is_set(OPTION::HELP) );
 	}
@@ -181,14 +181,14 @@ TEST_CASE ( "ARCalcConfigurator", "[ARCalcConfigurator]" )
 	SECTION ("Option --metafile triggers album mode")
 	{
 		const int argc = 6;
-		const char* input[] = { "arcstk-calc",
+		const char* argv[] = { "arcstk-calc",
 			"--metafile", "foo/foo.cue", "foo/foo.wav",
 			"--list-audio-formats", "--list-toc-formats"
 		};
 
 		ARCalcConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, input);
+		auto options1 = conf1.provide_options(argc, argv);
 
 		CHECK ( options1->is_set(CALC::ALBUM) );
 		CHECK ( options1->is_set(CALC::FIRST) );
@@ -198,14 +198,14 @@ TEST_CASE ( "ARCalcConfigurator", "[ARCalcConfigurator]" )
 	SECTION ("Option --metafile overrides list options")
 	{
 		const int argc = 6;
-		const char* input[] = { "arcstk-calc",
+		const char* argv[] = { "arcstk-calc",
 			"--metafile", "foo/foo.cue", "foo/foo.wav",
 			"--list-toc-formats", "--list-audio-formats"
 		};
 
 		ARCalcConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, input);
+		auto options1 = conf1.provide_options(argc, argv);
 
 		CHECK (     options1->is_set(CALC::ALBUM)              );
 		CHECK ( not options1->is_set(CALC::LIST_TOC_FORMATS)   );
@@ -215,13 +215,13 @@ TEST_CASE ( "ARCalcConfigurator", "[ARCalcConfigurator]" )
 	SECTION ("No calculation requested leads to unmodified options object")
 	{
 		const int argc = 3;
-		const char* input[] = { "arcstk-calc",
+		const char* argv[] = { "arcstk-calc",
 			"--list-toc-formats", "--list-audio-formats"
 		};
 
 		ARCalcConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, input);
+		auto options1 = conf1.provide_options(argc, argv);
 
 		CHECK ( options1->is_set(CALC::LIST_TOC_FORMATS)   );
 		CHECK ( options1->is_set(CALC::LIST_AUDIO_FORMATS) );
@@ -299,13 +299,13 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 	SECTION ("Input with -m and -r is ok")
 	{
 		const int argc = 6;
-		const char* input[] = { "arcstk-verify",
+		const char* argv[] = { "arcstk-verify",
 			"-m", "foo/foo.cue", "foo/foo.wav", "-r", "foo/foo.bin"
 		};
 
 		ARVerifyConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, input);
+		auto options1 = conf1.provide_options(argc, argv);
 		auto arguments1 = *options1->arguments();
 
 		CHECK ( options1->is_set(VERIFY::METAFILE) );
@@ -342,14 +342,14 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 	SECTION ("Option --metafile overrides list options")
 	{
 		const int argc = 8;
-		const char* input[] = { "arcstk-verify",
+		const char* argv[] = { "arcstk-verify",
 			"--metafile", "foo/foo.cue", "foo/foo.wav", "-r", "foo/foo.bin",
 			"--list-toc-formats", "--list-audio-formats"
 		};
 
 		ARVerifyConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, input);
+		auto options1 = conf1.provide_options(argc, argv);
 
 		CHECK ( not options1->is_set(VERIFY::NOALBUM)          );
 		CHECK ( not options1->is_set(VERIFY::LIST_TOC_FORMATS)   );
@@ -358,14 +358,14 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 
 	SECTION ("Options --no-last and --no-first trigger --no-album")
 	{
-		const int argc = 4;
-		const char* input[] = { "arcstk-verify", "--no-first", "--no-last",
-			"foo/foo.wav"
+		const int argc = 5;
+		const char* argv[] = { "arcstk-verify", "--no-first", "--no-last",
+			"--refvalues=1,2,3", "foo/foo.wav"
 		};
 
 		ARVerifyConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, input);
+		auto options1 = conf1.provide_options(argc, argv);
 
 		CHECK ( options1->is_set(VERIFY::NOFIRST) );
 		CHECK ( options1->is_set(VERIFY::NOLAST)  );
@@ -374,12 +374,13 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 
 	SECTION ("Option --no-album triggers --no-last and --no-first")
 	{
-		const int argc = 3;
-		const char* input[] = { "arcstk-verify", "--no-album", "foo/foo.wav" };
+		const int argc = 4;
+		const char* argv[] = { "arcstk-verify", "--no-album",
+			"--refvalues=1,2,3", "foo/foo.wav" };
 
 		ARVerifyConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, input);
+		auto options1 = conf1.provide_options(argc, argv);
 
 		CHECK ( options1->is_set(VERIFY::NOFIRST) );
 		CHECK ( options1->is_set(VERIFY::NOLAST)  );
@@ -389,14 +390,14 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 	SECTION ("Option --no-output triggers --boolean")
 	{
 		const int argc = 7;
-		const char* input[] = { "arcstk-verify",
+		const char* argv[] = { "arcstk-verify",
 			"-m", "foo/foo.cue", "foo/foo.wav", "-r", "foo/foo.bin",
 			"--no-output"
 		};
 
 		ARVerifyConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, input);
+		auto options1 = conf1.provide_options(argc, argv);
 
 		CHECK ( options1->is_set(VERIFY::BOOLEAN)  );
 		CHECK ( options1->is_set(VERIFY::NOOUTPUT) );
@@ -405,14 +406,14 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 	SECTION ("Option --refvalues deactivates --print-url and --print-id")
 	{
 		const int argc = 6;
-		const char* input[] = { "arcstk-verify",
+		const char* argv[] = { "arcstk-verify",
 			"--refvalues=1,2,3", "foo/foo.cue", "foo/foo.wav",
 			"--print-url", "--print-id"
 		};
 
 		ARVerifyConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, input);
+		auto options1 = conf1.provide_options(argc, argv);
 
 		CHECK (     options1->is_set(VERIFY::REFVALUES) );
 		CHECK ( not options1->is_set(VERIFY::PRINTID)     );
@@ -422,14 +423,14 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 	SECTION ("Incompatible options --refvalues and --response are refused")
 	{
 		const int argc = 6;
-		const char* input[] = { "arcstk-verify",
+		const char* argv[] = { "arcstk-verify",
 			"--refvalues=1,2,3", "foo/foo.cue", "foo/foo.wav",
 			"-r", "foo/foo.bin",
 		};
 
 		ARVerifyConfigurator conf1;
 
-		CHECK_THROWS( conf1.provide_options(argc, input) );
+		CHECK_THROWS( conf1.provide_options(argc, argv) );
 	}
 
 	SECTION ("Configuration is loaded with correct color string")

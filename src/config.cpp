@@ -194,7 +194,11 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 		options->set(OPTION::VERBOSITY, "0");
 	}
 
-	return this->do_configure_options(std::move(options));
+	options = this->do_configure_options(std::move(options));
+
+	do_validate(*options);
+
+	return options;
 }
 
 
@@ -233,6 +237,21 @@ OptionRegistry Configurator::common_options() const
 }
 
 
+void Configurator::do_validate(const Options& o) const
+{
+	// Default implementation will just validate the options
+	// without any checks
+}
+
+
+OptionParsers Configurator::do_parser_list() const
+{
+	// Default Implementation does not specify parseable options
+
+	return {};
+}
+
+
 std::unique_ptr<Options> Configurator::do_configure_options(
 		std::unique_ptr<Options> options) const
 {
@@ -245,16 +264,30 @@ std::unique_ptr<Options> Configurator::do_configure_options(
 std::unique_ptr<Configuration> Configurator::create(
 		std::unique_ptr<Options> options) const
 {
-	return this->do_create(std::move(options));
+	auto config = std::make_unique<Configuration>(std::move(options));
+
+	// Parse input strings to objects
+
+	for (const auto& [option, load] : do_parser_list())
+	{
+		if (config->is_set(option))
+		{
+			config->put(option, load()->parse(config->value(option)));
+		}
+	}
+
+	// Validate configuration
+
+	do_validate(*config);
+
+	return config;
 }
 
 
-std::unique_ptr<Configuration> Configurator::do_create(
-			std::unique_ptr<Options> options) const
+void Configurator::do_validate(const Configuration& c) const
 {
-	// Default implementation can be used when no string input is to be parsed
-
-	return std::make_unique<Configuration>(std::move(options));
+	// Default implementation will just validate the configuration
+	// without any checks
 }
 
 

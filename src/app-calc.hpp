@@ -143,10 +143,18 @@ public:
 
 private:
 
+	// Configurator
+
 	void do_flush_local_options(OptionRegistry& r) const final;
 
 	std::unique_ptr<Options> do_configure_options(
 			std::unique_ptr<Options> options) const final;
+
+	// void do_validate(const Options& options) const;
+
+	// OptionParsers do_parser_list() const;
+
+	// void do_validate(const Configuration& configuration) const;
 };
 
 

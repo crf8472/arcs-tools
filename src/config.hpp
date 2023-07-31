@@ -204,8 +204,88 @@ struct OPTION
 };
 
 
+/**
+ * \brief Parse a string to an object.
+ *
+ * The result class is a std::any that can be put into a Configuration.
+ */
+class StringParser
+{
+	virtual std::any do_parse(const std::string& s) const
+	= 0;
+
+public:
+
+	/**
+	 * \brief Virtual default destructor.
+	 */
+	virtual ~StringParser() = default;
+
+	/**
+	 * \brief Parse input string to object.
+	 *
+	 * \param[in] s Input string to be parsed
+	 *
+	 * \return Result object
+	 */
+	std::any parse(const std::string& s) const
+	{
+		return this->do_parse(s);
+	}
+};
+
+
+/**
+ * \brief Parser for an input string for option values.
+ *
+ * \tparam T Result type
+ */
+template <typename T>
+class InputStringParser : public StringParser
+{
+	/**
+	 * \brief Parsing result for empty input.
+	 *
+	 * Default implementation returns an instance created by default
+	 * constructor.
+	 *
+	 * \return Result instance for an empty input string
+	 */
+	virtual auto do_parse_empty() const -> T
+	{
+		return T { /* empty */ };
+	}
+
+	/**
+	 * \brief Parsing result for non-empty input.
+	 *
+	 * \return Result instance for a non-empty input string
+	 *
+	 * \throws std::runtime_error If parsing fails
+	 */
+	virtual auto do_parse_nonempty(const std::string& s) const -> T
+	= 0;
+
+	// StringParser
+
+	inline std::any do_parse(const std::string& s) const final
+	{
+		if (s.empty())
+		{
+			return this->do_parse_empty();
+		}
+
+		return this->do_parse_nonempty(s);
+	}
+};
+
+
 using OptionRegistry = std::vector<std::pair<OptionCode, Option>>;
 //FIXME This definition is repeated from clitokens.hpp
+
+using OptionParsers = std::vector<std::pair<OptionCode,
+		std::function<std::unique_ptr<StringParser>(void)>
+		>>;
 
 
 class Configuration;
@@ -317,9 +397,8 @@ protected:
 private:
 
 	/**
-	 * \brief Flush options supported by this subclass so support list.
-	 *
-	 * Called by supported_options() to get options provided by subclass.
+	 * \brief Hook: called by supported_options() to flush options supported by
+	 * the specific subclass so support list.
 	 *
 	 * \param[in,out] supported List of supported options.
 	 */
@@ -327,7 +406,7 @@ private:
 	= 0;
 
 	/**
-	 * \brief Called by provide_options() after all options have
+	 * \brief Hook: called by provide_options() after all options have
 	 * been parsed.
 	 *
 	 * The default implementation just returns the input.
@@ -340,14 +419,33 @@ private:
 			std::unique_ptr<Options> options) const;
 
 	/**
-	 * \brief Create the configuration from the options.
+	 * \brief Hook: called by provide_options() on the result of
+	 * do_configure_options().
 	 *
-	 * \param[in] options The Options to configure
+	 * The default implementation does not perform any checks.
 	 *
-	 * \return The Configuration instance derived from the command line input
+	 * \param[in] options The Options to validate
 	 */
-	virtual std::unique_ptr<Configuration> do_create(
-			std::unique_ptr<Options> options) const;
+	virtual void do_validate(const Options& options) const;
+
+	/**
+	 * \brief Hook: called by create() for the list of parseable options and
+	 * their corresponding parsers.
+	 *
+	 * The default implementation provides an empty list.
+	 *
+	 * \return List of parseable options and their corresponding parsers
+	 */
+	virtual OptionParsers do_parser_list() const;
+
+	/**
+	 * \brief Hook: called by create() to validate configuration.
+	 *
+	 * The default implementation does not perform any checks.
+	 *
+	 * \param[in] configuration Configuration to validate
+	 */
+	virtual void do_validate(const Configuration& configuration) const;
 };
 
 
@@ -477,7 +575,18 @@ public:
 
 private:
 
+	// Configurator
+
 	void do_flush_local_options(OptionRegistry& r) const override;
+
+	//std::unique_ptr<Options> do_configure_options(
+	//		std::unique_ptr<Options> options) const final;
+
+	// void do_validate(const Options& options) const;
+
+	// OptionParsers do_parser_list() const;
+
+	// void do_validate(const Configuration& configuration) const;
 };
 
 
