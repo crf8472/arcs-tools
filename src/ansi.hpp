@@ -9,11 +9,41 @@
 
 #include <ostream>                // for ostream
 #include <string>                 // for to_string
+#include <sstream>                // for ostringstream
+#include <vector>
 
 namespace arcsapp
 {
 namespace ansi
 {
+
+
+/**
+ * \brief ANSI highlight codes.
+ *
+ * According to https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+ */
+enum class Highlight : int
+{
+	NORMAL =  0,
+	//
+	BOLD   =  1,
+	FAINT  =  2,
+	UNDERL =  4,
+	BLINK  =  5,
+	//
+	NOBOLD   = 22,
+	NOFAINT  = 22,
+	NOUNDERL = 24,
+	NOBLINK  = 25
+};
+
+
+/**
+ * \brief Get the reset code for the highlight.
+ */
+Highlight reset(const Highlight hl);
+
 
 /**
  * \brief ANSI color codes.
@@ -22,6 +52,8 @@ namespace ansi
  */
 enum class Color : int
 {
+	NONE        =  0,
+	//
 	FG_BLACK    = 30,
 	FG_RED      = 31,
 	FG_GREEN    = 32,
@@ -54,19 +86,8 @@ enum class Color : int
 Color get_color(const std::string& name);
 
 
-/**
- * \brief ANSI highlight codes.
- *
- * According to https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
- */
-enum class Highlight : int
-{
-	BRIGHT =  0,
-	NORMAL =  1
-};
-
-
 class Modifier;
+
 std::ostream& operator << (std::ostream& o, const Modifier& m);
 
 
@@ -76,14 +97,21 @@ std::ostream& operator << (std::ostream& o, const Modifier& m);
 class Modifier
 {
 	/**
-	 * \brief Internal color.
-	 */
-	Color color_;
-
-	/**
 	 * \brief Internal highlight.
 	 */
 	Highlight hl_;
+
+	/**
+	 * \brief List of codes to use.
+	 */
+	std::vector<Color> colors_;
+
+	/**
+	 * \brief Return SGR string of color codes.
+	 *
+	 * \return String representation of color codes for SGR
+	 */
+	std::string colors_str() const;
 
 public:
 
@@ -92,73 +120,57 @@ public:
 	/**
 	 * \brief Constructor.
 	 *
-	 * \param[in] c  Color to set
-	 * \param[in] hl Highlight to set
+	 * \param[in] hl     Highlight to set
+	 * \param[in] colors Color to set
 	 */
-	Modifier(Color c, Highlight hl);
+	Modifier(Highlight hl, const std::vector<Color>& colors);
 
 	/**
 	 * \brief Constructor.
 	 *
-	 * Set the highlight to BRIGHT.
+	 * Sets no colors.
 	 *
 	 * \param[in] hl Highlight to set
 	 */
-	explicit Modifier(Color c);
-
-	/**
-	 * \brief Color of this modifier.
-	 *
-	 * \return String representation of the color of this modifier
-	 */
-	std::string color() const;
+	Modifier(Highlight hl);
 
 	/**
 	 * \brief Highlight of this modifier.
 	 *
 	 * \return String representation of the highlight of this modifier
 	 */
-	std::string highlight() const;
+	Highlight highlight() const;
+
+	/**
+	 * \brief Color of this modifier.
+	 *
+	 * \return String representation of the color of this modifier
+	 */
+	std::vector<Color> colors() const;
 
 	/**
 	 * \brief Modifier string
 	 *
 	 * \return String representation of this modifier
 	 */
-	std::string to_string() const;
+	std::string str() const;
 };
 
 
 /**
  * \brief Colorize a string.
  *
- * The colorized string will have trailing modifiers for FG_NORMAL and BG_NORMAL
- * colors and NORMAL brightness
+ * The colorized string will have trailing modifier for resetting the highlight.
  *
- * \param[in] c Foreground color to use
- * \param[in] h Highlight to use
- * \param[in] s The string to be colorized
+ * \param[in] hl       Highlight to use
+ * \param[in] color_fg Foreground color to use
+ * \param[in] color_bg Background color to use
+ * \param[in] s        The string to be colorized
  *
  * \return Colorized string
  */
-std::string colored(Color c, Highlight h, const std::string& s);
-
-
-/**
- * \brief Colorize a string.
- *
- * \tparam C Foreground color to use
- * \tparam H Highlight to use, default is BRIGHT
- */
-template <Color C, Highlight H = Highlight::BRIGHT>
-struct Colorize
-{
-	inline std::string operator() (const std::string& s) const
-	{
-		return colored(C, H, s);
-	}
-};
-
+std::string colored(Highlight hl, const Color color_fg, const Color color_bg,
+		const std::string& s);
 
 } // namespace ansi
 } // namespace arcsapp

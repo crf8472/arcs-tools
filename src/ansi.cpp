@@ -17,9 +17,30 @@ namespace ansi
 {
 
 
+Highlight reset(const Highlight hl)
+{
+	static const std::unordered_map<Highlight, Highlight> highlights = {
+		{ Highlight::NORMAL, Highlight::NORMAL   },
+		{ Highlight::BOLD,   Highlight::NOBOLD   },
+		{ Highlight::FAINT,  Highlight::NOFAINT  },
+		{ Highlight::UNDERL, Highlight::NOUNDERL },
+		{ Highlight::BLINK,  Highlight::NOBLINK  }
+	};
+
+	using std::end;
+
+	if (const auto r { highlights.find(hl) }; end(highlights) != r)
+	{
+		return r->second;
+	}
+
+	return Highlight::NORMAL;
+}
+
+
 Color get_color(const std::string& name)
 {
-	static const std::unordered_map<std::string, Color> values = {
+	static const std::unordered_map<std::string, Color> colors = {
 		{ "FG_BLACK",   Color::FG_BLACK },
 		{ "FG_RED",     Color::FG_RED },
 		{ "FG_GREEN",   Color::FG_GREEN },
@@ -29,6 +50,7 @@ Color get_color(const std::string& name)
 		{ "FG_CYAN",    Color::FG_CYAN },
 		{ "FG_WHITE",   Color::FG_WHITE },
 		{ "FG_DEFAULT", Color::FG_DEFAULT },
+		//
 		{ "BG_BLACK",   Color::BG_BLACK },
 		{ "BG_RED",     Color::BG_RED },
 		{ "BG_GREEN",   Color::BG_GREEN },
@@ -40,60 +62,92 @@ Color get_color(const std::string& name)
 		{ "BG_DEFAULT", Color::BG_DEFAULT }
 	};
 
-	return values.find(name)->second;
+	using std::end;
+	if (const auto& c = colors.find(name); c != end(colors))
+	{
+		return c->second;
+	}
+
+	return Color::NONE;
 }
 
 
 // Modifier
 
 
-Modifier::Modifier(Color c, Highlight h)
-	: color_ { c }
-	, hl_    { h }
+Modifier::Modifier(Highlight hl, const std::vector<Color>& colors)
+	: hl_     { hl }
+	, colors_ { colors }
 {
-	// empty
+	/* empty */
 }
 
 
-Modifier::Modifier(Color c)
-	: Modifier{c, Highlight::BRIGHT} { /* empty */ }
+Modifier::Modifier(Highlight hl)
+	: hl_     { hl }
+	, colors_ { /* empty */ }
+{
+	/* empty */
+}
 
 
-std::string Modifier::color() const
+Highlight Modifier::highlight() const
+{
+	return hl_;
+}
+
+
+std::vector<Color> Modifier::colors() const
+{
+	return colors_;
+}
+
+
+std::string Modifier::colors_str() const
+{
+	if (colors_.empty())
+	{
+		return "";
+	}
+
+	std::ostringstream s;
+
+	using std::to_string;
+	for (const auto& c : colors_)
+	{
+		s << ";" << to_string(static_cast<std::underlying_type_t<Color>>(c));
+	}
+
+	return s.str();
+}
+
+
+std::string Modifier::str() const
 {
 	using std::to_string;
-	return to_string(static_cast<std::underlying_type_t<Color>>(color_));
-}
-
-
-std::string Modifier::highlight() const
-{
-	using std::to_string;
-	return to_string(static_cast<std::underlying_type_t<Highlight>>(hl_));
-}
-
-
-std::string Modifier::to_string() const
-{
-	return "\x1B[" + highlight() + ";" + color() + "m";
+	return "\x1B["
+		+ to_string(static_cast<std::underlying_type_t<Highlight>>(hl_))
+		+ colors_str()
+		+ "m";
 }
 
 
 std::ostream& operator << (std::ostream& o, const Modifier& m)
 {
-	return o << m.to_string();
+	return o << m.str();
 }
 
 
 // colored
 
 
-std::string colored(Color c, Highlight h, const std::string& s)
+std::string colored(const Highlight hl, const Color color_fg,
+		const Color color_bg, const std::string& s)
 {
-	return Modifier{c, h}.to_string()
+	return Modifier{ hl, { color_fg, color_bg } }.str()
 			+ s
-			+ Modifier{Color::FG_DEFAULT, Highlight::NORMAL}.to_string()
-			+ Modifier{Color::BG_DEFAULT, Highlight::NORMAL}.to_string();
+			+ Modifier{ reset(hl),
+				{ Color::FG_DEFAULT, Color::BG_DEFAULT } }.str();
 }
 
 

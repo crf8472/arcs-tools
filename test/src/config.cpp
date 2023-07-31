@@ -448,11 +448,11 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 
 		CHECK ( Color::FG_MAGENTA ==
 				c->object<ColorRegistry>(VERIFY::COLORED).get(
-					DecorationType::MATCH) );
+					DecorationType::MATCH).first );
 
 		CHECK ( Color::FG_BLUE ==
 				c->object<ColorRegistry>(VERIFY::COLORED).get(
-					DecorationType::MISMATCH) );
+					DecorationType::MISMATCH).first );
 
 		CHECK ( std::vector<Checksum>{ Checksum(1), Checksum(2), Checksum(3) }
 				== c->object<std::vector<Checksum>>(VERIFY::REFVALUES) );

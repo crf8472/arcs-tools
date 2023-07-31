@@ -140,6 +140,40 @@ private:
 
 
 /**
+ * \brief Decoratable output cell categories.
+ *
+ * Decoratable cell categories are matches with "theirs" (MATCH), mismatches
+ * with "theirs" (MISMATCH), and locally computed checksums (MINE).
+ */
+enum class DecorationType : int
+{
+	MATCH,
+	MISMATCH,
+	MINE
+};
+
+
+/**
+ * \brief Get a DecorationType by its name.
+ *
+ * \param[in] name Name of the decoration type
+ *
+ * \return The DecorationType named as in \c name
+ */
+DecorationType get_decorationtype(const std::string& name);
+
+
+/**
+ * \brief Get name for a DecorationType.
+ *
+ * \param[in] type DecorationType to get name of
+ *
+ * \return Name of \c type
+ */
+std::string name(const DecorationType type);
+
+
+/**
  * \brief Decorator to highlight matching checksums by color.
  *
  * If a cell is \c decorate_set() to TRUE, it will be printed in
@@ -150,16 +184,18 @@ private:
  */
 class MatchDecorator final : public CellDecorator
 {
-	/**
-	 * \brief Internal color for coloring matches.
-	 */
-	ansi::Color match_color_;
+	using Highlight = ansi::Highlight;
+	using Color = ansi::Color;
 
 	/**
-	 * \brief Internal color for coloring mismatches.
+	 * \brief Internal highlight store.
 	 */
-	ansi::Color mismatch_color_;
+	Highlight highlights_[2];
 
+	/**
+	 * \brief Internal color store.
+	 */
+	Color colors_[4];
 
 	// CellDecorator
 
@@ -174,29 +210,31 @@ public:
 	/**
 	 * \brief Constructor.
 	 *
-	 * \param[in] n        Total number of decoratable entries
-	 * \param[in] match    Color for coloring matches
-	 * \param[in] mismatch Color for coloring mismatches
+	 * \param[in] n            Total number of decoratable entries
+	 * \param[in] match_hl     Highlight for matches
+	 * \param[in] fg_match     Foreground color for matches
+	 * \param[in] bg_match     Background color for matches
+	 * \param[in] mismatch_hl  Highlight for mismatches
+	 * \param[in] fg_mismatch  Foreground color for mismatches
+	 * \param[in] bg_mismatch  Background color for mismatches
 	 */
-	MatchDecorator(const std::size_t n, const ansi::Color match,
-			const ansi::Color mismatch);
+	MatchDecorator(const std::size_t n, const Highlight match_hl,
+		const Color fg_match, const Color bg_match,
+		const Highlight mismatch_hl,
+		const Color fg_mismatch, const Color bg_mismatch);
 
 	/**
 	 * \brief Constructor.
 	 *
-	 * This constructor initializes the instance with the following defaults:
-	 * FG_GREEN (BRIGHT) for matches, FG_RED (BRIGHT) for mismatches.
-	 *
-	 * \param[in] n        Total number of decoratable entries
+	 * \param[in] n            Total number of decoratable entries
+	 * \param[in] match_hl     FG+BG highlight for matches
+	 * \param[in] match        FG+BG color for matches
+	 * \param[in] mismatch_hl  FG+BG highlight for mismatches
+	 * \param[in] mismatch     FG+BG colors for mismatches
 	 */
-	MatchDecorator(const std::size_t n);
-
-	/**
-	 * \brief Copy constructor.
-	 *
-	 * \param[in] rhs Instance to copy
-	 */
-	MatchDecorator(const MatchDecorator& rhs);
+	MatchDecorator(const std::size_t n, const Highlight match_hl,
+			const std::pair<Color, Color>& match, const Highlight mismatch_hl,
+			const std::pair<Color, Color>& mismatch);
 
 	/**
 	 * \brief Default destructor.
@@ -204,18 +242,54 @@ public:
 	~MatchDecorator() noexcept final = default;
 
 	/**
-	 * \brief Return the color for coloring matches.
+	 * \brief Return the background color for coloring matches.
 	 *
-	 * \return Color for matches
+	 * The first element is the foreground highlight, the second element is the
+	 * background highlight.
+	 *
+	 * \param[in] d DecorationType to get highlights for
+	 *
+	 * \return Highlights for type \c d
 	 */
-	ansi::Color color_for_match() const;
+	std::pair<ansi::Highlight, ansi::Highlight> highlights(
+			const DecorationType& d) const;
 
 	/**
-	 * \brief Return the color for coloring mismatches.
+	 * \brief Return highlight for specified decoration type.
 	 *
-	 * \return Color for mismatches
+	 * \param[in] d DecorationType to get highlight for
+	 *
+	 * \return Highlight for type \c d
 	 */
-	ansi::Color color_for_mismatch() const;
+	Highlight hl(const DecorationType& d) const;
+
+	/**
+	 * \brief Return the colors for the specified decoration type.
+	 *
+	 * The first element is the foreground color, the second element is the
+	 * background color.
+	 *
+	 * \return Colors for type \c d
+	 */
+	std::pair<Color,Color> colors(const DecorationType& d) const;
+
+	/**
+	 * \brief Return foreground color for specified decoration type.
+	 *
+	 * \param[in] d DecorationType to get foreground color for
+	 *
+	 * \return Foreground color for type \c d
+	 */
+	Color fg(const DecorationType& d) const;
+
+	/**
+	 * \brief Return background color for specified decoration type.
+	 *
+	 * \param[in] d DecorationType to get background color for
+	 *
+	 * \return Background color for type \c d
+	 */
+	Color bg(const DecorationType& d) const;
 };
 
 
@@ -316,30 +390,6 @@ class MonochromeVerifyResultFormatter : public VerifyResultFormatter
 
 
 /**
- * \brief Decoratable output cell categories.
- *
- * Decoratable cell categories are matches with "theirs" (MATCH), mismatches
- * with "theirs" (MISMATCH), and locally computed checksums (MINE).
- */
-enum class DecorationType : int
-{
-	MATCH,
-	MISMATCH,
-	MINE
-};
-
-
-/**
- * \brief Get a DecorationType by its name.
- *
- * \param[in] type Name of the decoration type
- *
- * \return The DecorationType named as in \c type
- */
-DecorationType get_decorationtype(const std::string& type);
-
-
-/**
  * \brief Registry assigning output colors for DecorationTypes.
  */
 class ColorRegistry final
@@ -347,7 +397,8 @@ class ColorRegistry final
 	/**
 	 * \brief Internal store for colors.
 	 */
-	std::map<DecorationType, ansi::Color> colors_;
+	std::unordered_map<DecorationType, std::pair<ansi::Color,ansi::Color>>
+		colors_;
 
 public:
 
@@ -366,21 +417,61 @@ public:
 	bool has(DecorationType d) const;
 
 	/**
-	 * \brief Return color for coloring output of type \c d.
+	 * \brief Return colors for coloring output of type \c d.
 	 *
 	 * \param[in] d  DecorationType to get actual color for
 	 *
-	 * \return Color for coloring output of type \c d.
+	 * \return Colors for coloring output of type \c d.
 	 */
-	ansi::Color get(DecorationType d) const;
+	std::pair<ansi::Color,ansi::Color> get(DecorationType d) const;
 
 	/**
-	 * \brief Set color for coloring output of type \c d.
+	 * \brief Return foreground color for coloring output of type \c d.
+	 *
+	 * \param[in] d  DecorationType to get actual color for
+	 *
+	 * \return Foreground color for coloring output of type \c d.
+	 */
+	ansi::Color get_fg(DecorationType d) const;
+
+	/**
+	 * \brief Return background color for coloring output of type \c d.
+	 *
+	 * \param[in] d  DecorationType to get actual color for
+	 *
+	 * \return Background color for coloring output of type \c d.
+	 */
+	ansi::Color get_bg(DecorationType d) const;
+
+	/**
+	 * \brief Set foreground color for coloring output of type \c d.
+	 *
+	 * Background color is set to BG_DEFAULT.
 	 *
 	 * \param[in] d  DecorationType to assign an actual color to
 	 * \param[in] c  Color for coloring output of type \c d.
 	 */
-	void set(DecorationType d, ansi::Color c);
+	void set_fg(DecorationType d, ansi::Color c);
+
+	/**
+	 * \brief Set background color for coloring output of type \c d.
+	 *
+	 * Background color is set to BG_DEFAULT.
+	 *
+	 * \param[in] d  DecorationType to assign an actual color to
+	 * \param[in] c  Color for coloring output of type \c d.
+	 */
+	void set_bg(DecorationType d, ansi::Color c);
+
+	/**
+	 * \brief Set foreground and background color for coloring output of
+	 * type \c d.
+	 *
+	 * \param[in] d  DecorationType to assign an actual color to
+	 * \param[in] fg Color for coloring output of type \c d.
+	 * \param[in] bg Color for coloring output of type \c d.
+	 */
+	void set(DecorationType d, ansi::Color fg, ansi::Color bg);
 
 	/**
 	 * \brief Delete all colors.
@@ -397,6 +488,8 @@ public:
  */
 class ColorizingVerifyResultFormatter : public VerifyResultFormatter
 {
+	using Color = ansi::Color;
+
 	/**
 	 * \brief Internal color registry.
 	 */
@@ -429,21 +522,47 @@ public:
 	ColorizingVerifyResultFormatter(const ColorRegistry& colors);
 
 	/**
-	 * \brief Return color for coloring output of type \c d.
+	 * \brief Return colors for coloring output of type \c d.
 	 *
 	 * \param[in] d  DecorationType to get actual color for
 	 *
-	 * \return Color for coloring output of type \c d.
+	 * \return Colors for coloring output of type \c d.
 	 */
-	ansi::Color color(DecorationType d) const;
+	std::pair<Color,Color> colors(DecorationType d) const;
 
 	/**
-	 * \brief Set color for coloring output of type \c d.
+	 * \brief Return foreground color for coloring output of type \c d.
+	 *
+	 * \param[in] d  DecorationType to get actual color for
+	 *
+	 * \return Foreground color for coloring output of type \c d.
+	 */
+	Color color_fg(DecorationType d) const;
+
+	/**
+	 * \brief Return background color for coloring output of type \c d.
+	 *
+	 * \param[in] d  DecorationType to get actual color for
+	 *
+	 * \return Background color for coloring output of type \c d.
+	 */
+	Color color_bg(DecorationType d) const;
+
+	/**
+	 * \brief Set foreground color for coloring output of type \c d.
 	 *
 	 * \param[in] d  DecorationType to assign an actual color to
 	 * \param[in] c  Color for coloring output of type \c d.
 	 */
-	void set_color(DecorationType d, ansi::Color c);
+	void set_color_fg(DecorationType d, Color c);
+
+	/**
+	 * \brief Set background color for coloring output of type \c d.
+	 *
+	 * \param[in] d  DecorationType to assign an actual color to
+	 * \param[in] c  Color for coloring output of type \c d.
+	 */
+	void set_color_bg(DecorationType d, Color c);
 };
 
 

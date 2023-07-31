@@ -19,8 +19,14 @@ TEST_CASE ( "MatchDecorator", "[matchdecorator]" )
 {
 	using arcsapp::CellDecorator;
 	using arcsapp::MatchDecorator;
+	using arcsapp::ansi::Color;
+	using arcsapp::ansi::Highlight;
 
-	std::unique_ptr<CellDecorator> d { std::make_unique<MatchDecorator>(1) };
+	std::unique_ptr<CellDecorator> d {
+		std::make_unique<MatchDecorator>(1,
+				Highlight::BOLD, Color::FG_GREEN, Color::BG_DEFAULT,
+				Highlight::BOLD, Color::FG_RED, Color::BG_DEFAULT)
+	};
 
 	SECTION ( "Constructor works as expected" )
 	{

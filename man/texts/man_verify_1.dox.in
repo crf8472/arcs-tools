@@ -80,7 +80,7 @@ album are to be verified.
 
 \copydoc inc_calcoutoptions
 
-\par --colors,--colors=[TYPE:COLOR]
+\par --colors,--colors=[TYPE:COLOR+COLOR,TYPE:COLOR+COLOR,...]
 \manonly
 .sp 1
 TYPE is one of: MATCH, MISMATCH, MINE
@@ -93,17 +93,21 @@ BG_DEFAULT
 .sp 1
 \endmanonly
 Use colored output for match results. This is only useful for output printed to
-CLI. Output to a file will be cluttered with ANSI escape sequences. If used
-without a parameter, \b --colors will use the default colors, which are FG_GREEN
-for matches, FG_RED for mismatches and FG_DEFAULT for locally computed checksums
-a.k.a. "MINE". A comma-separated list of pairs of a type name and color name
-separated by a colon ':' is accepted as an optional parameter. Both names are
-parsed case insensitive. If a list of colors is passed, all default colors will
-be ignored, hence every TYPE that is not assigned a color in the list is printed
-as FG_DEFAULT regardless whether it has a default color. MATCH defines the color
-for "Theirs" matching "Mine". Accordingly, MISMATCH defines the color for
-"Theirs" checksums not matching "Mine". MINE defines the color for "Mine"
-checksums.
+command line. Output to a file will be cluttered with ANSI escape sequences. If
+used without a parameter, \b --colors will use the default colors, which are
+FG_GREEN+BG_DEFAULT for matches, FG_RED+BG_DEFAULT for mismatches and
+FG_DEFAULT+BG_DEFAULT for locally computed checksums a.k.a. "MINE". A
+semicolon-separated list of pairs of a TYPE and a color specification separated
+by a colon ':' is accepted as an optional parameter. TYPE is one of MATCH,
+MISMATCH or MINE. MATCH defines the color for "Theirs" matching "Mine".
+Accordingly, MISMATCH defines the color for "Theirs" checksums not matching
+"Mine". MINE defines the color for "Mine" checksums. The color specification is
+either a single color name or a plus-separated pair of color names. Hence, their
+can be defined a color for the foreground and another for the background. Both
+TYPE and color names are parsed case insensitive. If a list of colors is passed,
+all default colors will be ignored, hence every TYPE that is not assigned a
+color in the list is printed as FG_DEFAULT+BG_DEFAULT regardless whether it has
+a default color.
 
 \par --print-id
 Print the AccurateRip id of the reference data, if available.

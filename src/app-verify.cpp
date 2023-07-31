@@ -328,6 +328,8 @@ std::unique_ptr<Configuration> ARVerifyConfigurator::do_create(
 ARResponse ARVerifyConfigurator::parse_response(const std::string &responsefile)
 	const
 {
+	ARCS_LOG_DEBUG << "Parse input: reference checksums (=\"Theirs\")";
+
 	// Parse the AccurateRip response
 
 	std::unique_ptr<ARStreamParser> parser;
@@ -362,7 +364,7 @@ ARResponse ARVerifyConfigurator::parse_response(const std::string &responsefile)
 		throw CallSyntaxException(e.what());
 	}
 
-	ARCS_LOG_DEBUG << "Response object created";
+	ARCS_LOG_DEBUG << "Successfully parsed response data to object";
 
 	return response;
 }
@@ -371,24 +373,22 @@ ARResponse ARVerifyConfigurator::parse_response(const std::string &responsefile)
 std::vector<Checksum> ARVerifyConfigurator::parse_refvalues(
 		const std::string &value_list) const
 {
+	ARCS_LOG_DEBUG << "Parse input: reference checksums (=\"Theirs\")";
+
+	auto i = int { 0 };
 	auto refvals = parse_list_to_objects<Checksum>(
 				value_list,
 				',',
-				[](const std::string& s) -> Checksum
+				[&i](const std::string& s) -> Checksum
 				{
 					Checksum::value_type value = std::stoul(s, 0, 16);
+					ARCS_LOG_DEBUG << "Parse checksum: " << Checksum { value }
+						<< " (Track " << ++i << ")";
 					return Checksum { value };
 				});
 
-	// Log the parsing result
-
-	if (Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG))
-	{
-		std::ostringstream outlist;
-		for (const auto& v : refvals) { outlist << v << " "; }
-		ARCS_LOG_DEBUG << "Option --refvals was passed the following values: "
-				<< outlist.str();
-	}
+	ARCS_LOG_DEBUG << "Parsed " << refvals.size() << " checksums";
+	ARCS_LOG_DEBUG << "Parsing completed";
 
 	return refvals;
 }
@@ -397,6 +397,8 @@ std::vector<Checksum> ARVerifyConfigurator::parse_refvalues(
 ColorRegistry ARVerifyConfigurator::parse_color_request(const std::string input)
 	const
 {
+	ARCS_LOG_DEBUG << "Parse input: color string '" << input << "'";
+
 	if (input.empty() || input == OP_VALUE::USE_DEFAULT)
 	{
 		return ColorRegistry{ /* default colors */ };
@@ -408,7 +410,7 @@ ColorRegistry ARVerifyConfigurator::parse_color_request(const std::string input)
 	r.clear(); // remove defaults, use only values from input string
 
 	parse_list(input, ',',
-			[&r,&sep](const std::string& s)
+			[&r,&sep](const std::string& s) // parse a single TYPE:COLOR pair
 			{
 				const auto pos = s.find(sep);
 
@@ -422,7 +424,7 @@ ColorRegistry ARVerifyConfigurator::parse_color_request(const std::string input)
 					throw CallSyntaxException(msg.str());
 				}
 
-				const auto to_uppercase = [](std::string str) -> std::string
+				const auto uppercase = [](std::string str) -> std::string
 				{
 					using std::begin;
 					using std::end;
@@ -431,12 +433,46 @@ ColorRegistry ARVerifyConfigurator::parse_color_request(const std::string input)
 					return str;
 				};
 
-				const auto type  { to_uppercase(s.substr(0, pos)) };
-				const auto color { to_uppercase(s.substr(pos + sep.length())) };
+				const auto type   { uppercase(s.substr(0, pos)) };
+				const auto colors { uppercase(s.substr(pos + sep.length())) };
 
-				r.set(get_decorationtype(type), ansi::get_color(color));
+				using ansi::get_color;
+
+				const auto plus = colors.find("+");
+				if (plus != std::string::npos)
+				{
+					// Color pair
+
+					const auto color_fg { colors.substr(0, plus)  };
+					const auto color_bg { colors.substr(plus + 1) };
+
+					ARCS_LOG(DEBUG1) << "For " << type << " set "
+							<< color_fg << " as foreground color";
+					ARCS_LOG(DEBUG1) << "For " << type << " set "
+							<< color_bg << " as background color";
+
+					r.set(get_decorationtype(type),
+						get_color(color_fg), get_color(color_bg));
+				} else
+				{
+					// Single color
+
+					if ("BG_" == colors.substr(0,3))
+					{
+						ARCS_LOG(DEBUG1) << "For " << type << " set " << colors
+							<< " as background color";
+						r.set_bg(get_decorationtype(type), get_color(colors));
+					} else
+					{
+						ARCS_LOG(DEBUG1) << "For " << type << " set " << colors
+							<< " as foreground color";
+						r.set_fg(get_decorationtype(type), get_color(colors));
+					}
+				}
+
 			});
 
+	ARCS_LOG_DEBUG << "Parsing completed";
 	return r;
 }
 
@@ -444,61 +480,84 @@ ColorRegistry ARVerifyConfigurator::parse_color_request(const std::string input)
 // MatchDecorator
 
 
-MatchDecorator::MatchDecorator(const std::size_t n, const ansi::Color match,
-			const ansi::Color mismatch)
+MatchDecorator::MatchDecorator(const std::size_t n, const Highlight match_hl,
+		const Color fg_match, const Color bg_match,
+		const Highlight mismatch_hl, const Color fg_mismatch,
+		const Color bg_mismatch)
 	: CellDecorator(n)
-	, match_color_    { match }
-	, mismatch_color_ { mismatch }
+	, highlights_ { match_hl, mismatch_hl }
+	, colors_     { fg_match, bg_match, fg_mismatch, bg_mismatch }
 {
 	/* empty */
 }
 
 
-MatchDecorator::MatchDecorator(const std::size_t n)
-	: MatchDecorator(n, ansi::Color::FG_GREEN, ansi::Color::FG_RED)
+MatchDecorator::MatchDecorator(const std::size_t n, const Highlight match_hl,
+		const std::pair<Color, Color>& match, const Highlight mismatch_hl,
+		const std::pair<Color, Color>& mismatch)
+	: MatchDecorator(n, match_hl, match.first, match.second,
+			mismatch_hl, mismatch.first, mismatch.second)
 {
 	/* empty */
 }
 
 
-MatchDecorator::MatchDecorator(const MatchDecorator& rhs)
-	: CellDecorator(rhs)
-	, match_color_    { rhs.match_color_    }
-	, mismatch_color_ { rhs.mismatch_color_ }
+ansi::Highlight MatchDecorator::hl(const DecorationType& d) const
 {
-	/* empty */
+	if (DecorationType::MATCH == d)
+	{
+		return highlights_[0];
+	}
+
+	if (DecorationType::MISMATCH == d)
+	{
+		return highlights_[1];
+	}
+
+	return Highlight::NORMAL;
 }
 
 
-ansi::Color MatchDecorator::color_for_match() const
+std::pair<ansi::Color, ansi::Color> MatchDecorator::colors(
+		const DecorationType& d) const
 {
-	return match_color_;
+	if (DecorationType::MATCH == d)
+	{
+		return { colors_[0], colors_[1] };
+	}
+
+	if (DecorationType::MISMATCH == d)
+	{
+		return { colors_[2], colors_[3] };
+	}
+
+	return { Color::FG_DEFAULT, Color::BG_DEFAULT };
 }
 
 
-ansi::Color MatchDecorator::color_for_mismatch() const
+ansi::Color MatchDecorator::fg(const DecorationType& d) const
 {
-	return mismatch_color_;
+	return colors(d).first;
+}
+
+
+ansi::Color MatchDecorator::bg(const DecorationType& d) const
+{
+	return colors(d).second;
 }
 
 
 std::string MatchDecorator::do_decorate_set(std::string&& s) const
 {
-	using ansi::Color;
-	using ansi::Modifier;
-	using ansi::Highlight;
-
-	return colored(color_for_match(), Highlight::BRIGHT, s);
+	return  colored(hl(DecorationType::MATCH),
+				fg(DecorationType::MATCH), bg(DecorationType::MATCH), s);
 }
 
 
 std::string MatchDecorator::do_decorate_unset(std::string&& s) const
 {
-	using ansi::Color;
-	using ansi::Modifier;
-	using ansi::Highlight;
-
-	return colored(color_for_mismatch(), Highlight::BRIGHT, s);
+	return  colored(hl(DecorationType::MISMATCH),
+				fg(DecorationType::MISMATCH), bg(DecorationType::MISMATCH), s);
 }
 
 
@@ -697,14 +756,33 @@ DecorationType get_decorationtype(const std::string& name)
 }
 
 
+std::string name(const DecorationType type)
+{
+	using map_type = std::unordered_map<DecorationType, std::string>;
+
+	static map_type names = [](){
+		map_type t;
+		t[DecorationType::MATCH]    = "MATCH";
+		t[DecorationType::MISMATCH] = "MISMATCH";
+		t[DecorationType::MINE]     = "MINE";
+		return t;
+	}();
+
+	return names[type];
+}
+
+
 // ColorRegistry
 
 
 ColorRegistry::ColorRegistry()
 	: colors_ {
-		{ DecorationType::MATCH,    ansi::Color::FG_GREEN,  },
-		{ DecorationType::MISMATCH, ansi::Color::FG_RED,    },
-		{ DecorationType::MINE,     ansi::Color::FG_DEFAULT }
+		{ DecorationType::MATCH,    { ansi::Color::FG_GREEN,
+									  ansi::Color::BG_DEFAULT} },
+		{ DecorationType::MISMATCH, { ansi::Color::FG_RED,
+									  ansi::Color::BG_DEFAULT} },
+		{ DecorationType::MINE,     { ansi::Color::FG_DEFAULT,
+									  ansi::Color::BG_DEFAULT} }
 	}
 {
 	// do nothing
@@ -718,22 +796,68 @@ bool ColorRegistry::has(DecorationType d) const
 }
 
 
-ansi::Color ColorRegistry::get(DecorationType d) const
+std::pair<ansi::Color,ansi::Color> ColorRegistry::get(DecorationType d) const
 {
-	const auto c = colors_.find(d);
 	using std::end;
-	if (end(colors_) == c)
+	if (const auto c = colors_.find(d); c != end(colors_))
 	{
-		return ansi::Color::FG_DEFAULT;
+		return c->second;
 	}
 
-	return c->second;
+	return { ansi::Color::FG_DEFAULT, ansi::Color::BG_DEFAULT };
 }
 
 
-void ColorRegistry::set(DecorationType d, ansi::Color c)
+ansi::Color ColorRegistry::get_fg(DecorationType d) const
 {
-	colors_.insert({ d, c });
+	return get(d).first;
+}
+
+
+ansi::Color ColorRegistry::get_bg(DecorationType d) const
+{
+	return get(d).second;
+}
+
+
+void ColorRegistry::set_fg(DecorationType d, ansi::Color c)
+{
+	using std::end;
+	if (const auto p = colors_.find(d); p != end(colors_))
+	{
+		p->second.first = c;
+		//colors_.insert({ d, { c, p->second.second }});
+	} else
+	{
+		colors_.insert({ d, { c, ansi::Color::BG_DEFAULT }});
+	}
+}
+
+
+void ColorRegistry::set_bg(DecorationType d, ansi::Color c)
+{
+	using std::end;
+	if (const auto p = colors_.find(d); p != end(colors_))
+	{
+		p->second.second = c;
+		//colors_.insert({ d, { p->second.first, c }});
+	} else
+	{
+		colors_.insert({ d, { ansi::Color::FG_DEFAULT, c }});
+	}
+}
+
+
+void ColorRegistry::set(DecorationType d, ansi::Color fg, ansi::Color bg)
+{
+	if (const auto p = colors_.find(d); p != end(colors_))
+	{
+		p->second.first  = fg;
+		p->second.second = bg;
+	} else
+	{
+		colors_.insert({ d, { fg, bg } });
+	}
 }
 
 
@@ -763,9 +887,9 @@ ColorizingVerifyResultFormatter::
 
 void ColorizingVerifyResultFormatter::init_composer(TableComposer* c) const
 {
-	const auto r_size    { c->total_records() };
-	const auto color_yes { color(DecorationType::MATCH) };
-	const auto color_no  { color(DecorationType::MISMATCH) };
+	using ansi::Highlight;
+
+	const auto r_size { c->total_records() };
 
 	// Register Decorators to each "Theirs" field
 
@@ -777,7 +901,9 @@ void ColorizingVerifyResultFormatter::init_composer(TableComposer* c) const
 			ARCS_LOG(DEBUG1) << "Register MatchDecorator to field index " << i;
 
 			c->register_to_field(i,
-				std::make_unique<MatchDecorator>(r_size, color_yes, color_no));
+				std::make_unique<MatchDecorator>(r_size,
+					Highlight::BOLD, colors_.get(DecorationType::MATCH),
+					Highlight::BOLD, colors_.get(DecorationType::MISMATCH) ));
 		}
 
 		++i;
@@ -808,15 +934,34 @@ void ColorizingVerifyResultFormatter::do_their_mismatch(
 }
 
 
-ansi::Color ColorizingVerifyResultFormatter::color(DecorationType d) const
+std::pair<ansi::Color, ansi::Color> ColorizingVerifyResultFormatter::colors(
+		DecorationType d) const
 {
-	return colors_.has(d) ? colors_.get(d) : ansi::Color::FG_DEFAULT;
+	return colors_.get(d);
 }
 
 
-void ColorizingVerifyResultFormatter::set_color(DecorationType d, ansi::Color c)
+ansi::Color ColorizingVerifyResultFormatter::color_fg(DecorationType d) const
 {
-	colors_.set(d, c);
+	return colors_.has(d) ? colors_.get_fg(d) : ansi::Color::FG_DEFAULT;
+}
+
+
+ansi::Color ColorizingVerifyResultFormatter::color_bg(DecorationType d) const
+{
+	return colors_.has(d) ? colors_.get_fg(d) : ansi::Color::FG_DEFAULT;
+}
+
+
+void ColorizingVerifyResultFormatter::set_color_fg(DecorationType d, Color c)
+{
+	colors_.set_fg(d, c);
+}
+
+
+void ColorizingVerifyResultFormatter::set_color_bg(DecorationType d, Color c)
+{
+	colors_.set_bg(d, c);
 }
 
 
