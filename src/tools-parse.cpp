@@ -300,7 +300,7 @@ std::string ARFileParser::file() const noexcept
 
 uint32_t ARFileParser::do_parse()
 {
-	ARCS_LOG_DEBUG << "Open file: " << this->file();
+	ARCS_LOG(DEBUG1) << "Open file: " << this->file();
 
 	std::ifstream file;
 

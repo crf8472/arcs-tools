@@ -815,22 +815,17 @@ void ColorizingVerifyResultFormatter::set_color_bg(DecorationType d, Color c)
 ARResponse ARResponseParser::load_response(const std::string& responsefile)
 	const
 {
-	ARCS_LOG_DEBUG << "Parse input: reference checksums (=\"Theirs\")";
-
 	// Parse the AccurateRip response
 
 	std::unique_ptr<ARStreamParser> parser;
 
 	if (responsefile.empty())
 	{
-		ARCS_LOG_DEBUG << "Parse response from stdin";
-
+		ARCS_LOG(DEBUG1) << "Expect input from stdin";
 		parser = std::make_unique<ARStdinParser>();
 
 	} else
 	{
-		ARCS_LOG_DEBUG << "Parse response from file " << responsefile;
-
 		parser = std::make_unique<ARFileParser>(responsefile);
 	}
 
@@ -851,9 +846,13 @@ ARResponse ARResponseParser::load_response(const std::string& responsefile)
 		throw CallSyntaxException(e.what());
 	}
 
-	ARCS_LOG_DEBUG << "Successfully parsed response data to object";
-
 	return response;
+}
+
+
+std::string ARResponseParser::start_message() const
+{
+	return "AccurateRip reference checksums (=\"Theirs\")";
 }
 
 
@@ -872,11 +871,15 @@ ARResponse ARResponseParser::do_parse_nonempty(const std::string& s) const
 // ChecksumListParser
 
 
+std::string ChecksumListParser::start_message() const
+{
+	return "List of local reference checksums (=\"Theirs\")";
+}
+
+
 std::vector<Checksum> ChecksumListParser::do_parse_nonempty(
 		const std::string& checksum_list) const
 {
-	ARCS_LOG_DEBUG << "Parse input: reference checksums (=\"Theirs\")";
-
 	auto i = int { 0 };
 	auto refvals = parse_list_to_objects<Checksum>(
 				checksum_list,
@@ -884,14 +887,12 @@ std::vector<Checksum> ChecksumListParser::do_parse_nonempty(
 				[&i](const std::string& s) -> Checksum
 				{
 					Checksum::value_type value = std::stoul(s, 0, 16);
-					ARCS_LOG_DEBUG << "Parse checksum: " << Checksum { value }
+					ARCS_LOG(DEBUG1) << "Parse checksum: " << Checksum { value }
 						<< " (Track " << ++i << ")";
 					return Checksum { value };
 				});
 
-	ARCS_LOG_DEBUG << "Parsed " << refvals.size() << " checksums";
-	ARCS_LOG_DEBUG << "Parsing completed";
-
+	ARCS_LOG(DEBUG1) << "Parsed " << refvals.size() << " checksums";
 	return refvals;
 }
 
@@ -899,11 +900,15 @@ std::vector<Checksum> ChecksumListParser::do_parse_nonempty(
 // ColorSpecParser
 
 
+std::string ColorSpecParser::start_message() const
+{
+	return "List of output color requests";
+}
+
+
 ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 {
-	ARCS_LOG_DEBUG << "Parse input: color string '" << input << "'";
-
-	if (input.empty() || input == OP_VALUE::USE_DEFAULT)
+	if (input == OP_VALUE::USE_DEFAULT)
 	{
 		return ColorRegistry{ /* default colors */ };
 	}
@@ -975,8 +980,6 @@ ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 				}
 
 			});
-
-	ARCS_LOG_DEBUG << "Parsing completed";
 	return r;
 }
 

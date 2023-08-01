@@ -79,8 +79,6 @@ Output& Output::instance()
 // Logging
 
 
-using arcstk::Appender;
-using arcstk::Logging;
 using arcstk::LOGLEVEL;
 
 
@@ -219,7 +217,10 @@ int Application::run(int argc, char** argv)
 
 	this->setup_logging(*options);
 
-	ARCS_LOG(DEBUG1) << *options;
+	if (arcstk::Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG1))
+	{
+		log_cli_input(*options, configurator->supported_options());
+	}
 
 	// Output
 
@@ -230,11 +231,14 @@ int Application::run(int argc, char** argv)
 
 	// Load configuration
 
-	auto app_configuration = configurator->create(std::move(options));
+	auto configuration = configurator->create(std::move(options));
+	configurator.reset();
+
+	ARCS_LOG_DEBUG << "Configuration completed, run application";
 
 	// Specific subclass function
 
-	return this->do_run(*app_configuration);
+	return this->do_run(*configuration);
 }
 
 

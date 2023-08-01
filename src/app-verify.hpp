@@ -546,6 +546,8 @@ class ARResponseParser final : public InputStringParser<ARResponse>
 
 	// InputStringParser
 
+	std::string start_message() const final;
+
 	ARResponse do_parse_empty() const override;
 
 	ARResponse do_parse_nonempty(const std::string& s) const final;
@@ -560,6 +562,8 @@ class ARResponseParser final : public InputStringParser<ARResponse>
  */
 class ChecksumListParser final : public InputStringParser<std::vector<Checksum>>
 {
+	std::string start_message() const final;
+
 	std::vector<Checksum> do_parse_nonempty(const std::string& s) const final;
 };
 
@@ -573,6 +577,8 @@ class ChecksumListParser final : public InputStringParser<std::vector<Checksum>>
  */
 class ColorSpecParser final : public InputStringParser<ColorRegistry>
 {
+	std::string start_message() const final;
+
 	ColorRegistry do_parse_nonempty(const std::string& s) const final;
 };
 

@@ -54,22 +54,31 @@ public:
 
 
 class Options;
-std::ostream& operator << (std::ostream& out, const Options &options);
+
+/**
+ * \brief Log an option object.
+ *
+ * \param[in] options    The options to log
+ */
+void log_cli_input(const Options& options, const OptionRegistry& registry);
 
 
 /**
  * \brief Configuration for an Application instance.
  *
  * An Options object contains the boolean as well as the valued options and
- * arguments for an Application. It represents the complete input configuration
- * for an application instance.
+ * arguments for an Application. It represents the complete string input for an
+ * application instance.
+ *
+ * Option values are just strings. They may require parsing or evaluation.
  */
 class Options final
 {
-public:
+	// TODO Not the best solution, just make Options range-iterable
+	friend void log_cli_input(const Options& options,
+			const OptionRegistry& registry);
 
-	friend std::ostream& operator << (std::ostream& out,
-			const Options &options);
+public:
 
 	/**
 	 * \brief Returns TRUE iff the option is set, otherwise FALSE.
@@ -183,7 +192,7 @@ private:
 	std::map<OptionCode, std::string> options_;
 
 	/**
-	 * \brief Arguments.
+	 * \brief Arguments in the order they are passed.
 	 */
 	std::vector<std::string> arguments_;
 };
@@ -211,6 +220,9 @@ struct OPTION
  */
 class StringParser
 {
+	virtual std::string start_message() const
+	= 0;
+
 	virtual std::any do_parse(const std::string& s) const
 	= 0;
 
@@ -230,6 +242,7 @@ public:
 	 */
 	std::any parse(const std::string& s) const
 	{
+		ARCS_LOG(DEBUG1) << "=> " << start_message();
 		return this->do_parse(s);
 	}
 };
@@ -253,6 +266,7 @@ class InputStringParser : public StringParser
 	 */
 	virtual auto do_parse_empty() const -> T
 	{
+		ARCS_LOG(DEBUG1) << "Empty parser input, return default object";
 		return T { /* empty */ };
 	}
 

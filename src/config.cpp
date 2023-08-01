@@ -124,36 +124,36 @@ bool Options::empty() const
 }
 
 
-std::ostream& operator << (std::ostream& out, const Options &options)
+// log_cli_input
+
+
+void log_cli_input(const Options& options, const OptionRegistry& registry)
 {
-	std::ios_base::fmtflags prev_settings = out.flags();
+	ARCS_LOG(DEBUG1) << "Command line options:";
 
-	out << "Options:" << '\n';
-
-	out << "Options (w/o value):" << '\n';
 	for (const auto& [code, value] : options.options_)
 	{
-		out << std::setw(2) << code;
-		if (!value.empty())
+		for (const auto& p : registry)
 		{
-			out << " = '" << value << "'" << '\n';
-		} else
-		{
-			out << " is set" << '\n';
+			if (code == p.first)
+			{
+				ARCS_LOG(DEBUG1) << "--" << p.second.symbol()
+					<< " (" << code << ")"
+					<< " = "
+					<< (value.empty() ? "TRUE" : "'" + value + "'");
+				break;
+			}
 		}
 	}
 
-	out << "Arguments:" << '\n';
+	ARCS_LOG(DEBUG1) << "Command line arguments:";
+
 	auto i = int { 0 };
 	for (const auto& arg : *options.arguments())
 	{
-		out << "Arg " << std::setw(2) << i << ": '" << arg << "'" << '\n';
+		ARCS_LOG(DEBUG1) << "Arg " << std::setw(2) << i << ": '" << arg << "'";
 		++i;
 	}
-
-	out.flags(prev_settings);
-
-	return out;
 }
 
 
@@ -166,6 +166,8 @@ Configurator::~Configurator() noexcept = default;
 std::unique_ptr<Options> Configurator::provide_options(const int argc,
 		const char* const * const argv) const
 {
+	// Logging is not yet possible here
+
 	auto options = std::make_unique<Options>();
 	{
 		const auto add_option =
@@ -272,7 +274,11 @@ std::unique_ptr<Configuration> Configurator::create(
 	{
 		if (config->is_set(option))
 		{
+			ARCS_LOG_DEBUG << "Parse input string for option " << option;
+
 			config->put(option, load()->parse(config->value(option)));
+
+			ARCS_LOG_DEBUG << "Successfully parsed input string";
 		}
 	}
 
