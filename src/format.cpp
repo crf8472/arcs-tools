@@ -94,6 +94,7 @@ std::ostream& operator << (std::ostream& o, const RichARId& a)
 	return o;
 }
 
+
 template<>
 std::string DefaultLabel<ATTR::TRACK>() { return "Track"; };
 
@@ -666,19 +667,6 @@ void ResultFormatter::set_checksum_layout(
 }
 
 
-void ResultFormatter::set_types_to_print(
-		std::vector<arcstk::checksum::type> types)
-{
-	types_ = types;
-}
-
-
-std::vector<arcstk::checksum::type> ResultFormatter::types_to_print() const
-{
-	return types_;
-}
-
-
 const ChecksumLayout* ResultFormatter::checksum_layout() const
 {
 	return checksum_layout_ ? checksum_layout_.get() : nullptr;
@@ -801,6 +789,7 @@ ResultFormatter::print_flag_t ResultFormatter::create_print_flags(
 
 
 std::unique_ptr<Result> ResultFormatter::build_result(
+		const std::vector<arcstk::checksum::type>& types_to_print,
 		const Match* match,
 		const int block,
 		const Checksums& checksums,
@@ -809,8 +798,7 @@ std::unique_ptr<Result> ResultFormatter::build_result(
 		const ARResponse& response,
 		const std::vector<Checksum>& refvalues,
 		const std::vector<std::string>& filenames,
-		const std::string& alt_prefix,
-		const std::vector<arcstk::checksum::type>& types_to_print) const
+		const std::string& alt_prefix) const
 {
 	// Flags to indicate whether requested field_types should actually
 	// be printed
@@ -825,8 +813,8 @@ std::unique_ptr<Result> ResultFormatter::build_result(
 
 	// Construct result objects
 
-	auto table { build_table(match, block, checksums, arid, toc,
-			response, refvalues, filenames, types_to_print, print_flags) };
+	auto table { build_table(types_to_print, match, block, checksums, arid, toc,
+			response, refvalues, filenames, print_flags) };
 
 	ARCS_LOG(DEBUG2) << "build_result(): build_table() returned";
 
@@ -872,6 +860,7 @@ RichARId ResultFormatter::build_id(const TOC* /*toc*/, const ARId& arid,
 
 
 std::unique_ptr<PrintableTable> ResultFormatter::build_table(
+		const std::vector<arcstk::checksum::type>& types_to_print,
 		const Match* match,
 		const int block,
 		const Checksums& checksums,
@@ -880,7 +869,6 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 		const ARResponse& response,
 		const std::vector<Checksum>& refvalues,
 		const std::vector<std::string>& filenames,
-		const std::vector<arcstk::checksum::type>& types_to_print,
 		const print_flag_t print) const
 {
 	ARCS_LOG(DEBUG2) << "build_table(): start";

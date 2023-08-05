@@ -166,7 +166,8 @@ using arcstk::TOC;
 /**
  * \brief Interface to format result objects of a calculation process.
  */
-using Calc5Layout = Layout<std::unique_ptr<Result>
+using Calc6Layout = Layout<std::unique_ptr<Result>
+	,const std::vector<arcstk::checksum::type>& /* mandatory: types to print */
 	,const Checksums&                /* mandatory: locally computed checksums */
 	,const ARId&                     /* optional: ARId */
 	,const TOC*                      /* optional: TOC */
@@ -179,7 +180,7 @@ using Calc5Layout = Layout<std::unique_ptr<Result>
  * \brief Format the results of the ARCalcApplication.
  */
 class CalcResultFormatter final : public ResultFormatter
-								, public Calc5Layout
+								, public Calc6Layout
 {
 private:
 
@@ -287,11 +288,9 @@ private:
 	 * The format object returned will not yet have formatted the checksums.
 	 *
 	 * \param[in] options  The options parsed from command line
-	 * \param[in] types    The requested checksum types
 	 */
 	std::unique_ptr<CalcResultFormatter> create_formatter(
-			const Configuration &config,
-			const std::vector<arcstk::checksum::type> &types) const;
+			const Configuration &config) const;
 
 
 	// ARCalcApplicationBase

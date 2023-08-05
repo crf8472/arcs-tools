@@ -966,20 +966,6 @@ public:
 	const ChecksumLayout* checksum_layout() const;
 
 	/**
-	 * \brief Set the list of requested checksum types.
-	 *
-	 * \param[in] types List of requested checksum types.
-	 */
-	void set_types_to_print(std::vector<arcstk::checksum::type> types);
-
-	/**
-	 * \brief List of requested checksum types.
-	 *
-	 * \return List of requested checksum types.
-	 */
-	std::vector<arcstk::checksum::type> types_to_print() const;
-
-	/**
 	 * \brief Return TRUE iff instance is configured to format the label.
 	 *
 	 * Intended to control the printing of column titles and row labels.
@@ -1048,6 +1034,7 @@ protected:
 	 * instance, and build_table() to populate the result table with the
 	 * relevant data.
 	 *
+	 * \param[in] types_to_print List of Checksum types requested for print
 	 * \param[in] match          Match between calculation and reference
 	 * \param[in] block          Best block in \c diff
 	 * \param[in] checksums      Calculated checksums
@@ -1057,9 +1044,9 @@ protected:
 	 * \param[in] toc            TOC for calculated checksums
 	 * \param[in] alt_prefix     Alternative AccurateRip URL prefix
 	 * \param[in] filenames      List of input filenames
-	 * \param[in] types_to_print List of Checksum types requested for print
 	 */
 	std::unique_ptr<Result> build_result(
+		const std::vector<arcstk::checksum::type>& types_to_print,
 		const Match* match,
 		const int block,
 		const Checksums& checksums,
@@ -1068,8 +1055,7 @@ protected:
 		const ARResponse& response,
 		const std::vector<Checksum>& refvalues,
 		const std::vector<std::string>& filenames,
-		const std::string& alt_prefix,
-		const std::vector<arcstk::checksum::type>& types_to_print) const;
+		const std::string& alt_prefix) const;
 
 	/**
 	 * \brief Validate the result objects common to every result.
@@ -1126,6 +1112,7 @@ protected:
 	/**
 	 * \brief Build the result table.
 	 *
+	 * \param[in] types       List of checksum types to print
 	 * \param[in] match       Match object (maybe null)
 	 * \param[in] block       Index to choose from \c match
 	 * \param[in] checksums   Checksums as resulted
@@ -1134,12 +1121,12 @@ protected:
 	 * \param[in] response    Reference checksums from AccurateRip response
 	 * \param[in] refvalues   Reference checksums as specified
 	 * \param[in] filenames   Filenames as resulted
-	 * \param[in] types       List of checksum types to print
 	 * \param[in] print_flags Flags to instruct print of data
 	 *
 	 * \return Table with result data
 	 */
 	std::unique_ptr<PrintableTable> build_table(
+		const std::vector<arcstk::checksum::type>& types,
 		const Match* match,
 		const int block,
 		const Checksums& checksums,
@@ -1148,7 +1135,6 @@ protected:
 		const ARResponse& response,
 		const std::vector<Checksum>& refvalues,
 		const std::vector<std::string>& filenames,
-		const std::vector<arcstk::checksum::type>& types,
 		const print_flag_t print_flags) const;
 
 	/**

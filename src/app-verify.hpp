@@ -261,7 +261,8 @@ public:
  * Formatter for VERIFY results can use this interface for inheriting the
  * appropriate Layout interface.
  */
-using Verify9Layout = Layout<std::unique_ptr<Result>
+using Verify10Layout = Layout<std::unique_ptr<Result>
+	,const std::vector<arcstk::checksum::type>& /* mandatory: types to print */
 	,const Match*                     /* mandatory: match results          */
 	,const int                        /* optional:  best block             */
 	,const Checksums&                 /* mandatory: "mine" checksums       */
@@ -278,7 +279,7 @@ using Verify9Layout = Layout<std::unique_ptr<Result>
  * \brief Interface for formatting the results of an ARVerifyApplication.
  */
 class VerifyResultFormatter : public ResultFormatter
-							, public Verify9Layout
+							, public Verify10Layout
 {
 public:
 
@@ -592,11 +593,9 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	 * \brief Configure an output format for the result.
 	 *
 	 * \param[in] config   The Application configuration
-	 * \param[in] types    Checksum types to print
 	 */
 	std::unique_ptr<VerifyResultFormatter> create_formatter(
-			const Configuration& config,
-			const std::vector<arcstk::checksum::type> &types) const;
+			const Configuration& config) const;
 
 	/**
 	 * \brief Worker: Log matching files from a file list.

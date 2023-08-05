@@ -344,10 +344,10 @@ std::vector<ATTR> CalcResultFormatter::do_create_attributes(
 
 void CalcResultFormatter::assertions(InputTuple t) const
 {
-	const auto checksums = std::get<0>(t);
-	const auto arid      = std::get<1>(t);
-	const auto toc       = std::get<2>(t);
-	const auto filenames = std::get<3>(t);
+	const auto checksums = std::get<1>(t);
+	const auto arid      = std::get<2>(t);
+	const auto toc       = std::get<3>(t);
+	const auto filenames = std::get<4>(t);
 
 	validate(checksums, toc, arid, filenames);
 }
@@ -355,13 +355,15 @@ void CalcResultFormatter::assertions(InputTuple t) const
 
 std::unique_ptr<Result> CalcResultFormatter::do_format(InputTuple t) const
 {
-	const auto checksums = std::get<0>(t);
-	const auto arid      = std::get<1>(t);
-	const auto toc       = std::get<2>(t);
-	const auto filenames = std::get<3>(t);
-	const auto altprefix = std::get<4>(t);
+	const auto types_to_print = std::get<0>(t);
+	const auto checksums = std::get<1>(t);
+	const auto arid      = std::get<2>(t);
+	const auto toc       = std::get<3>(t);
+	const auto filenames = std::get<4>(t);
+	const auto altprefix = std::get<5>(t);
 
 	return build_result(
+			types_to_print,
 			/* no match */ nullptr,
 			/* no block */ 0,
 			checksums,
@@ -370,8 +372,7 @@ std::unique_ptr<Result> CalcResultFormatter::do_format(InputTuple t) const
 			/* no ARResponse */ ARResponse{},
 			{ /* no reference ARCSs */ },
 			filenames,
-			altprefix,
-			types_to_print());
+			altprefix);
 }
 
 
@@ -461,7 +462,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 	const std::vector<std::string> &audiofilenames,
 	const bool as_first,
 	const bool as_last,
-	const std::vector<arcstk::checksum::type> &types,
+	const std::vector<arcstk::checksum::type> &types_requested,
 	arcsdec::FileReaderSelection *audio_selection,
 	arcsdec::FileReaderSelection *toc_selection)
 {
@@ -471,16 +472,17 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 	using std::begin;
 	using std::end;
 	using std::find;
-	ChecksumType checksum_type =
-		find(begin(types), end(types), ChecksumType::ARCS2) != types.end()
+	ChecksumType types_to_calculate =
+		find(begin(types_requested), end(types_requested), ChecksumType::ARCS2)
+			!= types_requested.end()
 		? ChecksumType::ARCS2
 		: ChecksumType::ARCS1;
 	// The types to calculate are allowed to differ from the explicitly
 	// requested types (since e.g. ARCS1 is a byproduct of ARCS2 and the
-	// type-to-calculate ARCS2 hence represents both the types-requested ARCS1
-	// as well as ARCS2).
+	// type-to-calculate ARCS2 hence represents both the type-requested ARCS1
+	// as well as the type-requested ARCS2).
 
-	calc::ARCSMultifileAlbumCalculator c { checksum_type };
+	calc::ARCSMultifileAlbumCalculator c { types_to_calculate };
 
 	if (toc_selection)   { c.set_toc_selection(toc_selection); }
 	if (audio_selection) { c.set_audio_selection(audio_selection); }
@@ -494,15 +496,12 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 
 
 std::unique_ptr<CalcResultFormatter> ARCalcApplication::create_formatter(
-		const Configuration& config,
-		const std::vector<arcstk::checksum::type> &types) const
+		const Configuration& config) const
 {
 	auto fmt = std::unique_ptr<CalcResultFormatter>
 	{
 		std::make_unique<CalcResultFormatter>()
 	};
-
-	fmt->set_types_to_print(types);
 
 	// Layouts for Checksums + ARId
 
@@ -637,16 +636,13 @@ auto ARCalcApplication::do_run_calculation(const Configuration &config) const
 							  std::back_inserter(types_to_print));
 	}
 
-	// Configure result presentation
-
-	const auto f { create_formatter(config, types_to_print) };
-
-	auto result { f->format(
-	/* ARCSs */  checksums,
-	/* ARId */   arid,
-	/* TOC   */  toc ? toc.get() : nullptr,
-	/* files */  toc ? arcstk::toc::get_filenames(toc) : *config.arguments(),
-	/* Prefix */ std::string { /* TODO Implement Alt-Prefix */ }
+	auto result { create_formatter(config)->format(
+	/* types  */  types_to_print,
+	/* ARCSs  */  checksums,
+	/* ARId   */  arid,
+	/* TOC    */  toc ? toc.get() : nullptr,
+	/* files  */  toc ? arcstk::toc::get_filenames(toc) : *config.arguments(),
+	/* Prefix */  std::string { /* TODO Implement Alt-Prefix */ }
 	)};
 
 	return std::make_pair(EXIT_SUCCESS, std::move(result));

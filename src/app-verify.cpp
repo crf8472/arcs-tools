@@ -437,19 +437,19 @@ const std::string& VerifyResultFormatter::match_symbol() const
 
 void VerifyResultFormatter::assertions(const InputTuple t) const
 {
-	const auto checksums = std::get<2>(t);
-	const auto arid      = std::get<3>(t);
-	const auto toc       = std::get<4>(t);
-	const auto filenames = std::get<7>(t);
+	const auto checksums = std::get<3>(t);
+	const auto arid      = std::get<4>(t);
+	const auto toc       = std::get<5>(t);
+	const auto filenames = std::get<8>(t);
 
 	validate(checksums, toc, arid, filenames);
 
 	// Specific for verify
 
-	const auto response  = std::get<5>(t);
-	const auto refvalues = std::get<6>(t);
-	const auto match     = std::get<0>(t);
-	const auto block     = std::get<1>(t);
+	const auto response  = std::get<6>(t);
+	const auto refvalues = std::get<7>(t);
+	const auto match     = std::get<1>(t);
+	const auto block     = std::get<2>(t);
 
 	if (refvalues.empty() && !response.size())
 	{
@@ -483,15 +483,16 @@ void VerifyResultFormatter::assertions(const InputTuple t) const
 
 std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 {
-	const auto match      = std::get<0>(t);
-	const auto block      = std::get<1>(t);
-	const auto checksums  = std::get<2>(t);
-	const auto arid       = std::get<3>(t);
-	const auto toc        = std::get<4>(t);
-	const auto response   = std::get<5>(t);
-	const auto refvalues  = std::get<6>(t);
-	const auto filenames  = std::get<7>(t);
-	const auto alt_prefix = std::get<8>(t);
+	const auto types_to_print = std::get<0>(t);
+	const auto match      = std::get<1>(t);
+	const auto block      = std::get<2>(t);
+	const auto checksums  = std::get<3>(t);
+	const auto arid       = std::get<4>(t);
+	const auto toc        = std::get<5>(t);
+	const auto response   = std::get<6>(t);
+	const auto refvalues  = std::get<7>(t);
+	const auto filenames  = std::get<8>(t);
+	const auto alt_prefix = std::get<9>(t);
 
 	auto result = std::make_unique<ResultList>();
 
@@ -504,6 +505,7 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 	}
 
 	result->append(build_result(
+				types_to_print,
 				match,
 				block,
 				checksums,
@@ -512,8 +514,7 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 				response,
 				refvalues,
 				filenames,
-				alt_prefix,
-				types_to_print()));
+				alt_prefix));
 
 	return result;
 }
@@ -988,8 +989,7 @@ ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 
 
 std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::create_formatter(
-		const Configuration& config,
-		const std::vector<arcstk::checksum::type> &types) const
+		const Configuration& config) const
 {
 	auto fmt = std::unique_ptr<VerifyResultFormatter>();
 
@@ -1001,8 +1001,6 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::create_formatter(
 	{
 		fmt = std::make_unique<MonochromeVerifyResultFormatter>();
 	}
-
-	fmt->set_types_to_print(types);
 
 	// Layouts for Checksums + ARId
 
@@ -1275,9 +1273,8 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	const auto match { diff->match() };
 
-	const auto f { create_formatter(config, types_to_print) };
-
-	auto result { f->format(
+	auto result { create_formatter(config)->format(
+		/* types to print */           types_to_print,
 		/* match results */            match,
 		/* optional best match */      best_block,
 		/* mine ARCSs */               checksums,
