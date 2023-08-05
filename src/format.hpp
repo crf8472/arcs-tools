@@ -690,7 +690,7 @@ protected:
 	 * \param[in] c           TableComposer to use
 	 * \param[in] field_types List of field types
 	 */
-	void assign_labels(TableComposer& c,
+	void assign_default_labels(TableComposer& c,
 			const std::vector<ATTR>& field_types) const;
 
 private:

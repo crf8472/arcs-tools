@@ -511,7 +511,7 @@ TableComposerBuilder::TableComposerBuilder()
 }
 
 
-void TableComposerBuilder::assign_labels(TableComposer& c,
+void TableComposerBuilder::assign_default_labels(TableComposer& c,
 		const std::vector<ATTR>& fields) const
 {
 	using std::begin;
@@ -522,48 +522,78 @@ void TableComposerBuilder::assign_labels(TableComposer& c,
 	const auto total_theirs = std::count(begin(fields), end(fields),
 			ATTR::THEIRS);
 
-	// Add labels from internal label store
 	auto theirs = int { 0 };
 	auto label_p { end(labels_) };
-	for (auto a = int { 0 }; a < fields.size(); ++a)
+	for (auto i = int { 0 }; i < fields.size(); ++i)
 	{
-		label_p = labels_.find(fields.at(a));
-		if (end(labels_) != label_p)
-		{
-			// Name a THEIRS in the presence of multiple THEIRSs?
-			if (total_theirs > 1 && ATTR::THEIRS == fields.at(a))
-			{
-				// XXX This will screw up the table for more than 99 blocks
-				c.set_label(a, label_p->second
-						+ (theirs < 10 ? " " : "")
-						+ std::to_string(theirs));
-				++theirs;
-			} else
-			{
-				// If there is at least 1 THEIRS, we will name the
-				// locally computed fields "Mine" instead of the default label
-				if (total_theirs > 0)
-				{
-					if (ATTR::CHECKSUM_ARCS2 == fields.at(a))
-					{
-						c.set_label(a, "Mine(v2)");
-					} else
-					if (ATTR::CHECKSUM_ARCS1 == fields.at(a))
-					{
-						c.set_label(a, "Mine(v1)");
-					} else
-					{
-						c.set_label(a, label_p->second);
-					}
-				} else
-				{
-					c.set_label(a, label_p->second);
-				}
+		// Use labels from internal label store
+		label_p = labels_.find(fields.at(i));
 
-				theirs = 0;
-			}
-			// set_field_label is used polymorphically, but is called in ctor
+		if (end(labels_) == label_p)
+		{
+			theirs = 0;
+			continue;
 		}
+
+		// If there is at least 1 THEIRS, name the locally computed fields
+		// "Mine" instead of the default label
+		if (total_theirs > 0)
+		{
+			if (ATTR::CHECKSUM_ARCS2 == fields.at(i))
+			{
+				c.set_label(i, "Mine(v2)");
+				theirs = 0;
+				continue;
+			} else
+			if (ATTR::CHECKSUM_ARCS1 == fields.at(i))
+			{
+				c.set_label(i, "Mine(v1)");
+				theirs = 0;
+				continue;
+			} else
+			// If there are more than 1 THEIRS, make the counter part of the
+			// label for the THEIRS fields
+			if (total_theirs > 1)
+			{
+				if (ATTR::THEIRS == fields.at(i))
+				{
+					// Number of digits in the counter
+					int total_digits = 0;
+					{
+						auto x = theirs;
+						if (x == 0) { ++total_digits; }
+						while (x != 0) { x /= 10; ++total_digits; }
+					}
+
+					// Trimmed label text
+					const std::string tlabel = details::trim(label_p->second);
+
+					// Number of trailing chars available in the label
+					const auto avail = 8/* col width */ - tlabel.length();
+
+					auto label = std::string{};
+
+					if (avail > total_digits)
+					{
+						label = tlabel + std::string(
+								static_cast<std::size_t>(avail - total_digits),
+								' ');
+					} else
+					{
+						label = label_p->second.substr(0, 
+								tlabel.length() - (total_digits - avail));
+					}
+
+					c.set_label(i, label + std::to_string(theirs));
+
+					++theirs; // count adjacent theirs
+					continue;
+				} // if ATTR::THEIRS
+			} // if total_theirs > 1
+		}
+
+		c.set_label(i, label_p->second);
+		theirs = 0;
 	}
 }
 
@@ -587,7 +617,7 @@ std::unique_ptr<TableComposer> RowTableComposerBuilder::do_build(
 
 	if (with_labels)
 	{
-		this->assign_labels(*c.get(), field_types);
+		this->assign_default_labels(*c.get(), field_types);
 	}
 
 	return c;
@@ -605,7 +635,7 @@ std::unique_ptr<TableComposer> ColTableComposerBuilder::do_build(
 
 	if (with_labels)
 	{
-		this->assign_labels(*c.get(), field_types);
+		this->assign_default_labels(*c.get(), field_types);
 	}
 
 	return c;
