@@ -523,7 +523,7 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 std::vector<ATTR> VerifyResultFormatter::do_create_attributes(
 		const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types_to_print,
-		const int total_theirs) const
+		const int total_theirs_per_block) const
 {
 	const auto total_fields =
 		  print_flags(ATTR::TRACK)
@@ -531,7 +531,7 @@ std::vector<ATTR> VerifyResultFormatter::do_create_attributes(
 		+ print_flags(ATTR::LENGTH)
 		+ print_flags(ATTR::FILENAME)
 		+ types_to_print.size()
-		+ total_theirs;
+		+ total_theirs_per_block;
 
 	using checksum = arcstk::checksum::type;
 
@@ -555,7 +555,7 @@ std::vector<ATTR> VerifyResultFormatter::do_create_attributes(
 			}
 		}
 
-		for (auto i = int { 0 }; i < total_theirs; ++i)
+		for (auto i = int { 0 }; i < total_theirs_per_block; ++i)
 		{
 			fields.emplace_back(ATTR::THEIRS);
 		}
