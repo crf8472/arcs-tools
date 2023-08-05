@@ -8,12 +8,12 @@
 
 
 
-\section SYNOPSIS
+\section id_syno SYNOPSIS
 
 arcstk-id [OPTIONS] TOCFILE [AUDIOFILE1 AUDIOFILE2 ...]
 
 
-\section DESCRIPTION
+\section id_desc DESCRIPTION
 
 Compute the AccurateRip id of a CD by its metadata or by the audio data. The
 leadout frame offset is necessary to calculate the AccurateRip Id. Some
@@ -22,7 +22,7 @@ the actual audio data must be inspected to get this information. If the metadata
 file contains the name of the audio file, this audio file name is used.
 Otherwise, option \b -a allows to specify the audio file explicitly.
 
-\section OPTIONS
+\section id_opts OPTIONS
 
 \copydoc inc_helpopt
 
@@ -65,7 +65,7 @@ Specify the audiofile to use explicitly.
 \copydoc inc_versionopt
 
 
-\section EXAMPLES
+\section id_exmp EXAMPLES
 
 Compute AccurateRip id for audiofile.cue while having the real audio file in the
 same directory:
@@ -77,15 +77,15 @@ Do the same as in the first example, but track precisely what is going on:
 $ arcstk-id --vvv audiofile.cue
 
 
-\section BUGS
+\section id_bugs BUGS
 
 
-\section COPYRIGHT
+\section id_copy COPYRIGHT
 
 \copydoc inc_license
 
 
-\section SEEALSO SEE ALSO
+\section id_see SEE ALSO
 
 @TOOL_NAME_CALC@(1), @TOOL_NAME_PARSE@(1), @TOOL_NAME_VERIFY@(1)
 

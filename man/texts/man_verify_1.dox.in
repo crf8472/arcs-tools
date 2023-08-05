@@ -2,18 +2,18 @@
 
 \page arcstk-verify
 
-\brief Calculate AccurateRip checksums locally
+\brief Calculate and verify AccurateRip checksums locally
 
 \version @PROJECT_VERSION@
 
 
 
-\section SYNOPSIS
+\section verify_syno SYNOPSIS
 
 arcstk-verify [OPTIONS] AUDIOFILE1 AUDIOFILE2 ...
 
 
-\section DESCRIPTION
+\section verify_desc DESCRIPTION
 
 Calculates AccurateRip checksums from losslessly encoded audiofiles and
 TOC information and verifies them against reference checksums.
@@ -40,9 +40,9 @@ Switch \b --print-all-matches shows any comparison that was actually performed
 in the output, regardless of v2 or v1 or whether a match was found.
 
 
-\section OPTIONS
+\section verify_opts OPTIONS
 
-\subsection INPUT Options for processing input
+\subsection verify_input Options for processing input
 
 \copydoc inc_helpopt
 
@@ -71,12 +71,12 @@ Abbreviates \b --no-first \b --no-last to suppress calculating a first and a
 last track. This switch is intended for cases in which only some tracks of an
 album are to be verified.
 
-\copydoc inc_infoptions
+\copydoc inc_infooptions
 
 \copydoc inc_procoptions
 
 
-\subsection OUTPUT Options for output
+\subsection verify_output Options for output
 
 \copydoc inc_calcoutoptions
 
@@ -130,7 +130,7 @@ could be matched for either ARCSv2 or ARCSv1.
 Do not print any result. Implies \b --boolean, therefore the return value will
 be informative.
 
-\copydoc inc_calcinfooptions
+\copydoc inc_calcinoptions
 
 \copydoc inc_outfileopt
 
@@ -141,9 +141,9 @@ be informative.
 \copydoc inc_versionopt
 
 
-\section EXAMPLES
+\section verify_exmp EXAMPLES
 
-\subsection ALBUMTOCM 1. Album + TOC, using the audio files specified in the TOC
+\subsection verify_ALBUMTOCM 1. Album + TOC, using the audio files specified in the TOC
 
 You have: An album ripped to a single audio file, say fLaC, or a set of files
 and the TOC (as CUESheet). The CUESheet specifies the actual audiofiles, may it
@@ -154,7 +154,7 @@ $ arcstk-verify -r dBAR-some_id.bin -m myalbum/toc.cue
 
 
 
-\subsection ALBUMTOCF 2. Album + TOC, overriding the files in the TOC, if any
+\subsection verify_ALBUMTOCF 2. Album + TOC, overriding the files in the TOC, if any
 
 
 \par a) Single audio file
@@ -178,7 +178,7 @@ $ arcstk-verify -r dBAR-some_id.bin -m myalbum/toc.cue myalbum/track_1.flac myal
 
 
 
-\subsection ALBUMFILES 3. Audiofiles forming an album, but no TOC
+\subsection verify_ALBUMFILES 3. Audiofiles forming an album, but no TOC
 
 You have: A set of audio files that you know to form an album, but there is no
 TOC information. The filenames are such that the first filename is also the
@@ -188,7 +188,7 @@ checksums from AccurateRip in a local dBAR file (see man 1 arcstk-parse).
 $ arcstk-verify -r dBAR-some_id.bin --album myalbum/f1.flac myalbum/f2.flac ...
 
 
-\subsection FILES 4. Some audiofiles but no TOC
+\subsection verify_FILES 4. Some audiofiles but no TOC
 
 You have: A set of audiofiles that do not form an album in the passed order,
 e.g. the mapping from files to tracks is not known. You saved the checksums of
@@ -209,17 +209,17 @@ $ arcstk-verify -r dBAR-some_id.bin --last myalbum/track_1.flac ... myalbum/trac
 album.
 
 
-\section BUGS
+\section verify_bugs BUGS
 
 \copydoc inc_buginfo
 
 
-\section COPYRIGHT
+\section verify_copy COPYRIGHT
 
 \copydoc inc_license
 
 
-\section SEEALSO SEE ALSO
+\section verify_see SEE ALSO
 
 @TOOL_NAME_ID@(1), @TOOL_NAME_CALC@(1), @TOOL_NAME_PARSE@(1)
 

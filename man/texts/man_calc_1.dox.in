@@ -8,12 +8,12 @@
 
 
 
-\section SYNOPSIS
+\section calc_syno SYNOPSIS
 
 arcstk-calc [OPTIONS] AUDIOFILE1 AUDIOFILE2 ...
 
 
-\section DESCRIPTION
+\section calc_desc DESCRIPTION
 
 Calculates AccurateRip checksums from losslessly encoded audiofiles and
 TOC information.
@@ -21,9 +21,9 @@ TOC information.
 \copydoc inc_calcdesc
 
 
-\section OPTIONS
+\section calc_opts OPTIONS
 
-\subsection INPUT Options for processing input
+\subsection calc_input Options for processing input
 
 \par --first
 Process the first of the audiofiles as first track of an album. This option is
@@ -46,7 +46,7 @@ album are represented as single files but no TOC metadata is present.
 \copydoc inc_calcinoptions
 
 
-\subsection OUTPUT Options for output
+\subsection calc_output Options for output
 
 \copydoc inc_calcoutoptions
 
@@ -97,9 +97,9 @@ right.
 \copydoc inc_versionopt
 
 
-\section EXAMPLES
+\section calc_exmp
 
-\subsection ALBUMTOCM 1. Album + TOC, using the audio files specified in the TOC
+\subsection calc_ALBUMTOCM 1. Album + TOC, using the audio files specified in the TOC
 
 You have: An album ripped to a single audio file, say fLaC, or a set of files
 and the TOC as a CUESheet. The CUESheet specifies the actual audiofiles, may it
@@ -108,7 +108,7 @@ be a single file or one file per track.
 $ arcstk-calc -m myalbum/toc.cue
 
 
-\subsection ALBUMTOCF 2. Album + TOC, overriding the files in the TOC, if any
+\subsection calc_ALBUMTOCF 2. Album + TOC, overriding the files in the TOC, if any
 
 
 \par a) Single audio file
@@ -129,7 +129,7 @@ want to override its file references.
 $ arcstk-calc -m myalbum/toc.cue myalbum/track_1.flac myalbum/track_2.flac ...
 
 
-\subsection ALBUMFILES 3. Audiofiles forming an album, but no TOC
+\subsection calc_ALBUMFILES 3. Audiofiles forming an album, but no TOC
 
 You have: A set of audio files that you know to form an album, but there is no
 TOC information. The filenames are such that the first filename is also the
@@ -138,7 +138,7 @@ first track and the last filename is the last track of the album.
 $ arcstk-calc --album myalbum/track_1.flac myalbum/track_2.flac ...
 
 
-\subsection FILES 4. Some audiofiles but no TOC
+\subsection calc_FILES 4. Some audiofiles but no TOC
 
 You have: A set of audiofiles that do not form an album. (Either the album is
 missing some tracks or the tracks you intend to pass are completely unrelated.)
@@ -175,17 +175,17 @@ audio files and declare it accordingly:
 $ arcstk-calc --last myalbum/f1.flac myalbum/f12.flac ... myalbum/f17.flac
 
 
-\section BUGS
+\section calc_bugs BUGS
 
 \copydoc inc_buginfo
 
 
-\section COPYRIGHT
+\section calc_copy COPYRIGHT
 
 \copydoc inc_license
 
 
-\section SEEALSO SEE ALSO
+\section calc_see SEE ALSO
 
 @TOOL_NAME_ID@(1), @TOOL_NAME_PARSE@(1), @TOOL_NAME_VERIFY@(1)
 

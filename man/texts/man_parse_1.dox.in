@@ -8,19 +8,19 @@
 
 
 
-\section SYNOPSIS
+\section parse_syno SYNOPSIS
 
 arcstk-parse [OPTIONS] FILENAME
 
 
-\section DESCRIPTION
+\section parse_desc DESCRIPTION
 
 Parse responses from the AccurateRip database and output checksums,
 confidence values and the checksums for frame 450 for each profile contained in
 the response.
 
 
-\section OPTIONS
+\section parse_opts OPTIONS
 
 \copydoc inc_helpopt
 
@@ -33,7 +33,7 @@ the response.
 \copydoc inc_versionopt
 
 
-\section EXAMPLES
+\section parse_exmp EXAMPLES
 
 Parse the binary data returned by AccurateRip and print it in a human-readable
 form:
@@ -49,15 +49,15 @@ Do the same as in the first example, but write to myfile.txt instead of stdout:
 $ arcstk-parse -o myfile.txt dBAR-123.bin
 
 
-\section BUGS
+\section parse_bugs BUGS
 
 
-\section COPYRIGHT
+\section parse_copy COPYRIGHT
 
 \copydoc inc_license
 
 
-\section SEEALSO SEE ALSO
+\section parse_see SEE ALSO
 
 @TOOL_NAME_ID@(1), @TOOL_NAME_CALC@(1), @TOOL_NAME_VERIFY@(1)
 
