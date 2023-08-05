@@ -266,8 +266,9 @@ public:
 	/**
 	 * \brief Name of the file to parse.
 	 *
-	 * \return Name of the file that is parsed when
-	 * \link ARStreamParser::parse() parse() \endlink is called.
+	 * \return Name of the file that is parsed when parse() is called.
+	 *
+	 * \return Name of the file to parse
 	 */
 	std::string file() const noexcept;
 

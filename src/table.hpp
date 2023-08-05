@@ -36,7 +36,9 @@ namespace details
  *
  * Type \c T must have operator <<.
  *
- * \param[in] T The value to convert
+ * \tparam T Input type to convert, must have overloaded operator <<.
+ *
+ * \param[in] value The value to convert
  *
  * \return A string representation of \c value
  */
@@ -406,10 +408,9 @@ public:
 	 * Type of <tt>value</tt> must support stream operator <<.
 	 * Write content using cell().
 	 *
-	 * \param[in] row  Table row to access
-	 * \param[in] col  Table column to access
-	 *
-	 * \return Content of the cell
+	 * \param[in] row   Table row to access
+	 * \param[in] col   Table column to access
+	 * \param[in] value Value to set
 	 */
 	template <typename T>
 	inline void set_cell(int row, int col, T&& value)
@@ -437,8 +438,6 @@ public:
 	/**
 	 * \brief Default maximal height for this row.
 	 *
-	 * \param[in] row    Index of row
-	 *
 	 * \return Maximal height in characters
 	 */
 	std::size_t default_max_height() const;
@@ -461,8 +460,6 @@ public:
 
 	/**
 	 * \brief Default maximal width for this column.
-	 *
-	 * \param[in] col    Index of column
 	 *
 	 * \return Default maximal width in characters
 	 */

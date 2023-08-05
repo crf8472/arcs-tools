@@ -35,8 +35,6 @@ std::string path(const std::string &filename);
  *
  * \param[in]     path     The (absolute or relative) path to prepend
  * \param[in,out] filename The filename to prepend \c path to
- *
- * \return The filename with the path prepended
  */
 void prepend_path(const std::string &path, std::string &filename);
 

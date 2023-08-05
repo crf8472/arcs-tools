@@ -58,7 +58,8 @@ class Options;
 /**
  * \brief Log an option object.
  *
- * \param[in] options    The options to log
+ * \param[in] options  Options to log
+ * \param[in] registry Option data
  */
 void log_cli_input(const Options& options, const OptionRegistry& registry);
 

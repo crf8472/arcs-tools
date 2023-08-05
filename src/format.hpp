@@ -923,16 +923,6 @@ class AddField
 };
 
 
-template <>
-class AddField<ATTR::CHECKSUM_ARCS1>;
-
-template <>
-class AddField<ATTR::CHECKSUM_ARCS2>;
-
-template <>
-class AddField<ATTR::THEIRS>;
-
-
 /**
  * \brief Abstract base class for result formatting.
  *
@@ -940,9 +930,7 @@ class AddField<ATTR::THEIRS>;
  */
 class ResultFormatter : public WithInternalFlags
 {
-	friend AddField<ATTR::CHECKSUM_ARCS1>;
-	friend AddField<ATTR::CHECKSUM_ARCS2>;
-	friend AddField<ATTR::THEIRS>;
+	template <enum ATTR> friend class AddField;
 
 public:
 
@@ -963,7 +951,7 @@ public:
 	/**
 	 * \brief Set the layout to use for formatting the output table.
 	 *
-	 * \param[in] table_layout The StringTableLayout to set
+	 * \param[in] layout The StringTableLayout to set
 	 */
 	void set_table_layout(std::unique_ptr<StringTableLayout> layout);
 
@@ -1112,14 +1100,14 @@ protected:
 	/**
 	 * \brief Create the result \c field_types.
 	 *
-	 * \param[in] print_flags  Flags to instruct print of data
-	 * \param[in] types        List of checksum types to print
-	 * \param[in] total_theirs Total number of THEIRS columns
+	 * \param[in] print_flags            Flags to instruct print of data
+	 * \param[in] types_to_print         List of checksum types to print
+	 * \param[in] total_theirs_per_block Total number of THEIRS columns
 	 *
 	 * \return Sequence of result field_types to form an record
 	 */
 	std::vector<ATTR> create_attributes(const print_flag_t print_flags,
-		const std::vector<arcstk::checksum::type>& types,
+		const std::vector<arcstk::checksum::type>& types_to_print,
 		const int total_theirs_per_block) const;
 
 	/**
@@ -1197,7 +1185,7 @@ protected:
 	 *
 	 * Note that \c record also determines access to \c checksums.
 	 *
-	 * \param[in] checksum   Reference checksum to be formatted
+	 * \param[in] checksums  Reference checksum to be formatted
 	 * \param[in] does_match Print as matching or as not matching
 	 * \param[in] record     Index of the record in \c b to edit
 	 * \param[in] field      Index of the field in \c b to edit
