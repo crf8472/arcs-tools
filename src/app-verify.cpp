@@ -989,8 +989,7 @@ ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 
 std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::create_formatter(
 		const Configuration& config,
-		const std::vector<arcstk::checksum::type> &types, const Match &match)
-		const
+		const std::vector<arcstk::checksum::type> &types) const
 {
 	auto fmt = std::unique_ptr<VerifyResultFormatter>();
 
@@ -1276,7 +1275,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	const auto match { diff->match() };
 
-	const auto f { create_formatter(config, types_to_print, *match) };
+	const auto f { create_formatter(config, types_to_print) };
 
 	auto result { f->format(
 		/* match results */            match,

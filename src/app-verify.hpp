@@ -593,12 +593,10 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	 *
 	 * \param[in] config   The Application configuration
 	 * \param[in] types    Checksum types to print
-	 * \param[in] match    Match object to print
 	 */
 	std::unique_ptr<VerifyResultFormatter> create_formatter(
 			const Configuration& config,
-			const std::vector<arcstk::checksum::type> &types,
-			const Match &match) const;
+			const std::vector<arcstk::checksum::type> &types) const;
 
 	/**
 	 * \brief Worker: Log matching files from a file list.
