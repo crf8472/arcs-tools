@@ -967,7 +967,7 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 		}
 
 		record_builder.add_fields(std::make_unique<AddField<ATTR::THEIRS>>(
-					match, reference.get(), &types_to_print, this,
+					match, block, reference.get(), &types_to_print, this,
 					total_theirs_per_block));
 	}
 

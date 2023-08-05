@@ -1413,6 +1413,7 @@ template <>
 class AddField<ATTR::THEIRS> final : public FieldCreator
 {
 	const Match* match_;
+	const int block_;
 	const ChecksumSource*  checksums_;
 	const std::vector<arcstk::checksum::type>* types_to_print_;
 	const ResultFormatter* formatter_;
@@ -1431,7 +1432,8 @@ class AddField<ATTR::THEIRS> final : public FieldCreator
 		// Create all theirs fields
 		for (auto b = int { 0 }; b < total_theirs; ++b)
 		{
-			block_idx = b % total_theirs_per_block_;
+			// Enumerate one or more blocks
+			block_idx =  block_ >= 0  ? block_  : b % total_theirs_per_block_;
 
 			curr_type =
 				types_to_print_->at(std::ceil(b / total_theirs_per_block_));
@@ -1448,11 +1450,13 @@ class AddField<ATTR::THEIRS> final : public FieldCreator
 public:
 
 	AddField(const Match* match,
+			const int block,
 			const ChecksumSource* checksums,
 			const std::vector<arcstk::checksum::type>* types,
 			const ResultFormatter* formatter,
 			const int total_theirs_per_block)
 		: match_ { match }
+		, block_ { block }
 		, checksums_ { checksums }
 		, types_to_print_ { types }
 		, formatter_ { formatter }
