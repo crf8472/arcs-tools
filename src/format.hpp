@@ -153,7 +153,7 @@ public:
 	 */
 	inline void set_label(const F& field_type, const std::string& label)
 	{
-		this->do_set_label(field_type, label);
+		this->do_set_label_by_type(field_type, label);
 	}
 
 	/**
@@ -161,7 +161,23 @@ public:
 	 */
 	inline std::string label(const F& field_type) const
 	{
-		return this->do_label(field_type);
+		return this->do_label_by_type(field_type);
+	}
+
+	/**
+	 * \brief Set the label for the specified field index.
+	 */
+	inline void set_label(const int field_idx, const std::string& label)
+	{
+		return this->do_set_label_by_index(field_idx, label);
+	}
+
+	/**
+	 * \brief Label for the specified field index.
+	 */
+	inline std::string label(const int field_idx) const
+	{
+		return do_label_by_index(field_idx);
 	}
 
 	/**
@@ -255,10 +271,18 @@ private:
 	virtual const std::string& do_field(const int i, const F& field_type) const
 	= 0;
 
-	virtual void do_set_label(const F& field_type, const std::string& label)
+	virtual void do_set_label_by_type(const F& field_type,
+			const std::string& label)
 	= 0;
 
-	virtual std::string do_label(const F& field_type) const
+	virtual std::string do_label_by_type(const F& field_type) const
+	= 0;
+
+	virtual void do_set_label_by_index(const int field_idx,
+			const std::string& label)
+	= 0;
+
+	virtual std::string do_label_by_index(const int field_idx) const
 	= 0;
 
 	virtual int do_field_idx(const F& field_type, const int i) const
@@ -510,13 +534,6 @@ protected:
 	 */
 	const DecoratedStringTable& from_table() const;
 
-	/**
-	 * \brief Assign each field its respective label.
-	 *
-	 * The labels are composed from the default names of the attribute labels.
-	 */
-	void assign_labels(const std::vector<ATTR>& field_types);
-
 private:
 
 	// RecordInterface
@@ -527,9 +544,17 @@ private:
 	const std::string& do_field(const int i, const ATTR& field_type)
 		const final;
 
-	void do_set_label(const ATTR& field_type, const std::string& label) final;
+	void do_set_label_by_type(const ATTR& field_type, const std::string& label)
+		final;
 
-	std::string do_label(const ATTR& field_type) const final;
+	std::string do_label_by_type(const ATTR& field_type) const final;
+
+	virtual void do_set_label_by_index(const int field_idx,
+			const std::string& label)
+	= 0;
+
+	virtual std::string do_label_by_index(const int field_idx) const
+	= 0;
 
 	int do_field_idx(const ATTR& field_type, const int i) const final;
 
@@ -549,21 +574,10 @@ private:
 	virtual int do_get_col(const int i, const int j) const
 	= 0;
 
-	virtual void set_field_label(const int field_idx, const std::string& label)
-	= 0;
-
-	virtual std::string field_label(const int field_idx) const
-	= 0;
-
 	/**
 	 * \brief List of fields in the order they appear in the record.
 	 */
 	std::vector<ATTR> fields_;
-
-	/**
-	 * \brief Default field labels.
-	 */
-	std::map<ATTR, std::string> labels_;
 };
 
 
@@ -576,6 +590,9 @@ class RowTableComposer final : public TableComposer
 
 	size_type do_total_records() const final;
 	size_type do_fields_per_record() const final;
+	virtual void do_set_label_by_index(const int field_idx,
+			const std::string& label) final;
+	virtual std::string do_label_by_index(const int field_idx) const final;
 
 	// DecorationInterface
 
@@ -591,15 +608,12 @@ class RowTableComposer final : public TableComposer
 
 	// TableComposer
 
-	void set_field_label(const int field_idx, const std::string& label) final;
-	std::string field_label(const int field_idx) const final;
 	int do_get_row(const int i, const int j) const final;
 	int do_get_col(const int i, const int j) const final;
 
 public:
 
-	RowTableComposer(const std::size_t records,
-		const std::vector<ATTR>& order, const bool with_labels);
+	RowTableComposer(const std::size_t records, const std::vector<ATTR>& order);
 };
 
 
@@ -612,6 +626,9 @@ class ColTableComposer final : public TableComposer
 
 	size_type do_total_records() const final;
 	size_type do_fields_per_record() const final;
+	virtual void do_set_label_by_index(const int field_idx,
+			const std::string& label) final;
+	virtual std::string do_label_by_index(const int field_idx) const final;
 
 	// DecorationInterface
 
@@ -627,15 +644,12 @@ class ColTableComposer final : public TableComposer
 
 	// TableComposer
 
-	void set_field_label(const int field_idx, const std::string& label) final;
-	std::string field_label(const int field_idx) const final;
 	int do_get_row(const int i, const int j) const final;
 	int do_get_col(const int i, const int j) const final;
 
 public:
 
-	ColTableComposer(const std::size_t records,
-		const std::vector<ATTR>& order, const bool with_labels);
+	ColTableComposer(const std::size_t records, const std::vector<ATTR>& order);
 };
 
 
@@ -645,6 +659,11 @@ public:
 class TableComposerBuilder
 {
 public:
+
+	/**
+	 * \brief Constructor.
+	 */
+	TableComposerBuilder();
 
 	/**
 	 * \brief Create a TableComposer.
@@ -661,6 +680,19 @@ public:
 		const std::size_t records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const;
 
+protected:
+
+	/**
+	 * \brief Assign each field its respective label.
+	 *
+	 * The labels are composed from the default names of the attribute labels.
+	 *
+	 * \param[in] c           TableComposer to use
+	 * \param[in] field_types List of field types
+	 */
+	void assign_labels(TableComposer& c,
+			const std::vector<ATTR>& field_types) const;
+
 private:
 
 	/**
@@ -670,6 +702,11 @@ private:
 		const std::size_t records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const
 	= 0;
+
+	/**
+	 * \brief Default field labels.
+	 */
+	std::map<ATTR, std::string> labels_;
 };
 
 
@@ -1077,12 +1114,13 @@ protected:
 	 *
 	 * \param[in] print_flags  Flags to instruct print of data
 	 * \param[in] types        List of checksum types to print
+	 * \param[in] total_theirs Total number of THEIRS columns
 	 *
 	 * \return Sequence of result field_types to form an record
 	 */
 	std::vector<ATTR> create_attributes(const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types,
-		const int total_theirs) const;
+		const int total_theirs_per_block) const;
 
 	/**
 	 * \brief Create the internal TableComposer to compose the result data.
@@ -1242,11 +1280,12 @@ private:
  *
  * Accepts functors for adding fields to the TableComposer. Hence it is possible
  * to "queue" the production of fields by calling \c add_fields() and then
- * produce the entire table when calling \c create_records().
+ * produce the entire table by calling \c create_records().
  */
 class RecordCreator final
 {
 	std::vector<std::unique_ptr<FieldCreator>> fields_;
+
 	TableComposer* composer_;
 
 	/**
@@ -1400,7 +1439,7 @@ class AddField<ATTR::THEIRS> final : public FieldCreator
 {
 	const Match* match_;
 	const int block_;
-	const ChecksumSource*  checksums_;
+	const ChecksumSource* checksums_;
 	const std::vector<arcstk::checksum::type>* types_to_print_;
 	const ResultFormatter* formatter_;
 	const int total_theirs_per_block_;
@@ -1415,7 +1454,15 @@ class AddField<ATTR::THEIRS> final : public FieldCreator
 		const auto total_theirs =
 			total_theirs_per_block_ * types_to_print_->size();
 
-		// Create all theirs fields
+		// Update field label to show block index
+		if (total_theirs == 1 || block_ >= 0)
+		{
+			c->set_label(ATTR::THEIRS, "Theirs" /* FIXME Use DefaultLabel */
+						+ (block_ < 10 ? std::string{" "} : std::string{})
+						+ std::to_string(block_));
+		}
+
+		// Create all "theirs" fields
 		for (auto b = int { 0 }; b < total_theirs; ++b)
 		{
 			// Enumerate one or more blocks
@@ -1435,16 +1482,16 @@ class AddField<ATTR::THEIRS> final : public FieldCreator
 
 public:
 
-	AddField(const Match* match,
+	AddField(const std::vector<arcstk::checksum::type>* types,
+			const Match* match,
 			const int block,
 			const ChecksumSource* checksums,
-			const std::vector<arcstk::checksum::type>* types,
 			const ResultFormatter* formatter,
 			const int total_theirs_per_block)
-		: match_ { match }
+		: types_to_print_ { types }
+		, match_ { match }
 		, block_ { block }
 		, checksums_ { checksums }
-		, types_to_print_ { types }
 		, formatter_ { formatter }
 		, total_theirs_per_block_ { total_theirs_per_block }
 	{ /* empty */ }

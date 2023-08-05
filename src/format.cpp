@@ -228,17 +228,6 @@ TableComposer::TableComposer(const std::vector<ATTR>& fields,
 		std::unique_ptr<DecoratedStringTable> table)
 	: RecordInterface<DecoratedStringTable, ATTR>  { std::move(table) }
 	, fields_ { fields }
-	, labels_ {
-			{ ATTR::TRACK,    DefaultLabel<ATTR::TRACK>()    },
-			{ ATTR::OFFSET,   DefaultLabel<ATTR::OFFSET>()   },
-			{ ATTR::LENGTH,   DefaultLabel<ATTR::LENGTH>()   },
-			{ ATTR::FILENAME, DefaultLabel<ATTR::FILENAME>() },
-			{ ATTR::CHECKSUM_ARCS2,
-				arcstk::checksum::type_name(arcstk::checksum::type::ARCS2) },
-			{ ATTR::CHECKSUM_ARCS1,
-				arcstk::checksum::type_name(arcstk::checksum::type::ARCS1) },
-			{ ATTR::THEIRS,   DefaultLabel<ATTR::THEIRS>() },
-	}
 {
 	// empty
 }
@@ -262,62 +251,6 @@ const DecoratedStringTable& TableComposer::from_table() const
 }
 
 
-void TableComposer::assign_labels(const std::vector<ATTR>& fields)
-{
-	using std::begin;
-	using std::end;
-
-	// THEIRS is the only attribute that could occurr multiple times.
-	// If it does, we want to append a counter in the label
-	const auto total_theirs = std::count(begin(fields), end(fields),
-			ATTR::THEIRS);
-
-	// Add labels from internal label store
-	auto theirs = int { 0 };
-	auto label_p { end(labels_) };
-	for (auto a = int { 0 }; a < fields.size(); ++a)
-	{
-		label_p = labels_.find(fields.at(a));
-		if (end(labels_) != label_p)
-		{
-			// Name a THEIRS in the presence of multiple THEIRSs?
-			if (total_theirs > 1 && ATTR::THEIRS == fields.at(a))
-			{
-				// XXX This will screw up the table for more than 99 blocks
-				this->set_field_label(a, label_p->second
-						+ (theirs < 10 ? " " : "")
-						+ std::to_string(theirs));
-				++theirs;
-			} else
-			{
-				// If there is at least 1 THEIRS, we will name the
-				// locally computed fields "Mine" instead of the default label
-				if (total_theirs > 0)
-				{
-					if (ATTR::CHECKSUM_ARCS2 == fields.at(a))
-					{
-						this->set_field_label(a, "Mine(v2)");
-					} else
-					if (ATTR::CHECKSUM_ARCS1 == fields.at(a))
-					{
-						this->set_field_label(a, "Mine(v1)");
-					} else
-					{
-						this->set_field_label(a, label_p->second);
-					}
-				} else
-				{
-					this->set_field_label(a, label_p->second);
-				}
-
-				theirs = 0;
-			}
-			// set_field_label is used polymorphically, but is called in ctor
-		}
-	}
-}
-
-
 void TableComposer::do_set_field(const int record_idx,
 		const int field_idx, const std::string& str)
 {
@@ -333,16 +266,16 @@ const std::string& TableComposer::do_field(const int i,
 }
 
 
-void TableComposer::do_set_label(const ATTR& field_type,
+void TableComposer::do_set_label_by_type(const ATTR& field_type,
 		const std::string& label)
 {
-	this->set_field_label(this->field_idx(field_type), label);
+	this->set_label(this->field_idx(field_type), label);
 }
 
 
-std::string TableComposer::do_label(const ATTR& field_type) const
+std::string TableComposer::do_label_by_type(const ATTR& field_type) const
 {
-	return this->field_label(this->field_idx(field_type));
+	return this->label(this->field_idx(field_type));
 }
 
 
@@ -388,7 +321,7 @@ void TableComposer::do_unmark(const int record_idx, const int field_idx)
 
 
 RowTableComposer::RowTableComposer(const std::size_t entries,
-		const std::vector<ATTR>& order, const bool with_labels)
+		const std::vector<ATTR>& order)
 	: TableComposer(order, std::make_unique<DecoratedStringTable>(
 				static_cast<int>(entries), static_cast<int>(order.size())))
 {
@@ -412,11 +345,6 @@ RowTableComposer::RowTableComposer(const std::size_t entries,
 			// whose default is 8.
 		}
 	}
-
-	if (with_labels)
-	{
-		this->assign_labels(order); // XXX virtual call of set_field_label()
-	}
 }
 
 
@@ -432,14 +360,14 @@ TableComposer::size_type RowTableComposer::do_fields_per_record() const
 }
 
 
-void RowTableComposer::set_field_label(const int field_idx,
+void RowTableComposer::do_set_label_by_index(const int field_idx,
 		const std::string& label)
 {
 	this->in_table().set_col_label(field_idx, label);
 }
 
 
-std::string RowTableComposer::field_label(const int field_idx) const
+std::string RowTableComposer::do_label_by_index(const int field_idx) const
 {
 	return this->from_table().col_label(field_idx);
 }
@@ -487,7 +415,7 @@ const CellDecorator* RowTableComposer::do_on_field(const int field_idx) const
 
 
 ColTableComposer::ColTableComposer(const std::size_t total_records,
-		const std::vector<ATTR>& field_types, const bool with_labels)
+		const std::vector<ATTR>& field_types)
 	: TableComposer(field_types, std::make_unique<DecoratedStringTable>(
 			static_cast<int>(field_types.size()),
 			static_cast<int>(total_records)))
@@ -496,12 +424,6 @@ ColTableComposer::ColTableComposer(const std::size_t total_records,
 	for (auto col = int { 0 }; col < from_table().cols(); ++col)
 	{
 		in_table().set_align(col, table::Align::RIGHT);
-	}
-
-	if (with_labels)
-	{
-		this->assign_labels(field_types);
-		// XXX virtual call of set_field_label()
 	}
 }
 
@@ -518,14 +440,14 @@ TableComposer::size_type ColTableComposer::do_fields_per_record() const
 }
 
 
-void ColTableComposer::set_field_label(const int field_idx,
+void ColTableComposer::do_set_label_by_index(const int field_idx,
 		const std::string& label)
 {
 	this->in_table().set_row_label(field_idx, label);
 }
 
 
-std::string ColTableComposer::field_label(const int field_idx) const
+std::string ColTableComposer::do_label_by_index(const int field_idx) const
 {
 	return this->from_table().row_label(field_idx);
 }
@@ -572,6 +494,80 @@ const CellDecorator* ColTableComposer::do_on_field(const int field_idx) const
 // TableComposerBuilder
 
 
+TableComposerBuilder::TableComposerBuilder()
+	: labels_ {
+		{ ATTR::TRACK,    DefaultLabel<ATTR::TRACK>()    },
+		{ ATTR::OFFSET,   DefaultLabel<ATTR::OFFSET>()   },
+		{ ATTR::LENGTH,   DefaultLabel<ATTR::LENGTH>()   },
+		{ ATTR::FILENAME, DefaultLabel<ATTR::FILENAME>() },
+		{ ATTR::CHECKSUM_ARCS2,
+			arcstk::checksum::type_name(arcstk::checksum::type::ARCS2) },
+		{ ATTR::CHECKSUM_ARCS1,
+			arcstk::checksum::type_name(arcstk::checksum::type::ARCS1) },
+		{ ATTR::THEIRS,   DefaultLabel<ATTR::THEIRS>() },
+	}
+{
+	// empty
+}
+
+
+void TableComposerBuilder::assign_labels(TableComposer& c,
+		const std::vector<ATTR>& fields) const
+{
+	using std::begin;
+	using std::end;
+
+	// THEIRS is the only attribute that could occurr multiple times.
+	// If it does, we want to append a counter in the label
+	const auto total_theirs = std::count(begin(fields), end(fields),
+			ATTR::THEIRS);
+
+	// Add labels from internal label store
+	auto theirs = int { 0 };
+	auto label_p { end(labels_) };
+	for (auto a = int { 0 }; a < fields.size(); ++a)
+	{
+		label_p = labels_.find(fields.at(a));
+		if (end(labels_) != label_p)
+		{
+			// Name a THEIRS in the presence of multiple THEIRSs?
+			if (total_theirs > 1 && ATTR::THEIRS == fields.at(a))
+			{
+				// XXX This will screw up the table for more than 99 blocks
+				c.set_label(a, label_p->second
+						+ (theirs < 10 ? " " : "")
+						+ std::to_string(theirs));
+				++theirs;
+			} else
+			{
+				// If there is at least 1 THEIRS, we will name the
+				// locally computed fields "Mine" instead of the default label
+				if (total_theirs > 0)
+				{
+					if (ATTR::CHECKSUM_ARCS2 == fields.at(a))
+					{
+						c.set_label(a, "Mine(v2)");
+					} else
+					if (ATTR::CHECKSUM_ARCS1 == fields.at(a))
+					{
+						c.set_label(a, "Mine(v1)");
+					} else
+					{
+						c.set_label(a, label_p->second);
+					}
+				} else
+				{
+					c.set_label(a, label_p->second);
+				}
+
+				theirs = 0;
+			}
+			// set_field_label is used polymorphically, but is called in ctor
+		}
+	}
+}
+
+
 std::unique_ptr<TableComposer> TableComposerBuilder::build(
 		const std::size_t records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const
@@ -587,8 +583,14 @@ std::unique_ptr<TableComposer> RowTableComposerBuilder::do_build(
 		const std::size_t records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const
 {
-	return std::make_unique<RowTableComposer>(records, field_types,
-			with_labels);
+	auto c { std::make_unique<RowTableComposer>(records, field_types) };
+
+	if (with_labels)
+	{
+		this->assign_labels(*c.get(), field_types);
+	}
+
+	return c;
 }
 
 
@@ -599,8 +601,14 @@ std::unique_ptr<TableComposer> ColTableComposerBuilder::do_build(
 		const std::size_t records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const
 {
-	return std::make_unique<ColTableComposer>(records, field_types,
-			with_labels);
+	auto c { std::make_unique<ColTableComposer>(records, field_types) };
+
+	if (with_labels)
+	{
+		this->assign_labels(*c.get(), field_types);
+	}
+
+	return c;
 }
 
 
@@ -958,7 +966,7 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 		}
 
 		record_builder.add_fields(std::make_unique<AddField<ATTR::THEIRS>>(
-					match, block, reference.get(), &types_to_print, this,
+					&types_to_print, match, block, reference.get(), this,
 					total_theirs_per_block));
 	}
 
