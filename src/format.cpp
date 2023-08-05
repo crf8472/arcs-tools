@@ -95,6 +95,9 @@ std::ostream& operator << (std::ostream& o, const RichARId& a)
 }
 
 
+// DefaultLabel
+
+
 template<>
 std::string DefaultLabel<ATTR::TRACK>() { return "Track"; };
 
