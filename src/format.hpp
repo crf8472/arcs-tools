@@ -459,6 +459,11 @@ class TableComposer :   public RecordInterface<DecoratedStringTable, ATTR>
 public:
 
 	/**
+	 * \brief Virtual destructor.
+	 */
+	virtual ~TableComposer() noexcept = default;
+
+	/**
 	 * \brief Get the fields of the table to construct.
 	 *
 	 * \return Field types in the order they appear in the table
@@ -666,6 +671,11 @@ public:
 	TableComposerBuilder();
 
 	/**
+	 * \brief Virtual destructor.
+	 */
+	virtual ~TableComposerBuilder() noexcept = default;
+
+	/**
 	 * \brief Create a TableComposer.
 	 *
 	 * If labels are activated, the default labels are printed.
@@ -816,6 +826,11 @@ protected:
 public:
 
 	/**
+	 * \brief Virtual destructor.
+	 */
+	virtual ~FieldCreator() noexcept = default;
+
+	/**
 	 * \brief Use specified TableComposer to create the field in the specified
 	 * record.
 	 *
@@ -838,6 +853,11 @@ class ChecksumSource
 	= 0;
 
 public:
+
+	/**
+	 * \brief Virtual destructor.
+	 */
+	virtual ~ChecksumSource() noexcept = default;
 
 	/**
 	 * \brief Read checksum \c idx in section with the specified \c block_idx.
@@ -1252,11 +1272,6 @@ private:
 	 * \brief Format for the Checksums.
 	 */
 	std::unique_ptr<ChecksumLayout> checksum_layout_;
-
-	/**
-	 * \brief List of requested checksum types.
-	 */
-	std::vector<arcstk::checksum::type> types_;
 };
 
 
@@ -1264,20 +1279,29 @@ private:
 
 
 /**
- * \brief Creates records.
+ * \brief Creates records of a table.
  *
- * Accepts functors for adding fields to the TableComposer. Hence it is possible
- * to "queue" the production of fields by calling \c add_fields() and then
- * produce the entire table by calling \c create_records().
+ * Accepts functors for adding fields to records and recors to the
+ * TableComposer. Hence it is possible to "queue" the production of fields by
+ * calling \c add_fields() and then produce the entire table by calling
+ * \c create_records().
  */
 class RecordCreator final
 {
+	/**
+	 * \brief Internal list of creators for every field.
+	 */
 	std::vector<std::unique_ptr<FieldCreator>> fields_;
 
+	/**
+	 * \brief Internal table composer to add the fields.
+	 */
 	TableComposer* composer_;
 
 	/**
-	 * \brief Create a record containing every field previously added.
+	 * \brief Create a single record containing every field previously added.
+	 *
+	 * \param[in] record_idx The index of the record to create
 	 */
 	void create_record(const int record_idx) const;
 
@@ -1291,12 +1315,14 @@ public:
 	RecordCreator(TableComposer* c);
 
 	/**
-	 * \brief Add field.
+	 * \brief Add creator for one or more fields.
+	 *
+	 * \param[in] f FieldCreator to add fields
 	 */
 	void add_fields(std::unique_ptr<FieldCreator> f);
 
 	/**
-	 * \brief Create specified number of records.
+	 * \brief Create all records.
 	 */
 	void create_records() const;
 };

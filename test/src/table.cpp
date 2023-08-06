@@ -405,11 +405,6 @@ TEST_CASE ( "DecoratorRegistry", "[DecoratorRegistry]" )
 
 	store.mark_decorated(4,7);
 
-	SECTION ( "Default Constructor works correctly" )
-	{
-		CHECK ( &store != nullptr );
-	}
-
 	SECTION ( "Register column decorator" )
 	{
 		CHECK ( store.col_decorator(0) == nullptr );
