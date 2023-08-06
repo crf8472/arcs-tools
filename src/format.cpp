@@ -580,7 +580,7 @@ void TableComposerBuilder::assign_default_labels(TableComposer& c,
 								' ');
 					} else
 					{
-						label = label_p->second.substr(0, 
+						label = label_p->second.substr(0,
 								tlabel.length() - (total_digits - avail));
 					}
 
@@ -711,6 +711,16 @@ void RecordCreator::create_records() const
 }
 
 
+/**
+ * \brief Worker for implementing \c do_create() in AddField subclasses.
+ */
+void add_field(TableComposer* c, const int record_idx, const ATTR a,
+		const std::string& s)
+{
+	c->set_field(record_idx, a, s);
+}
+
+
 // AddField
 
 
@@ -741,7 +751,7 @@ class AddField<ATTR::TRACK> final : public FieldCreator
 	void do_create(TableComposer* c, const int record_idx) const
 	{
 		using std::to_string;
-		c->set_field(record_idx, ATTR::TRACK,
+		add_field(c, record_idx, ATTR::TRACK,
 				to_string(this->track(record_idx)));
 	}
 };
@@ -755,7 +765,7 @@ class AddField<ATTR::OFFSET> final : public FieldCreator
 	void do_create(TableComposer* c, const int record_idx) const
 	{
 		using std::to_string;
-		c->set_field(record_idx, ATTR::OFFSET,
+		add_field(c, record_idx, ATTR::OFFSET,
 				to_string(toc_->offset(track(record_idx))));
 	}
 
@@ -773,8 +783,8 @@ class AddField<ATTR::LENGTH> final : public FieldCreator
 	void do_create(TableComposer* c, const int record_idx) const
 	{
 		using std::to_string;
-		c->set_field(record_idx, ATTR::LENGTH,
-				to_string((*checksums_)[record_idx].length()));
+		add_field(c, record_idx, ATTR::LENGTH,
+				to_string((*checksums_).at(record_idx).length()));
 	}
 
 public:
@@ -791,13 +801,10 @@ class AddField<ATTR::FILENAME> final : public FieldCreator
 
 	void do_create(TableComposer* c, const int record_idx) const
 	{
-		if (filenames_->size() > 1)
-		{
-			c->set_field(record_idx, ATTR::FILENAME, filenames_->at(record_idx));
-		} else
-		{
-			c->set_field(record_idx, ATTR::FILENAME, *(filenames_->begin()));
-		}
+		// TODO if (filenames_.empty())
+		add_field(c, record_idx, ATTR::FILENAME,
+			(filenames_->size() > 1) ? filenames_->at(record_idx) /* by index */
+									 : *(filenames_->begin())/* single one */);
 	}
 
 public:
@@ -871,14 +878,6 @@ class AddField<ATTR::THEIRS> final : public FieldCreator
 		// Total number of THEIRS fields in the entire record type
 		const auto total_theirs =
 			total_theirs_per_block_ * types_to_print_->size();
-
-		// Update field label to show block index
-		if (total_theirs == 1 || block_ >= 0)
-		{
-			c->set_label(ATTR::THEIRS, "Theirs" /* FIXME Use DefaultLabel */
-						+ (block_ < 10 ? std::string{" "} : std::string{})
-						+ std::to_string(block_));
-		}
 
 		// Create all "theirs" fields
 		for (auto b = int { 0 }; b < total_theirs; ++b)
@@ -1248,6 +1247,15 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 			{
 				reference = std::make_unique<EmptyChecksums>();
 			}
+		}
+
+		// Update field label to show best block index
+		if (total_theirs_per_block == 1 || block >= 0)
+		{
+			c->set_label(ATTR::THEIRS, DefaultLabel<ATTR::THEIRS>()
+						+ (block < 10 ? std::string{" "} : std::string{})
+						// XXX Block index greater than 99 will screw up labels
+						+ std::to_string(block));
 		}
 
 		record_builder.add_fields(std::make_unique<AddField<ATTR::THEIRS>>(
