@@ -555,8 +555,6 @@ std::unique_ptr<CalcResultFormatter> ARCalcApplication::create_formatter(
 		? config.value(CALC::COLDELIM)
 		: " ");
 
-	fmt->set_table_layout(std::move(layout));
-
 	// Print tracks either as columns or as rows
 
 	std::unique_ptr<TableComposerBuilder> builder = nullptr;
@@ -572,6 +570,7 @@ std::unique_ptr<CalcResultFormatter> ARCalcApplication::create_formatter(
 		builder = std::make_unique<RowTableComposerBuilder>();
 	}
 
+	fmt->set_table_layout(std::move(layout));
 	fmt->set_builder(std::move(builder));
 
 	return fmt;
