@@ -331,7 +331,8 @@ enum class ATTR: int
 	FILENAME,
 	CHECKSUM_ARCS1,
 	CHECKSUM_ARCS2,
-	THEIRS
+	THEIRS,
+	CONFIDENCE
 };
 
 
@@ -340,7 +341,7 @@ enum class ATTR: int
  *
  * Must be less than sizeof(print_flags_t).
  */
-constexpr int MAX_ATTR = 6;
+constexpr int MAX_ATTR = 7;
 
 
 /**
@@ -814,6 +815,9 @@ class ChecksumSource
 	virtual Checksum do_read(const int block_idx, const int idx) const
 	= 0;
 
+	virtual int do_confidence(const int block_idx, const int idx) const
+	= 0;
+
 public:
 
 	/**
@@ -827,6 +831,14 @@ public:
 	Checksum read(const int block_idx, const int idx) const
 	{
 		return this->do_read(block_idx, idx);
+	}
+
+	/**
+	 * \brief Read confidence \c idx in section with the specified \c block_idx.
+	 */
+	int confidence(const int block_idx, const int idx) const
+	{
+		return this->do_confidence(block_idx, idx);
 	}
 };
 
@@ -876,6 +888,7 @@ class FromResponse final : public GetChecksum<ARResponse>
 {
 	using GetChecksum::GetChecksum;
 	Checksum do_read(const int block_idx, const int idx) const final;
+	int do_confidence(const int block_idx, const int idx) const final;
 };
 
 
@@ -886,6 +899,7 @@ class FromRefvalues final : public GetChecksum<std::vector<Checksum>>
 {
 	using GetChecksum::GetChecksum;
 	Checksum do_read(const int block_idx, const int idx) const final;
+	int do_confidence(const int block_idx, const int idx) const final;
 };
 
 
@@ -895,6 +909,7 @@ class FromRefvalues final : public GetChecksum<std::vector<Checksum>>
 class EmptyChecksums final : public ChecksumSource
 {
 	Checksum do_read(const int block_idx, const int idx) const final;
+	int do_confidence(const int block_idx, const int idx) const final;
 };
 
 

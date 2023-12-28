@@ -69,7 +69,8 @@ public:
 	static constexpr OptionCode PRINTALL     = BASE +  5;
 	static constexpr OptionCode BOOLEAN      = BASE +  6;
 	static constexpr OptionCode NOOUTPUT     = BASE +  7;
-	static constexpr OptionCode COLORED      = BASE +  8; // 28
+	static constexpr OptionCode COLORED      = BASE +  8;
+	static constexpr OptionCode CONFIDENCE   = BASE +  9; // 29
 };
 
 
@@ -304,7 +305,7 @@ public:
 
 private:
 
-	// Verify9Layout
+	// Verify10Layout
 
 	void assertions(InputTuple t) const final;
 

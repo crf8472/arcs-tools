@@ -192,7 +192,11 @@ void ARVerifyConfigurator::do_flush_local_options(OptionRegistry &r) const
 
 		{ VERIFY::COLORED ,
 		{  "colors", true, OP_VALUE::USE_DEFAULT,
-			"Use colored output and optionally specify colors" }}
+			"Use colored output and optionally specify colors" }},
+
+		{ VERIFY::CONFIDENCE ,
+		{  "confidence", false, OP_VALUE::FALSE,
+			"Print confidence values" }}
 	});
 }
 
@@ -248,7 +252,7 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 		}
 	}
 
-	// Print ID only in case we have one from the reference data
+	// Only print those things from the reference data that we actually may have
 
 	if (voptions->is_set(VERIFY::REFVALUES))
 	{
@@ -265,6 +269,13 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 				"Ignore option PRINTURL since option REFVALUES is active "
 				"and reference values do not provide an URL to print";
 			voptions->unset(VERIFY::PRINTURL);
+		}
+		if (voptions->is_set(VERIFY::CONFIDENCE))
+		{
+			ARCS_LOG_WARNING <<
+				"Ignore option CONFIDENCE since option REFVALUES is active and "
+				"reference values do not provide confidence values to print";
+			voptions->unset(VERIFY::CONFIDENCE);
 		}
 	}
 
@@ -531,7 +542,8 @@ std::vector<ATTR> VerifyResultFormatter::do_create_attributes(
 		+ print_flags(ATTR::LENGTH)
 		+ print_flags(ATTR::FILENAME)
 		+ types_to_print.size()
-		+ total_theirs_per_block;
+		+ total_theirs_per_block
+		+ print_flags(ATTR::CONFIDENCE) * total_theirs_per_block;
 
 	using checksum = arcstk::checksum::type;
 
@@ -558,6 +570,11 @@ std::vector<ATTR> VerifyResultFormatter::do_create_attributes(
 		for (auto i = int { 0 }; i < total_theirs_per_block; ++i)
 		{
 			fields.emplace_back(ATTR::THEIRS);
+
+			if (print_flags(ATTR::CONFIDENCE))
+			{
+				fields.emplace_back(ATTR::CONFIDENCE);
+			}
 		}
 	}
 
@@ -1048,6 +1065,9 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::create_formatter(
 
 	// Indicate a matching checksum by this symbol
 	fmt->set_match_symbol("==");
+
+	// Indicate that confidence values should be printed (if available)
+	fmt->format_data(ATTR::CONFIDENCE, config.is_set(VERIFY::CONFIDENCE));
 
 	// Method for creating the result table
 	fmt->set_builder(std::make_unique<RowTableComposerBuilder>());

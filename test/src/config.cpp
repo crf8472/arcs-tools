@@ -264,7 +264,7 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 
 		const auto supported { conf1.supported_options() };
 
-		CHECK ( 28 == supported.size() );
+		CHECK ( 29 == supported.size() );
 
 		CHECK ( contains(VERIFY::READERID, supported) );
 		CHECK ( contains(VERIFY::PARSERID, supported) );
@@ -287,6 +287,7 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 		CHECK ( contains(VERIFY::PRINTALL, supported) );
 		CHECK ( contains(VERIFY::BOOLEAN, supported) );
 		CHECK ( contains(VERIFY::NOOUTPUT, supported) );
+		CHECK ( contains(VERIFY::CONFIDENCE, supported) );
 
 		CHECK ( contains(OPTION::HELP, supported) );
 		CHECK ( contains(OPTION::VERSION, supported) );

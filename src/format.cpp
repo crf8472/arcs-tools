@@ -128,6 +128,9 @@ std::string DefaultLabel<ATTR::THEIRS>()
 	return "Theirs";
 };
 
+template<>
+std::string DefaultLabel<ATTR::CONFIDENCE>() { return "cnf"; };
+
 
 // ResultProvider
 
@@ -326,6 +329,8 @@ RowTableComposer::RowTableComposer(const std::size_t entries,
 				static_cast<int>(entries), static_cast<int>(order.size())))
 {
 	// Attributes are columns thus their alignment depends on their type
+
+	// Columns that appear exactly once
 	for(const auto& c : { this->field_idx(ATTR::TRACK),
 			this->field_idx(ATTR::OFFSET), this->field_idx(ATTR::LENGTH) })
 	{
@@ -335,14 +340,21 @@ RowTableComposer::RowTableComposer(const std::size_t entries,
 		}
 	}
 
-	// Stretch the "theirs" columns to a width of 8
+	// Columns that may appear multiple times
 	for (auto i = int { 0 }; i < this->from_table().cols(); ++i)
 	{
+		// Stretch the "theirs" columns to a width of 8
 		if (ATTR::THEIRS == order[i])
 		{
 			in_table().set_align(i, table::Align::BLOCK);
 			// BLOCK makes the table respect max_width for this column,
 			// whose default is 8.
+		}
+
+		// Align confidence columns
+		if (ATTR::CONFIDENCE == order[i])
+		{
+			in_table().set_align(i, table::Align::RIGHT);
 		}
 	}
 }
@@ -505,6 +517,7 @@ TableComposerBuilder::TableComposerBuilder()
 		{ ATTR::CHECKSUM_ARCS1,
 			arcstk::checksum::type_name(arcstk::checksum::type::ARCS1) },
 		{ ATTR::THEIRS,   DefaultLabel<ATTR::THEIRS>() },
+		{ ATTR::CONFIDENCE, DefaultLabel<ATTR::CONFIDENCE>() },
 	}
 {
 	// empty
@@ -648,9 +661,21 @@ Checksum FromResponse::do_read(const int block_idx, const int idx) const
 }
 
 
+int FromResponse::do_confidence(const int block_idx, const int idx) const
+{
+	return source()->at(block_idx).at(idx).confidence();
+}
+
+
 Checksum FromRefvalues::do_read(const int /* block_idx */, const int idx) const
 {
 	return source()->at(idx);
+}
+
+
+int FromRefvalues::do_confidence(const int block_idx, const int idx) const
+{
+	return 0; // Reference values do not come with a confidence passed
 }
 
 
@@ -658,6 +683,12 @@ Checksum EmptyChecksums::do_read(const int /* block_idx */,
 		const int /* idx */ ) const
 {
 	return arcstk::EmptyChecksum;
+}
+
+
+int EmptyChecksums::do_confidence(const int block_idx, const int idx) const
+{
+	return 0; // No checksum, no confidence
 }
 
 
@@ -718,6 +749,16 @@ void add_field(TableComposer* c, const int record_idx, const ATTR a,
 		const std::string& s)
 {
 	c->set_field(record_idx, a, s);
+}
+
+
+/**
+ * \brief Worker for implementing \c do_create() in AddField subclasses.
+ */
+void add_field(TableComposer* c, const int record_idx, const int field_idx,
+		const std::string& s)
+{
+	c->set_field(record_idx, field_idx, s);
 }
 
 
@@ -859,6 +900,9 @@ public:
 };
 
 
+/**
+ * \brief Creates Theirs-columns with optional Confidence-columns
+ */
 template <>
 class AddField<ATTR::THEIRS> final : public FieldCreator
 {
@@ -868,6 +912,7 @@ class AddField<ATTR::THEIRS> final : public FieldCreator
 	const std::vector<arcstk::checksum::type>* types_to_print_;
 	const ResultFormatter* formatter_;
 	const int total_theirs_per_block_;
+	const bool print_confidence_;
 
 	void do_create(TableComposer* c, const int record_idx) const
 	{
@@ -879,10 +924,17 @@ class AddField<ATTR::THEIRS> final : public FieldCreator
 		const auto total_theirs =
 			total_theirs_per_block_ * types_to_print_->size();
 
+		// 1-based number of the reference block to print
+		auto idx_label = int { 0 };
+
+		// field index of the "theirs"-column
+		auto field_idx = int { 0 };
+
 		// Create all "theirs" fields
 		for (auto b = int { 0 }; b < total_theirs; ++b)
 		{
 			// Enumerate one or more blocks
+			// (If block_ < 0 PRINTALL is present)
 			block_idx =  block_ >= 0  ? block_  : b % total_theirs_per_block_;
 
 			curr_type =
@@ -891,9 +943,25 @@ class AddField<ATTR::THEIRS> final : public FieldCreator
 			does_match = match_->track(block_idx, record_idx,
 							curr_type == arcstk::checksum::type::ARCS2);
 
+			idx_label = block_idx + 1;
+			field_idx = c->field_idx(ATTR::THEIRS, b + 1);
+
+			// Update field label to show best block index
+			c->set_label(field_idx, DefaultLabel<ATTR::THEIRS>()
+						+ (idx_label < 10 ? std::string{" "} : std::string{})
+						// XXX Block index greater than 99 will screw up labels
+						+ std::to_string(idx_label));
+
 			formatter_->their_checksum(
 					checksums_->read(block_idx, record_idx), does_match,
-					record_idx, c->field_idx(ATTR::THEIRS, b + 1), c);
+					record_idx, field_idx, c);
+
+			if (print_confidence_)
+			{
+				using std::to_string;
+				add_field(c, record_idx, field_idx + 1,
+					to_string(checksums_->confidence(block_idx, record_idx)));
+			}
 		}
 	}
 
@@ -904,13 +972,15 @@ public:
 			const int block,
 			const ChecksumSource* checksums,
 			const ResultFormatter* formatter,
-			const int total_theirs_per_block)
+			const int total_theirs_per_block,
+			const bool print_confidence)
 		: types_to_print_ { types }
 		, match_ { match }
 		, block_ { block }
 		, checksums_ { checksums }
 		, formatter_ { formatter }
 		, total_theirs_per_block_ { total_theirs_per_block }
+		, print_confidence_ { print_confidence }
 	{ /* empty */ }
 };
 
@@ -1078,6 +1148,7 @@ ResultFormatter::print_flag_t ResultFormatter::create_print_flags(
 	flags.set(ATTR::OFFSET,   has_toc && is_requested(ATTR::OFFSET));
 	flags.set(ATTR::LENGTH,   has_toc && is_requested(ATTR::LENGTH));
 	flags.set(ATTR::FILENAME, has_filenames && is_requested(ATTR::FILENAME));
+	flags.set(ATTR::CONFIDENCE, is_requested(ATTR::CONFIDENCE));
 
 	return flags;
 }
@@ -1249,18 +1320,9 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 			}
 		}
 
-		// Update field label to show best block index
-		if (total_theirs_per_block == 1 || block >= 0)
-		{
-			c->set_label(ATTR::THEIRS, DefaultLabel<ATTR::THEIRS>()
-						+ (block < 10 ? std::string{" "} : std::string{})
-						// XXX Block index greater than 99 will screw up labels
-						+ std::to_string(block));
-		}
-
 		record_builder.add_fields(std::make_unique<AddField<ATTR::THEIRS>>(
 					&types_to_print, match, block, reference.get(), this,
-					total_theirs_per_block));
+					total_theirs_per_block, print(ATTR::CONFIDENCE)));
 	}
 
 	// Create each record of the entire table
