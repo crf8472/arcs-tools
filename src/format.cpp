@@ -655,6 +655,9 @@ std::unique_ptr<TableComposer> ColTableComposerBuilder::do_build(
 }
 
 
+// FromResponse
+
+
 Checksum FromResponse::do_read(const int block_idx, const int idx) const
 {
 	return source()->at(block_idx).at(idx).arcs();
@@ -667,6 +670,9 @@ int FromResponse::do_confidence(const int block_idx, const int idx) const
 }
 
 
+// FromRefvalues
+
+
 Checksum FromRefvalues::do_read(const int /* block_idx */, const int idx) const
 {
 	return source()->at(idx);
@@ -677,6 +683,9 @@ int FromRefvalues::do_confidence(const int block_idx, const int idx) const
 {
 	return 0; // Reference values do not come with a confidence passed
 }
+
+
+// FromEmptyChecksums
 
 
 Checksum EmptyChecksums::do_read(const int /* block_idx */,
