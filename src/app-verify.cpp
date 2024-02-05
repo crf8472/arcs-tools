@@ -18,8 +18,8 @@
 #include <type_traits>     // for add_const<>::type, underlying_type_t
 #include <utility>         // for move, pair
 
-#ifndef __LIBARCSTK_MATCH_HPP__
-#include <arcstk/match.hpp>
+#ifndef __LIBARCSTK_VERIFY_HPP__
+#include <arcstk/verify.hpp>
 #endif
 #ifndef __LIBARCSTK_PARSE_HPP__
 #include <arcstk/parse.hpp>
@@ -74,10 +74,9 @@ using arcstk::Checksums;
 using arcstk::Logging;
 using arcstk::DefaultContentHandler;
 using arcstk::DefaultErrorHandler;
-using arcstk::Matcher;
-using arcstk::AlbumMatcher;
-using arcstk::ListMatcher;
-using arcstk::TracksetMatcher;
+using arcstk::Verifier;
+using arcstk::AlbumVerifier;
+using arcstk::TracksetVerifier;
 
 
 // VERIFY
@@ -241,14 +240,31 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 		}
 	}
 
+	// Album requested but no TOC info provided?
+
+	if (not voptions->is_set(VERIFY::NOALBUM)
+		and voptions->value(VERIFY::METAFILE).empty())
+	{
+		// Album requires dedicated first + last track.
+		// If no TOC is passed, an album can only be verified when passed a
+		// single file for each track.
+
+		// This means we must ensure
+		// (total reference track checksums == total input track files)
+		// and it will be OK. We can do this only later when command line input
+		// was parsed.
+	}
+
 	if (voptions->is_set(VERIFY::NOFIRST) or voptions->is_set(VERIFY::NOLAST))
 	{
 		if (voptions->is_set(VERIFY::METAFILE))
 		{
-			ARCS_LOG(WARNING) << "Metadata file "
-				<< voptions->value(VERIFY::METAFILE) << " specifies an album,"
-				" but adding " << no_album_options
-				<< " will probably lead to unwanted results";
+			ARCS_LOG(WARNING) << "Passing TOC file "
+				<< voptions->value(VERIFY::METAFILE)
+				<< " requests album calculation, but adding "
+				<< no_album_options
+				<< " will ignore album calculation at least partly."
+				<< " Expect unwanted results.";
 		}
 	}
 
@@ -329,7 +345,7 @@ void ARVerifyConfigurator::do_validate(const Configuration& c) const
 			&& c.object<std::vector<Checksum>>(VERIFY::REFVALUES).empty())
 	{
 		throw std::runtime_error(
-				"No reference checksums for matching available.");
+				"No reference checksums for verification available.");
 	}
 }
 
@@ -459,7 +475,7 @@ void VerifyResultFormatter::assertions(const InputTuple t) const
 
 	const auto response  = std::get<6>(t);
 	const auto refvalues = std::get<7>(t);
-	const auto match     = std::get<1>(t);
+	const auto vresult   = std::get<1>(t);
 	const auto block     = std::get<2>(t);
 
 	if (refvalues.empty() && !response.size())
@@ -476,18 +492,18 @@ void VerifyResultFormatter::assertions(const InputTuple t) const
 				+ std::to_string(checksums.size()) + " tracks.");
 	}
 
-	if (!match)
+	if (!vresult)
 	{
 		throw std::invalid_argument("Missing match information, "
 				"nothing to print.");
 	}
 
-	if (block > match->total_blocks())
+	if (block > vresult->total_blocks())
 	{
 		throw std::invalid_argument("Mismatch: "
 				"Match contains no block " + std::to_string(block)
 				+ " but contains only "
-				+ std::to_string(match->total_blocks()) + " blocks.");
+				+ std::to_string(vresult->total_blocks()) + " blocks.");
 	}
 }
 
@@ -495,7 +511,7 @@ void VerifyResultFormatter::assertions(const InputTuple t) const
 std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 {
 	const auto types_to_print = std::get<0>(t);
-	const auto match      = std::get<1>(t);
+	const auto vresult    = std::get<1>(t);
 	const auto block      = std::get<2>(t);
 	const auto checksums  = std::get<3>(t);
 	const auto arid       = std::get<4>(t);
@@ -517,7 +533,7 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 
 	result->append(build_result(
 				types_to_print,
-				match,
+				vresult,
 				block,
 				checksums,
 				arid,
@@ -1086,7 +1102,7 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::create_formatter(
 
 
 void ARVerifyApplication::log_matching_files(const Checksums &checksums,
-		const Match &match, const uint32_t block,
+		const VerificationResult& vresult, const uint32_t block,
 		const bool version) const
 {
 	auto unmatched { checksums.size() };
@@ -1095,9 +1111,9 @@ void ARVerifyApplication::log_matching_files(const Checksums &checksums,
 	for (std::size_t t = 0; t < checksums.size() and unmatched > 0; ++t)
 	{
 		// Traverse specified block
-		for (int track = 0; track < match.tracks_per_block(); ++track)
+		for (int track = 0; track < vresult.tracks_per_block(); ++track)
 		{
-			if (match.track(block, track, version))
+			if (vresult.track(block, track, version))
 			{
 				ARCS_LOG_DEBUG << "Pos " << std::to_string(track)
 					<< " matches track " << std::to_string(track + 1)
@@ -1136,6 +1152,39 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	auto ref_values = config.object<std::vector<Checksum>>(VERIFY::REFVALUES);
 
+	// Album calculation is requested but no metafile is passed
+
+	if (not config.is_set(VERIFY::NOALBUM)
+		and config.value(VERIFY::METAFILE).empty())
+	{
+		// If no TOC is available, an album can only be verified when passed
+		// its audio input as a single file for each track. Only in this case,
+		// we do not need the offsets. (Also a single track album needs an
+		// offset for its track.)
+
+		// This means we must ensure that the total number of reference track
+		// checksums is equal to the total number of input track files.
+
+		auto tracks_mismatch = bool { false };
+
+		if (/* DBAR object passed */ ref_respns.size() > 0)
+		{
+			tracks_mismatch =
+				ref_respns.tracks_per_block() != config.arguments()->size();
+		} else
+		if (/* Reference value list passed */ !ref_values.empty())
+		{
+			tracks_mismatch =
+				ref_values.size() != config.arguments()->size();
+		};
+
+		if (tracks_mismatch)
+		{
+			this->fatal_error("Album requested, but number of AccurateRip "
+					"references does not match number of input audio files.");
+		}
+	}
+
 	// Configure selections (e.g. --reader and --parser)
 
 	const calc::IdSelection id_selection;
@@ -1168,13 +1217,14 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		this->fatal_error("Calculation returned no checksums.");
 	}
 
-	// Prepare match
+	// Prepare verification
 
-	std::unique_ptr<const Matcher> diff;
+	std::unique_ptr<const VerificationResult> vresult { nullptr };
 
 	if (config.is_set(VERIFY::REFVALUES))
 	{
-		diff = std::make_unique<ListMatcher>(checksums, ref_values);
+		const auto v = std::make_unique<TracksetVerifier>(checksums);
+		vresult = v->perform(FromRefvalues(&ref_values));
 	}
 
 	bool print_filenames = true;
@@ -1206,9 +1256,10 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 				" some but not all tracks are currently unsupported");
 		}
 
-		if (!diff) // No ListMatcher for some refvals previously set?
+		if (!vresult) // No result from refvals?
 		{
-			diff = std::make_unique<AlbumMatcher>(checksums, arid, ref_respns);
+			const auto v = std::make_unique<AlbumVerifier>(checksums, arid);
+			vresult = v->perform(ref_respns);
 		}
 
 		print_filenames = !single_audio_file;
@@ -1216,35 +1267,38 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	{
 		// No Offsets => No TOC => No ARId
 
-		if (!diff) // No ListMatcher for some refvals previously set
+		if (!vresult) // No result from refvals?
 		{
-			diff = std::make_unique<TracksetMatcher>(checksums, ref_respns);
+			const auto v = std::make_unique<TracksetVerifier>(checksums);
+			vresult = v->perform(ref_respns);
 		}
 
 		if (Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG))
 		{
-			log_matching_files(checksums, *diff->match(), 1, true);
+			log_matching_files(checksums, *vresult, 1, true);
 		}
 	}
 
-	// Perform match
+	// Perform verification
 
-	if (diff->matches())
+	const auto best_b = vresult->best_block();
+
+	if (vresult->all_tracks_verified())
 	{
 		ARCS_LOG_INFO << "Response contains a total match (v"
-			<< (diff->best_match_is_v2() + 1)
+			<< (std::get<1>(best_b) + 1)
 			<< ") to the input tracks in block "
-			<< diff->best_match();
+			<< std::get<0>(best_b);
 	} else
 	{
-		ARCS_LOG_INFO << "Best match was block "  << diff->best_match()
-			<< " in response, having difference " << diff->best_difference();
+		ARCS_LOG_INFO << "Best match was block "  << std::get<0>(best_b)
+			<< " in response, having difference " << std::get<2>(best_b);
 	}
 
 	if (config.is_set(VERIFY::NOOUTPUT)) // implies BOOLEAN
 	{
 		// 0 on accurate match, else > 0
-		return { diff->best_difference(), nullptr };
+		return { std::get<2>(best_b), nullptr };
 	}
 
 	// Create result object
@@ -1252,9 +1306,9 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	const auto best_block = config.is_set(VERIFY::PRINTALL) &&
 		config.is_set(VERIFY::RESPONSEFILE)
 							? -1 // Won't be used
-							: diff->best_match();
+							: std::get<0>(best_b);
 
-	const auto matching_version = diff->best_match_is_v2();
+	const auto matching_version = std::get<1>(best_b);
 
 	auto filenames = std::vector<std::string> { };
 	if (print_filenames)
@@ -1291,11 +1345,9 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 			: std::vector<TYPE>{ TYPE::ARCS1 };
 	}
 
-	const auto match { diff->match() };
-
 	auto result { create_formatter(config)->format(
 		/* types to print */           types_to_print,
-		/* match results */            match,
+		/* verification results */     vresult.get(),
 		/* optional best match */      best_block,
 		/* mine ARCSs */               checksums,
 		/* optional mine ARId */       arid,
@@ -1307,7 +1359,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	)};
 
 	auto exit_code = config.is_set(VERIFY::BOOLEAN)
-		? diff->best_difference()
+		? std::get<2>(best_b) // best difference
 		: EXIT_SUCCESS;
 
 	return { exit_code, std::move(result) };

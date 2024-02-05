@@ -28,8 +28,8 @@
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>   // for Checksum
 #endif
-#ifndef __LIBARCSTK_MATCH_HPP__
-#include <arcstk/match.hpp>       // for Match
+#ifndef __LIBARCSTK_VERIFY_HPP__
+#include <arcstk/verify.hpp>      // for VerificationResult
 #endif
 #ifndef __LIBARCSTK_PARSE_HPP__
 #include <arcstk/parse.hpp>       // for ARResponse
@@ -655,49 +655,74 @@ std::unique_ptr<TableComposer> ColTableComposerBuilder::do_build(
 }
 
 
-// FromResponse
-
-
-Checksum FromResponse::do_read(const int block_idx, const int idx) const
-{
-	return source()->at(block_idx).at(idx).arcs();
-}
-
-
-int FromResponse::do_confidence(const int block_idx, const int idx) const
-{
-	return source()->at(block_idx).at(idx).confidence();
-}
-
-
 // FromRefvalues
 
 
-Checksum FromRefvalues::do_read(const int /* block_idx */, const int idx) const
+const ARId& FromRefvalues::do_id(const int block_idx) const
+{
+	return arcstk::EmptyARId;
+}
+
+
+const Checksum& FromRefvalues::do_checksum(const int /*b*/, const int idx) const
 {
 	return source()->at(idx);
 }
 
 
-int FromRefvalues::do_confidence(const int block_idx, const int idx) const
+const uint32_t& FromRefvalues::do_confidence(const int /*b*/, const int /*t*/) const
 {
-	return 0; // Reference values do not come with a confidence passed
+	static const auto zero = uint32_t { 0 };
+	return zero;
 }
 
 
-// FromEmptyChecksums
+std::size_t FromRefvalues::do_size(const int /* block_idx */) const
+{
+	return source()->size();
+}
 
 
-Checksum EmptyChecksums::do_read(const int /* block_idx */,
-		const int /* idx */ ) const
+std::size_t FromRefvalues::do_size() const
+{
+	return source()->size();
+}
+
+
+// EmptyChecksumSource
+
+
+EmptyChecksumSource::EmptyChecksumSource() = default;
+
+
+const ARId& EmptyChecksumSource::do_id(const int block_idx) const
+{
+	return arcstk::EmptyARId;
+}
+
+
+const Checksum& EmptyChecksumSource::do_checksum(const int /*b*/, const int idx) const
 {
 	return arcstk::EmptyChecksum;
 }
 
 
-int EmptyChecksums::do_confidence(const int block_idx, const int idx) const
+const uint32_t& EmptyChecksumSource::do_confidence(const int /*b*/, const int /*t*/) const
 {
-	return 0; // No checksum, no confidence
+	static const auto zero = uint32_t { 0 };
+	return zero;
+}
+
+
+std::size_t EmptyChecksumSource::do_size(const int /* block_idx */) const
+{
+	return 0;
+}
+
+
+std::size_t EmptyChecksumSource::do_size() const
+{
+	return 0;
 }
 
 
@@ -915,7 +940,7 @@ public:
 template <>
 class AddField<ATTR::THEIRS> final : public FieldCreator
 {
-	const Match* match_;
+	const VerificationResult* vresult_;
 	const int block_;
 	const ChecksumSource* checksums_;
 	const std::vector<arcstk::checksum::type>* types_to_print_;
@@ -949,7 +974,7 @@ class AddField<ATTR::THEIRS> final : public FieldCreator
 			curr_type =
 				types_to_print_->at(std::ceil(b / total_theirs_per_block_));
 
-			does_match = match_->track(block_idx, record_idx,
+			does_match = vresult_->track(block_idx, record_idx,
 							curr_type == arcstk::checksum::type::ARCS2);
 
 			idx_label = block_idx + 1;
@@ -962,7 +987,7 @@ class AddField<ATTR::THEIRS> final : public FieldCreator
 						+ std::to_string(idx_label));
 
 			formatter_->their_checksum(
-					checksums_->read(block_idx, record_idx), does_match,
+					checksums_->checksum(block_idx, record_idx), does_match,
 					record_idx, field_idx, c);
 
 			if (print_confidence_)
@@ -977,14 +1002,14 @@ class AddField<ATTR::THEIRS> final : public FieldCreator
 public:
 
 	AddField(const std::vector<arcstk::checksum::type>* types,
-			const Match* match,
+			const VerificationResult* vresult,
 			const int block,
 			const ChecksumSource* checksums,
 			const ResultFormatter* formatter,
 			const int total_theirs_per_block,
 			const bool print_confidence)
 		: types_to_print_ { types }
-		, match_ { match }
+		, vresult_ { vresult }
 		, block_ { block }
 		, checksums_ { checksums }
 		, formatter_ { formatter }
@@ -1165,7 +1190,7 @@ ResultFormatter::print_flag_t ResultFormatter::create_print_flags(
 
 std::unique_ptr<Result> ResultFormatter::build_result(
 		const std::vector<arcstk::checksum::type>& types_to_print,
-		const Match* match,
+		const VerificationResult* vresult,
 		const int block,
 		const Checksums& checksums,
 		const ARId& arid,
@@ -1188,8 +1213,8 @@ std::unique_ptr<Result> ResultFormatter::build_result(
 
 	// Construct result objects
 
-	auto table { build_table(types_to_print, match, block, checksums, arid, toc,
-			response, refvalues, filenames, print_flags) };
+	auto table { build_table(types_to_print, vresult, block, checksums, arid,
+			toc, response, refvalues, filenames, print_flags) };
 
 	ARCS_LOG(DEBUG2) << "build_result(): build_table() returned";
 
@@ -1236,7 +1261,7 @@ RichARId ResultFormatter::build_id(const TOC* /*toc*/, const ARId& arid,
 
 std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 		const std::vector<arcstk::checksum::type>& types_to_print,
-		const Match* match,
+		const VerificationResult* vresult,
 		const int block,
 		const Checksums& checksums,
 		const ARId& arid,
@@ -1312,12 +1337,12 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 
 	std::unique_ptr<const ChecksumSource> reference;
 
-	if (match) // Will we print matches?
+	if (vresult) // Will we print matches?
 	{
 		// Configure source of checksums to print
 		if (use_response)
 		{
-			reference = std::make_unique<FromResponse>(&response);
+			reference = std::make_unique<arcstk::FromResponse>(&response);
 		} else
 		{
 			if (!refvalues.empty())
@@ -1325,12 +1350,12 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 				reference = std::make_unique<FromRefvalues>(&refvalues);
 			} else
 			{
-				reference = std::make_unique<EmptyChecksums>();
+				reference = std::make_unique<EmptyChecksumSource>();
 			}
 		}
 
 		record_builder.add_fields(std::make_unique<AddField<ATTR::THEIRS>>(
-					&types_to_print, match, block, reference.get(), this,
+					&types_to_print, vresult, block, reference.get(), this,
 					total_theirs_per_block, print(ATTR::CONFIDENCE)));
 	}
 

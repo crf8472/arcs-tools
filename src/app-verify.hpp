@@ -16,8 +16,8 @@
 #include <utility>    // for pair
 #include <vector>     // for vector
 
-#ifndef __LIBARCSTK_MATCH_HPP__
-#include <arcstk/match.hpp>
+#ifndef __LIBARCSTK_VERIFY_HPP__
+#include <arcstk/verify.hpp>
 #endif
 #ifndef __LIBARCSTK_PARSE_HPP__
 #include <arcstk/parse.hpp>
@@ -47,8 +47,8 @@ class Result;
 using arcstk::ARResponse;
 using arcstk::Checksum;
 using arcstk::Checksums;
-using arcstk::Match;
-using arcstk::Matcher;
+using arcstk::VerificationResult;
+using arcstk::Verifier;
 
 /**
  * \brief Configuration options for ARVerifyApplications.
@@ -264,7 +264,7 @@ public:
  */
 using Verify10Layout = Layout<std::unique_ptr<Result>
 	,const std::vector<arcstk::checksum::type>& /* mandatory: types to print */
-	,const Match*                     /* mandatory: match results          */
+	,const VerificationResult*        /* mandatory: verification results   */
 	,const int                        /* optional:  best block             */
 	,const Checksums&                 /* mandatory: "mine" checksums       */
 	,const ARId&                      /* optional:  "mine" ARId            */
@@ -602,12 +602,12 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	 * \brief Worker: Log matching files from a file list.
 	 *
 	 * \param[in] checksums Checksums to get matching tracks
-	 * \param[in] match     Matcher to show match
+	 * \param[in] vresult   Result of the verification
 	 * \param[in] block     The block to match tracks from
 	 * \param[in] version   The ARCS version to match tracks for
 	 */
 	void log_matching_files(const Checksums &checksums,
-		const Match &match, const uint32_t block,
+		const VerificationResult& vresult, const uint32_t block,
 		const bool version = true) const;
 
 

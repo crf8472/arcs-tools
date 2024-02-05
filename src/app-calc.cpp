@@ -364,7 +364,7 @@ std::unique_ptr<Result> CalcResultFormatter::do_format(InputTuple t) const
 
 	return build_result(
 			types_to_print,
-			/* no match */ nullptr,
+			/* no verification result */ nullptr,
 			/* no block */ 0,
 			checksums,
 			arid,

@@ -22,8 +22,8 @@
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>   // for Checksum
 #endif
-#ifndef __LIBARCSTK_MATCH_HPP__
-#include <arcstk/match.hpp>       // for Match
+#ifndef __LIBARCSTK_VERIFY_HPP__
+#include <arcstk/verify.hpp>      // for VerificationResult
 #endif
 #ifndef __LIBARCSTK_PARSE_HPP__
 #include <arcstk/parse.hpp>       // for ARResponse
@@ -799,117 +799,46 @@ using arcstk::ARId;
 using arcstk::ARResponse;
 using arcstk::Checksum;
 using arcstk::Checksums;
-using arcstk::Match;
+using arcstk::ChecksumSource;
+using arcstk::ChecksumSourceOf;
+using arcstk::VerificationResult;
 using arcstk::TOC;
-
-
-/**
- * \brief Provide unified access method to checksum containers.
- *
- * A checksum container contains several blocks of checksums an in every block a
- * sequence of checksums. A single checksum is accessed by a block index in
- * combination with the index of the checksum within the block.
- */
-class ChecksumSource
-{
-	virtual Checksum do_read(const int block_idx, const int idx) const
-	= 0;
-
-	virtual int do_confidence(const int block_idx, const int idx) const
-	= 0;
-
-public:
-
-	/**
-	 * \brief Virtual default destructor.
-	 */
-	virtual ~ChecksumSource() noexcept = default;
-
-	/**
-	 * \brief Read checksum \c idx in section with the specified \c block_idx.
-	 */
-	Checksum read(const int block_idx, const int idx) const
-	{
-		return this->do_read(block_idx, idx);
-	}
-
-	/**
-	 * \brief Read confidence \c idx in section with the specified \c block_idx.
-	 */
-	int confidence(const int block_idx, const int idx) const
-	{
-		return this->do_confidence(block_idx, idx);
-	}
-};
-
-
-/**
- * \brief Wrap a checksum container in a ChecksumSource.
- */
-template <typename T>
-class GetChecksum : public ChecksumSource
-{
-	/**
-	 * \brief Internal checksum source.
-	 */
-	const T* checksum_source_;
-
-protected:
-
-	/**
-	 * \brief The wrapped checksum source.
-	 *
-	 * \return The wrapped checksum source.
-	 */
-	const T* source() const
-	{
-		return checksum_source_;
-	}
-
-public:
-
-	/**
-	 * \brief Constructor.
-	 *
-	 * \param[in] t The primary checksum source
-	 */
-	GetChecksum(const T* t)
-		: checksum_source_ { t }
-	{
-		// empty
-	}
-};
-
-
-/**
- * \brief Access an ARResponse by block and index.
- */
-class FromResponse final : public GetChecksum<ARResponse>
-{
-	using GetChecksum::GetChecksum;
-	Checksum do_read(const int block_idx, const int idx) const final;
-	int do_confidence(const int block_idx, const int idx) const final;
-};
 
 
 /**
  * \brief Access list of reference values by block and index.
  */
-class FromRefvalues final : public GetChecksum<std::vector<Checksum>>
+class FromRefvalues final : public ChecksumSourceOf<std::vector<Checksum>>
 {
-	using GetChecksum::GetChecksum;
-	Checksum do_read(const int block_idx, const int idx) const final;
-	int do_confidence(const int block_idx, const int idx) const final;
+	const ARId& do_id(const int block_idx) const final;
+	const Checksum& do_checksum(const int block_idx, const int idx) const final;
+	const uint32_t& do_confidence(const int block_idx, const int idx) const
+		final;
+	std::size_t do_size(const int block_idx) const final;
+	std::size_t do_size() const final;
+
+public:
+
+	using ChecksumSourceOf::ChecksumSourceOf;
+	using ChecksumSourceOf::operator=;
 };
 
 
 /**
  * \brief Dummy source for providing only empty checksums.
  */
-class EmptyChecksums final : public ChecksumSource
+class EmptyChecksumSource final : public ChecksumSource
 {
-	Checksum do_read(const int block_idx, const int idx) const final;
-	int do_confidence(const int block_idx, const int idx) const final;
+	const ARId& do_id(const int block_idx) const final;
+	const Checksum& do_checksum(const int block_idx, const int idx) const final;
+	const uint32_t& do_confidence(const int block_idx, const int idx) const
+		final;
+	std::size_t do_size(const int block_idx) const final;
+	std::size_t do_size() const final;
+
+public:
+
+	EmptyChecksumSource();
 };
 
 
@@ -1139,7 +1068,7 @@ protected:
 	 * relevant data.
 	 *
 	 * \param[in] types_to_print List of Checksum types requested for print
-	 * \param[in] match          Match between calculation and reference
+	 * \param[in] vresult        Match between calculation and reference
 	 * \param[in] block          Best block in \c diff
 	 * \param[in] checksums      Calculated checksums
 	 * \param[in] response       Reference checksums
@@ -1151,7 +1080,7 @@ protected:
 	 */
 	std::unique_ptr<Result> build_result(
 		const std::vector<arcstk::checksum::type>& types_to_print,
-		const Match* match,
+		const VerificationResult* vresult,
 		const int block,
 		const Checksums& checksums,
 		const ARId& arid,
@@ -1218,8 +1147,8 @@ protected:
 	 * \brief Build the result table.
 	 *
 	 * \param[in] types       List of checksum types to print
-	 * \param[in] match       Match object (maybe null)
-	 * \param[in] block       Index to choose from \c match
+	 * \param[in] vresult     Match object (maybe null)
+	 * \param[in] block       Index to choose from \c vresult
 	 * \param[in] checksums   Checksums as resulted
 	 * \param[in] arid        ARId as resulted
 	 * \param[in] toc         TOC as resulted
@@ -1232,7 +1161,7 @@ protected:
 	 */
 	std::unique_ptr<PrintableTable> build_table(
 		const std::vector<arcstk::checksum::type>& types,
-		const Match* match,
+		const VerificationResult* vresult,
 		const int block,
 		const Checksums& checksums,
 		const ARId& arid,
