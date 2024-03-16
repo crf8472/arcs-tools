@@ -13,7 +13,6 @@
  * and can apply configuring logic on the resulting object.
  */
 
-#include <algorithm>     // for replace
 #include <any>           // for any
 #include <cstddef>       // for size_t
 #include <functional>    // for function
@@ -283,7 +282,7 @@ class InputStringParser : public StringParser
 
 	// StringParser
 
-	inline std::any do_parse(const std::string& s) const final
+	std::any do_parse(const std::string& s) const final
 	{
 		if (s.empty())
 		{
@@ -698,7 +697,8 @@ void parse_list(const std::string& list, const char delim,
  * \return Sequence of input values converted from strings
  */
 template <typename T>
-std::vector<T> parse_list_to_objects(const std::string& list, const char delim,
+inline std::vector<T> parse_list_to_objects(const std::string& list,
+		const char delim,
 		const std::function<T(const std::string& s)>& convert_func)
 {
 	auto results = std::vector<T> {};
