@@ -192,7 +192,7 @@ void ARVerifyConfigurator::do_flush_local_options(OptionRegistry &r) const
 
 		{ VERIFY::CONFIDENCE ,
 		{  "confidence", false, OP_VALUE::FALSE,
-			"Print confidence values" }}
+			"Print confidence values if available" }}
 	});
 }
 
@@ -273,21 +273,21 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 		{
 			ARCS_LOG_WARNING <<
 				"Ignore option PRINTID since option REFVALUES is active "
-				"and reference values do not provide an ID to print";
+				"and reference values do not provide an ID to print.";
 			voptions->unset(VERIFY::PRINTID);
 		}
 		if (voptions->is_set(VERIFY::PRINTURL))
 		{
 			ARCS_LOG_WARNING <<
 				"Ignore option PRINTURL since option REFVALUES is active "
-				"and reference values do not provide an URL to print";
+				"and reference values do not provide an URL to print.";
 			voptions->unset(VERIFY::PRINTURL);
 		}
 		if (voptions->is_set(VERIFY::CONFIDENCE))
 		{
 			ARCS_LOG_WARNING <<
 				"Ignore option CONFIDENCE since option REFVALUES is active and "
-				"reference values do not provide confidence values to print";
+				"reference values do not provide confidence values to print.";
 			voptions->unset(VERIFY::CONFIDENCE);
 		}
 	}
