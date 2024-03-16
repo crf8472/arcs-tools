@@ -261,7 +261,7 @@ void PrintParseHandler::do_end_block()
 void PrintParseHandler::do_end_input()
 {
 	std::ostringstream ss;
-	ss << "EOF======= Blocks: " << std::dec << block_counter_ << '\n';
+	ss << "========== Blocks: " << std::dec << block_counter_ << '\n';
 	this->print(ss.str());
 }
 
