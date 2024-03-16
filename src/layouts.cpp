@@ -164,36 +164,18 @@ std::string DBARTripletLayout::do_format(InputTuple t) const
 	// TODO Make label configurable
 	out << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
 
-	if (is_valid_arcs(triplet.arcs()))
-	{
-		out << std::setw(width_arcs)
+	out << std::setw(width_arcs)
 			<< hex.format(Checksum { triplet.arcs() }, width_arcs);
-	} else
-	{
-		out << std::setw(width_arcs) << unparsed_value;
-	}
 
 	out << " ";
 
 	out << "(";
-	if (is_valid_confidence(triplet.confidence()))
-	{
-		out << std::setw(width_conf) << std::setfill('0')
+	out << std::setw(width_conf) << std::setfill('0')
 			<< static_cast<unsigned int>(triplet.confidence());
-	} else
-	{
-		out << "??";
-	}
 	out << ") ";
 
-	if (is_valid_arcs(triplet.frame450_arcs()))
-	{
-		out << std::setw(width_arcs)
+	out << std::setw(width_arcs)
 			<< hex.format(Checksum { triplet.frame450_arcs() }, width_arcs);
-	} else
-	{
-		out << std::setw(width_arcs) << unparsed_value;
-	}
 
 	out << '\n';
 
