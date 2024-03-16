@@ -31,8 +31,8 @@
 #ifndef __LIBARCSTK_VERIFY_HPP__
 #include <arcstk/verify.hpp>      // for VerificationResult
 #endif
-#ifndef __LIBARCSTK_PARSE_HPP__
-#include <arcstk/parse.hpp>       // for ARResponse
+#ifndef __LIBARCSTK_DBAR_HPP__
+#include <arcstk/dbar.hpp>        // for DBAR
 #endif
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>     // for ARCS_LOG* (_DEBUG, _ERROR)
@@ -658,26 +658,47 @@ std::unique_ptr<TableComposer> ColTableComposerBuilder::do_build(
 // FromRefvalues
 
 
-const ARId& FromRefvalues::do_id(const int block_idx) const
+ARId FromRefvalues::do_id(const ChecksumSource::size_type block_idx) const
 {
 	return arcstk::EmptyARId;
 }
 
 
-const Checksum& FromRefvalues::do_checksum(const int /*b*/, const int idx) const
+Checksum FromRefvalues::do_checksum(const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type idx) const
 {
 	return source()->at(idx);
 }
 
 
-const uint32_t& FromRefvalues::do_confidence(const int /*b*/, const int /*t*/) const
+const uint32_t& FromRefvalues::do_arcs_value(
+		const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type track) const
+{
+	return source()->at(track);
+}
+
+
+const uint32_t& FromRefvalues::do_confidence(
+		const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type /*t*/) const
 {
 	static const auto zero = uint32_t { 0 };
 	return zero;
 }
 
 
-std::size_t FromRefvalues::do_size(const int /* block_idx */) const
+const uint32_t& FromRefvalues::do_frame450_arcs_value(
+		const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type /*t*/) const
+{
+	static const auto zero = uint32_t { 0 };
+	return zero;
+}
+
+
+std::size_t FromRefvalues::do_size(
+		const ChecksumSource::size_type /*block_idx*/) const
 {
 	return source()->size();
 }
@@ -692,29 +713,51 @@ std::size_t FromRefvalues::do_size() const
 // EmptyChecksumSource
 
 
+const uint32_t EmptyChecksumSource::zero;
+
+
 EmptyChecksumSource::EmptyChecksumSource() = default;
 
 
-const ARId& EmptyChecksumSource::do_id(const int block_idx) const
+ARId EmptyChecksumSource::do_id(const ChecksumSource::size_type block_idx) const
 {
 	return arcstk::EmptyARId;
 }
 
 
-const Checksum& EmptyChecksumSource::do_checksum(const int /*b*/, const int idx) const
+Checksum EmptyChecksumSource::do_checksum(const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type idx) const
 {
 	return arcstk::EmptyChecksum;
 }
 
 
-const uint32_t& EmptyChecksumSource::do_confidence(const int /*b*/, const int /*t*/) const
+const uint32_t& EmptyChecksumSource::do_arcs_value(
+		const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type track) const
 {
-	static const auto zero = uint32_t { 0 };
 	return zero;
 }
 
 
-std::size_t EmptyChecksumSource::do_size(const int /* block_idx */) const
+const uint32_t& EmptyChecksumSource::do_confidence(
+		const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type /*t*/) const
+{
+	return zero;
+}
+
+
+const uint32_t& EmptyChecksumSource::do_frame450_arcs_value(
+		const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type track) const
+{
+	return zero;
+}
+
+
+std::size_t EmptyChecksumSource::do_size(
+		const ChecksumSource::size_type /* block_idx */) const
 {
 	return 0;
 }
@@ -1195,8 +1238,8 @@ std::unique_ptr<Result> ResultFormatter::build_result(
 		const Checksums& checksums,
 		const ARId& arid,
 		const TOC* toc,
-		const ARResponse& response,
-		const std::vector<Checksum>& refvalues,
+		const DBAR& dbar,
+		const std::vector<uint32_t>& refvalues,
 		const std::vector<std::string>& filenames,
 		const std::string& alt_prefix) const
 {
@@ -1214,7 +1257,7 @@ std::unique_ptr<Result> ResultFormatter::build_result(
 	// Construct result objects
 
 	auto table { build_table(types_to_print, vresult, block, checksums, arid,
-			toc, response, refvalues, filenames, print_flags) };
+			toc, dbar, refvalues, filenames, print_flags) };
 
 	ARCS_LOG(DEBUG2) << "build_result(): build_table() returned";
 
@@ -1266,21 +1309,21 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 		const Checksums& checksums,
 		const ARId& arid,
 		const TOC* toc,
-		const ARResponse& response,
-		const std::vector<Checksum>& refvalues,
+		const DBAR& dBAR,
+		const std::vector<uint32_t>& refvalues,
 		const std::vector<std::string>& filenames,
 		const print_flag_t print) const
 {
 	ARCS_LOG(DEBUG2) << "build_table(): start";
 
-	// Determine whether to use the ARResponse
-	const auto use_response { response.size() };
+	// Determine whether to use the DBAR
+	const auto use_response { dBAR.size() };
 
 	// Determine total number of 'theirs' field_types per reference block
 	// (Maybe 0 for empty response and empty refvalues)
 	const auto total_theirs_per_block {
 		block < 0  // print all match results?
-			? (use_response ? response.size() : (refvalues.empty() ? 0 : 1))
+			? (use_response ? dBAR.size() : (refvalues.empty() ? 0 : 1))
 			: 1 // no best match declared
 	};
 
@@ -1342,7 +1385,7 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 		// Configure source of checksums to print
 		if (use_response)
 		{
-			reference = std::make_unique<arcstk::FromResponse>(&response);
+			reference = std::make_unique<arcstk::DBARSource>(&dBAR);
 		} else
 		{
 			if (!refvalues.empty())

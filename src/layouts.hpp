@@ -24,8 +24,8 @@
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>   // for Checksum
 #endif
-#ifndef __LIBARCSTK_PARSE_HPP__
-#include <arcstk/parse.hpp>       // for ARTriplet
+#ifndef __LIBARCSTK_DBAR_HPP__
+#include <arcstk/dbar.hpp>       // for DBARTriplet
 #endif
 
 namespace arcsapp
@@ -294,16 +294,16 @@ private:
 
 
 /**
- * \brief Interface for formatting ARTriplets.
+ * \brief Interface for formatting DBARTriplets.
  */
-using TripletLayout = Layout<std::string, int, arcstk::ARTriplet>;
+using TripletLayout = Layout<std::string, int, arcstk::DBARTriplet>;
 
 
 /**
  * \brief Interface for formatting ARTriplet instances for output.
  */
-class ARTripletLayout : protected WithInternalFlags
-					  , public TripletLayout
+class DBARTripletLayout : protected WithInternalFlags
+						, public TripletLayout
 {
 public:
 

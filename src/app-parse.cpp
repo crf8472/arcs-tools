@@ -7,8 +7,8 @@
 #include <string>              // for string
 #include <utility>             // for move, pair
 
-#ifndef __LIBARCSTK_PARSE_HPP__
-#include <arcstk/parse.hpp>
+#ifndef __LIBARCSTK_DBAR_HPP__
+#include <arcstk/dbar.hpp>
 #endif
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
@@ -24,7 +24,7 @@
 #include "result.hpp"              // for Result
 #endif
 #ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
-#include "tools-parse.hpp"        // for ARParserContentPrintHandler,
+#include "tools-parse.hpp"        // for PrintParseHandler,
 #endif
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
 #include "tools-fs.hpp"
@@ -37,8 +37,6 @@ namespace registered
 {
 const auto parse = RegisterApplicationType<ARParseApplication>("parse");
 }
-
-using arcstk::DefaultErrorHandler;
 
 
 // ARParseApplication
@@ -64,29 +62,21 @@ std::unique_ptr<Configurator> ARParseApplication::do_create_configurator() const
 
 int ARParseApplication::do_run(const Configuration& config)
 {
-	auto content_handler = std::make_unique<ARParserContentPrintHandler>();
-
+	auto printer = PrintParseHandler {};
 	const auto arguments = config.arguments();
 
-	if (arguments && !arguments->empty()) // read from file(s)
+	// read from file(s)
+	if (arguments && !arguments->empty())
 	{
-		ARFileParser parser;
-		parser.set_content_handler(std::move(content_handler));
-		parser.set_error_handler(std::make_unique<DefaultErrorHandler>());
-
 		for (const auto& file : *arguments)
 		{
-			parser.set_file(file);
-			parser.parse();
+			arcstk::parse_file(file, &printer, nullptr);
 		}
 	}
 	else // read from stdin
 	{
-		ARStdinParser parser;
-		parser.set_content_handler(std::move(content_handler));
-		parser.set_error_handler(std::make_unique<DefaultErrorHandler>());
-
-		parser.parse();
+		// TODO Actual amount of bytes should come from config
+		read_from_stdin(1024, &printer, nullptr);
 	}
 
 	return EXIT_SUCCESS;

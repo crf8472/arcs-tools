@@ -20,6 +20,9 @@
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>     // for Checksum, Checksums
 #endif
+#ifndef __LIBARCSTK_DBAR_HPP__
+#include <arcstk/dbar.hpp>          // for DBAR
+#endif
 
 #ifndef __LIBARCSDEC_SELECTION_HPP__
 #include <arcsdec/selection.hpp>    // for FileReaderSelection
@@ -51,6 +54,7 @@ const auto calc = RegisterApplicationType<ARCalcApplication>("calc");
 using arcstk::ARId;
 using arcstk::Checksum;
 using arcstk::Checksums;
+using arcstk::DBAR;
 using arcstk::TOC;
 
 
@@ -369,7 +373,7 @@ std::unique_ptr<Result> CalcResultFormatter::do_format(InputTuple t) const
 			checksums,
 			arid,
 			toc,
-			/* no ARResponse */ ARResponse{},
+			/* no DBAR */ DBAR{},
 			{ /* no reference ARCSs */ },
 			filenames,
 			altprefix);

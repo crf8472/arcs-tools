@@ -1,5 +1,8 @@
 #include "catch2/catch_test_macros.hpp"
 
+#ifndef __LIBARCSTK_DBAR_HPP__
+#include <arcstk/dbar.hpp>       // for DBARTriplet, DBARBlock, DBAR
+#endif
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>   // for Checksum
 #endif
@@ -49,13 +52,20 @@ TEST_CASE ( "HexLayout", "[hexlayout]" )
 }
 
 
-TEST_CASE ( "ARTripletLayout", "[artripletlayout]" )
+TEST_CASE ( "DBARTripletLayout", "[artripletlayout]" )
 {
-	using arcsapp::ARTripletLayout;
+	using arcsapp::DBARTripletLayout;
+	using arcstk::DBARTriplet;
 
-	ARTripletLayout lyt;
+	auto t = DBARTriplet { 0xFFAABBCC, 24, 0x12345678 };
 
-	CHECK ( not lyt.format(8, { 0xFFAABBCC, 24, 0x12345678 }).empty() );
+	REQUIRE ( t.arcs() == 0xFFAABBCCu );
+	REQUIRE ( t.confidence() == 24 );
+	REQUIRE ( t.frame450_arcs() == 0x12345678u );
+
+	DBARTripletLayout lyt;
+
+	CHECK ( not lyt.format(8, t).empty() );
 }
 
 

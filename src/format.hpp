@@ -25,8 +25,8 @@
 #ifndef __LIBARCSTK_VERIFY_HPP__
 #include <arcstk/verify.hpp>      // for VerificationResult
 #endif
-#ifndef __LIBARCSTK_PARSE_HPP__
-#include <arcstk/parse.hpp>       // for ARResponse
+#ifndef __LIBARCSTK_DBAR_HPP__
+#include <arcstk/dbar.hpp>       // for DBAR
 #endif
 
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
@@ -44,6 +44,9 @@
 
 namespace arcsapp
 {
+
+using arcstk::DBAR;
+
 
 /**
  * \brief An ARId accompanied by a layout and an optional URL prefix.
@@ -796,11 +799,11 @@ private:
 
 
 using arcstk::ARId;
-using arcstk::ARResponse;
 using arcstk::Checksum;
 using arcstk::Checksums;
 using arcstk::ChecksumSource;
 using arcstk::ChecksumSourceOf;
+using arcstk::DBAR;
 using arcstk::VerificationResult;
 using arcstk::TOC;
 
@@ -808,13 +811,19 @@ using arcstk::TOC;
 /**
  * \brief Access list of reference values by block and index.
  */
-class FromRefvalues final : public ChecksumSourceOf<std::vector<Checksum>>
+class FromRefvalues final : public ChecksumSourceOf<std::vector<uint32_t>>
 {
-	const ARId& do_id(const int block_idx) const final;
-	const Checksum& do_checksum(const int block_idx, const int idx) const final;
-	const uint32_t& do_confidence(const int block_idx, const int idx) const
-		final;
-	std::size_t do_size(const int block_idx) const final;
+	ARId do_id(const ChecksumSource::size_type block_idx) const final;
+	Checksum do_checksum(const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type idx) const final;
+	const uint32_t& do_arcs_value(const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type track_idx) const final;
+	const uint32_t& do_confidence(const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type track_idx) const final;
+	const uint32_t& do_frame450_arcs_value(
+			const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type track_idx) const final;
+	std::size_t do_size(const ChecksumSource::size_type block_idx) const final;
 	std::size_t do_size() const final;
 
 public:
@@ -829,11 +838,19 @@ public:
  */
 class EmptyChecksumSource final : public ChecksumSource
 {
-	const ARId& do_id(const int block_idx) const final;
-	const Checksum& do_checksum(const int block_idx, const int idx) const final;
-	const uint32_t& do_confidence(const int block_idx, const int idx) const
-		final;
-	std::size_t do_size(const int block_idx) const final;
+	static const auto zero = uint32_t { 0 };
+
+	ARId do_id(const ChecksumSource::size_type block_idx) const final;
+	Checksum do_checksum(const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type idx) const final;
+	const uint32_t& do_arcs_value(const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type track_idx) const final;
+	const uint32_t& do_confidence(const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type track_idx) const final;
+	const uint32_t& do_frame450_arcs_value(
+			const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type track_idx) const final;
+	std::size_t do_size(const ChecksumSource::size_type block_idx) const final;
 	std::size_t do_size() const final;
 
 public:
@@ -1071,7 +1088,7 @@ protected:
 	 * \param[in] vresult        Match between calculation and reference
 	 * \param[in] block          Best block in \c diff
 	 * \param[in] checksums      Calculated checksums
-	 * \param[in] response       Reference checksums
+	 * \param[in] dbar           Reference checksums
 	 * \param[in] refvalues      Reference checksums
 	 * \param[in] arid           ARId of input
 	 * \param[in] toc            TOC for calculated checksums
@@ -1085,8 +1102,8 @@ protected:
 		const Checksums& checksums,
 		const ARId& arid,
 		const TOC* toc,
-		const ARResponse& response,
-		const std::vector<Checksum>& refvalues,
+		const DBAR& dbar,
+		const std::vector<uint32_t>& refvalues,
 		const std::vector<std::string>& filenames,
 		const std::string& alt_prefix) const;
 
@@ -1166,8 +1183,8 @@ protected:
 		const Checksums& checksums,
 		const ARId& arid,
 		const TOC* toc,
-		const ARResponse& response,
-		const std::vector<Checksum>& refvalues,
+		const DBAR& response,
+		const std::vector<uint32_t>& refvalues,
 		const std::vector<std::string>& filenames,
 		const print_flag_t print_flags) const;
 

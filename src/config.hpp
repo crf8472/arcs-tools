@@ -509,15 +509,15 @@ public:
 	template <typename T>
 	auto object_ptr(const OptionCode &option) const -> const T*
 	{
-		auto o { objects_.find(option) };
+		auto p { objects_.find(option) };
 
 		using std::end;
-		if (end(objects_) == o)
+		if (end(objects_) == p)
 		{
 			return nullptr;
 		}
 
-		return std::any_cast<T>(&o->second);
+		return std::any_cast<T>(&p->second);
 	}
 
 	/**

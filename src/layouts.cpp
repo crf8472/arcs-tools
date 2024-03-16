@@ -22,8 +22,8 @@
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>   // for Checksum
 #endif
-#ifndef __LIBARCSTK_PARSE_HPP__
-#include <arcstk/parse.hpp>       // for ARTriplet
+#ifndef __LIBARCSTK_DBAR_HPP__
+#include <arcstk/dbar.hpp>        // for DBARTriplet
 #endif
 
 #ifndef __ARCSTOOLS_RESULT_HPP__
@@ -138,12 +138,15 @@ std::string HexLayout::do_format(InputTuple t) const
 }
 
 
-// ARTripletLayout
+// DBARTripletLayout
 
 using arcstk::Checksum;
 
-std::string ARTripletLayout::do_format(InputTuple t) const
+std::string DBARTripletLayout::do_format(InputTuple t) const
 {
+	using arcstk::is_valid_arcs;
+	using arcstk::is_valid_confidence;
+
 	const auto track   = std::get<0>(t);
 	const auto triplet = std::get<1>(t);
 
@@ -161,7 +164,7 @@ std::string ARTripletLayout::do_format(InputTuple t) const
 	// TODO Make label configurable
 	out << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
 
-	if (triplet.arcs_valid())
+	if (is_valid_arcs(triplet.arcs()))
 	{
 		out << std::setw(width_arcs)
 			<< hex.format(Checksum { triplet.arcs() }, width_arcs);
@@ -173,7 +176,7 @@ std::string ARTripletLayout::do_format(InputTuple t) const
 	out << " ";
 
 	out << "(";
-	if (triplet.confidence_valid())
+	if (is_valid_confidence(triplet.confidence()))
 	{
 		out << std::setw(width_conf) << std::setfill('0')
 			<< static_cast<unsigned int>(triplet.confidence());
@@ -183,7 +186,7 @@ std::string ARTripletLayout::do_format(InputTuple t) const
 	}
 	out << ") ";
 
-	if (triplet.frame450_arcs_valid())
+	if (is_valid_arcs(triplet.frame450_arcs()))
 	{
 		out << std::setw(width_arcs)
 			<< hex.format(Checksum { triplet.frame450_arcs() }, width_arcs);

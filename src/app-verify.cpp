@@ -21,8 +21,8 @@
 #ifndef __LIBARCSTK_VERIFY_HPP__
 #include <arcstk/verify.hpp>
 #endif
-#ifndef __LIBARCSTK_PARSE_HPP__
-#include <arcstk/parse.hpp>
+#ifndef __LIBARCSTK_DBAR_HPP__
+#include <arcstk/dbar.hpp>
 #endif
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>       // for ARCS_LOG_DEBUG, ARCS_LOG_ERROR
@@ -67,14 +67,11 @@ namespace registered
 const auto verify = RegisterApplicationType<ARVerifyApplication>("verify");
 }
 
-using arcstk::ARStreamParser;
-using arcstk::ARResponse;
 using arcstk::Checksum;
 using arcstk::Checksums;
+using arcstk::DBARBuilder;
+using arcstk::DBARSource;
 using arcstk::Logging;
-using arcstk::DefaultContentHandler;
-using arcstk::DefaultErrorHandler;
-using arcstk::Verifier;
 using arcstk::AlbumVerifier;
 using arcstk::TracksetVerifier;
 
@@ -328,11 +325,11 @@ OptionParsers ARVerifyConfigurator::do_parser_list() const
 {
 	return {
 		{ VERIFY::RESPONSEFILE,
-			[]{ return std::make_unique<ARResponseParser>();   } },
+			[]{ return std::make_unique<DBARParser>(); } },
 		{ VERIFY::REFVALUES,
 			[]{ return std::make_unique<ChecksumListParser>(); } },
 		{ VERIFY::COLORED,
-			[]{ return std::make_unique<ColorSpecParser>();    } }
+			[]{ return std::make_unique<ColorSpecParser>(); } }
 	};
 }
 
@@ -341,8 +338,8 @@ void ARVerifyConfigurator::do_validate(const Configuration& c) const
 {
 	// No reference checksums at all? => Error
 
-	if (c.object<ARResponse>(VERIFY::RESPONSEFILE).size() == 0
-			&& c.object<std::vector<Checksum>>(VERIFY::REFVALUES).empty())
+	if (c.object<DBAR>(VERIFY::RESPONSEFILE).size() == 0
+		&& c.object<std::vector<uint32_t>>(VERIFY::REFVALUES).empty())
 	{
 		throw std::runtime_error(
 				"No reference checksums for verification available.");
@@ -473,12 +470,12 @@ void VerifyResultFormatter::assertions(const InputTuple t) const
 
 	// Specific for verify
 
-	const auto response  = std::get<6>(t);
+	const auto dBAR      = std::get<6>(t);
 	const auto refvalues = std::get<7>(t);
 	const auto vresult   = std::get<1>(t);
 	const auto block     = std::get<2>(t);
 
-	if (refvalues.empty() && !response.size())
+	if (refvalues.empty() && !dBAR.size())
 	{
 		throw std::invalid_argument("Missing reference checksums, "
 				"nothing to print.");
@@ -516,19 +513,19 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 	const auto checksums  = std::get<3>(t);
 	const auto arid       = std::get<4>(t);
 	const auto toc        = std::get<5>(t);
-	const auto response   = std::get<6>(t);
+	const auto dBAR       = std::get<6>(t);
 	const auto refvalues  = std::get<7>(t);
 	const auto filenames  = std::get<8>(t);
 	const auto alt_prefix = std::get<9>(t);
 
 	auto result = std::make_unique<ResultList>();
 
-	// If an ARResponse is used for the references with a block (not PRINTALL)
-	if (response.size() > 0 && block > -1)
+	// If a DBAR is used for the references with a block (not PRINTALL)
+	if (dBAR.size() > 0 && block > -1)
 	{
 		// Use ARId of specified block for "Theirs" ARId
 		result->append(std::make_unique<ResultObject<RichARId>>(
-				build_id(toc, response.at(block).id(), alt_prefix)));
+				build_id(toc, dBAR.block(block).id(), alt_prefix)));
 	}
 
 	result->append(build_result(
@@ -538,7 +535,7 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 				checksums,
 				arid,
 				toc,
-				response,
+				dBAR,
 				refvalues,
 				filenames,
 				alt_prefix));
@@ -843,62 +840,46 @@ void ColorizingVerifyResultFormatter::set_color_bg(DecorationType d, Color c)
 }
 
 
-// ARResponseParser
+// DBARParser
 
 
-ARResponse ARResponseParser::load_response(const std::string& responsefile)
-	const
+DBAR DBARParser::load_data(const std::string& responsefile) const
 {
-	// Parse the AccurateRip response
-
-	std::unique_ptr<ARStreamParser> parser;
-
-	if (responsefile.empty())
-	{
-		ARCS_LOG(DEBUG1) << "Expect input from stdin";
-		parser = std::make_unique<ARStdinParser>();
-
-	} else
-	{
-		parser = std::make_unique<ARFileParser>(responsefile);
-	}
-
-	ARResponse response;
-	auto c_handler { std::make_unique<DefaultContentHandler>() };
-	c_handler->set_object(response);
-	parser->set_content_handler(std::move(c_handler));
-	parser->set_error_handler(std::make_unique<DefaultErrorHandler>());
+	auto builder = DBARBuilder {};
 
 	try
 	{
-		if (!parser->parse())
+		if (!responsefile.empty())
 		{
-			throw CallSyntaxException("No bytes parsed, exit");
+			arcstk::parse_file(responsefile, &builder, nullptr);
+		} else
+		{
+			read_from_stdin(1024, &builder, nullptr);
 		}
 	} catch (const std::exception& e)
 	{
 		throw CallSyntaxException(e.what());
 	}
 
-	return response;
+	return builder.result();
 }
 
 
-std::string ARResponseParser::start_message() const
+std::string DBARParser::start_message() const
 {
 	return "AccurateRip reference checksums (=\"Theirs\")";
 }
 
 
-ARResponse ARResponseParser::do_parse_empty() const
+DBAR DBARParser::do_parse_empty() const
 {
-	return this->load_response("");
+	return this->load_data("");
 }
 
 
-ARResponse ARResponseParser::do_parse_nonempty(const std::string& s) const
+DBAR DBARParser::do_parse_nonempty(const std::string& s) const
 {
-	return this->load_response(s);
+	return this->load_data(s);
 }
 
 
@@ -911,19 +892,19 @@ std::string ChecksumListParser::start_message() const
 }
 
 
-std::vector<Checksum> ChecksumListParser::do_parse_nonempty(
+std::vector<uint32_t> ChecksumListParser::do_parse_nonempty(
 		const std::string& checksum_list) const
 {
 	auto i = int { 0 };
-	auto refvals = parse_list_to_objects<Checksum>(
+	auto refvals = parse_list_to_objects<uint32_t>(
 				checksum_list,
 				',',
-				[&i](const std::string& s) -> Checksum
+				[&i](const std::string& s) -> uint32_t
 				{
-					Checksum::value_type value = std::stoul(s, 0, 16);
+					const uint32_t value = std::stoul(s, 0, 16);
 					ARCS_LOG(DEBUG1) << "Parse checksum: " << Checksum { value }
 						<< " (Track " << ++i << ")";
-					return Checksum { value };
+					return value;
 				});
 
 	ARCS_LOG(DEBUG1) << "Parsed " << refvals.size() << " checksums";
@@ -1148,9 +1129,9 @@ std::unique_ptr<Configurator> ARVerifyApplication::do_create_configurator()
 auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	-> std::pair<int, std::unique_ptr<Result>>
 {
-	auto ref_respns = config.object<ARResponse>(VERIFY::RESPONSEFILE);
+	auto ref_respns = config.object<DBAR>(VERIFY::RESPONSEFILE);
 
-	auto ref_values = config.object<std::vector<Checksum>>(VERIFY::REFVALUES);
+	auto ref_values = config.object<std::vector<uint32_t>>(VERIFY::REFVALUES);
 
 	// Album calculation is requested but no metafile is passed
 
@@ -1170,7 +1151,8 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		if (/* DBAR object passed */ ref_respns.size() > 0)
 		{
 			tracks_mismatch =
-				ref_respns.tracks_per_block() != config.arguments()->size();
+				ref_respns.block(0).size() != config.arguments()->size();
+			// TODO Check every block, at least one has to match
 		} else
 		if (/* Reference value list passed */ !ref_values.empty())
 		{
@@ -1259,7 +1241,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		if (!vresult) // No result from refvals?
 		{
 			const auto v = std::make_unique<AlbumVerifier>(checksums, arid);
-			vresult = v->perform(ref_respns);
+			vresult = v->perform(DBARSource(&ref_respns));
 		}
 
 		print_filenames = !single_audio_file;
@@ -1270,7 +1252,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		if (!vresult) // No result from refvals?
 		{
 			const auto v = std::make_unique<TracksetVerifier>(checksums);
-			vresult = v->perform(ref_respns);
+			vresult = v->perform(DBARSource(&ref_respns));
 		}
 
 		if (Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG))
@@ -1352,7 +1334,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		/* mine ARCSs */               checksums,
 		/* optional mine ARId */       arid,
 		/* optional TOC */             toc.get(),
-		/* optional ARResponse */      ref_respns,
+		/* optional DBAR */            ref_respns,
 		/* optional input ref sums */  ref_values,
 		/* input audio filenames */    filenames,
 		/* optional URL prefix */      alt_prefix

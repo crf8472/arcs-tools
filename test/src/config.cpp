@@ -444,20 +444,31 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 			"foo/foo.wav",
 		};
 
-		const ARVerifyConfigurator conf1;
-		auto o = conf1.provide_options(argc, argv);
-		const auto c = conf1.create(std::move(o));
+		const ARVerifyConfigurator vconf;
+		auto options = vconf.provide_options(argc, argv);
+
+		REQUIRE ( options->value(VERIFY::COLORED) ==
+				"match:fg_magenta,mismatch:fg_blue" );
+
+		REQUIRE ( options->value(VERIFY::REFVALUES) == "1,2,3" );
+
+		REQUIRE ( options->argument(0) == "foo/foo.wav");
+
+		const auto config = vconf.create(std::move(options));
+
+		auto p = config->object_ptr<arcstk::DBAR>(VERIFY::RESPONSEFILE);
+		REQUIRE ( p == nullptr );
 
 		CHECK ( Color::FG_MAGENTA ==
-				c->object<ColorRegistry>(VERIFY::COLORED).get(
+				config->object<ColorRegistry>(VERIFY::COLORED).get(
 					DecorationType::MATCH).first );
 
 		CHECK ( Color::FG_BLUE ==
-				c->object<ColorRegistry>(VERIFY::COLORED).get(
+				config->object<ColorRegistry>(VERIFY::COLORED).get(
 					DecorationType::MISMATCH).first );
 
-		CHECK ( std::vector<Checksum>{ Checksum(1), Checksum(2), Checksum(3) }
-				== c->object<std::vector<Checksum>>(VERIFY::REFVALUES) );
+		CHECK ( std::vector<uint32_t>{ 1, 2, 3 } ==
+				config->object<std::vector<uint32_t>>(VERIFY::REFVALUES) );
 	}
 }
 

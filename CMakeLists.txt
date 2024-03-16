@@ -180,6 +180,11 @@ if (WITH_SUBMODULES )
 
 	add_subdirectory (${SUBMODULES_DIR}/libarcstk  )
 	add_subdirectory (${SUBMODULES_DIR}/libarcsdec )
+
+	## Commented out: try to force RPATH to build tree .so's but no success
+	#set (CMAKE_SKIP_BUILD_RPATH            FALSE )
+	#set (CMAKE_BUILD_WITH_INSTALL_RPATH    FALSE )
+	#set (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE  )
 else()
 
 	message (STATUS "Link to system-installed libarcstk and libarcsdec" )
@@ -193,7 +198,14 @@ endif()
 
 if (TARGET libarcstk::libarcstk )
 
-	target_link_libraries (${PROJECT_NAME}-objects PUBLIC libarcstk::libarcstk )
+	if (WITH_SUBMODULES )
+		# Force to set RPATH instead of RUNPATH, point to .so's in build tree
+		target_link_libraries (${PROJECT_NAME}-objects
+			PUBLIC libarcstk::libarcstk -Wl,--disable-new-dtags )
+	else()
+		target_link_libraries (${PROJECT_NAME}-objects
+			PUBLIC libarcstk::libarcstk )
+	endif()
 else()
 	message (FATAL_ERROR
 		"libarcstk is not present, neither system-wide nor as a submodule" )
@@ -205,7 +217,14 @@ endif()
 
 if (TARGET libarcsdec::libarcsdec )
 
-	target_link_libraries (${PROJECT_NAME}-objects PUBLIC libarcsdec::libarcsdec )
+	if (WITH_SUBMODULES )
+		# Force to set RPATH instead of RUNPATH, point to .so's in build tree
+		target_link_libraries (${PROJECT_NAME}-objects
+			PUBLIC libarcsdec::libarcsdec -Wl,--disable-new-dtags )
+	else()
+		target_link_libraries (${PROJECT_NAME}-objects
+			PUBLIC libarcsdec::libarcsdec )
+	endif()
 else()
 	message (FATAL_ERROR
 		"libarcsdec is not present, neither system-wide nor as a submodule" )

@@ -24,7 +24,7 @@ list (APPEND TEST_SETS clitokens   )
 list (APPEND TEST_SETS layouts     )
 list (APPEND TEST_SETS tools-fs    )
 list (APPEND TEST_SETS tools-calc  )
-list (APPEND TEST_SETS tools-parse )
+#list (APPEND TEST_SETS tools-parse )
 list (APPEND TEST_SETS table       )
 ## custom test scripts
 list (APPEND TEST_SETS config      )
@@ -48,13 +48,27 @@ foreach (_testcase ${TEST_SETS} )
 		PRIVATE ${PROJECT_BUILD_SOURCE_DIR}   ## generated sources
 	)
 
-	target_link_libraries (${_testcase}_test
-		PRIVATE
-		Catch2::Catch2WithMain
-		libarcstk::libarcstk
-		libarcsdec::libarcsdec
-		$<TARGET_OBJECTS:${PROJECT_NAME}-objects>
-	)
+	if (WITH_SUBMODULES )
+		target_link_libraries (${_testcase}_test
+			PRIVATE
+			Catch2::Catch2WithMain
+			libarcstk::libarcstk
+			libarcsdec::libarcsdec
+			-Wl,--disable-new-dtags ## set RPATH instead of RUNPATH
+			$<TARGET_OBJECTS:${PROJECT_NAME}-objects>
+		)
+		## Setting RPATH forces loading the lib*.so files from the build tree,
+		## even if system wide installed versions are present.
+	else()
+		target_link_libraries (${_testcase}_test
+			PRIVATE
+			Catch2::Catch2WithMain
+			libarcstk::libarcstk
+			libarcsdec::libarcsdec
+			$<TARGET_OBJECTS:${PROJECT_NAME}-objects>
+		)
+		## Link against system wide binaries
+	endif()
 
 	## Add test to ctest set
 

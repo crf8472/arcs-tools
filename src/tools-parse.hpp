@@ -20,19 +20,20 @@
 #include <utility>           // for move, swap
 #include <vector>            // for vector
 
-#ifndef __LIBARCSTK_PARSE_HPP__
-#include <arcstk/parse.hpp>
+#ifndef __LIBARCSTK_DBAR_HPP__
+#include <arcstk/dbar.hpp>
 #endif
 
 namespace arcsapp
 {
 
-class ARIdLayout;
-class ARTripletLayout;
 class Application;
+class ARIdLayout;
+class DBARTripletLayout;
 
-using arcstk::Checksum;
-using arcstk::ContentHandler;
+using arcstk::DBAR;
+using arcstk::ParseHandler;
+using arcstk::ParseErrorHandler;
 
 
 /**
@@ -97,24 +98,28 @@ private:
 };
 
 
+unsigned read_from_stdin(const std::size_t amount_of_bytes, ParseHandler* p,
+		ParseErrorHandler* e);
+
+
 /**
  * \brief Content handler that just prints the parsed content immediately.
  *
  * Printing is performed to Output by default.
  */
-class ARParserContentPrintHandler : public ContentHandler
+class PrintParseHandler final : public ParseHandler
 {
 public:
 
 	/**
 	 * \brief Constructor for printing to output.
 	 */
-	ARParserContentPrintHandler();
+	PrintParseHandler();
 
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	virtual ~ARParserContentPrintHandler() noexcept;
+	~PrintParseHandler() noexcept;
 
 	/**
 	 * \brief Sets the layout for printing ARIds.
@@ -135,14 +140,14 @@ public:
 	 *
 	 * \param[in] layout The print layout to use
 	 */
-	void set_triplet_layout(std::unique_ptr<ARTripletLayout> layout);
+	void set_triplet_layout(std::unique_ptr<DBARTripletLayout> layout);
 
 	/**
 	 * \brief Read-access to the print layout used for track information.
 	 *
 	 * \return The print layout used for track information
 	 */
-	const ARTripletLayout& triplet_layout() const;
+	const DBARTripletLayout& triplet_layout() const;
 
 	/**
 	 * \brief Specify a file as print target.
@@ -165,7 +170,7 @@ protected:
 	 *
 	 * \return The print layout used
 	 */
-	ARTripletLayout* triplet_layout();
+	DBARTripletLayout* triplet_layout();
 
 	/**
 	 * \brief Print the string.
@@ -176,29 +181,22 @@ protected:
 
 private:
 
-	void do_start_input() override;
+	void do_start_input() final;
 
-	void do_start_block() override;
+	void do_start_block() final;
 
-	void do_id(const uint8_t track_count,
+	void do_header(const uint8_t track_count,
 			const uint32_t id1,
 			const uint32_t id2,
-			const uint32_t cddb_id) override;
+			const uint32_t cddb_id) final;
 
-	void do_triplet(const Checksum arcs,
+	void do_triplet(const uint32_t arcs,
 			const uint8_t confidence,
-			const Checksum frame450_arcs) override;
+			const uint32_t frame450_arcs) final;
 
-	void do_triplet(const Checksum arcs,
-			const uint8_t confidence,
-			const Checksum frame450_arcs,
-			const bool arcs_valid,
-			const bool confidence_valid,
-			const bool frame450_arcs_valid) override;
+	void do_end_block() final;
 
-	void do_end_block() override;
-
-	void do_end_input() override;
+	void do_end_input() final;
 
 	/**
 	 * \brief Internal block counter.
@@ -218,125 +216,7 @@ private:
 	/**
 	 * \brief Internal layout used for printing the triplets.
 	 */
-	std::unique_ptr<ARTripletLayout> triplet_layout_;
-};
-
-
-/**
- * \brief Parser for dBAR-\*.bin files.
- *
- * \details
- *
- * This class parses dBAR-\*.bin files saved by the actual ripper software
- * or achieved by an HTTP request to AccurateRip. Those files are just the byte
- * stream of the AccurateRip response persisted to the file system.
- *
- * The parser can be reused to parse multiple files subsequently.
- */
-class ARFileParser final : public arcstk::ARStreamParser
-{
-public:
-
-	/**
-	 * \brief Constructor.
-	 */
-	ARFileParser();
-
-	/**
-	 * \brief Move Constructor
-	 *
-	 * \param[in] rhs Instance to move
-	 */
-	ARFileParser(ARFileParser &&rhs) noexcept;
-
-	/**
-	 * \brief Constructor for specific file.
-	 *
-	 * \param[in] filename Name of the file to parse
-	 */
-	explicit ARFileParser(const std::string &filename);
-
-	/**
-	 * \brief Set the file to be parsed.
-	 *
-	 * \param[in] filename Name of the file to parse
-	 */
-	void set_file(const std::string &filename);
-
-	/**
-	 * \brief Name of the file to parse.
-	 *
-	 * \return Name of the file that is parsed when parse() is called.
-	 *
-	 * \return Name of the file to parse
-	 */
-	std::string file() const noexcept;
-
-
-	ARFileParser& operator = (ARFileParser &&rhs) noexcept;
-
-	friend void swap(ARFileParser &lhs, ARFileParser &rhs)
-	{
-		lhs.swap(rhs);
-	}
-
-	// non-copyable class
-	ARFileParser(const ARFileParser &rhs) = delete;
-	ARFileParser& operator = (const ARFileParser &rhs) = delete;
-
-private:
-
-	uint32_t do_parse() final;
-
-	void do_swap(ARStreamParser &rhs) final;
-
-	void on_catched_exception(std::istream &istream,
-			const std::exception &e) const final;
-
-	/**
-	 * \brief Internal filename representation
-	 */
-	std::string filename_;
-};
-
-
-/**
- * \brief Parser for AccurateRip response as a binary stream on stdin.
- */
-class ARStdinParser final : public arcstk::ARStreamParser
-{
-public:
-
-	/**
-	 * \brief Default constructor.
-	 */
-	ARStdinParser();
-
-	/**
-	 * \brief Move Constructor
-	 *
-	 * \param[in] rhs Instance to move
-	 */
-	ARStdinParser(ARStdinParser &&rhs) noexcept;
-
-
-	ARStdinParser& operator = (ARStdinParser &&rhs) noexcept;
-
-	friend void swap(ARStdinParser &lhs, ARStdinParser &rhs)
-	{
-		lhs.swap(rhs);
-	}
-
-	// non-copyable class
-	ARStdinParser(const ARStdinParser &rhs) = delete;
-	ARStdinParser& operator = (const ARStdinParser &rhs) = delete;
-
-private:
-
-	uint32_t do_parse() final;
-
-	void on_catched_exception(std::istream &istream,
-			const std::exception &e) const final;
+	std::unique_ptr<DBARTripletLayout> triplet_layout_;
 };
 
 } // namespace arcsapp

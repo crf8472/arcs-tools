@@ -19,8 +19,8 @@
 #ifndef __LIBARCSTK_VERIFY_HPP__
 #include <arcstk/verify.hpp>
 #endif
-#ifndef __LIBARCSTK_PARSE_HPP__
-#include <arcstk/parse.hpp>
+#ifndef __LIBARCSTK_DBAR_HPP__
+#include <arcstk/dbar.hpp>
 #endif
 
 #ifndef __ARCSTOOLS_ANSI_HPP__
@@ -44,11 +44,13 @@ class Configurator;
 class Options;
 class Result;
 
-using arcstk::ARResponse;
 using arcstk::Checksum;
 using arcstk::Checksums;
+using arcstk::DBAR;
 using arcstk::VerificationResult;
 using arcstk::Verifier;
+
+using RefValuesType = std::vector<uint32_t>;
 
 /**
  * \brief Configuration options for ARVerifyApplications.
@@ -269,8 +271,8 @@ using Verify10Layout = Layout<std::unique_ptr<Result>
 	,const Checksums&                 /* mandatory: "mine" checksums       */
 	,const ARId&                      /* optional:  "mine" ARId            */
 	,const TOC*                       /* optional:  "mine" TOC             */
-	,const ARResponse&                /* optional:  ref sums in ARResponse */
-	,const std::vector<Checksum>&     /* optional:  ref sums passed        */
+	,const DBAR&                      /* optional:  ref sums in DBAR       */
+	,const std::vector<uint32_t>&     /* optional:  ref sums passed        */
 	,const std::vector<std::string>&  /* optional:  input audio filenames  */
 	,const std::string&               /* optional:  AccurateRip URL prefix */
 >;
@@ -531,28 +533,28 @@ public:
 
 
 /**
- * \brief Parser for an ARResponse, either from a file or from stdin.
+ * \brief Parser for a dBAR response, either from a file or from stdin.
  *
  * Accepts binary input for option VERIFY::RESPONSEFILE.
  */
-class ARResponseParser final : public InputStringParser<ARResponse>
+class DBARParser final : public InputStringParser<DBAR>
 {
 	/**
-	 * \brief Load response from file or from stdin.
+	 * \brief Load DBAR from file or from stdin.
 	 *
 	 * In case the filename is empty, input is expected from stdin.
 	 *
 	 * \param[in] file The name of the response file
 	 */
-	ARResponse load_response(const std::string& file) const;
+	DBAR load_data(const std::string& file) const;
 
 	// InputStringParser
 
 	std::string start_message() const final;
 
-	ARResponse do_parse_empty() const override;
+	DBAR do_parse_empty() const final;
 
-	ARResponse do_parse_nonempty(const std::string& s) const final;
+	DBAR do_parse_nonempty(const std::string& s) const final;
 };
 
 
@@ -562,11 +564,11 @@ class ARResponseParser final : public InputStringParser<ARResponse>
  * Accepts a comma-separated list of hexadecimal values as input for option
  * VERIFY::REFVALUES.
  */
-class ChecksumListParser final : public InputStringParser<std::vector<Checksum>>
+class ChecksumListParser final : public InputStringParser<std::vector<uint32_t>>
 {
 	std::string start_message() const final;
 
-	std::vector<Checksum> do_parse_nonempty(const std::string& s) const final;
+	std::vector<uint32_t> do_parse_nonempty(const std::string& s) const final;
 };
 
 

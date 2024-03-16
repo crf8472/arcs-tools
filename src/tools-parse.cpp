@@ -27,24 +27,29 @@
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
+#ifndef __LIBARCSTK_DBAR_HPP__
+#include <arcstk/dbar.hpp>
+#endif
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
 #endif
 
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"            // for ARIdLayout, ARTripletLayout
+#include "layouts.hpp"            // for ARIdLayout, DBARTripletLayout
 #endif
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"        // for Output
 #endif
 
+
 namespace arcsapp
 {
 
 using arcstk::ARId;
-using arcstk::ARTriplet;
-using arcstk::ContentHandler;
 
+using arcstk::DBAR;
+using arcstk::DBARTriplet;
+using arcstk::parse_stream;
 
 // StdIn
 
@@ -133,75 +138,88 @@ std::size_t StdIn::buf_size() const
 }
 
 
-// ARParserContentPrintHandler
+// read_from_stdin
 
 
-ARParserContentPrintHandler::ARParserContentPrintHandler()
+unsigned read_from_stdin(const std::size_t amount_of_bytes, ParseHandler* p,
+		ParseErrorHandler* e)
+{
+	auto input_bytes { StdIn(amount_of_bytes).bytes() };
+	VectorIStream<char> input_data(input_bytes);
+	std::istream input_stream(&input_data);
+	return arcstk::parse_stream(input_stream, p, e);
+}
+
+
+// PrintParseHandler
+
+
+PrintParseHandler::PrintParseHandler()
 	: block_counter_  { 0 }
 	, track_          { 0 }
 	, arid_layout_    { std::make_unique<ARIdTableLayout>(false, false, false,
 							false, false, false, false, false) }
-	, triplet_layout_ { std::make_unique<ARTripletLayout>() }
+	, triplet_layout_ { std::make_unique<DBARTripletLayout>() }
 {
 	// empty
 }
 
 
-ARParserContentPrintHandler::~ARParserContentPrintHandler() noexcept
+PrintParseHandler::~PrintParseHandler() noexcept
 = default;
 
 
-void ARParserContentPrintHandler::set_arid_layout(
+void PrintParseHandler::set_arid_layout(
 		std::unique_ptr<ARIdLayout> format)
 {
 	arid_layout_ = std::move(format);
 }
 
 
-const ARIdLayout& ARParserContentPrintHandler::arid_layout() const
+const ARIdLayout& PrintParseHandler::arid_layout() const
 {
 	return *arid_layout_;
 }
 
 
-void ARParserContentPrintHandler::set_triplet_layout(
-		std::unique_ptr<ARTripletLayout> format)
+void PrintParseHandler::set_triplet_layout(
+		std::unique_ptr<DBARTripletLayout> format)
 {
 	triplet_layout_ = std::move(format);
 }
 
 
-void ARParserContentPrintHandler::print(const std::string& str) const
+void PrintParseHandler::print(const std::string& str) const
 {
 	Output::instance().output(str);
 }
 
 
-const ARTripletLayout& ARParserContentPrintHandler::triplet_layout() const
+const DBARTripletLayout& PrintParseHandler::triplet_layout() const
 {
 	return *triplet_layout_;
 }
 
 
-ARIdLayout* ARParserContentPrintHandler::arid_layout()
+ARIdLayout* PrintParseHandler::arid_layout()
 {
 	return arid_layout_.get();
 }
 
 
-ARTripletLayout* ARParserContentPrintHandler::triplet_layout()
+DBARTripletLayout* PrintParseHandler::triplet_layout()
 {
 	return triplet_layout_.get();
 }
 
 
-void ARParserContentPrintHandler::do_start_input()
+void PrintParseHandler::do_start_input()
 {
 	// empty
 }
 
 
-void ARParserContentPrintHandler::do_start_block()
+void PrintParseHandler::do_start_block()
 {
 	++block_counter_;
 
@@ -211,7 +229,7 @@ void ARParserContentPrintHandler::do_start_block()
 }
 
 
-void ARParserContentPrintHandler::do_id(const uint8_t track_count,
+void PrintParseHandler::do_header(const uint8_t track_count,
 		const uint32_t disc_id1, const uint32_t disc_id2,
 		const uint32_t cddb_id)
 {
@@ -223,176 +241,28 @@ void ARParserContentPrintHandler::do_id(const uint8_t track_count,
 }
 
 
-void ARParserContentPrintHandler::do_triplet(const Checksum arcs,
-		const uint8_t confidence, const Checksum frame450_arcs)
+void PrintParseHandler::do_triplet(const uint32_t arcs,
+		const uint8_t confidence, const uint32_t frame450_arcs)
 {
 	++track_;
-	const ARTriplet triplet(arcs, confidence, frame450_arcs);
+	const DBARTriplet triplet(arcs, confidence, frame450_arcs);
 
 	auto str = triplet_layout()->format(track_, triplet);
 	this->print(str);
 }
 
 
-void ARParserContentPrintHandler::do_triplet(const Checksum arcs,
-		const uint8_t confidence, const Checksum frame450_arcs,
-		const bool arcs_valid, const bool confidence_valid,
-		const bool frame450_arcs_valid)
-{
-	++track_;
-	const ARTriplet triplet(arcs, confidence, frame450_arcs, arcs_valid,
-			confidence_valid, frame450_arcs_valid);
-
-	auto str = triplet_layout()->format(track_, triplet);
-	this->print(str);
-}
-
-
-void ARParserContentPrintHandler::do_end_block()
+void PrintParseHandler::do_end_block()
 {
 	track_ = 0;
 }
 
 
-void ARParserContentPrintHandler::do_end_input()
+void PrintParseHandler::do_end_input()
 {
 	std::ostringstream ss;
 	ss << "EOF======= Blocks: " << std::dec << block_counter_ << '\n';
 	this->print(ss.str());
-}
-
-
-// ARFileParser
-
-
-ARFileParser::ARFileParser()
-	: filename_ {}
-{
-	// empty
-}
-
-
-ARFileParser::ARFileParser(ARFileParser &&rhs) noexcept
-	: filename_ { /* empty */ }
-{
-	this->swap(rhs);
-}
-
-
-ARFileParser::ARFileParser(const std::string &filename)
-	: filename_ { filename }
-{
-	// empty
-}
-
-
-void ARFileParser::set_file(const std::string &filename)
-{
-	filename_ = filename;
-}
-
-
-std::string ARFileParser::file() const noexcept
-{
-	return filename_;
-}
-
-
-uint32_t ARFileParser::do_parse()
-{
-	ARCS_LOG(DEBUG1) << "Open file: " << this->file();
-
-	std::ifstream file;
-
-	file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
-	try
-	{
-		file.open(this->file(), std::ifstream::in | std::ifstream::binary);
-	}
-	catch (const std::ifstream::failure& f)
-	{
-		throw std::runtime_error(
-			std::string("Failed to open file '") + this->file() +
-			std::string("', got: ") + typeid(f).name() +
-			std::string(", message: ") + f.what());
-	}
-
-	return ARStreamParser::parse_stream(file);
-}
-
-
-void ARFileParser::on_catched_exception(std::istream &istream,
-		const std::exception & /* e */) const
-{
-	auto *filestream { dynamic_cast<std::ifstream*>(&istream) };
-
-	if (filestream)
-	{
-		filestream->close();
-		return;
-	}
-
-	ARCS_LOG_WARNING << "Could not close filestream";
-}
-
-
-ARFileParser& ARFileParser::operator = (ARFileParser &&rhs) noexcept
-{
-	this->swap(rhs);
-	return *this;
-}
-
-
-void ARFileParser::do_swap(ARStreamParser &rhs)
-{
-	auto casted_rhs { dynamic_cast<ARFileParser*>(&rhs) };
-
-	if (!casted_rhs)
-	{
-		throw std::domain_error("Type mismatch detected while swapping");
-	}
-
-	using std::swap;
-
-	swap(this->filename_, casted_rhs->filename_);
-}
-
-
-// ARStdinParser
-
-
-ARStdinParser::ARStdinParser() = default;
-
-
-ARStdinParser::ARStdinParser(ARStdinParser &&rhs) noexcept
-{
-	this->swap(rhs);
-}
-
-
-uint32_t ARStdinParser::do_parse()
-{
-	auto response_data { StdIn(1024).bytes() };
-
-	VectorIStream<char> response_data_w(response_data);
-	std::istream stream(&response_data_w);
-
-	return ARStreamParser::parse_stream(stream);
-}
-
-
-ARStdinParser& ARStdinParser::operator = (ARStdinParser &&rhs) noexcept
-{
-	this->swap(rhs);
-	return *this;
-}
-
-
-void ARStdinParser::on_catched_exception(std::istream & /* istream */,
-			const std::exception &/* e */) const
-{
-	// empty
 }
 
 } // namespace arcsapp
