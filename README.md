@@ -10,13 +10,13 @@
 This is an example command line frontend to [libarcstk][1]. It contains tools to
 work with AccurateRip checksums of your CD rip, namely
 
-- [arcstk-id](./doc/texts/README.arcstk-id.md) - Calculate AccurateRip id
-  for requesting checksums
-- [arcstk-calc](./doc/texts/README.arcstk-calc.md) - Calculate actual
-  AccurateRip checksums locally for albums (single audio files) as well arcstk
-  for single tracks
 - [arcstk-verify](./doc/texts/README.arcstk-verify.md) - Verify local
   AccurateRip checksums against reference checksums from AccurateRip
+- [arcstk-calc](./doc/texts/README.arcstk-calc.md) - Calculate actual
+  AccurateRip checksums locally for albums (single audio files) and single
+  tracks
+- [arcstk-id](./doc/texts/README.arcstk-id.md) - Calculate AccurateRip id
+  of a local album for requesting checksums
 - [arcstk-parse](./doc/texts/README.arcstk-parse.md) - Parse AccurateRip
   response to plaintext
 
