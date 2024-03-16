@@ -8,7 +8,7 @@
  *
  * The application generates output that is to be formatted as table containing
  * numbers and strings. This module contains table layouts for ARIds,
- * ARTriplets and for the results of the CALC and VERIFY applications. It can
+ * DBARTriplets and for the results of the CALC and VERIFY applications. It can
  * also be used to construct new layouts.
  */
 
@@ -300,7 +300,7 @@ using TripletLayout = Layout<std::string, int, arcstk::DBARTriplet>;
 
 
 /**
- * \brief Interface for formatting ARTriplet instances for output.
+ * \brief Interface for formatting DBARTriplet instances for output.
  */
 class DBARTripletLayout : protected WithInternalFlags
 						, public TripletLayout
