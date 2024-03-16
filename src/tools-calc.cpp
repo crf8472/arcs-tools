@@ -197,7 +197,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 
 	if (audiofilenames.empty())
 	{
-		ARCS_LOG_WARNING << "Called multiple audiofile calculation but "
+		ARCS_LOG_WARNING << "Requested multiple audiofile calculation but "
 			"no audiofiles provided. "
 			"Fall back to extracting audiofilenames from metafile.";
 
