@@ -193,6 +193,11 @@ public:
 	 */
 	void print_usage() const;
 
+	/**
+	 * \brief Print version information to std::cout.
+	 */
+	void print_version() const;
+
 protected:
 
 	/**

@@ -72,7 +72,7 @@ TEST_CASE ( "DefaultConfigurator", "[DefaultConfigurator]" )
 
 		DefaultConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, argv);
+		auto options1 = conf1.read_options(argc, argv);
 
 		CHECK ( options1->is_set(OPTION::VERBOSITY) );
 		CHECK ( options1->value(OPTION::VERBOSITY) == "4" );
@@ -85,7 +85,8 @@ TEST_CASE ( "DefaultConfigurator", "[DefaultConfigurator]" )
 
 		DefaultConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, argv);
+		auto options1 = conf1.read_options(argc, argv);
+		options1 = conf1.configure_options(std::move(options1));
 
 		CHECK ( options1->is_set(OPTION::QUIET) );
 		CHECK ( options1->is_set(OPTION::VERBOSITY) );
@@ -99,7 +100,7 @@ TEST_CASE ( "DefaultConfigurator", "[DefaultConfigurator]" )
 
 		DefaultConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, argv);
+		auto options1 = conf1.read_options(argc, argv);
 
 		CHECK ( options1->is_set(OPTION::LOGFILE) );
 		CHECK ( options1->value(OPTION::LOGFILE) == "logfile" );
@@ -112,7 +113,7 @@ TEST_CASE ( "DefaultConfigurator", "[DefaultConfigurator]" )
 
 		DefaultConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, argv);
+		auto options1 = conf1.read_options(argc, argv);
 
 		CHECK ( options1->is_set(OPTION::VERSION) );
 	}
@@ -124,7 +125,7 @@ TEST_CASE ( "DefaultConfigurator", "[DefaultConfigurator]" )
 
 		DefaultConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, argv);
+		auto options1 = conf1.read_options(argc, argv);
 
 		CHECK ( options1->is_set(OPTION::HELP) );
 	}
@@ -188,7 +189,8 @@ TEST_CASE ( "ARCalcConfigurator", "[ARCalcConfigurator]" )
 
 		ARCalcConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, argv);
+		auto options1 = conf1.read_options(argc, argv);
+		options1 = conf1.configure_options(std::move(options1));
 
 		CHECK ( options1->is_set(CALC::ALBUM) );
 		CHECK ( options1->is_set(CALC::FIRST) );
@@ -205,7 +207,8 @@ TEST_CASE ( "ARCalcConfigurator", "[ARCalcConfigurator]" )
 
 		ARCalcConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, argv);
+		auto options1 = conf1.read_options(argc, argv);
+		options1 = conf1.configure_options(std::move(options1));
 
 		CHECK (     options1->is_set(CALC::ALBUM)              );
 		CHECK ( not options1->is_set(CALC::LIST_TOC_FORMATS)   );
@@ -221,7 +224,7 @@ TEST_CASE ( "ARCalcConfigurator", "[ARCalcConfigurator]" )
 
 		ARCalcConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, argv);
+		auto options1 = conf1.read_options(argc, argv);
 
 		CHECK ( options1->is_set(CALC::LIST_TOC_FORMATS)   );
 		CHECK ( options1->is_set(CALC::LIST_AUDIO_FORMATS) );
@@ -306,7 +309,7 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 
 		ARVerifyConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, argv);
+		auto options1 = conf1.read_options(argc, argv);
 		auto arguments1 = *options1->arguments();
 
 		CHECK ( options1->is_set(VERIFY::METAFILE) );
@@ -350,7 +353,8 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 
 		ARVerifyConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, argv);
+		auto options1 = conf1.read_options(argc, argv);
+		options1 = conf1.configure_options(std::move(options1));
 
 		CHECK ( not options1->is_set(VERIFY::NOALBUM)          );
 		CHECK ( not options1->is_set(VERIFY::LIST_TOC_FORMATS)   );
@@ -366,7 +370,8 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 
 		ARVerifyConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, argv);
+		auto options1 = conf1.read_options(argc, argv);
+		options1 = conf1.configure_options(std::move(options1));
 
 		CHECK ( options1->is_set(VERIFY::NOFIRST) );
 		CHECK ( options1->is_set(VERIFY::NOLAST)  );
@@ -381,7 +386,8 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 
 		ARVerifyConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, argv);
+		auto options1 = conf1.read_options(argc, argv);
+		options1 = conf1.configure_options(std::move(options1));
 
 		CHECK ( options1->is_set(VERIFY::NOFIRST) );
 		CHECK ( options1->is_set(VERIFY::NOLAST)  );
@@ -398,7 +404,8 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 
 		ARVerifyConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, argv);
+		auto options1 = conf1.read_options(argc, argv);
+		options1 = conf1.configure_options(std::move(options1));
 
 		CHECK ( options1->is_set(VERIFY::BOOLEAN)  );
 		CHECK ( options1->is_set(VERIFY::NOOUTPUT) );
@@ -414,7 +421,8 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 
 		ARVerifyConfigurator conf1;
 
-		auto options1 = conf1.provide_options(argc, argv);
+		auto options1 = conf1.read_options(argc, argv);
+		options1 = conf1.configure_options(std::move(options1));
 
 		CHECK (     options1->is_set(VERIFY::REFVALUES) );
 		CHECK ( not options1->is_set(VERIFY::PRINTID)     );
@@ -430,8 +438,9 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 		};
 
 		ARVerifyConfigurator conf1;
+		auto options1 = conf1.read_options(argc, argv);
 
-		CHECK_THROWS( conf1.provide_options(argc, argv) );
+		CHECK_THROWS( conf1.configure_options(std::move(options1)) );
 	}
 
 	SECTION ("Configuration is loaded with correct color string")
@@ -445,7 +454,7 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 		};
 
 		const ARVerifyConfigurator vconf;
-		auto options = vconf.provide_options(argc, argv);
+		auto options = vconf.read_options(argc, argv);
 
 		REQUIRE ( options->value(VERIFY::COLORED) ==
 				"match:fg_magenta,mismatch:fg_blue" );

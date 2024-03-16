@@ -163,7 +163,7 @@ void log_cli_input(const Options& options, const OptionRegistry& registry)
 Configurator::~Configurator() noexcept = default;
 
 
-std::unique_ptr<Options> Configurator::provide_options(const int argc,
+std::unique_ptr<Options> Configurator::read_options(const int argc,
 		const char* const * const argv) const
 {
 	// Logging is not yet possible here
@@ -188,18 +188,22 @@ std::unique_ptr<Options> Configurator::provide_options(const int argc,
 		input::parse(argc, argv, supported_options(), add_option);
 	}
 
-	// Let verbosity reflect the --quiet request
+	// --quiet is just an alias for -v 0.
 
 	if (options->is_set(OPTION::QUIET))
 	{
-		// Overwrite value for --verbosity, if any
 		options->set(OPTION::VERBOSITY, "0");
 	}
 
+	return options;
+}
+
+
+std::unique_ptr<Options> Configurator::configure_options(
+		std::unique_ptr<Options> options) const
+{
 	options = this->do_configure_options(std::move(options));
-
 	do_validate(*options);
-
 	return options;
 }
 
@@ -268,25 +272,29 @@ std::unique_ptr<Configuration> Configurator::create(
 {
 	auto config = std::make_unique<Configuration>(std::move(options));
 
+	apply_parsers(*config);
+	do_validate(*config);
+
+	return config;
+}
+
+
+void Configurator::apply_parsers(Configuration& config) const
+{
 	// Parse input strings to objects
 
 	for (const auto& [option, load] : do_parser_list())
 	{
-		if (config->is_set(option))
+		if (config.is_set(option))
 		{
 			ARCS_LOG_DEBUG << "Parse input string for option " << option;
 
-			config->put(option, load()->parse(config->value(option)));
+			config.put(option, load()->parse(config.value(option)));
 
-			ARCS_LOG_DEBUG << "Successfully parsed input string";
+			ARCS_LOG_DEBUG << "Successfully parsed input string for option "
+				<< option;
 		}
 	}
-
-	// Validate configuration
-
-	do_validate(*config);
-
-	return config;
 }
 
 

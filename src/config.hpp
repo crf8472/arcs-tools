@@ -347,8 +347,21 @@ public:
 	 * Command line input \c argv is parsed. The caller is responsible that
 	 * \c argc is the exact size of \c argv. Otherwise, crashes are likely.
 	 *
-	 * If the input is not syntactically wellformed or unrecognized options are
+	 * If the call string is not syntactically wellformed or unrecognized options are
 	 * present, a CallSyntaxException is thrown.
+	 *
+	 * \param[in] argc Number of CLI arguments
+	 * \param[in] argv Array of CLI arguments
+	 *
+	 * \return The options object derived from the command line arguments
+	 *
+	 * \throws CallSyntaxException If the call string is not syntactically wellformed
+	 */
+	std::unique_ptr<Options> read_options(const int argc,
+		const char* const * const argv) const;
+
+	/**
+	 * \brief Check and validate options
 	 *
 	 * The input is checked for semantic validity. It is checked that all valued
 	 * options have legal values and that no illegal combination of options is
@@ -357,15 +370,18 @@ public:
 	 * After this checks are completed, do_configure_options() is called which
 	 * is defined by subclasses.
 	 *
-	 * \param[in] argc Number of CLI arguments
-	 * \param[in] argv Array of CLI arguments
+	 * It is not guaranteed that the returned pointer points to the same object
+	 * as the input pointer. It is safe to assign the output to the input.
 	 *
-	 * \return The options object derived from the command line arguments
+	 * \param[in] options The options to configure
 	 *
-	 * \throws CallSyntaxException If the input is not syntactically wellformed
+	 * \return Configured options
+	 *
+	 * \throws ConfigurationException If the command line input does not form
+	 * semantically valid run configuration
 	 */
-	std::unique_ptr<Options> provide_options(const int argc,
-		const char* const * const argv) const;
+	std::unique_ptr<Options> configure_options(std::unique_ptr<Options> options)
+		const;
 
 	/**
 	 * \brief Return the list of options supported by this Configurator.
@@ -390,10 +406,15 @@ public:
 	/**
 	 * \brief Load the specified options into a Configuration.
 	 *
-	 * This includes the parsing of all option value strings. The subclass is
-	 * responsible for doing this completely.
+	 * All parseable option value strings are parsed. The resulting
+	 * configuration object is validated..
 	 *
 	 * \param[in] options Options as provided by this configurator.
+	 *
+	 * \return Configuration reflecting options
+	 *
+	 * \throws ConfigurationException If options are illegal or values are
+	 * unparseable
 	 */
 	std::unique_ptr<Configuration> create(std::unique_ptr<Options> options)
 		const;
@@ -408,6 +429,16 @@ protected:
 	 * \return List of options supported by every Configurator.
 	 */
 	OptionRegistry common_options() const;
+
+	/**
+	 * \brief Worker: apply all parsers for option values.
+	 *
+	 * This parses all parseable option value strings. The list of parsers to
+	 * apply is created by do_parser_list().
+	 *
+	 * \param[in] config Configuration to parse values
+	 */
+	void apply_parsers(Configuration& config) const;
 
 private:
 
@@ -439,6 +470,9 @@ private:
 	 *
 	 * The default implementation does not perform any checks.
 	 *
+	 * Place all checks here that can be done without having parsed the option
+	 * value strings. This entails e.g. checks for illegal option combinations.
+	 *
 	 * \param[in] options The Options to validate
 	 */
 	virtual void do_validate(const Options& options) const;
@@ -457,6 +491,10 @@ private:
 	 * \brief Hook: called by create() to validate configuration.
 	 *
 	 * The default implementation does not perform any checks.
+	 *
+	 * Place all checks here that presuppose the option values to be parsed.
+	 * This entails e.g. checks for the number of elements in lists or whether
+	 * values were empty..
 	 *
 	 * \param[in] configuration Configuration to validate
 	 */

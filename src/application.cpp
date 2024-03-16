@@ -199,7 +199,11 @@ int Application::run(int argc, char** argv)
 
 	auto configurator = this->create_configurator();
 
-	auto options = configurator->provide_options(argc, argv);
+	// Syntax check for options
+
+	auto options = configurator->read_options(argc, argv);
+
+	// Check for "immediate" options which will skip the application at all
 
 	if (options->is_set(OPTION::HELP))
 	{
@@ -209,25 +213,28 @@ int Application::run(int argc, char** argv)
 
 	if (options->is_set(OPTION::VERSION))
 	{
-		std::cout << this->name() << " " << ARCSTOOLS_VERSION << '\n';
+		this->print_version();
 		return EXIT_SUCCESS;
 	}
 
 	// Logging
 
 	this->setup_logging(*options);
-
 	if (arcstk::Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG1))
 	{
 		log_cli_input(*options, configurator->supported_options());
 	}
 
-	// Output
+	// Configure output
 
 	if (not options->value(OPTION::OUTFILE).empty())
 	{
 		Output::instance().to_file(options->value(OPTION::OUTFILE));
 	}
+
+	// Semantic check for options
+
+	options = configurator->configure_options(std::move(options));
 
 	// Load configuration
 
@@ -283,6 +290,12 @@ void Application::print_usage() const
 }
 
 
+void Application::print_version() const
+{
+	std::cout << this->name() << " " << ARCSTOOLS_VERSION << '\n';
+}
+
+
 std::unique_ptr<Configurator> Application::create_configurator() const
 {
 	return this->do_create_configurator();
@@ -312,9 +325,7 @@ void Application::setup_logging(const Options& options) const
 	}
 	Logging::instance().add_appender(std::move(appender));
 
-	// --quiet, --verbosity
-
-	if (!options.is_set(OPTION::QUIET))
+	if (!options.is_set(OPTION::VERBOSITY)) // --quiet was not activated
 	{
 		// Set actual loglevel to either requested verbosity or default
 		auto actual_loglevel = options.is_set(OPTION::VERBOSITY)
