@@ -459,6 +459,147 @@ const std::string& VerifyResultFormatter::match_symbol() const
 }
 
 
+void VerifyResultFormatter::update_field_labels(TableComposer& c) const
+{
+	const auto label_for_mine = std::string { "Mine" };
+
+	if (c.has_field(ATTR::CHECKSUM_ARCS2))
+	{
+		c.set_label(ATTR::CHECKSUM_ARCS2, label_for_mine + "(v2)");
+	}
+
+	if (c.has_field(ATTR::CHECKSUM_ARCS1))
+	{
+		c.set_label(ATTR::CHECKSUM_ARCS1, label_for_mine + "(v1)");
+	}
+}
+
+
+void VerifyResultFormatter::add_result_fields(std::vector<ATTR>& field_list,
+		const print_flag_t print_flags,
+		const std::vector<arcstk::checksum::type>& types_to_print,
+		const std::size_t total_theirs_per_block) const
+{
+	using checksum = arcstk::checksum::type;
+
+	for (const auto& t : types_to_print)
+	{
+		if (checksum::ARCS1 == t)
+		{
+			field_list.emplace_back(ATTR::CHECKSUM_ARCS1);
+		} else
+		{
+			if (checksum::ARCS2 == t)
+			{
+				field_list.emplace_back(ATTR::CHECKSUM_ARCS2);
+			}
+		}
+
+		for (auto i = int { 0 }; i < total_theirs_per_block; ++i)
+		{
+			field_list.emplace_back(ATTR::THEIRS);
+
+			if (print_flags(ATTR::CONFIDENCE))
+			{
+				field_list.emplace_back(ATTR::CONFIDENCE);
+			}
+		}
+	}
+
+}
+
+
+bool VerifyResultFormatter::reference_is_dbar(
+			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const
+{
+	return dBAR.size() > 0;
+}
+
+
+std::size_t VerifyResultFormatter::total_blocks_in_reference(
+			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const
+{
+	return reference_is_dbar(dBAR, refvalues)
+		? dBAR.size()
+		: (refvalues.empty() ? 0 : 1);
+}
+
+
+std::unique_ptr<const ChecksumSource>
+	VerifyResultFormatter::create_reference_source(
+			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const
+{
+	std::unique_ptr<const ChecksumSource> ref_src;
+
+	if (reference_is_dbar(dBAR, refvalues))
+	{
+		ref_src = std::make_unique<DBARSource>(&dBAR);
+	} else
+	{
+		if (!refvalues.empty())
+		{
+			ref_src = std::make_unique<FromRefvalues>(&refvalues);
+		} else
+		{
+			ref_src = std::make_unique<EmptyChecksumSource>();
+			// TODO Why proceed? Just throw
+		}
+	}
+
+	return ref_src;
+}
+
+
+void VerifyResultFormatter::populate_result_creators(
+		std::vector<std::unique_ptr<FieldCreator>>& creators,
+		const print_flag_t print_flags,
+		const std::vector<ATTR>& fields,
+		const std::vector<arcstk::checksum::type>& types,
+		const VerificationResult& vresult,
+		const int block,
+		const Checksums& checksums,
+		const ChecksumSource& ref_source,
+		const int total_theirs_per_block) const
+{
+	// do not repeat the find mechanism
+	const auto required = [](const std::vector<ATTR>& fields, const ATTR f)
+			{
+				using std::begin;
+				using std::end;
+				using std::find;
+				return find(begin(fields), end(fields), f) != end(fields);
+			};
+
+	// do not repeat populating the THEIRS fields
+	const auto populate_theirs = [&]()
+			{
+				for (auto i = int { 0 }; i < total_theirs_per_block; ++i)
+				{
+					creators.emplace_back(
+					std::make_unique<AddField<ATTR::THEIRS>>(&types, &vresult,
+						block, &ref_source, this, total_theirs_per_block,
+						print_flags(ATTR::CONFIDENCE)));
+				}
+			};
+
+	if (required(fields, ATTR::CHECKSUM_ARCS1))
+	{
+		creators.emplace_back(
+			std::make_unique<AddField<ATTR::CHECKSUM_ARCS1>>(&checksums, this));
+
+		populate_theirs();
+	}
+
+	if (required(fields, ATTR::CHECKSUM_ARCS2))
+	{
+		creators.emplace_back(
+			std::make_unique<AddField<ATTR::CHECKSUM_ARCS2>>(&checksums, this));
+
+		populate_theirs();
+	}
+}
+
+
 void VerifyResultFormatter::assertions(const InputTuple t) const
 {
 	const auto checksums = std::get<3>(t);
@@ -508,26 +649,60 @@ void VerifyResultFormatter::assertions(const InputTuple t) const
 std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 {
 	const auto types_to_print = std::get<0>(t);
-	const auto vresult    = std::get<1>(t);
-	const auto block      = std::get<2>(t);
-	const auto checksums  = std::get<3>(t);
-	const auto arid       = std::get<4>(t);
-	const auto toc        = std::get<5>(t);
-	const auto dBAR       = std::get<6>(t);
-	const auto refvalues  = std::get<7>(t);
-	const auto filenames  = std::get<8>(t);
-	const auto alt_prefix = std::get<9>(t);
+	const auto vresult        = std::get<1>(t);
+	const auto block          = std::get<2>(t);
+	const auto checksums      = std::get<3>(t);
+	const auto arid           = std::get<4>(t);
+	const auto toc            = std::get<5>(t);
+	const auto dBAR           = std::get<6>(t);
+	const auto refvalues      = std::get<7>(t);
+	const auto filenames      = std::get<8>(t);
+	const auto alt_prefix     = std::get<9>(t);
 
 	auto result = std::make_unique<ResultList>();
 
+	const auto best_block_declared = bool { block > -1 };
+
 	// If a DBAR is used for the references with a block (not PRINTALL)
-	if (dBAR.size() > 0 && block > -1)
+	if (best_block_declared && reference_is_dbar(dBAR, refvalues))
 	{
 		// Use ARId of specified block for "Theirs" ARId
 		result->append(std::make_unique<ResultObject<RichARId>>(
 				build_id(toc, dBAR.block(block).id(), alt_prefix)));
+	} else
+	{
+		if (!arid.empty() && arid_layout())
+		{
+			result->append(std::make_unique<ResultObject<RichARId>>(
+				build_id(toc, arid, alt_prefix)));
+		}
 	}
 
+	const auto ref_src { create_reference_source(dBAR, refvalues) };
+
+	const auto print_flags { create_print_flags(toc, filenames) };
+
+	auto field_list { create_optional_fields(print_flags) };
+
+	// Determine total number of 'theirs' field_types per reference block
+	// (Maybe 0 for empty response and empty refvalues)
+	const auto total_theirs_per_block {
+		best_block_declared ? 1 : total_blocks_in_reference(dBAR, refvalues)
+	};
+
+	add_result_fields(field_list, print_flags, types_to_print,
+			total_theirs_per_block);
+
+	std::vector<std::unique_ptr<FieldCreator>> creators;
+
+	populate_common_creators(creators, field_list, *toc, checksums, filenames);
+	populate_result_creators(creators, print_flags, field_list, types_to_print,
+			*vresult, block, checksums, *ref_src, total_theirs_per_block);
+
+	result->append(format_table(field_list, checksums.size(), formats_label(),
+				creators));
+
+	/*
 	result->append(build_result(
 				types_to_print,
 				vresult,
@@ -539,33 +714,19 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 				refvalues,
 				filenames,
 				alt_prefix));
+	*/
 
 	return result;
 }
 
 
-std::vector<ATTR> VerifyResultFormatter::do_create_attributes(
+std::vector<ATTR> VerifyResultFormatter::do_create_field_types(
 		const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const int total_theirs_per_block) const
 {
-	const auto total_fields =
-		  print_flags(ATTR::TRACK)
-		+ print_flags(ATTR::OFFSET)
-		+ print_flags(ATTR::LENGTH)
-		+ print_flags(ATTR::FILENAME)
-		+ types_to_print.size()
-		+ total_theirs_per_block
-		+ print_flags(ATTR::CONFIDENCE) * total_theirs_per_block;
-
+	auto fields { create_optional_fields(print_flags) };
 	using checksum = arcstk::checksum::type;
-
-	std::vector<ATTR> fields;
-	fields.reserve(total_fields);
-	if (print_flags(ATTR::TRACK))    { fields.emplace_back(ATTR::TRACK);    }
-	if (print_flags(ATTR::FILENAME)) { fields.emplace_back(ATTR::FILENAME); }
-	if (print_flags(ATTR::OFFSET))   { fields.emplace_back(ATTR::OFFSET);   }
-	if (print_flags(ATTR::LENGTH))   { fields.emplace_back(ATTR::LENGTH);   }
 
 	for (const auto& t : types_to_print)
 	{
@@ -762,11 +923,15 @@ ColorizingVerifyResultFormatter::
 
 void ColorizingVerifyResultFormatter::init_composer(TableComposer* c) const
 {
+	// Overwrite default labels for local Checksums
+
+	this->update_field_labels(*c);
+
+	// Register Decorators to each "Theirs" field
+
 	using ansi::Highlight;
 
 	const auto r_size { c->total_records() };
-
-	// Register Decorators to each "Theirs" field
 
 	int i = 0;
 	for (const auto& field : c->fields())
@@ -1327,6 +1492,8 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 			: std::vector<TYPE>{ TYPE::ARCS1 };
 	}
 
+	// TODO Create formatter, then add types_to_print as print flags,
+	// remove the dedicated vector
 	auto result { create_formatter(config)->format(
 		/* types to print */           types_to_print,
 		/* verification results */     vresult.get(),

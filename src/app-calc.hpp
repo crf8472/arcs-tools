@@ -184,7 +184,7 @@ class CalcResultFormatter final : public ResultFormatter
 {
 private:
 
-	virtual std::vector<ATTR> do_create_attributes(
+	std::vector<ATTR> do_create_field_types(
 		const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const int total_theirs) const final;

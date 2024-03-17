@@ -305,6 +305,94 @@ public:
 	 */
 	const std::string& match_symbol() const;
 
+protected:
+
+	/**
+	 * \brief Change default labels in result table.
+	 *
+	 * \param[in] c Composer for result table
+	 */
+	void update_field_labels(TableComposer& c) const;
+
+	/**
+	 * \brief Add result-specific fields to an existing field list.
+	 *
+	 * \param[in,out] field_list The field list to populate
+	 * \param[in] print_flags    Fields requested for print
+	 * \param[in] types_to_print Checksum types requested for print
+	 * \param[in] total_theirs_per_block Total number of THEIRS fields per block
+	 */
+	void add_result_fields(std::vector<ATTR>& field_list,
+		const print_flag_t print_flags,
+		const std::vector<arcstk::checksum::type>& types_to_print,
+		const std::size_t total_theirs_per_block) const;
+
+	/**
+	 * \brief Determine whether the DBAR object or the Refvalues are used.
+	 *
+	 * Use this function whenever to decide which source to choose or which
+	 * source was actually chosen.
+	 *
+	 * \param[in] dBAR      DBAR object
+	 * \param[in] refvalues Reference value list
+	 *
+	 * \return TRUE iff DBAR is the actual reference, otherwise FALSE
+	 */
+	bool reference_is_dbar(
+			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const;
+
+	/**
+	 * \brief Determine the total number of blocks in reference.
+	 *
+	 * Value 0 is a legal result.
+	 *
+	 * Uses reference_is_dbar() to determine the actual reference source.
+	 *
+	 * \param[in] dBAR      DBAR object
+	 * \param[in] refvalues Reference value list
+	 *
+	 * \return Actual number of blocks in reference
+	 */
+	std::size_t total_blocks_in_reference(
+			const DBAR& dbar, const std::vector<uint32_t>& refvalues) const;
+
+	/**
+	 * \brief Create reference source
+	 *
+	 * Uses reference_is_dbar() to determine the actual reference object.
+	 *
+	 * \param[in] dBAR      DBAR object
+	 * \param[in] refvalues Reference value list
+	 *
+	 * \return Type-normalized reference source
+	 */
+	std::unique_ptr<const ChecksumSource> create_reference_source(
+			const DBAR& dbar, const std::vector<uint32_t>& refvalues) const;
+
+	/**
+	 * \brief Add result-specific data creators to an existing list of creators..
+	 *
+	 * \param[in,out] creators  List to be added to
+	 * \param[in] print_flags   Fields requested for print
+	 * \param[in] field_list    Ordered list of field types
+	 * \param[in] types         Checksum types requested for print
+	 * \param[in] vresult       VerificationResult (Matches/Mismatches)
+	 * \param[in] block         Optional best block
+	 * \param[in] checksums     Actual checksums
+	 * \param[in] ref_source    Reference checksums
+	 * \param[in] total_theirs_per_block Total number of THEIRS fields per block
+	 */
+	void populate_result_creators(
+		std::vector<std::unique_ptr<FieldCreator>>& creators,
+		const print_flag_t print_flags,
+		const std::vector<ATTR>& field_list,
+		const std::vector<arcstk::checksum::type>& types,
+		const VerificationResult& vresult,
+		const int block,
+		const Checksums& checksums,
+		const ChecksumSource& ref_source,
+		const int total_theirs_per_block) const;
+
 private:
 
 	// Verify10Layout
@@ -315,7 +403,7 @@ private:
 
 	// ResultFormatter
 
-	virtual std::vector<ATTR> do_create_attributes(
+	std::vector<ATTR> do_create_field_types(
 		const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const int total_theirs) const final;

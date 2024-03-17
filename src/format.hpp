@@ -128,7 +128,7 @@ public:
 	/**
 	 * \brief Set the value for the specified field in record \c i.
 	 */
-	inline void set_field(const int i, const F& field_type,
+	void set_field(const int i, const F& field_type,
 			const std::string& value)
 	{
 		this->do_set_field(i, this->field_idx(field_type), value);
@@ -137,7 +137,7 @@ public:
 	/**
 	 * \brief Set the value for the specified field in record \c i, field \c j.
 	 */
-	inline void set_field(const int i, const int j,
+	void set_field(const int i, const int j,
 			const std::string& value)
 	{
 		this->do_set_field(i, j, value);
@@ -146,7 +146,7 @@ public:
 	/**
 	 * \brief The value of the specified field.
 	 */
-	inline std::string field(const int i, const F& field_type) const
+	std::string field(const int i, const F& field_type) const
 	{
 		return this->do_field(i, field_type);
 	}
@@ -154,7 +154,7 @@ public:
 	/**
 	 * \brief Set the label for the specified field type.
 	 */
-	inline void set_label(const F& field_type, const std::string& label)
+	void set_label(const F& field_type, const std::string& label)
 	{
 		this->do_set_label_by_type(field_type, label);
 	}
@@ -162,7 +162,7 @@ public:
 	/**
 	 * \brief Label for the specified field type.
 	 */
-	inline std::string label(const F& field_type) const
+	std::string label(const F& field_type) const
 	{
 		return this->do_label_by_type(field_type);
 	}
@@ -170,7 +170,7 @@ public:
 	/**
 	 * \brief Set the label for the specified field index.
 	 */
-	inline void set_label(const int field_idx, const std::string& label)
+	void set_label(const int field_idx, const std::string& label)
 	{
 		return this->do_set_label_by_index(field_idx, label);
 	}
@@ -178,7 +178,7 @@ public:
 	/**
 	 * \brief Label for the specified field index.
 	 */
-	inline std::string label(const int field_idx) const
+	std::string label(const int field_idx) const
 	{
 		return do_label_by_index(field_idx);
 	}
@@ -188,7 +188,7 @@ public:
 	 *
 	 * \param[in] field_type  Type of the field
 	 */
-	inline int field_idx(const F& field_type) const
+	int field_idx(const F& field_type) const
 	{
 		return this->do_field_idx(field_type, 1);
 	}
@@ -199,7 +199,7 @@ public:
 	 * \param[in] field_type  Type of the field
 	 * \param[in] i           Occurrence of the field_type
 	 */
-	inline int field_idx(const F& field_type, const int i) const
+	int field_idx(const F& field_type, const int i) const
 	{
 		return this->do_field_idx(field_type, i);
 	}
@@ -207,7 +207,7 @@ public:
 	/**
 	 * \brief TRUE iff specified field type is part of the result.
 	 */
-	inline bool has_field(const F& field_type) const
+	bool has_field(const F& field_type) const
 	{
 		return this->do_has_field(field_type);
 	}
@@ -215,7 +215,7 @@ public:
 	/**
 	 * \brief Total number of records.
 	 */
-	inline size_type total_records() const
+	size_type total_records() const
 	{
 		return this->do_total_records();
 	}
@@ -223,7 +223,7 @@ public:
 	/**
 	 * \brief Total number of fields per record.
 	 */
-	inline size_type fields_per_record() const
+	size_type fields_per_record() const
 	{
 		return this->do_fields_per_record();
 	}
@@ -233,7 +233,7 @@ public:
 	 *
 	 * \return Object with records
 	 */
-	inline const T& object() const
+	const T& object() const
 	{
 		return *object_;
 	}
@@ -243,7 +243,7 @@ public:
 	 *
 	 * \return Object with records
 	 */
-	inline std::unique_ptr<T> remove_object()
+	std::unique_ptr<T> remove_object()
 	{
 		auto p { std::move(object_) };
 		return p;
@@ -251,7 +251,7 @@ public:
 
 protected:
 
-	inline RecordInterface(std::unique_ptr<T> object)
+	RecordInterface(std::unique_ptr<T> object)
 		: object_ { std::move(object) }
 	{
 		// empty
@@ -260,7 +260,7 @@ protected:
 	/**
 	 * \brief Read or manipulate the object holding the records.
 	 */
-	inline T& to_object()
+	T& to_object()
 	{
 		return *object_;
 	}
@@ -342,7 +342,7 @@ enum class ATTR: int
 /**
  * \brief Maximal occurring value for an ATTR.
  *
- * Must be less than sizeof(print_flags_t).
+ * Must be less than sizeof(print_flag_t).
  */
 constexpr int MAX_ATTR = 7;
 
@@ -473,6 +473,15 @@ public:
 	 * \return Field types in the order they appear in the table
 	 */
 	const std::vector<ATTR>& fields() const;
+
+	/**
+	 * \brief TRUE iff table to be composed has field \c a, otherwise FALSE.
+	 *
+	 * \param[in] f Field to check for
+	 *
+	 * \return TRUE iff instance will produce field \c a, otherwise FALSE
+	 */
+	bool has_field(const ATTR f) const;
 
 	/**
 	 * \brief Get the table row index.
@@ -679,6 +688,10 @@ public:
 	 */
 	virtual ~TableComposerBuilder() noexcept = default;
 
+	void set_label(ATTR, const std::string& label);
+
+	std::string label(ATTR);
+
 	/**
 	 * \brief Create a TableComposer.
 	 *
@@ -697,9 +710,7 @@ public:
 protected:
 
 	/**
-	 * \brief Assign each field its respective label.
-	 *
-	 * The labels are composed from the default names of the attribute labels.
+	 * \brief Worker: assign each field its respective DefaultLabel.
 	 *
 	 * \param[in] c           TableComposer to use
 	 * \param[in] field_types List of field types
@@ -770,7 +781,7 @@ public:
 	 *
 	 * \return TRUE iff \c t has flag value TRUE, otherwise FALSE.
 	 */
-	inline bool operator() (const T t) const
+	bool operator() (const T t) const
 	{
 		return flags_ & (1 << std::underlying_type_t<T>(t));
 	}
@@ -781,7 +792,7 @@ public:
 	 * \param[in] t     Input to set value for
 	 * \param[in] value Value to be set for \c t
 	 */
-	inline void set(const T t, const bool value)
+	void set(const T t, const bool value)
 	{
 		flags_ |= (value << std::underlying_type_t<T>(t));
 	}
@@ -1061,9 +1072,13 @@ protected:
 	using print_flag_t = Flags<ATTR, uint8_t>;
 
 	/**
-	 * \brief TRUE iff attribute \c a is requested for output.
+	 * \brief Worker: TRUE iff field \c f is requested for output.
+	 *
+	 * \param[in] a Field to check
+	 *
+	 * \return TRUE iff \c f is requested for output, otherwise FALSE
 	 */
-	bool is_requested(const ATTR a) const;
+	bool is_requested(const ATTR f) const;
 
 	/**
 	 * \brief Worker: produce print flags for all printable attributes.
@@ -1077,9 +1092,25 @@ protected:
 			const std::vector<std::string>& filenames) const;
 
 	/**
-	 * \brief Build the result representation.
+	 * \brief Actually format the result table.
 	 *
-	 * Calls create_attributes() to determine and create the field_types for the
+	 * \param[in] field_types    List of fields to format for print
+	 * \param[in] total_records  Number of records to print
+	 * \param[in] with_labels    Decide whether to print field labels
+	 * \param[in] field_creators List of field creators
+	 *
+	 * \return Result table
+	 */
+	std::unique_ptr<Result> format_table(
+		const std::vector<ATTR>& field_types,
+		const std::size_t total_records,
+		const bool with_labels,
+		std::vector<std::unique_ptr<FieldCreator>>& field_creators) const;
+
+	/**
+	 * \brief Worker: build the result representation.
+	 *
+	 * Calls create_field_types() to determine and create the field_types for the
 	 * result object, create_composer() to instantiate the TableComposer
 	 * instance, and build_table() to populate the result table with the
 	 * relevant data.
@@ -1123,6 +1154,36 @@ protected:
 		const ARId& arid, const std::vector<std::string>& filenames) const;
 
 	/**
+	 * \brief Respect flags to create or skip the optional fields.
+	 *
+	 * This creates TRACK, OFFSET, LENGTH and FILENAME fields in accordance to
+	 * the print flags passed.
+	 *
+	 * \param[in] print_flags Print flags to respect
+	 *
+	 * \return List of field types
+	 */
+	std::vector<ATTR> create_optional_fields(const print_flag_t print_flags)
+		const;
+
+	/**
+	 * \brief Populate the list of common FieldCreators.
+	 *
+	 * These are the TRACK, OFFSET, LENGTH and FILENAME fields.
+	 *
+	 * \param[in] field_creators List of field creators
+	 * \param[in] field_types    List of fields to format for print
+	 * \param[in] toc            TOC for calculated checksums
+	 * \param[in] checksums      Calculated checksums
+	 * \param[in] filenames      List of input filenames
+	 */
+	void populate_common_creators(
+			std::vector<std::unique_ptr<FieldCreator>>& field_creators,
+			const std::vector<ATTR>& field_types, const TOC& toc,
+			const Checksums& checksums,
+			const std::vector<std::string>& filenames) const;
+
+	/**
 	 * \brief Create the result \c field_types.
 	 *
 	 * \param[in] print_flags            Flags to instruct print of data
@@ -1131,7 +1192,7 @@ protected:
 	 *
 	 * \return Sequence of result field_types to form an record
 	 */
-	std::vector<ATTR> create_attributes(const print_flag_t print_flags,
+	std::vector<ATTR> create_field_types(const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const int total_theirs_per_block) const;
 
@@ -1139,15 +1200,25 @@ protected:
 	 * \brief Create the internal TableComposer to compose the result data.
 	 *
 	 * Uses the internal TableComposer instance.
+	 *
+	 * \param[in] total_records Number of records to print
+	 * \param[in] field_types   List of fields to format for print
+	 * \param[in] with_labels   Decide whether to print field labels
+	 *
+	 * \return TableComposer with specified field list, size and labels
 	 */
 	std::unique_ptr<TableComposer> create_composer(
-		const std::size_t records,
+		const std::size_t total_records,
 		const std::vector<ATTR>& field_types, const bool with_labels) const;
 
 	/**
-	 * \brief Hook for initializing composer.
+	 * \brief Hook in format_table() for initializing composer.
 	 *
-	 * You can do things like adding decorators or do some checking/validation.
+	 * The hook is called after create_composer() is called.
+	 *
+	 * You can do things like adding decorators or do some checking/validation,
+	 * changing default settings or other things.
+	 *
 	 * Default implementation is empty.
 	 *
 	 * \param[in] c TableComposer to be initialized
@@ -1155,13 +1226,19 @@ protected:
 	virtual void init_composer(TableComposer* c) const;
 
 	/**
-	 * \brief Build an ARId.
+	 * \brief Build an ARId enriched with print information.
+	 *
+	 * \param[in] toc        TOC by which \c arid was created
+	 * \param[in] arid       Actual ARId
+	 * \param[in] alt_prefix Alternative URL prefix
+	 *
+	 * \return ARId container
 	 */
 	RichARId build_id(const TOC* toc, const ARId& arid,
 		const std::string& alt_prefix) const;
 
 	/**
-	 * \brief Build the result table.
+	 * \brief Worker: build the result table.
 	 *
 	 * \param[in] types       List of checksum types to print
 	 * \param[in] vresult     Match object (maybe null)
@@ -1220,7 +1297,7 @@ protected:
 		const int record, const int field, TableComposer* c) const;
 
 	/**
-	 * \brief Worker for printing a checksum to the result object.
+	 * \brief Worker: print a checksum to the result object.
 	 *
 	 * If checksum_layout() is available for formatting the checksums, it
 	 * is used, otherwise the fitting implementation of operator '<<' is
@@ -1234,7 +1311,7 @@ protected:
 
 private:
 
-	virtual std::vector<ATTR> do_create_attributes(
+	virtual std::vector<ATTR> do_create_field_types(
 		const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const int total_theirs) const
@@ -1277,6 +1354,127 @@ private:
 	 * \brief Format for the Checksums.
 	 */
 	std::unique_ptr<ChecksumLayout> checksum_layout_;
+};
+
+
+/**
+ * \brief Functor for adding fields for the specified attribute in a table.
+ *
+ * Specializations of AddField are FieldCreators that specify the field they
+ * create by the attribute.
+ */
+template <enum ATTR>
+class AddField
+{
+public:
+
+	/**
+	 * \brief Virtual default destructor.
+	 */
+	virtual ~AddField() noexcept = default;
+};
+
+
+
+template <>
+class AddField<ATTR::TRACK> final : public FieldCreator
+{
+	void do_create(TableComposer* c, const int record_idx) const final;
+};
+
+
+template <>
+class AddField<ATTR::OFFSET> final : public FieldCreator
+{
+	const TOC* toc_;
+
+	void do_create(TableComposer* c, const int record_idx) const final;
+
+public:
+
+	AddField(const TOC* toc);
+};
+
+
+template <>
+class AddField<ATTR::LENGTH> final : public FieldCreator
+{
+	const Checksums* checksums_;
+
+	void do_create(TableComposer* c, const int record_idx) const final;
+
+public:
+
+	AddField(const Checksums* checksums);
+};
+
+
+template <>
+class AddField<ATTR::FILENAME> final : public FieldCreator
+{
+	const std::vector<std::string>* filenames_;
+
+	void do_create(TableComposer* c, const int record_idx) const final;
+
+public:
+
+	AddField(const std::vector<std::string>* filenames);
+};
+
+
+template <>
+class AddField<ATTR::CHECKSUM_ARCS1> final : public FieldCreator
+{
+	const Checksums* checksums_;
+	const ResultFormatter* formatter_;
+
+	void do_create(TableComposer* c, const int record_idx) const final;
+
+public:
+
+	AddField(const Checksums* checksums, const ResultFormatter* formatter);
+};
+
+
+template <>
+class AddField<ATTR::CHECKSUM_ARCS2> final : public FieldCreator
+{
+	const Checksums* checksums_;
+	const ResultFormatter* formatter_;
+
+	void do_create(TableComposer* c, const int record_idx) const final;
+
+public:
+
+	AddField(const Checksums* checksums, const ResultFormatter* formatter);
+};
+
+
+/**
+ * \brief Creates Theirs-columns with optional Confidence-columns
+ */
+template <>
+class AddField<ATTR::THEIRS> final : public FieldCreator
+{
+	const VerificationResult* vresult_;
+	const int block_;
+	const ChecksumSource* checksums_;
+	const std::vector<arcstk::checksum::type>* types_to_print_;
+	const ResultFormatter* formatter_;
+	const int total_theirs_per_block_;
+	const bool print_confidence_;
+
+	void do_create(TableComposer* c, const int record_idx) const final;
+
+public:
+
+	AddField(const std::vector<arcstk::checksum::type>* types,
+			const VerificationResult* vresult,
+			const int block,
+			const ChecksumSource* checksums,
+			const ResultFormatter* formatter,
+			const int total_theirs_per_block,
+			const bool print_confidence);
 };
 
 

@@ -309,40 +309,28 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 // CalcResultFormatter
 
 
-std::vector<ATTR> CalcResultFormatter::do_create_attributes(
+std::vector<ATTR> CalcResultFormatter::do_create_field_types(
 		const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const int /* total_theirs */) const
 {
-	const auto total_fields =
-		  print_flags(ATTR::TRACK)
-		+ print_flags(ATTR::OFFSET)
-		+ print_flags(ATTR::LENGTH)
-		+ print_flags(ATTR::FILENAME)
-		+ types_to_print.size();
-
 	using checksum = arcstk::checksum::type;
 
-	std::vector<ATTR> fields;
-	fields.reserve(total_fields);
-	if (print_flags(ATTR::TRACK))    { fields.emplace_back(ATTR::TRACK);    }
-	if (print_flags(ATTR::OFFSET))   { fields.emplace_back(ATTR::OFFSET);   }
-	if (print_flags(ATTR::LENGTH))   { fields.emplace_back(ATTR::LENGTH);   }
-	if (print_flags(ATTR::FILENAME)) { fields.emplace_back(ATTR::FILENAME); }
+	auto my_fields { create_optional_fields(print_flags) };
 
 	for (const auto& t : types_to_print)
 	{
 		if (checksum::ARCS1 == t)
 		{
-			fields.emplace_back(ATTR::CHECKSUM_ARCS1);
+			my_fields.emplace_back(ATTR::CHECKSUM_ARCS1);
 		} else
 		if (checksum::ARCS2 == t)
 		{
-			fields.emplace_back(ATTR::CHECKSUM_ARCS2);
+			my_fields.emplace_back(ATTR::CHECKSUM_ARCS2);
 		}
 	}
 
-	return fields;
+	return my_fields;
 }
 
 
