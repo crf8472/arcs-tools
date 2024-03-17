@@ -528,11 +528,11 @@ void TableComposerBuilder::assign_default_labels(TableComposer& c,
 	using std::begin;
 	using std::end;
 
-	// If THEIRS occurrs multiple times, we append a counter in the label
+	// If THEIRS occurrs, we use label "Mine" for local checksums
 	const auto total_theirs = std::count(begin(fields), end(fields),
 			ATTR::THEIRS);
 
-	auto theirs = int { 0 };
+	//auto theirs = int { 0 };
 	auto label_p { end(labels_) }; // current label text
 	for (auto i = int { 0 }; i < fields.size(); ++i) // iterate field types
 	{
@@ -541,7 +541,7 @@ void TableComposerBuilder::assign_default_labels(TableComposer& c,
 
 		if (end(labels_) == label_p)
 		{
-			theirs = 0;
+			//theirs = 0;
 			continue;
 		}
 
@@ -552,15 +552,21 @@ void TableComposerBuilder::assign_default_labels(TableComposer& c,
 			if (ATTR::CHECKSUM_ARCS2 == fields.at(i))
 			{
 				c.set_label(i, "Mine(v2)");
-				theirs = 0;
+				//theirs = 0;
 				continue;
 			} else
 			if (ATTR::CHECKSUM_ARCS1 == fields.at(i))
 			{
 				c.set_label(i, "Mine(v1)");
-				theirs = 0;
+				//theirs = 0;
 				continue;
-			} else
+			}
+			/*
+			// Commented out: not required any more.
+			// Better solved in AddField. Just kept for the moment
+			// TODO Remove commented block
+
+			else
 			// If there are more than 1 THEIRS, make the counter part of the
 			// label for the THEIRS fields
 			if (total_theirs > 1)
@@ -579,7 +585,7 @@ void TableComposerBuilder::assign_default_labels(TableComposer& c,
 					const std::string tlabel = details::trim(label_p->second);
 
 					// Number of trailing chars available in the label
-					const auto avail = 8/* col width */ - tlabel.length();
+					const auto avail = 8 - tlabel.length();
 
 					auto label = std::string{};
 
@@ -600,10 +606,11 @@ void TableComposerBuilder::assign_default_labels(TableComposer& c,
 					continue;
 				} // if ATTR::THEIRS
 			} // if total_theirs > 1
+			*/
 		}
 
 		c.set_label(i, label_p->second);
-		theirs = 0;
+		//theirs = 0;
 	}
 }
 
@@ -628,6 +635,8 @@ std::unique_ptr<TableComposer> RowTableComposerBuilder::do_build(
 	if (with_labels)
 	{
 		this->assign_default_labels(*c.get(), field_types);
+		// Labels may be updated by the application subclass when
+		// calling AddField
 	}
 
 	return c;
