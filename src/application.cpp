@@ -325,15 +325,12 @@ void Application::setup_logging(const Options& options) const
 	}
 	Logging::instance().add_appender(std::move(appender));
 
-	if (!options.is_set(OPTION::VERBOSITY)) // --quiet was not activated
-	{
-		// Set actual loglevel to either requested verbosity or default
-		auto actual_loglevel = options.is_set(OPTION::VERBOSITY)
-			? to_loglevel(options.value(OPTION::VERBOSITY))
-			: LOGLEVEL::WARNING;
+	// Set actual loglevel to either requested verbosity or default
+	auto actual_loglevel = options.is_set(OPTION::VERBOSITY)
+		? to_loglevel(options.value(OPTION::VERBOSITY))
+		: LOGLEVEL::WARNING;
 
-		Logging::instance().set_level(actual_loglevel);
-	}
+	Logging::instance().set_level(actual_loglevel);
 
 	ARCS_LOG_DEBUG << "Logging activated";
 }
