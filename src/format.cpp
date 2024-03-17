@@ -508,16 +508,14 @@ const CellDecorator* ColTableComposer::do_on_field(const int field_idx) const
 
 TableComposerBuilder::TableComposerBuilder()
 	: labels_ {
-		{ ATTR::TRACK,    DefaultLabel<ATTR::TRACK>()    },
-		{ ATTR::OFFSET,   DefaultLabel<ATTR::OFFSET>()   },
-		{ ATTR::LENGTH,   DefaultLabel<ATTR::LENGTH>()   },
-		{ ATTR::FILENAME, DefaultLabel<ATTR::FILENAME>() },
-		{ ATTR::CHECKSUM_ARCS2,
-			arcstk::checksum::type_name(arcstk::checksum::type::ARCS2) },
-		{ ATTR::CHECKSUM_ARCS1,
-			arcstk::checksum::type_name(arcstk::checksum::type::ARCS1) },
-		{ ATTR::THEIRS,   DefaultLabel<ATTR::THEIRS>() },
-		{ ATTR::CONFIDENCE, DefaultLabel<ATTR::CONFIDENCE>() },
+		{ ATTR::TRACK,          DefaultLabel<ATTR::TRACK>()          },
+		{ ATTR::OFFSET,         DefaultLabel<ATTR::OFFSET>()         },
+		{ ATTR::LENGTH,         DefaultLabel<ATTR::LENGTH>()         },
+		{ ATTR::FILENAME,       DefaultLabel<ATTR::FILENAME>()       },
+		{ ATTR::CHECKSUM_ARCS2, DefaultLabel<ATTR::CHECKSUM_ARCS2>() },
+		{ ATTR::CHECKSUM_ARCS1, DefaultLabel<ATTR::CHECKSUM_ARCS1>() },
+		{ ATTR::THEIRS,         DefaultLabel<ATTR::THEIRS>()         },
+		{ ATTR::CONFIDENCE,     DefaultLabel<ATTR::CONFIDENCE>()     },
 	}
 {
 	// empty
@@ -530,16 +528,15 @@ void TableComposerBuilder::assign_default_labels(TableComposer& c,
 	using std::begin;
 	using std::end;
 
-	// THEIRS is the only attribute that could occurr multiple times.
-	// If it does, we want to append a counter in the label
+	// If THEIRS occurrs multiple times, we append a counter in the label
 	const auto total_theirs = std::count(begin(fields), end(fields),
 			ATTR::THEIRS);
 
 	auto theirs = int { 0 };
-	auto label_p { end(labels_) };
-	for (auto i = int { 0 }; i < fields.size(); ++i)
+	auto label_p { end(labels_) }; // current label text
+	for (auto i = int { 0 }; i < fields.size(); ++i) // iterate field types
 	{
-		// Use labels from internal label store
+		// Use labels from internal label store for field type
 		label_p = labels_.find(fields.at(i));
 
 		if (end(labels_) == label_p)
