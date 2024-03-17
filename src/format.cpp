@@ -695,15 +695,21 @@ const uint32_t& FromRefvalues::do_frame450_arcs_value(
 
 
 std::size_t FromRefvalues::do_size(
-		const ChecksumSource::size_type /*block_idx*/) const
+		const ChecksumSource::size_type block_idx) const
 {
+	if (block_idx > 0)
+	{
+		throw std::invalid_argument("Only index 0 is legal, cannot access index"
+				+ std::to_string(block_idx));
+	}
+
 	return source()->size();
 }
 
 
 std::size_t FromRefvalues::do_size() const
 {
-	return source()->size();
+	return 1;
 }
 
 
