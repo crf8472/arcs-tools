@@ -4,7 +4,8 @@
 ## Required by FindDoxygen.cmake
 cmake_policy (SET CMP0057 NEW )
 
-find_package (Doxygen 1.8.0 COMPONENTS REQUIRED dot )
+find_package (Doxygen 1.9.1...>1.9.7 ) # 1.9.7 crashes m.css
+#find_package (Doxygen 1.8.15...1.8.20 ) # OK too
 
 
 message (STATUS
