@@ -197,8 +197,6 @@ endif (GZIP_EXEC)
 
 if (NOT SKIP_INSTALL_ALL AND NOT SKIP_INSTALL_FILES )
 
-	#install (FILES ${INSTALL_PAGES} TYPE MAN )
-	## Commented out, try TYPE instead
 	install (FILES ${INSTALL_PAGES}
 		DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/man/man1" )
 
