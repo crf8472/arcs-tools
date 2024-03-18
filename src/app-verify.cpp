@@ -942,7 +942,7 @@ void ColorizingVerifyResultFormatter::register_decorators(TableComposer& c)
 
 		if (ATTR::THEIRS == field)
 		{
-			ARCS_LOG(DEBUG1) << "Register MatchDecorator to field index " << i;
+			ARCS_LOG(DEBUG2) << "Register MatchDecorator to field index " << i;
 
 			c.register_to_field(i,
 				std::make_unique<MatchDecorator>(r_size,
@@ -970,7 +970,7 @@ void ColorizingVerifyResultFormatter::do_their_match(const Checksum& checksum,
 {
 	c->set_field(record_idx, field_idx, this->checksum(checksum));
 
-	ARCS_LOG(DEBUG1) << "Mark cell " << record_idx << ", " << field_idx
+	ARCS_LOG(DEBUG2) << "Mark cell " << record_idx << ", " << field_idx
 		<< " as match-decorated";
 
 	c->mark(record_idx, field_idx);
@@ -983,7 +983,7 @@ void ColorizingVerifyResultFormatter::do_their_mismatch(
 {
 	c->set_field(record_idx, field_idx, this->checksum(checksum));
 
-	ARCS_LOG(DEBUG1) << "Mark cell " << record_idx << ", " << field_idx
+	ARCS_LOG(DEBUG2) << "Mark cell " << record_idx << ", " << field_idx
 		<< " as mismatch-decorated";
 }
 
