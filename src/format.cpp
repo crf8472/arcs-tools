@@ -962,7 +962,8 @@ void AddField<ATTR::THEIRS>::do_create(TableComposer* c, const int record_idx)
 }
 
 
-AddField<ATTR::THEIRS>::AddField(const std::vector<arcstk::checksum::type>* types,
+AddField<ATTR::THEIRS>::AddField(
+		const std::vector<arcstk::checksum::type>* types,
 		const VerificationResult* vresult,
 		const int block,
 		const ChecksumSource* checksums,
@@ -1216,7 +1217,7 @@ ResultFormatter::print_flag_t ResultFormatter::create_print_flags(
 	flags.set(ATTR::FILENAME,   has_filenames && is_requested(ATTR::FILENAME));
 	flags.set(ATTR::CONFIDENCE, is_requested(ATTR::CONFIDENCE));
 
-	ARCS_LOG(DEBUG1) << "Print flags:";
+	ARCS_LOG(DEBUG1) << "Request flags for printing:";
 	ARCS_LOG(DEBUG1) << " tracks=      " << flags(ATTR::TRACK);
 	ARCS_LOG(DEBUG1) << " offsets=     " << flags(ATTR::OFFSET);
 	ARCS_LOG(DEBUG1) << " lengths=     " << flags(ATTR::LENGTH);
