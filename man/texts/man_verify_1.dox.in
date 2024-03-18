@@ -36,8 +36,8 @@ are declared "Mine". Matches of checksums will be marked with symbol "==" in the
 corresponding table cell. For a non-matching checksum, the corresponding table
 cell will contain the respective checksum.
 
-Switch \b --print-all-matches shows any comparison that was actually performed
-in the output, regardless of v2 or v1 or whether a match was found.
+Switch \b --print-all-matches prints every match attempt that was actually
+performed, regardless of v2 or v1 or whether a match attempt was successful.
 
 
 \section verify_opts OPTIONS
@@ -109,16 +109,23 @@ all default colors will be ignored, hence every TYPE that is not assigned a
 color in the list is printed as FG_DEFAULT+BG_DEFAULT regardless whether it has
 a default color.
 
+\par --confidence
+Print the confidence value of each "Theirs" checksum in a column on the right
+hand side of the respective "Theirs" column. This switch will be ignored if
+\b --refvalues is used.
+
 \par --print-id
-Print the AccurateRip id of the reference data, if available.
+Print the AccurateRip id of the reference data, if available. This switch will
+be ignored if \b --refvalues is used.
 
 \par --print-url
-Print the AccurateRip URL of the reference data, if available.
+Print the AccurateRip URL of the reference data, if available. This switch will
+be ignored if \b --refvalues is used.
 
 \par --print-all-matches
 Print each match result for each reference block. If combined with
 \b --refvalues, the effect is just to activate the output of the match result
-for ARCSv2 as well as ARCSv1.
+for ARCSv1 as well as ARCSv2.
 
 \par -b,--boolean
 Return the difference of the best match. Hence, 0 indicates a successful
