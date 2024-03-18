@@ -1180,6 +1180,12 @@ std::vector<ATTR> ResultFormatter::create_field_types(
 }
 
 
+void ResultFormatter::do_init_composer(TableComposer& /*c*/) const
+{
+	// default implementation does nothing
+}
+
+
 std::unique_ptr<TableComposer> ResultFormatter::create_composer(
 		const std::size_t total_entries,
 		const std::vector<ATTR>& field_types, const bool with_labels) const
@@ -1229,7 +1235,7 @@ std::unique_ptr<Result> ResultFormatter::format_table(
 {
 	// Create table composer (requires field_types only for alignment)
 	auto composer { create_composer(total_records, field_list, with_labels) };
-	init_composer(composer.get());
+	init_composer(*composer);
 
 	// Execute FieldCreators and populate table
 	{
@@ -1285,9 +1291,9 @@ std::unique_ptr<Result> ResultFormatter::build_result(
 }
 
 
-void ResultFormatter::init_composer(TableComposer* /*c*/) const
+void ResultFormatter::init_composer(TableComposer& c) const
 {
-	// do nothing
+	do_init_composer(c);
 }
 
 
@@ -1347,7 +1353,7 @@ std::unique_ptr<PrintableTable> ResultFormatter::build_table(
 
 	// Create table composer (requires field_types only for alignment)
 	auto c { create_composer(checksums.size(), field_types, formats_label()) };
-	this->init_composer(c.get()); // let subclass do its thing
+	init_composer(*c); // let subclass do its thing
 
 	// Create and populate container for field builders
 

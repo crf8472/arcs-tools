@@ -1223,7 +1223,7 @@ protected:
 	 *
 	 * \param[in] c TableComposer to be initialized
 	 */
-	virtual void init_composer(TableComposer* c) const;
+	void init_composer(TableComposer& c) const;
 
 	/**
 	 * \brief Build an ARId enriched with print information.
@@ -1316,6 +1316,8 @@ private:
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const int total_theirs) const
 	= 0;
+
+	virtual void do_init_composer(TableComposer& c) const;
 
 	/**
 	 * \brief Implements mine_checksum().

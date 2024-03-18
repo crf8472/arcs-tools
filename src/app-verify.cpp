@@ -759,6 +759,13 @@ std::vector<ATTR> VerifyResultFormatter::do_create_field_types(
 // MonochromeVerifyResultFormatter
 
 
+void MonochromeVerifyResultFormatter::do_init_composer(TableComposer& c) const
+{
+	// Overwrite default labels for local Checksums
+	this->update_field_labels(c);
+}
+
+
 void MonochromeVerifyResultFormatter::do_their_match(const Checksum& checksum,
 		const int record_idx, const int field_idx, TableComposer* c) const
 {
@@ -921,26 +928,23 @@ ColorizingVerifyResultFormatter::
 }
 
 
-void ColorizingVerifyResultFormatter::init_composer(TableComposer* c) const
+void ColorizingVerifyResultFormatter::register_decorators(TableComposer& c)
+	const
 {
-	// Overwrite default labels for local Checksums
-
-	this->update_field_labels(*c);
-
-	// Register Decorators to each "Theirs" field
-
 	using ansi::Highlight;
 
-	const auto r_size { c->total_records() };
+	const auto r_size { c.total_records() };
 
-	int i = 0;
-	for (const auto& field : c->fields())
+	auto i = int { 0 };
+	for (const auto& field : c.fields())
 	{
+		// Register a color Decorator to each "Theirs" field
+
 		if (ATTR::THEIRS == field)
 		{
 			ARCS_LOG(DEBUG1) << "Register MatchDecorator to field index " << i;
 
-			c->register_to_field(i,
+			c.register_to_field(i,
 				std::make_unique<MatchDecorator>(r_size,
 					Highlight::BOLD, colors_.get(DecorationType::MATCH),
 					Highlight::BOLD, colors_.get(DecorationType::MISMATCH) ));
@@ -948,6 +952,16 @@ void ColorizingVerifyResultFormatter::init_composer(TableComposer* c) const
 
 		++i;
 	}
+}
+
+
+void ColorizingVerifyResultFormatter::do_init_composer(TableComposer& c) const
+{
+	// Overwrite default labels for local Checksums
+	this->update_field_labels(c);
+
+	// Register color Decorators to each "Theirs" field
+	this->register_decorators(c);
 }
 
 

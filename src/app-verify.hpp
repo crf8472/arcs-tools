@@ -308,7 +308,11 @@ public:
 protected:
 
 	/**
-	 * \brief Change default labels in result table.
+	 * \brief Worker: hook to change default labels in result table.
+	 *
+	 * This changes the labels of the local checksums to "Mine...".
+	 *
+	 * Called by init_composer().
 	 *
 	 * \param[in] c Composer for result table
 	 */
@@ -431,9 +435,11 @@ private:
 /**
  * \brief Format monochrome output.
  */
-class MonochromeVerifyResultFormatter : public VerifyResultFormatter
+class MonochromeVerifyResultFormatter final : public VerifyResultFormatter
 {
 	// VerifyResultFormatter
+
+	void do_init_composer(TableComposer& c) const override;
 
 	void do_their_match(const Checksum& checksum, const int record,
 			const int field, TableComposer* c) const final;
@@ -540,7 +546,7 @@ public:
  * All cells containing matches are green. All cells containing mismatches are
  * red.
  */
-class ColorizingVerifyResultFormatter : public VerifyResultFormatter
+class ColorizingVerifyResultFormatter final : public VerifyResultFormatter
 {
 	using Color = ansi::Color;
 
@@ -549,9 +555,19 @@ class ColorizingVerifyResultFormatter : public VerifyResultFormatter
 	 */
 	ColorRegistry colors_;
 
+	/**
+	 * \brief Worker: hook to register color decorators.
+	 *
+	 * Called by init_composer().
+	 *
+	 * \param[in] c TableComposer to modify
+	 */
+	void register_decorators(TableComposer& c) const;
+
+
 	// ResultFormatter
 
-	void init_composer(TableComposer* c) const final;
+	void do_init_composer(TableComposer& c) const final;
 
 	// VerifyResultFormatter
 
