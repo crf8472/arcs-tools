@@ -53,8 +53,13 @@ foreach (_testcase ${TEST_SETS} )
 		Catch2::Catch2WithMain
 		libarcstk::libarcstk
 		libarcsdec::libarcsdec
+		-Wl,--disable-new-dtags  ## set RPATH instead of RUNPATH
 		$<TARGET_OBJECTS:${PROJECT_NAME}-objects>
+		## libarcstk and libarcsdec from build-tree, 0003 and 0060 are used
 	)
+	## Setting the RPATH forces loading the libarcstk.so from the build tree,
+	## even if a system-wide libarcstk is installed. Using RUNPATH instead of
+	## RPATH causes the testcase to load the system-wide libfile.
 
 	## Add test to ctest set
 
