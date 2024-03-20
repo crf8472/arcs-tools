@@ -1,4 +1,4 @@
-\mainpage ARCS Tools - An AccurateRip Checksums ToolKit
+\mainpage ARCS Tools - @PROJECT_BRIEF_DESC@
 
 
 \section Home
@@ -11,12 +11,12 @@ See the [project repository](https://github.com/crf8472/arcs-tools)
 Arcs-tools provide an example implementation of the libarcstk feature set. The
 toolkit supports the following tasks for working with AccurateRip checksums:
 
+- Verify AccurateRip checksums against their reference sums from AccurateRip
 - Calculate the AccurateRip checksums of a succession of audio samples, may it
   be a single track or an album
-- Verify AccurateRip checksums against their reference sums from AccurateRip
 - Calculate the AccurateRip ID of a CD from its TOC information (along with the
   request URL and the canonical response filename)
-- Parse the responses of AccurateRip to plaintext
+- Parse the responses of AccurateRip ("dBAR-format") to plaintext
 
 
 
@@ -39,10 +39,23 @@ Build and install to just use the API:
 	$ cmake --build .
 	$ sudo make install  # installs to /usr/local
 
-Note that arcs-tools need libarcstk and libarcsdec to compile. If the first
-cmake call issues an error that reads "Could NOT find libarcsdec", check whether
-they are properly installed. Locally, I deploy these libs to /usr/local. My
-CMake will not find them unless the path is explicitly specified as part of the
-prefix:
+Note that arcs-tools need [libarcstk][1] and [libarcsdec][2] to compile.
+
+If the first cmake call issues an error that reads "Could NOT find libarcsdec",
+check whether the dependencies are properly installed. Locally, I deploy these
+libs to ``/usr/local`` when testing them. My CMake will therefore not find them
+unless the path is explicitly specified as part of the prefix when configuring
+arcs-tools:
 
 	$ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/usr/local ..
+
+If you do not intend to install the dependencies locally, you can instead pull
+them as submodules by doing:
+
+	$ cmake -DCMAKE_BUILD_TYPE=Release -DWITH_SUBMODULES=ON ..
+
+This documentation was generated from commit
+[@GIT_VERSION_STRING@](@PROJECT_URL@/commit/@GIT_COMMIT_ID@).
+
+[1]: https://github.com/crf8472/libarcstk
+[2]: https://github.com/crf8472/libarcsdec

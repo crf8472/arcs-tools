@@ -1,0 +1,15 @@
+DOXYFILE = 'Doxyfile'
+## mcss-specific options
+## according to https://mcss.mosra.cz/documentation/doxygen/
+
+MAIN_PROJECT_URL = "@PROJECT_URL@/"
+
+LINKS_NAVBAR1    = [
+]
+
+LINKS_NAVBAR2    = [
+    ("Namespaces", 'namespaces', []),
+    ("Classes",    'annotated',  []),
+    ("Files",      'files',      []),
+]
+

@@ -43,7 +43,6 @@ if (NOT CMAKE_BUILD_TYPE )
 		CACHE STRING "Choose the type of build (e.g. Debug or Release)" FORCE )
 
 	message (STATUS "No build type specified, set to ${CMAKE_BUILD_TYPE}" )
-
 endif (NOT CMAKE_BUILD_TYPE )
 
 message (STATUS "Build type: ${CMAKE_BUILD_TYPE}" )
@@ -72,11 +71,15 @@ message (STATUS "Changed CMAKE_MODULE_PATH to: ${CMAKE_MODULE_PATH}" )
 
 ## --- Project Directory Layout
 
-## "Root directory for out-of-source build"
-set (PROJECT_BINARY_DIR       "${CMAKE_CURRENT_BINARY_DIR}" )
 
 ## "Root directory for sources"
 set (PROJECT_SOURCE_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/src" )
+
+## "Root directory for public/exported headers"
+set (PROJECT_LOCAL_INCLUDE_DIR "${PROJECT_SOURCE_DIR}" )
+
+## "Root directory for out-of-source build"
+set (PROJECT_BINARY_DIR       "${CMAKE_CURRENT_BINARY_DIR}" )
 
 ## "Target directory for non-cmake logs"
 set (PROJECT_LOG_DIR          "${PROJECT_BINARY_DIR}/log" )
@@ -88,7 +91,13 @@ set (PROJECT_BUILD_SOURCE_DIR "${PROJECT_BINARY_DIR}/generated-sources" )
 
 ## --- Create Log directory
 
-add_custom_target (arcstk_create_log_dir ALL
+add_custom_command (
+	OUTPUT  ${PROJECT_LOG_DIR}
+	PRE_BUILD
+	COMMAND ${CMAKE_COMMAND}
+	ARGS    -E make_directory ${PROJECT_LOG_DIR} )
+
+add_custom_target (arcstools_create_log_dir ALL
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_LOG_DIR} )
 
 
@@ -168,11 +177,6 @@ target_link_libraries (${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-objects )
 
 
 option (WITH_SUBMODULES "Compile libarcstk and libarcsdec as submodules" OFF )
-
-
-## --- Generate documentation
-
-add_subdirectory (doc )
 
 
 ## --- Dependencies with or without submodules
@@ -285,28 +289,27 @@ endif ()
 set (PROJECT_CXX_GNU_FLAGS_WARNINGS
 	-Wall -Wextra -Wpedantic -Weffc++
 	-Wold-style-cast
+	-Wsuggest-override
 	-Wcast-align
 	-Wcast-qual
-	-Wformat=2
-	-Wshadow
-	-Wsign-conversion
-	-Wundef
-	-Wzero-as-null-pointer-constant
-	# -- g++ specific --
-	-Wsuggest-override
 	-Wctor-dtor-privacy
 	-Wdisabled-optimization
+	-Wformat=2
 	-Wlogical-op
 	-Wmissing-declarations
 	-Wmissing-include-dirs
 	-Wnoexcept
 	-Woverloaded-virtual
 	-Wredundant-decls
+	-Wshadow
+	-Wsign-conversion
 	-Wsign-promo
 	-Wstrict-null-sentinel
 	-Wstrict-overflow=5
 	-Wswitch-default
+	-Wundef
 	-Wuseless-cast
+	-Wzero-as-null-pointer-constant
 	)
 
 ## g++: Optimize flags
@@ -314,6 +317,10 @@ set (PROJECT_CXX_GNU_FLAGS_OPTIMIZE  -march=native -mtune=generic )
 
 
 ## clang++: Warnings
+## Clang warnings are quite aggressive by default. Some of the g++ warnings are
+## either compatibility flags that do nothing or are activated by other meta
+## flags. Some are just on by default. The following list is intended to contain
+## only those flags that are off by default and no compatibility flags.
 set (PROJECT_CXX_CLANG_FLAGS_WARNINGS
 	-Wall -Wextra -Wpedantic -Weffc++
 	-Wold-style-cast
@@ -323,9 +330,9 @@ set (PROJECT_CXX_CLANG_FLAGS_WARNINGS
 	-Wshadow
 	-Wsign-conversion
 	-Wundef
+	-Wunused
 	-Wzero-as-null-pointer-constant
 	# -- clang++ specific --
-	-Wunused
 	-Winconsistent-missing-destructor-override
 	)
 
@@ -350,13 +357,13 @@ elseif (CMAKE_CXX_COMPILER MATCHES ".*clang"       ## for clang
 	set (PROJECT_CXX_FLAGS_WARNINGS ${PROJECT_CXX_CLANG_FLAGS_WARNINGS} )
 	set (PROJECT_CXX_FLAGS_OPTIMIZE ${PROJECT_CXX_CLANG_FLAGS_OPTIMIZE} )
 
-else ()
+else()
 
 	message (WARNING "C++ Compiler seems to be neither g++ nor clang++" )
 	message (WARNING "No compile flags specified for the actual C++ compiler" )
 	message (WARNING "Try a generic compile without project specific flags" )
 
-endif ()
+endif()
 
 
 ## Compiler: Activate Warnings
@@ -373,7 +380,7 @@ if (WITH_NATIVE )
 	message (STATUS "Build with platform specific optimization" )
 
 	target_compile_options (${PROJECT_NAME}
-		PUBLIC ${PROJECT_CXX_FLAGS_OPTIMIZE} )
+		PRIVATE ${PROJECT_CXX_FLAGS_OPTIMIZE} )
 else()
 
 	message (STATUS "Build without platform specific optimization" )
@@ -407,10 +414,21 @@ if (WITH_TESTS)
 	add_subdirectory (thirdparty/catch2 EXCLUDE_FROM_ALL )
 
 	## Add tests
-	add_subdirectory ("${CMAKE_CURRENT_SOURCE_DIR}/test" )
+	add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/test )
 
 endif (WITH_TESTS)
 
+
+## --- Optional: Build documentation (default: OFF)
+
+option (WITH_DOCS          "Build documentation for public API"           OFF )
+option (MCSS               "Use m.css when building documentation"        OFF )
+
+## Process configuration for building the documentation
+if (WITH_DOCS )
+
+	add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/doc )
+endif (WITH_DOCS )
 
 
 ## If on *nix, prepare man pages
@@ -424,6 +442,8 @@ endif (UNIX )
 
 
 ## --- Optional: Add include-what-you-use support (default: OFF)
+## TODO CXX_INCLUDE_WHAT_YOU_USE has to be set to TRUE when the target is
+## created
 
 option (IWYU "Don't compile, check headers with include-what-you-use" OFF )
 if (IWYU )

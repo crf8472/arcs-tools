@@ -28,6 +28,24 @@ port. But wav, flac, wavpack, ALAC, ape, AIFF input is possible and currently at
 least smoke-tested.)
 
 
+## How to build
+
+Arcs-tools require [libarcstk][1] and [libarcsdec][2] to build and run. Note
+that [libarcsdec][2] may pull in more dependencies if configured to do so.
+(For the details, consult the [libarcsdec build manual][3]).
+
+Build and install to just use the tools:
+
+	$ cd arcs-tools     # your arcs-tools root directory where README.md resides
+	$ mkdir build && cd build
+	$ cmake ..          # defaults to 'Release' build
+	$ cmake --build .
+	$ sudo make install # installs to /usr/local
+
+See a [detailed HowTo](BUILD.md) explaining different build scenarios and all
+build switches.
+
+
 ## Examples
 
 Calculate the AccurateRip URL of a local CD image (audiofile may be omitted if
@@ -59,4 +77,5 @@ $ curl "$(arcstk-id --url /path/to/cuefile.cue -a /path/to/audiofile.flac)" | ar
 
 [1]: https://github.com/crf8472/libarcstk
 [2]: https://github.com/crf8472/libarcsdec
+[3]: https://github.com/crf8472/libarcsdec/BUILD.md
 

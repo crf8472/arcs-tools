@@ -1,0 +1,60 @@
+# vim:set ft=conf
+
+## Base configuration for doxygen.
+##
+## Can be used as a standalone config for doxygen or to be included by
+## another doxyfile that adds generator-specific configuration.
+## See e.g. doc/thirdparty/mcss/Doxyfile.in.
+
+PROJECT_NAME           = "@PROJECT_NAME@"
+PROJECT_NUMBER         = "@PROJECT_VERSION_STRING@"
+PROJECT_BRIEF          = "@PROJECT_BRIEF_DESC@"
+OUTPUT_DIRECTORY       = "@DOXYGEN_OUTPUT_DIRECTORY@"
+
+STRIP_FROM_PATH        = @DOXYGEN_STRIP_FROM_PATH@
+STRIP_FROM_INC_PATH    = @DOXYGEN_STRIP_FROM_INC_PATH@
+
+# Base configuration: define every m.css markup macro empty
+ALIASES                = \
+    "m_div{1}=" \
+    "m_enddiv=" \
+    "m_span{1}=" \
+    "m_endspan=" \
+    "m_class{1}=" \
+    "m_footernavigation=" \
+    "m_examplenavigation{2}=" \
+    "m_keywords{1}=" \
+    "m_keyword{3}=" \
+    "m_enum_values_as_keywords="
+
+EXTENSION_MAPPING      = tpp=C++
+
+INLINE_GROUPED_CLASSES = YES
+EXTRACT_LOCAL_CLASSES  = NO
+HIDE_UNDOC_MEMBERS     = YES
+HIDE_UNDOC_CLASSES     = YES
+HIDE_FRIEND_COMPOUNDS  = YES
+INTERNAL_DOCS          = NO
+SHOW_GROUPED_MEMB_INC  = YES
+
+SORT_BRIEF_DOCS        = YES
+SORT_MEMBERS_CTORS_1ST = YES
+SORT_GROUP_NAMES       = YES
+
+WARN_LOGFILE           = @PROJECT_LOG_DIR@/Doxygen_Warnings.log
+
+INPUT                  = @DOXYGEN_INPUT@
+FILE_PATTERNS          = @DOXYGEN_FILE_PATTERNS@
+RECURSIVE              = YES
+
+USE_MDFILE_AS_MAINPAGE = @DOXYGEN_USE_MDFILE_AS_MAINPAGE@
+
+VERBATIM_HEADERS       = NO
+
+#GENERATE_HTML          = YES # default
+
+#GENERATE_LATEX         = YES # default
+COMPACT_LATEX          = YES
+
+GROUP_GRAPHS           = NO
+
