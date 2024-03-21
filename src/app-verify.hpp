@@ -374,7 +374,7 @@ protected:
 			const DBAR& dbar, const std::vector<uint32_t>& refvalues) const;
 
 	/**
-	 * \brief Add result-specific data creators to an existing list of creators..
+	 * \brief Add result-specific data creators to an existing list of creators.
 	 *
 	 * \param[in,out] creators  List to be added to
 	 * \param[in] print_flags   Fields requested for print

@@ -505,7 +505,6 @@ void VerifyResultFormatter::add_result_fields(std::vector<ATTR>& field_list,
 			}
 		}
 	}
-
 }
 
 
@@ -553,7 +552,7 @@ std::unique_ptr<const ChecksumSource>
 void VerifyResultFormatter::populate_result_creators(
 		std::vector<std::unique_ptr<FieldCreator>>& creators,
 		const print_flag_t print_flags,
-		const std::vector<ATTR>& fields,
+		const std::vector<ATTR>& field_list,
 		const std::vector<arcstk::checksum::type>& types,
 		const VerificationResult& vresult,
 		const int block,
@@ -582,7 +581,7 @@ void VerifyResultFormatter::populate_result_creators(
 				}
 			};
 
-	if (required(fields, ATTR::CHECKSUM_ARCS1))
+	if (required(field_list, ATTR::CHECKSUM_ARCS1))
 	{
 		creators.emplace_back(
 			std::make_unique<AddField<ATTR::CHECKSUM_ARCS1>>(&checksums, this));
@@ -590,7 +589,7 @@ void VerifyResultFormatter::populate_result_creators(
 		populate_theirs();
 	}
 
-	if (required(fields, ATTR::CHECKSUM_ARCS2))
+	if (required(field_list, ATTR::CHECKSUM_ARCS2))
 	{
 		creators.emplace_back(
 			std::make_unique<AddField<ATTR::CHECKSUM_ARCS2>>(&checksums, this));
