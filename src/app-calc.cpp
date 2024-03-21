@@ -309,6 +309,58 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 // CalcResultFormatter
 
 
+void CalcResultFormatter::add_result_fields(std::vector<ATTR>& field_list,
+		const print_flag_t print_flags,
+		const std::vector<arcstk::checksum::type>& types_to_print) const
+{
+	using checksum = arcstk::checksum::type;
+
+	for (const auto& t : types_to_print)
+	{
+		if (checksum::ARCS1 == t)
+		{
+			field_list.emplace_back(ATTR::CHECKSUM_ARCS1);
+		} else
+		{
+			if (checksum::ARCS2 == t)
+			{
+				field_list.emplace_back(ATTR::CHECKSUM_ARCS2);
+			}
+		}
+	}
+}
+
+
+void CalcResultFormatter::populate_result_creators(
+		std::vector<std::unique_ptr<FieldCreator>>& creators,
+		const print_flag_t print_flags,
+		const std::vector<ATTR>& field_list,
+		const std::vector<arcstk::checksum::type>& types,
+		const Checksums& checksums) const
+{
+	// do not repeat the find mechanism
+	const auto required = [](const std::vector<ATTR>& fields, const ATTR f)
+			{
+				using std::begin;
+				using std::end;
+				using std::find;
+				return find(begin(fields), end(fields), f) != end(fields);
+			};
+
+	if (required(field_list, ATTR::CHECKSUM_ARCS1))
+	{
+		creators.emplace_back(
+			std::make_unique<AddField<ATTR::CHECKSUM_ARCS1>>(&checksums, this));
+	}
+
+	if (required(field_list, ATTR::CHECKSUM_ARCS2))
+	{
+		creators.emplace_back(
+			std::make_unique<AddField<ATTR::CHECKSUM_ARCS2>>(&checksums, this));
+	}
+}
+
+
 std::vector<ATTR> CalcResultFormatter::do_create_field_types(
 		const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types_to_print,
@@ -348,23 +400,48 @@ void CalcResultFormatter::assertions(InputTuple t) const
 std::unique_ptr<Result> CalcResultFormatter::do_format(InputTuple t) const
 {
 	const auto types_to_print = std::get<0>(t);
-	const auto checksums = std::get<1>(t);
-	const auto arid      = std::get<2>(t);
-	const auto toc       = std::get<3>(t);
-	const auto filenames = std::get<4>(t);
-	const auto altprefix = std::get<5>(t);
+	const auto checksums  = std::get<1>(t);
+	const auto arid       = std::get<2>(t);
+	const auto toc        = std::get<3>(t);
+	const auto filenames  = std::get<4>(t);
+	const auto alt_prefix = std::get<5>(t);
 
-	return build_result(
-			types_to_print,
-			/* no verification result */ nullptr,
-			/* no block */ 0,
-			checksums,
-			arid,
-			toc,
-			/* no DBAR */ DBAR{},
-			{ /* no reference ARCSs */ },
-			filenames,
-			altprefix);
+	auto result = std::make_unique<ResultList>();
+
+	if (!arid.empty() && arid_layout())
+	{
+		result->append(std::make_unique<ResultObject<RichARId>>(
+			build_id(toc, arid, alt_prefix)));
+	}
+
+	const auto print_flags { create_print_flags(toc, filenames) };
+
+	auto field_list { create_optional_fields(print_flags) };
+
+	add_result_fields(field_list, print_flags, types_to_print);
+
+	std::vector<std::unique_ptr<FieldCreator>> creators;
+
+	populate_common_creators(creators, field_list, *toc, checksums, filenames);
+	populate_result_creators(creators, print_flags, field_list, types_to_print,
+			checksums);
+
+	result->append(format_table(field_list, checksums.size(),
+				formats_label(), creators));
+
+//	return build_result(
+//			types_to_print,
+//			/* no verification result */ nullptr,
+//			/* no block */ 0,
+//			checksums,
+//			arid,
+//			toc,
+//			/* no DBAR */ DBAR{},
+//			{ /* no reference ARCSs */ },
+//			filenames,
+//			altprefix);
+
+	return result;
 }
 
 

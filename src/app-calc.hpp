@@ -182,6 +182,35 @@ using Calc6Layout = Layout<std::unique_ptr<Result>
 class CalcResultFormatter final : public ResultFormatter
 								, public Calc6Layout
 {
+protected:
+
+	/**
+	 * \brief Add result-specific fields to an existing field list.
+	 *
+	 * \param[in,out] field_list The field list to populate
+	 * \param[in] print_flags    Fields requested for print
+	 * \param[in] types_to_print Checksum types requested for print
+	 */
+	void add_result_fields(std::vector<ATTR>& field_list,
+		const print_flag_t print_flags,
+		const std::vector<arcstk::checksum::type>& types_to_print) const;
+
+	/**
+	 * \brief Add result-specific data creators to an existing list of creators.
+	 *
+	 * \param[in,out] creators  List to be added to
+	 * \param[in] print_flags   Fields requested for print
+	 * \param[in] field_list    Ordered list of field types
+	 * \param[in] types         Checksum types requested for print
+	 * \param[in] checksums     Actual checksums
+	 */
+	void populate_result_creators(
+		std::vector<std::unique_ptr<FieldCreator>>& creators,
+		const print_flag_t print_flags,
+		const std::vector<ATTR>& field_list,
+		const std::vector<arcstk::checksum::type>& types,
+		const Checksums& checksums) const;
+
 private:
 
 	std::vector<ATTR> do_create_field_types(
