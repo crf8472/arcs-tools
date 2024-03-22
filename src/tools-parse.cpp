@@ -35,7 +35,10 @@
 #endif
 
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"            // for ARIdLayout, DBARTripletLayout
+#include "layouts.hpp"            // for DBARTripletLayout
+#endif
+#ifndef __ARCSTOOLS_FMTARID_HPP__ // for ARIdLayout
+#include "fmtarid.hpp"
 #endif
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"        // for Output

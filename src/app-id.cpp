@@ -31,8 +31,8 @@
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"                 // for ResultObject
 #endif
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"                // for ARIdLayout, ARIdTableLayout ...
+#ifndef __ARCSTOOLS_FMTARID_HPP__
+#include "fmtarid.hpp"                // for ARIdLayout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"             // for IdSelection

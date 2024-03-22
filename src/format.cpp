@@ -45,55 +45,12 @@
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"             // for Result, ResultObject
 #endif
+#ifndef __ARCSTOOLS_FMTARID_HPP__ // for ARIdLayout
+#include "fmtarid.hpp"
+#endif
 
 namespace arcsapp
 {
-
-
-// RichARId
-
-
-RichARId::RichARId(const ARId& id, std::unique_ptr<ARIdLayout> layout,
-			const std::string& alt_prefix)
-	: id_ { id }
-	, layout_ { std::move(layout) }
-	, alt_prefix_ { alt_prefix }
-{
-	// empty
-}
-
-
-RichARId::RichARId(const ARId& id, std::unique_ptr<ARIdLayout> layout)
-	: RichARId { id, std::move(layout), std::string{} }
-{
-	// empty
-}
-
-
-const ARId& RichARId::id() const
-{
-	return id_;
-}
-
-
-const ARIdLayout& RichARId::layout() const
-{
-	return *layout_;
-}
-
-
-const std::string& RichARId::alt_prefix() const
-{
-	return alt_prefix_;
-}
-
-
-std::ostream& operator << (std::ostream& o, const RichARId& a)
-{
-	o << a.layout().format(a.id(), a.alt_prefix());
-	return o;
-}
-
 
 // DefaultLabel
 

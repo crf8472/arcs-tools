@@ -10,7 +10,9 @@
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"
 #endif
-
+#ifndef __ARCSTOOLS_FMTARID_HPP__
+#include "fmtarid.hpp"
+#endif
 
 TEST_CASE ( "InternalFlags", "[internalflags]" )
 {

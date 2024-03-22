@@ -4,10 +4,9 @@
 /**
  * \file
  *
- * \brief Formatter for result objects.
+ * \brief Formatter for table objects.
  */
 
-#include <cmath>        // for ceil
 #include <cstddef>      // for size_t
 #include <cstdint>      // for uint32_t
 #include <memory>       // for unique_ptr
@@ -24,9 +23,6 @@
 #endif
 #ifndef __LIBARCSTK_VERIFY_HPP__
 #include <arcstk/verify.hpp>      // for VerificationResult
-#endif
-#ifndef __LIBARCSTK_DBAR_HPP__
-#include <arcstk/dbar.hpp>       // for DBAR
 #endif
 
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
@@ -45,58 +41,8 @@
 namespace arcsapp
 {
 
-using arcstk::DBAR;
-
-
-/**
- * \brief An ARId accompanied by a layout and an optional URL prefix.
- *
- * This object contains all information necessary to be printed.
- */
-class RichARId
-{
-public:
-
-	/**
-	 * \brief An ARId with every information required for printing.
-	 *
-	 * \param[in] id      ARId to print
-	 * \param[in] layout  Layout to use for printing
-	 */
-	RichARId(const arcstk::ARId& id, std::unique_ptr<ARIdLayout> layout);
-
-	/**
-	 * \brief An ARId with every information required for printing.
-	 *
-	 * \param[in] id         ARId to print
-	 * \param[in] layout     Layout to use for printing
-	 * \param[in] alt_prefix Optional alternative URL prefix
-	 */
-	RichARId(const arcstk::ARId& id, std::unique_ptr<ARIdLayout> layout,
-			const std::string& alt_prefix);
-
-
-	const arcstk::ARId& id() const;
-
-	const ARIdLayout& layout() const;
-
-	const std::string& alt_prefix() const;
-
-private:
-
-	arcstk::ARId id_;
-
-	std::unique_ptr<ARIdLayout> layout_;
-
-	std::string alt_prefix_;
-};
-
-
-/**
- * \brief Stream insertion operator for RichARId.
- */
-std::ostream& operator << (std::ostream& o, const RichARId& a);
-
+class ARIdLayout;
+class RichARId;
 
 /**
  * \brief Interface for composing a container object holding records.
@@ -797,7 +743,6 @@ using arcstk::Checksum;
 using arcstk::Checksums;
 using arcstk::ChecksumSource;
 using arcstk::ChecksumSourceOf;
-using arcstk::DBAR;
 using arcstk::VerificationResult;
 using arcstk::TOC;
 

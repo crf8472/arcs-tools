@@ -37,8 +37,8 @@
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"               // for ResultObject, Result
 #endif
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"              // for ARIdLayout
+#ifndef __ARCSTOOLS_FMTARID_HPP__
+#include "fmtarid.hpp"              // for ARIdLayout
 #endif
 #ifndef __ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"                // for StringTableLayout, BoolDecorator
