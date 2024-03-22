@@ -113,7 +113,7 @@ std::string DefaultLabel<ATTR::FILENAME>() { return "Filename"; };
 template<>
 std::string DefaultLabel<ATTR::CHECKSUM_ARCS1>()
 {
-	return arcstk::checksum::type_name(arcstk::checksum::type::ARCS2);
+	return arcstk::checksum::type_name(arcstk::checksum::type::ARCS1);
 };
 
 template<>
