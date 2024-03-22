@@ -361,31 +361,6 @@ void CalcResultFormatter::populate_result_creators(
 }
 
 
-std::vector<ATTR> CalcResultFormatter::do_create_field_types(
-		const print_flag_t print_flags,
-		const std::vector<arcstk::checksum::type>& types_to_print,
-		const int /* total_theirs */) const
-{
-	using checksum = arcstk::checksum::type;
-
-	auto my_fields { create_optional_fields(print_flags) };
-
-	for (const auto& t : types_to_print)
-	{
-		if (checksum::ARCS1 == t)
-		{
-			my_fields.emplace_back(ATTR::CHECKSUM_ARCS1);
-		} else
-		if (checksum::ARCS2 == t)
-		{
-			my_fields.emplace_back(ATTR::CHECKSUM_ARCS2);
-		}
-	}
-
-	return my_fields;
-}
-
-
 void CalcResultFormatter::assertions(InputTuple t) const
 {
 	const auto checksums = std::get<1>(t);
@@ -428,18 +403,6 @@ std::unique_ptr<Result> CalcResultFormatter::do_format(InputTuple t) const
 
 	result->append(format_table(field_list, checksums.size(),
 				formats_label(), creators));
-
-//	return build_result(
-//			types_to_print,
-//			/* no verification result */ nullptr,
-//			/* no block */ 0,
-//			checksums,
-//			arid,
-//			toc,
-//			/* no DBAR */ DBAR{},
-//			{ /* no reference ARCSs */ },
-//			filenames,
-//			altprefix);
 
 	return result;
 }

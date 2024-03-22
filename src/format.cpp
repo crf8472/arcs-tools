@@ -1172,15 +1172,6 @@ void ResultFormatter::populate_common_creators(
 }
 
 
-std::vector<ATTR> ResultFormatter::create_field_types(
-		const print_flag_t print_flags,
-		const std::vector<arcstk::checksum::type>& types_to_print,
-		const int total_theirs) const
-{
-	return do_create_field_types(print_flags, types_to_print, total_theirs);
-}
-
-
 void ResultFormatter::do_init_composer(TableComposer& /*c*/) const
 {
 	// default implementation does nothing
@@ -1256,42 +1247,6 @@ std::unique_ptr<Result> ResultFormatter::format_table(
 }
 
 
-std::unique_ptr<Result> ResultFormatter::build_result(
-		const std::vector<arcstk::checksum::type>& types_to_print,
-		const VerificationResult* vresult, // only verify
-		const int block, // only verify
-		const Checksums& checksums,
-		const ARId& arid,
-		const TOC* toc,
-		const DBAR& dbar, // only verify
-		const std::vector<uint32_t>& refvalues, // only verify
-		const std::vector<std::string>& filenames,
-		const std::string& alt_prefix) const
-{
-	// Flags to indicate whether requested field_types should actually
-	// be printed
-
-	const auto print_flags { create_print_flags(toc, filenames) };
-
-	// Construct result objects
-
-	auto table { build_table(types_to_print, vresult, block, checksums, arid,
-			toc, dbar, refvalues, filenames, print_flags) };
-
-	if (!arid.empty() && arid_layout())
-	{
-		auto id { build_id(toc, arid, alt_prefix) };
-
-		return std::make_unique<
-			ResultObject<RichARId, std::unique_ptr<PrintableTable>>>(
-				std::move(id), std::move(table));
-	}
-
-	return std::make_unique<ResultObject<std::unique_ptr<PrintableTable>>>(
-			std::move(table));
-}
-
-
 void ResultFormatter::init_composer(TableComposer& c) const
 {
 	do_init_composer(c);
@@ -1316,121 +1271,6 @@ RichARId ResultFormatter::build_id(const TOC* /*toc*/, const ARId& arid,
 				false, /* no id 2 */
 				false),/* no cddb id */
 		alt_prefix };
-}
-
-
-std::unique_ptr<PrintableTable> ResultFormatter::build_table(
-		const std::vector<arcstk::checksum::type>& types_to_print,
-		const VerificationResult* vresult, // only verify
-		const int block, // only verify
-		const Checksums& checksums,
-		const ARId& arid,
-		const TOC* toc,
-		const DBAR& dBAR, // only verify
-		const std::vector<uint32_t>& refvalues, // only verify
-		const std::vector<std::string>& filenames,
-		const print_flag_t print) const
-{
-	ARCS_LOG(DEBUG2) << "build_table(): start";
-
-	// Determine whether to use the DBAR
-	const auto use_response { dBAR.size() }; // only verify
-
-	// Determine total number of 'theirs' field_types per reference block
-	// (Maybe 0 for empty response and empty refvalues)
-	const auto total_theirs_per_block {
-		block < 0  // print all match results?
-			? (use_response ? dBAR.size() : (refvalues.empty() ? 0 : 1))
-			: 1 // no best match declared
-	}; // only verify
-
-	// Create field type list
-	const auto field_types { create_field_types(print, types_to_print,
-			total_theirs_per_block) };
-
-	// If THEIRS occurrs, we use label "Mine" for local checksums
-	//const auto total_theirs = std::count(begin(field_types),
-	//		end(field_types), ATTR::THEIRS);
-
-	// Create table composer (requires field_types only for alignment)
-	auto c { create_composer(checksums.size(), field_types, formats_label()) };
-	init_composer(*c); // let subclass do its thing
-
-	// Create and populate container for field builders
-
-	RecordCreator record_builder { c.get() };
-
-	if (c->has_field(ATTR::TRACK))
-	{
-		record_builder.add_fields(std::make_unique<AddField<ATTR::TRACK>>());
-	}
-
-	if (c->has_field(ATTR::OFFSET))
-	{
-		record_builder.add_fields(
-				std::make_unique<AddField<ATTR::OFFSET>>(toc));
-	}
-
-	if (c->has_field(ATTR::LENGTH))
-	{
-		record_builder.add_fields(
-				std::make_unique<AddField<ATTR::LENGTH>>(&checksums));
-	}
-
-	if (c->has_field(ATTR::FILENAME))
-	{
-		record_builder.add_fields(
-				std::make_unique<AddField<ATTR::FILENAME>>(&filenames));
-	}
-
-	for (const auto& t : types_to_print)
-	{
-		if (t == arcstk::checksum::type::ARCS2)
-		{
-			record_builder.add_fields(
-					std::make_unique<AddField<ATTR::CHECKSUM_ARCS2>>(&checksums,
-						this));
-		} else
-		{
-			record_builder.add_fields(
-					std::make_unique<AddField<ATTR::CHECKSUM_ARCS1>>(&checksums,
-						this));
-		}
-
-	}
-
-	std::unique_ptr<const ChecksumSource> reference;
-
-	if (vresult) // Will we print matches?
-	{
-		// Configure source of checksums to print
-		if (use_response)
-		{
-			reference = std::make_unique<arcstk::DBARSource>(&dBAR);
-		} else
-		{
-			if (!refvalues.empty())
-			{
-				reference = std::make_unique<FromRefvalues>(&refvalues);
-			} else
-			{
-				reference = std::make_unique<EmptyChecksumSource>();
-			}
-		}
-
-		record_builder.add_fields(std::make_unique<AddField<ATTR::THEIRS>>(
-					&types_to_print, vresult, block, reference.get(), this,
-					total_theirs_per_block, print(ATTR::CONFIDENCE)));
-	}
-
-	// Create each record of the entire table
-	record_builder.create_records();
-
-	c->set_layout(std::make_unique<StringTableLayout>(copy_table_layout()));
-
-	ARCS_LOG(DEBUG2) << "build_table(): end";
-
-	return c->table();
 }
 
 

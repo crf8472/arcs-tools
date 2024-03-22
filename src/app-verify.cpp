@@ -701,57 +701,7 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 	result->append(format_table(field_list, checksums.size(), formats_label(),
 				creators));
 
-	/*
-	result->append(build_result(
-				types_to_print,
-				vresult,
-				block,
-				checksums,
-				arid,
-				toc,
-				dBAR,
-				refvalues,
-				filenames,
-				alt_prefix));
-	*/
-
 	return result;
-}
-
-
-std::vector<ATTR> VerifyResultFormatter::do_create_field_types(
-		const print_flag_t print_flags,
-		const std::vector<arcstk::checksum::type>& types_to_print,
-		const int total_theirs_per_block) const
-{
-	auto fields { create_optional_fields(print_flags) };
-	using checksum = arcstk::checksum::type;
-
-	for (const auto& t : types_to_print)
-	{
-		if (checksum::ARCS1 == t)
-		{
-			fields.emplace_back(ATTR::CHECKSUM_ARCS1);
-		} else
-		{
-			if (checksum::ARCS2 == t)
-			{
-				fields.emplace_back(ATTR::CHECKSUM_ARCS2);
-			}
-		}
-
-		for (auto i = int { 0 }; i < total_theirs_per_block; ++i)
-		{
-			fields.emplace_back(ATTR::THEIRS);
-
-			if (print_flags(ATTR::CONFIDENCE))
-			{
-				fields.emplace_back(ATTR::CONFIDENCE);
-			}
-		}
-	}
-
-	return fields;
 }
 
 

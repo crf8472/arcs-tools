@@ -1092,68 +1092,6 @@ protected:
 			const std::vector<std::string>& filenames) const;
 
 	/**
-	 * \brief Actually format the result table.
-	 *
-	 * \param[in] field_types    List of fields to format for print
-	 * \param[in] total_records  Number of records to print
-	 * \param[in] with_labels    Decide whether to print field labels
-	 * \param[in] field_creators List of field creators
-	 *
-	 * \return Result table
-	 */
-	std::unique_ptr<Result> format_table(
-		const std::vector<ATTR>& field_types,
-		const std::size_t total_records,
-		const bool with_labels,
-		std::vector<std::unique_ptr<FieldCreator>>& field_creators) const;
-
-	/**
-	 * \brief Worker: build the result representation.
-	 *
-	 * Calls create_field_types() to determine and create the field_types for the
-	 * result object, create_composer() to instantiate the TableComposer
-	 * instance, and build_table() to populate the result table with the
-	 * relevant data.
-	 *
-	 * \param[in] types_to_print List of Checksum types requested for print
-	 * \param[in] vresult        Match between calculation and reference
-	 * \param[in] block          Best block in \c diff
-	 * \param[in] checksums      Calculated checksums
-	 * \param[in] dbar           Reference checksums
-	 * \param[in] refvalues      Reference checksums
-	 * \param[in] arid           ARId of input
-	 * \param[in] toc            TOC for calculated checksums
-	 * \param[in] alt_prefix     Alternative AccurateRip URL prefix
-	 * \param[in] filenames      List of input filenames
-	 */
-	std::unique_ptr<Result> build_result(
-		const std::vector<arcstk::checksum::type>& types_to_print,
-		const VerificationResult* vresult,
-		const int block,
-		const Checksums& checksums,
-		const ARId& arid,
-		const TOC* toc,
-		const DBAR& dbar,
-		const std::vector<uint32_t>& refvalues,
-		const std::vector<std::string>& filenames,
-		const std::string& alt_prefix) const;
-
-	/**
-	 * \brief Validate the result objects common to every result.
-	 *
-	 * Throws if validation fails.
-	 *
-	 * \param[in] checksums  Checksums as resulted
-	 * \param[in] toc        TOC as resulted
-	 * \param[in] arid       ARId as resulted
-	 * \param[in] filenames  Filenames as resulted
-	 *
-	 * \throws invalid_argument If validation fails
-	 */
-	void validate(const Checksums& checksums, const TOC* toc,
-		const ARId& arid, const std::vector<std::string>& filenames) const;
-
-	/**
 	 * \brief Respect flags to create or skip the optional fields.
 	 *
 	 * This creates TRACK, OFFSET, LENGTH and FILENAME fields in accordance to
@@ -1182,19 +1120,6 @@ protected:
 			const std::vector<ATTR>& field_types, const TOC& toc,
 			const Checksums& checksums,
 			const std::vector<std::string>& filenames) const;
-
-	/**
-	 * \brief Create the result \c field_types.
-	 *
-	 * \param[in] print_flags            Flags to instruct print of data
-	 * \param[in] types_to_print         List of checksum types to print
-	 * \param[in] total_theirs_per_block Total number of THEIRS columns
-	 *
-	 * \return Sequence of result field_types to form an record
-	 */
-	std::vector<ATTR> create_field_types(const print_flag_t print_flags,
-		const std::vector<arcstk::checksum::type>& types_to_print,
-		const int total_theirs_per_block) const;
 
 	/**
 	 * \brief Create the internal TableComposer to compose the result data.
@@ -1226,6 +1151,22 @@ protected:
 	void init_composer(TableComposer& c) const;
 
 	/**
+	 * \brief Actually format the result table.
+	 *
+	 * \param[in] field_types    List of fields to format for print
+	 * \param[in] total_records  Number of records to print
+	 * \param[in] with_labels    Decide whether to print field labels
+	 * \param[in] field_creators List of field creators
+	 *
+	 * \return Result table
+	 */
+	std::unique_ptr<Result> format_table(
+		const std::vector<ATTR>& field_types,
+		const std::size_t total_records,
+		const bool with_labels,
+		std::vector<std::unique_ptr<FieldCreator>>& field_creators) const;
+
+	/**
 	 * \brief Build an ARId enriched with print information.
 	 *
 	 * \param[in] toc        TOC by which \c arid was created
@@ -1236,34 +1177,6 @@ protected:
 	 */
 	RichARId build_id(const TOC* toc, const ARId& arid,
 		const std::string& alt_prefix) const;
-
-	/**
-	 * \brief Worker: build the result table.
-	 *
-	 * \param[in] types       List of checksum types to print
-	 * \param[in] vresult     Match object (maybe null)
-	 * \param[in] block       Index to choose from \c vresult
-	 * \param[in] checksums   Checksums as resulted
-	 * \param[in] arid        ARId as resulted
-	 * \param[in] toc         TOC as resulted
-	 * \param[in] response    Reference checksums from AccurateRip response
-	 * \param[in] refvalues   Reference checksums as specified
-	 * \param[in] filenames   Filenames as resulted
-	 * \param[in] print_flags Flags to instruct print of data
-	 *
-	 * \return Table with result data
-	 */
-	std::unique_ptr<PrintableTable> build_table(
-		const std::vector<arcstk::checksum::type>& types,
-		const VerificationResult* vresult,
-		const int block,
-		const Checksums& checksums,
-		const ARId& arid,
-		const TOC* toc,
-		const DBAR& response,
-		const std::vector<uint32_t>& refvalues,
-		const std::vector<std::string>& filenames,
-		const print_flag_t print_flags) const;
 
 	/**
 	 * \brief Print my checksums.
@@ -1309,13 +1222,22 @@ protected:
 	 */
 	std::string checksum(const Checksum& checksum) const;
 
-private:
+	/**
+	 * \brief Validate the result objects common to every result.
+	 *
+	 * Throws if validation fails.
+	 *
+	 * \param[in] checksums  Checksums as resulted
+	 * \param[in] toc        TOC as resulted
+	 * \param[in] arid       ARId as resulted
+	 * \param[in] filenames  Filenames as resulted
+	 *
+	 * \throws invalid_argument If validation fails
+	 */
+	void validate(const Checksums& checksums, const TOC* toc,
+		const ARId& arid, const std::vector<std::string>& filenames) const;
 
-	virtual std::vector<ATTR> do_create_field_types(
-		const print_flag_t print_flags,
-		const std::vector<arcstk::checksum::type>& types_to_print,
-		const int total_theirs) const
-	= 0;
+private:
 
 	virtual void do_init_composer(TableComposer& c) const;
 
