@@ -33,7 +33,7 @@
 #include "application.hpp"       // for Application
 #endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"           // for Layout, ResultFormatter
+#include "layouts.hpp"           // for Layout, TableFormatter
 #endif
 
 
@@ -101,6 +101,63 @@ private:
 	OptionParsers do_parser_list() const final;
 
 	void do_validate(const Configuration& c) const final;
+};
+
+
+using arcstk::Checksum;
+using arcstk::Checksums;
+using arcstk::ChecksumSource;
+using arcstk::ChecksumSourceOf;
+
+
+/**
+ * \brief Access list of reference values by block and index.
+ */
+class RefvaluesSource final : public ChecksumSourceOf<std::vector<uint32_t>>
+{
+	ARId do_id(const ChecksumSource::size_type block_idx) const final;
+	Checksum do_checksum(const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type idx) const final;
+	const uint32_t& do_arcs_value(const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type track_idx) const final;
+	const uint32_t& do_confidence(const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type track_idx) const final;
+	const uint32_t& do_frame450_arcs_value(
+			const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type track_idx) const final;
+	std::size_t do_size(const ChecksumSource::size_type block_idx) const final;
+	std::size_t do_size() const final;
+
+public:
+
+	using ChecksumSourceOf::ChecksumSourceOf;
+	using ChecksumSourceOf::operator=;
+};
+
+
+/**
+ * \brief Dummy source for providing only empty checksums.
+ */
+class EmptyChecksumSource final : public ChecksumSource
+{
+	static const auto zero = uint32_t { 0 };
+
+	ARId do_id(const ChecksumSource::size_type block_idx) const final;
+	Checksum do_checksum(const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type idx) const final;
+	const uint32_t& do_arcs_value(const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type track_idx) const final;
+	const uint32_t& do_confidence(const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type track_idx) const final;
+	const uint32_t& do_frame450_arcs_value(
+			const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type track_idx) const final;
+	std::size_t do_size(const ChecksumSource::size_type block_idx) const final;
+	std::size_t do_size() const final;
+
+public:
+
+	EmptyChecksumSource();
 };
 
 
@@ -281,7 +338,7 @@ using Verify10Layout = Layout<std::unique_ptr<Result>
 /**
  * \brief Interface for formatting the results of an ARVerifyApplication.
  */
-class VerifyResultFormatter : public ResultFormatter
+class VerifyResultFormatter : public TableFormatter
 							, public Verify10Layout
 {
 public:
@@ -405,7 +462,7 @@ private:
 
 	std::unique_ptr<Result> do_format(InputTuple t) const final;
 
-	// ResultFormatter
+	// TableFormatter
 
 	/*
 	std::vector<ATTR> do_create_field_types(
@@ -567,7 +624,7 @@ class ColorizingVerifyResultFormatter final : public VerifyResultFormatter
 	void register_decorators(TableComposer& c) const;
 
 
-	// ResultFormatter
+	// TableFormatter
 
 	void do_init_composer(TableComposer& c) const final;
 

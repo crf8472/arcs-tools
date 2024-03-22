@@ -34,7 +34,7 @@
 #include "layouts.hpp"             // for Layout
 #endif
 #ifndef __ARCSTOOLS_FORMAT_HPP__
-#include "format.hpp"              // for ResultFormatter
+#include "format.hpp"              // for TableFormatter
 #endif
 
 
@@ -179,7 +179,7 @@ using Calc6Layout = Layout<std::unique_ptr<Result>
 /**
  * \brief Format the results of the ARCalcApplication.
  */
-class CalcResultFormatter final : public ResultFormatter
+class CalcResultFormatter final : public TableFormatter
 								, public Calc6Layout
 {
 protected:

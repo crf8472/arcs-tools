@@ -303,23 +303,6 @@ private:
 
 
 /**
- * \brief Interface for providing a Result object.
- */
-class ResultProvider
-{
-	virtual std::unique_ptr<Result> do_result() const
-	= 0;
-
-public:
-
-	/**
-	 * \brief Return the result object.
-	 */
-	std::unique_ptr<Result> result() const;
-};
-
-
-/**
  * \brief Attributes for representing result data.
  *
  * Use this field_types to define a layout for printing the result. The concrete
@@ -806,7 +789,7 @@ private:
 };
 
 
-// Required for ResultFormatter
+// Required for TableFormatter
 
 
 using arcstk::ARId;
@@ -817,57 +800,6 @@ using arcstk::ChecksumSourceOf;
 using arcstk::DBAR;
 using arcstk::VerificationResult;
 using arcstk::TOC;
-
-
-/**
- * \brief Access list of reference values by block and index.
- */
-class RefvaluesSource final : public ChecksumSourceOf<std::vector<uint32_t>>
-{
-	ARId do_id(const ChecksumSource::size_type block_idx) const final;
-	Checksum do_checksum(const ChecksumSource::size_type block_idx,
-			const ChecksumSource::size_type idx) const final;
-	const uint32_t& do_arcs_value(const ChecksumSource::size_type block_idx,
-			const ChecksumSource::size_type track_idx) const final;
-	const uint32_t& do_confidence(const ChecksumSource::size_type block_idx,
-			const ChecksumSource::size_type track_idx) const final;
-	const uint32_t& do_frame450_arcs_value(
-			const ChecksumSource::size_type block_idx,
-			const ChecksumSource::size_type track_idx) const final;
-	std::size_t do_size(const ChecksumSource::size_type block_idx) const final;
-	std::size_t do_size() const final;
-
-public:
-
-	using ChecksumSourceOf::ChecksumSourceOf;
-	using ChecksumSourceOf::operator=;
-};
-
-
-/**
- * \brief Dummy source for providing only empty checksums.
- */
-class EmptyChecksumSource final : public ChecksumSource
-{
-	static const auto zero = uint32_t { 0 };
-
-	ARId do_id(const ChecksumSource::size_type block_idx) const final;
-	Checksum do_checksum(const ChecksumSource::size_type block_idx,
-			const ChecksumSource::size_type idx) const final;
-	const uint32_t& do_arcs_value(const ChecksumSource::size_type block_idx,
-			const ChecksumSource::size_type track_idx) const final;
-	const uint32_t& do_confidence(const ChecksumSource::size_type block_idx,
-			const ChecksumSource::size_type track_idx) const final;
-	const uint32_t& do_frame450_arcs_value(
-			const ChecksumSource::size_type block_idx,
-			const ChecksumSource::size_type track_idx) const final;
-	std::size_t do_size(const ChecksumSource::size_type block_idx) const final;
-	std::size_t do_size() const final;
-
-public:
-
-	EmptyChecksumSource();
-};
 
 
 /**
@@ -964,7 +896,7 @@ public:
  *
  * \todo Use a bitmask for flags of p_tracks, p_offsets, p_lengths, p_filenames
  */
-class ResultFormatter : public WithInternalFlags
+class TableFormatter : public WithInternalFlags
 {
 	template <enum ATTR> friend class AddField;
 
@@ -1350,13 +1282,13 @@ template <>
 class AddField<ATTR::CHECKSUM_ARCS1> final : public FieldCreator
 {
 	const Checksums* checksums_;
-	const ResultFormatter* formatter_;
+	const TableFormatter* formatter_;
 
 	void do_create(TableComposer* c, const int record_idx) const final;
 
 public:
 
-	AddField(const Checksums* checksums, const ResultFormatter* formatter);
+	AddField(const Checksums* checksums, const TableFormatter* formatter);
 };
 
 
@@ -1364,13 +1296,13 @@ template <>
 class AddField<ATTR::CHECKSUM_ARCS2> final : public FieldCreator
 {
 	const Checksums* checksums_;
-	const ResultFormatter* formatter_;
+	const TableFormatter* formatter_;
 
 	void do_create(TableComposer* c, const int record_idx) const final;
 
 public:
 
-	AddField(const Checksums* checksums, const ResultFormatter* formatter);
+	AddField(const Checksums* checksums, const TableFormatter* formatter);
 };
 
 
@@ -1384,7 +1316,7 @@ class AddField<ATTR::THEIRS> final : public FieldCreator
 	const int block_;
 	const ChecksumSource* checksums_;
 	const std::vector<arcstk::checksum::type>* types_to_print_;
-	const ResultFormatter* formatter_;
+	const TableFormatter* formatter_;
 	const int total_theirs_per_block_;
 	const bool print_confidence_;
 
@@ -1396,7 +1328,7 @@ public:
 			const VerificationResult* vresult,
 			const int block,
 			const ChecksumSource* checksums,
-			const ResultFormatter* formatter,
+			const TableFormatter* formatter,
 			const int total_theirs_per_block,
 			const bool print_confidence);
 };

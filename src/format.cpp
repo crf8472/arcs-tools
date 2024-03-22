@@ -132,15 +132,6 @@ template<>
 std::string DefaultLabel<ATTR::CONFIDENCE>() { return "cnf"; };
 
 
-// ResultProvider
-
-
-std::unique_ptr<Result> ResultProvider::result() const
-{
-	return do_result();
-}
-
-
 // DecorationInterface
 
 
@@ -623,126 +614,6 @@ std::unique_ptr<TableComposer> ColTableComposerBuilder::do_build(
 }
 
 
-// RefvaluesSource
-
-
-ARId RefvaluesSource::do_id(const ChecksumSource::size_type block_idx) const
-{
-	return arcstk::EmptyARId;
-}
-
-
-Checksum RefvaluesSource::do_checksum(const ChecksumSource::size_type /*b*/,
-		const ChecksumSource::size_type idx) const
-{
-	return source()->at(idx);
-}
-
-
-const uint32_t& RefvaluesSource::do_arcs_value(
-		const ChecksumSource::size_type /*b*/,
-		const ChecksumSource::size_type track) const
-{
-	return source()->at(track);
-}
-
-
-const uint32_t& RefvaluesSource::do_confidence(
-		const ChecksumSource::size_type /*b*/,
-		const ChecksumSource::size_type /*t*/) const
-{
-	static const auto zero = uint32_t { 0 };
-	return zero;
-}
-
-
-const uint32_t& RefvaluesSource::do_frame450_arcs_value(
-		const ChecksumSource::size_type /*b*/,
-		const ChecksumSource::size_type /*t*/) const
-{
-	static const auto zero = uint32_t { 0 };
-	return zero;
-}
-
-
-std::size_t RefvaluesSource::do_size(
-		const ChecksumSource::size_type block_idx) const
-{
-	if (block_idx > 0)
-	{
-		throw std::invalid_argument("Only index 0 is legal, cannot access index"
-				+ std::to_string(block_idx));
-	}
-
-	return source()->size();
-}
-
-
-std::size_t RefvaluesSource::do_size() const
-{
-	return 1;
-}
-
-
-// EmptyChecksumSource
-
-
-const uint32_t EmptyChecksumSource::zero;
-
-
-EmptyChecksumSource::EmptyChecksumSource() = default;
-
-
-ARId EmptyChecksumSource::do_id(const ChecksumSource::size_type block_idx) const
-{
-	return arcstk::EmptyARId;
-}
-
-
-Checksum EmptyChecksumSource::do_checksum(const ChecksumSource::size_type /*b*/,
-		const ChecksumSource::size_type idx) const
-{
-	return arcstk::EmptyChecksum;
-}
-
-
-const uint32_t& EmptyChecksumSource::do_arcs_value(
-		const ChecksumSource::size_type /*b*/,
-		const ChecksumSource::size_type track) const
-{
-	return zero;
-}
-
-
-const uint32_t& EmptyChecksumSource::do_confidence(
-		const ChecksumSource::size_type /*b*/,
-		const ChecksumSource::size_type /*t*/) const
-{
-	return zero;
-}
-
-
-const uint32_t& EmptyChecksumSource::do_frame450_arcs_value(
-		const ChecksumSource::size_type /*b*/,
-		const ChecksumSource::size_type track) const
-{
-	return zero;
-}
-
-
-std::size_t EmptyChecksumSource::do_size(
-		const ChecksumSource::size_type /* block_idx */) const
-{
-	return 0;
-}
-
-
-std::size_t EmptyChecksumSource::do_size() const
-{
-	return 0;
-}
-
-
 // FieldCreator
 
 
@@ -882,7 +753,7 @@ void AddField<ATTR::CHECKSUM_ARCS1>::do_create(TableComposer* c,
 
 
 AddField<ATTR::CHECKSUM_ARCS1>::AddField(const Checksums* checksums,
-		const ResultFormatter* formatter)
+		const TableFormatter* formatter)
 	: checksums_ { checksums }
 	, formatter_ { formatter }
 {
@@ -900,7 +771,7 @@ void AddField<ATTR::CHECKSUM_ARCS2>::do_create(TableComposer* c,
 
 
 AddField<ATTR::CHECKSUM_ARCS2>::AddField(const Checksums* checksums,
-		const ResultFormatter* formatter)
+		const TableFormatter* formatter)
 	: checksums_ { checksums }
 	, formatter_ { formatter }
 {
@@ -967,7 +838,7 @@ AddField<ATTR::THEIRS>::AddField(
 		const VerificationResult* vresult,
 		const int block,
 		const ChecksumSource* checksums,
-		const ResultFormatter* formatter,
+		const TableFormatter* formatter,
 		const int total_theirs_per_block,
 		const bool print_confidence)
 	: types_to_print_         { types     }
@@ -982,84 +853,84 @@ AddField<ATTR::THEIRS>::AddField(
 }
 
 
-// ResultFormatter
+// TableFormatter
 
 
-void ResultFormatter::set_builder(
+void TableFormatter::set_builder(
 		std::unique_ptr<TableComposerBuilder> c)
 {
 	builder_creator_ = std::move(c);
 }
 
 
-const TableComposerBuilder* ResultFormatter::builder() const
+const TableComposerBuilder* TableFormatter::builder() const
 {
 	return builder_creator_.get();
 }
 
 
-void ResultFormatter::set_table_layout(std::unique_ptr<StringTableLayout> l)
+void TableFormatter::set_table_layout(std::unique_ptr<StringTableLayout> l)
 {
 	table_layout_ = std::move(l);
 }
 
 
-StringTableLayout ResultFormatter::copy_table_layout() const
+StringTableLayout TableFormatter::copy_table_layout() const
 {
 	return *table_layout_;
 }
 
 
-void ResultFormatter::set_arid_layout(std::unique_ptr<ARIdLayout> format)
+void TableFormatter::set_arid_layout(std::unique_ptr<ARIdLayout> format)
 {
 	arid_layout_ = std::move(format);
 }
 
 
-const ARIdLayout* ResultFormatter::arid_layout() const
+const ARIdLayout* TableFormatter::arid_layout() const
 {
 	return arid_layout_ ? arid_layout_.get() : nullptr;
 }
 
 
-void ResultFormatter::set_checksum_layout(
+void TableFormatter::set_checksum_layout(
 		std::unique_ptr<ChecksumLayout> layout)
 {
 	checksum_layout_ = std::move(layout);
 }
 
 
-const ChecksumLayout* ResultFormatter::checksum_layout() const
+const ChecksumLayout* TableFormatter::checksum_layout() const
 {
 	return checksum_layout_ ? checksum_layout_.get() : nullptr;
 }
 
 
-bool ResultFormatter::formats_label() const
+bool TableFormatter::formats_label() const
 {
 	return flags().flag(MAX_ATTR + 1);
 }
 
 
-void ResultFormatter::format_label(const bool &value)
+void TableFormatter::format_label(const bool &value)
 {
 	flags().set_flag(MAX_ATTR + 1, value);
 }
 
 
-bool ResultFormatter::formats_data(const ATTR a) const
+bool TableFormatter::formats_data(const ATTR a) const
 {
 	return flags().flag(std::underlying_type_t<ATTR>(a));
 }
 
 
-void ResultFormatter::format_data(const ATTR a, const bool value)
+void TableFormatter::format_data(const ATTR a, const bool value)
 {
 	flags().set_flag(std::underlying_type_t<ATTR>(a), value);
 }
 
 
-void ResultFormatter::validate(const Checksums& checksums, const TOC* toc,
+void TableFormatter::validate(const Checksums& checksums, const TOC* toc,
 		const ARId& arid, const std::vector<std::string>& filenames) const
 {
 	const auto total_tracks = checksums.size();
@@ -1110,7 +981,7 @@ void ResultFormatter::validate(const Checksums& checksums, const TOC* toc,
 }
 
 
-std::vector<ATTR> ResultFormatter::create_optional_fields(
+std::vector<ATTR> TableFormatter::create_optional_fields(
 		const print_flag_t print_flags) const
 {
 	std::vector<ATTR> fields;
@@ -1128,7 +999,7 @@ std::vector<ATTR> ResultFormatter::create_optional_fields(
 
 
 
-void ResultFormatter::populate_common_creators(
+void TableFormatter::populate_common_creators(
 			std::vector<std::unique_ptr<FieldCreator>>& creators,
 			const std::vector<ATTR>& fields, const TOC& toc,
 			const Checksums& checksums,
@@ -1172,13 +1043,13 @@ void ResultFormatter::populate_common_creators(
 }
 
 
-void ResultFormatter::do_init_composer(TableComposer& /*c*/) const
+void TableFormatter::do_init_composer(TableComposer& /*c*/) const
 {
 	// default implementation does nothing
 }
 
 
-std::unique_ptr<TableComposer> ResultFormatter::create_composer(
+std::unique_ptr<TableComposer> TableFormatter::create_composer(
 		const std::size_t total_entries,
 		const std::vector<ATTR>& field_types, const bool with_labels) const
 {
@@ -1186,13 +1057,13 @@ std::unique_ptr<TableComposer> ResultFormatter::create_composer(
 }
 
 
-bool ResultFormatter::is_requested(const ATTR a) const
+bool TableFormatter::is_requested(const ATTR a) const
 {
 	return this->formats_data(a);
 }
 
 
-ResultFormatter::print_flag_t ResultFormatter::create_print_flags(
+TableFormatter::print_flag_t TableFormatter::create_print_flags(
 		const TOC* toc, const std::vector<std::string>& filenames) const
 {
 	const bool has_toc       { toc != nullptr };
@@ -1219,7 +1090,7 @@ ResultFormatter::print_flag_t ResultFormatter::create_print_flags(
 }
 
 
-std::unique_ptr<Result> ResultFormatter::format_table(
+std::unique_ptr<Result> TableFormatter::format_table(
 		const std::vector<ATTR>& field_list,
 		const std::size_t total_records,
 		const bool with_labels,
@@ -1247,13 +1118,13 @@ std::unique_ptr<Result> ResultFormatter::format_table(
 }
 
 
-void ResultFormatter::init_composer(TableComposer& c) const
+void TableFormatter::init_composer(TableComposer& c) const
 {
 	do_init_composer(c);
 }
 
 
-RichARId ResultFormatter::build_id(const TOC* /*toc*/, const ARId& arid,
+RichARId TableFormatter::build_id(const TOC* /*toc*/, const ARId& arid,
 		const std::string& alt_prefix) const
 {
 	if (arid_layout())
@@ -1274,14 +1145,14 @@ RichARId ResultFormatter::build_id(const TOC* /*toc*/, const ARId& arid,
 }
 
 
-void ResultFormatter::mine_checksum(const Checksum& checksum,
+void TableFormatter::mine_checksum(const Checksum& checksum,
 		const int record, const int field, TableComposer* c) const
 {
 	do_mine_checksum(checksum, record, field, c);
 }
 
 
-void ResultFormatter::their_checksum(const Checksum& checksum,
+void TableFormatter::their_checksum(const Checksum& checksum,
 		const bool does_match, const int record, const int field,
 		TableComposer* c) const
 {
@@ -1295,7 +1166,7 @@ void ResultFormatter::their_checksum(const Checksum& checksum,
 }
 
 
-std::string ResultFormatter::checksum(const Checksum& checksum) const
+std::string TableFormatter::checksum(const Checksum& checksum) const
 {
 	if (checksum_layout())
 	{
@@ -1309,7 +1180,7 @@ std::string ResultFormatter::checksum(const Checksum& checksum) const
 }
 
 
-void ResultFormatter::do_mine_checksum(const Checksum& checksum,
+void TableFormatter::do_mine_checksum(const Checksum& checksum,
 		const int record, const int field, TableComposer* c)
 		const
 {
@@ -1317,14 +1188,14 @@ void ResultFormatter::do_mine_checksum(const Checksum& checksum,
 }
 
 
-void ResultFormatter::do_their_match(const Checksum& checksum, const int record,
+void TableFormatter::do_their_match(const Checksum& checksum, const int record,
 		const int field, TableComposer* c) const
 {
 	// do nothing
 }
 
 
-void ResultFormatter::do_their_mismatch(const Checksum& checksum,
+void TableFormatter::do_their_mismatch(const Checksum& checksum,
 		const int record, const int field, TableComposer* c) const
 {
 	// do nothing

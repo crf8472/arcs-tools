@@ -153,6 +153,23 @@ private:
 	Tuple t_;
 };
 
+
+/**
+ * \brief Interface for providing a Result object.
+ */
+class ResultProvider
+{
+	virtual std::unique_ptr<Result> do_result() const
+	= 0;
+
+public:
+
+	/**
+	 * \brief Return the result object.
+	 */
+	std::unique_ptr<Result> result() const;
+};
+
 } // namespace arcsapp
 
 #endif

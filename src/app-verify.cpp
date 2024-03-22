@@ -347,6 +347,126 @@ void ARVerifyConfigurator::do_validate(const Configuration& c) const
 }
 
 
+// RefvaluesSource
+
+
+ARId RefvaluesSource::do_id(const ChecksumSource::size_type block_idx) const
+{
+	return arcstk::EmptyARId;
+}
+
+
+Checksum RefvaluesSource::do_checksum(const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type idx) const
+{
+	return source()->at(idx);
+}
+
+
+const uint32_t& RefvaluesSource::do_arcs_value(
+		const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type track) const
+{
+	return source()->at(track);
+}
+
+
+const uint32_t& RefvaluesSource::do_confidence(
+		const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type /*t*/) const
+{
+	static const auto zero = uint32_t { 0 };
+	return zero;
+}
+
+
+const uint32_t& RefvaluesSource::do_frame450_arcs_value(
+		const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type /*t*/) const
+{
+	static const auto zero = uint32_t { 0 };
+	return zero;
+}
+
+
+std::size_t RefvaluesSource::do_size(
+		const ChecksumSource::size_type block_idx) const
+{
+	if (block_idx > 0)
+	{
+		throw std::invalid_argument("Only index 0 is legal, cannot access index"
+				+ std::to_string(block_idx));
+	}
+
+	return source()->size();
+}
+
+
+std::size_t RefvaluesSource::do_size() const
+{
+	return 1;
+}
+
+
+// EmptyChecksumSource
+
+
+const uint32_t EmptyChecksumSource::zero;
+
+
+EmptyChecksumSource::EmptyChecksumSource() = default;
+
+
+ARId EmptyChecksumSource::do_id(const ChecksumSource::size_type block_idx) const
+{
+	return arcstk::EmptyARId;
+}
+
+
+Checksum EmptyChecksumSource::do_checksum(const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type idx) const
+{
+	return arcstk::EmptyChecksum;
+}
+
+
+const uint32_t& EmptyChecksumSource::do_arcs_value(
+		const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type track) const
+{
+	return zero;
+}
+
+
+const uint32_t& EmptyChecksumSource::do_confidence(
+		const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type /*t*/) const
+{
+	return zero;
+}
+
+
+const uint32_t& EmptyChecksumSource::do_frame450_arcs_value(
+		const ChecksumSource::size_type /*b*/,
+		const ChecksumSource::size_type track) const
+{
+	return zero;
+}
+
+
+std::size_t EmptyChecksumSource::do_size(
+		const ChecksumSource::size_type /* block_idx */) const
+{
+	return 0;
+}
+
+
+std::size_t EmptyChecksumSource::do_size() const
+{
+	return 0;
+}
+
+
 // MatchDecorator
 
 

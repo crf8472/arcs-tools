@@ -17,7 +17,6 @@
 namespace arcsapp
 {
 
-
 // Result
 
 
@@ -49,6 +48,15 @@ void ResultList::do_print(std::ostream& o) const
 	{
 		o << *p;
 	}
+}
+
+
+// ResultProvider
+
+
+std::unique_ptr<Result> ResultProvider::result() const
+{
+	return do_result();
 }
 
 } // namespace arcsapp
