@@ -623,23 +623,23 @@ std::unique_ptr<TableComposer> ColTableComposerBuilder::do_build(
 }
 
 
-// FromRefvalues
+// RefvaluesSource
 
 
-ARId FromRefvalues::do_id(const ChecksumSource::size_type block_idx) const
+ARId RefvaluesSource::do_id(const ChecksumSource::size_type block_idx) const
 {
 	return arcstk::EmptyARId;
 }
 
 
-Checksum FromRefvalues::do_checksum(const ChecksumSource::size_type /*b*/,
+Checksum RefvaluesSource::do_checksum(const ChecksumSource::size_type /*b*/,
 		const ChecksumSource::size_type idx) const
 {
 	return source()->at(idx);
 }
 
 
-const uint32_t& FromRefvalues::do_arcs_value(
+const uint32_t& RefvaluesSource::do_arcs_value(
 		const ChecksumSource::size_type /*b*/,
 		const ChecksumSource::size_type track) const
 {
@@ -647,7 +647,7 @@ const uint32_t& FromRefvalues::do_arcs_value(
 }
 
 
-const uint32_t& FromRefvalues::do_confidence(
+const uint32_t& RefvaluesSource::do_confidence(
 		const ChecksumSource::size_type /*b*/,
 		const ChecksumSource::size_type /*t*/) const
 {
@@ -656,7 +656,7 @@ const uint32_t& FromRefvalues::do_confidence(
 }
 
 
-const uint32_t& FromRefvalues::do_frame450_arcs_value(
+const uint32_t& RefvaluesSource::do_frame450_arcs_value(
 		const ChecksumSource::size_type /*b*/,
 		const ChecksumSource::size_type /*t*/) const
 {
@@ -665,7 +665,7 @@ const uint32_t& FromRefvalues::do_frame450_arcs_value(
 }
 
 
-std::size_t FromRefvalues::do_size(
+std::size_t RefvaluesSource::do_size(
 		const ChecksumSource::size_type block_idx) const
 {
 	if (block_idx > 0)
@@ -678,7 +678,7 @@ std::size_t FromRefvalues::do_size(
 }
 
 
-std::size_t FromRefvalues::do_size() const
+std::size_t RefvaluesSource::do_size() const
 {
 	return 1;
 }

@@ -822,7 +822,7 @@ using arcstk::TOC;
 /**
  * \brief Access list of reference values by block and index.
  */
-class FromRefvalues final : public ChecksumSourceOf<std::vector<uint32_t>>
+class RefvaluesSource final : public ChecksumSourceOf<std::vector<uint32_t>>
 {
 	ARId do_id(const ChecksumSource::size_type block_idx) const final;
 	Checksum do_checksum(const ChecksumSource::size_type block_idx,

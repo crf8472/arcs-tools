@@ -537,7 +537,7 @@ std::unique_ptr<const ChecksumSource>
 	{
 		if (!refvalues.empty())
 		{
-			ref_src = std::make_unique<FromRefvalues>(&refvalues);
+			ref_src = std::make_unique<RefvaluesSource>(&refvalues);
 		} else
 		{
 			ref_src = std::make_unique<EmptyChecksumSource>();
@@ -1334,7 +1334,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	if (config.is_set(VERIFY::REFVALUES))
 	{
 		const auto v = std::make_unique<TracksetVerifier>(checksums);
-		vresult = v->perform(FromRefvalues(&ref_values));
+		vresult = v->perform(RefvaluesSource(&ref_values));
 	}
 
 	bool print_filenames = true;
