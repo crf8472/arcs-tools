@@ -219,13 +219,6 @@ protected:
 
 private:
 
-	/*
-	std::vector<ATTR> do_create_field_types(
-		const print_flag_t print_flags,
-		const std::vector<arcstk::checksum::type>& types_to_print,
-		const int total_theirs) const final;
-		*/
-
 	void assertions(InputTuple t) const final;
 
 	std::unique_ptr<Result> do_format(InputTuple t) const final;
