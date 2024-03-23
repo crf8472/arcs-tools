@@ -40,7 +40,7 @@ std::ostream& operator << (std::ostream& o, const Result& result)
 
 void ResultList::append(std::unique_ptr<Result> r)
 {
-	results_.push_back(std::move(r));
+	results_.emplace_back(std::move(r));
 }
 
 
@@ -52,6 +52,23 @@ void ResultList::do_print(std::ostream& o) const
 	}
 }
 
+
+//
+
+
+ResultBuffer::ResultBuffer()
+	: list_ { std::make_unique<ResultList>() }
+{
+	// empty
+}
+
+
+std::unique_ptr<Result> ResultBuffer::flush()
+{
+	std::unique_ptr<Result> r { std::move(list_) };
+	list_ = std::make_unique<ResultList>();
+	return r;
+}
 
 } // namespace v_1_0_0
 } // namespace arcsapp

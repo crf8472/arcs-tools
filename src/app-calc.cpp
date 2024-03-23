@@ -400,12 +400,13 @@ std::unique_ptr<Result> CalcTableCreator::do_format(InputTuple t) const
 	const auto filenames  = std::get<4>(t);
 	const auto alt_prefix = std::get<5>(t);
 
+	auto buf = ResultBuffer {};
+
 	auto result = std::make_unique<ResultList>();
 
 	if (!arid.empty() && arid_layout())
 	{
-		result->append(std::make_unique<ResultObject<RichARId>>(
-			build_id(toc, arid, alt_prefix, *arid_layout())));
+		buf.append(build_id(toc, arid, alt_prefix, *arid_layout()));
 	}
 
 	const auto print_flags { create_print_flags(toc, filenames) };
@@ -420,11 +421,10 @@ std::unique_ptr<Result> CalcTableCreator::do_format(InputTuple t) const
 	populate_result_creators(creators, print_flags, field_list, types_to_print,
 			checksums);
 
-	result->append(std::make_unique<ResultObject<
-		std::unique_ptr<PrintableTable>>>(format_table(
-				field_list, checksums.size(), formats_labels(), creators)));
+	buf.append(format_table(
+				field_list, checksums.size(), formats_labels(), creators));
 
-	return result;
+	return buf.flush();
 }
 
 

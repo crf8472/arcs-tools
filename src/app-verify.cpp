@@ -804,7 +804,7 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 	using arid::build_id;
 	using arid::default_arid_layout;
 
-	auto result = std::make_unique<ResultList>();
+	auto buf = ResultBuffer {};
 
 	const auto best_block_declared = bool { block > -1 };
 
@@ -816,14 +816,12 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 			: default_arid_layout(formats_labels()) };
 
 		// Use ARId of specified block for "Theirs" ARId
-		result->append(std::make_unique<ResultObject<RichARId>>(
-				build_id(toc, dBAR.block(block).id(), alt_prefix, *layout)));
+		buf.append(build_id(toc, dBAR.block(block).id(), alt_prefix, *layout));
 	} else
 	{
 		if (!arid.empty() && arid_layout())
 		{
-			result->append(std::make_unique<ResultObject<RichARId>>(
-				build_id(toc, arid, alt_prefix, *arid_layout())));
+			buf.append(build_id(toc, arid, alt_prefix, *arid_layout()));
 		}
 	}
 
@@ -848,11 +846,10 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 	populate_result_creators(creators, print_flags, field_list, types_to_print,
 			*vresult, block, checksums, *ref_src, total_theirs_per_block);
 
-	result->append(std::make_unique<ResultObject<
-		std::unique_ptr<PrintableTable>>>(format_table(
-				field_list, checksums.size(), formats_labels(), creators)));
+	buf.append(format_table(
+				field_list, checksums.size(), formats_labels(), creators));
 
-	return result;
+	return buf.flush();
 }
 
 

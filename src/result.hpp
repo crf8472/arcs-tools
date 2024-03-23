@@ -10,6 +10,7 @@
 #include <ostream>     // for ostream
 #include <memory>      // for unique_ptr
 #include <tuple>       // for tuple, tuple_cat, make_tuple, apply
+#include <type_traits>
 #include <utility>     // for forward
 #include <vector>      // for vector
 
@@ -141,7 +142,7 @@ private:
 	void do_print(std::ostream& o) const final
 	{
 		std::apply(
-			[&o](const Args&... elements)
+			[&o](const Args& ...elements)
 			{
 				((o << elements), ...);
 			},
@@ -155,6 +156,50 @@ private:
 	Tuple t_;
 };
 
+
+/**
+ * \brief Queued buffer for result objects.
+ *
+ * Wraps a ResultList.
+ */
+class ResultBuffer
+{
+	/**
+	 * \brief Internal list of objects.
+	 */
+	std::unique_ptr<ResultList> list_;
+
+public:
+
+	/**
+	 * \brief Default constructor.
+	 */
+	ResultBuffer();
+
+	/**
+	 * \brief Append an object to the buffer.
+	 *
+	 * The object will be wrapped in a ResultObject which makes
+	 * it a Result of its own..
+	 *
+	 * \tparam T The type of the object to append.
+	 *
+	 * \param[in] object The object to append
+	 */
+	template<typename T>
+	void append(T&& object)
+	{
+		list_->append(
+			std::make_unique<ResultObject<T>>(std::forward<T>(object)));
+	}
+
+	/**
+	 * \brief Return buffer content as a single object.
+	 *
+	 * \return Result object
+	 */
+	std::unique_ptr<Result> flush();
+};
 
 } // namespace v_1_0_0
 } // namespace arcsapp
