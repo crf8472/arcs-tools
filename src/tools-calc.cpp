@@ -450,6 +450,64 @@ FileReaderSelection* ARCSMultifileAlbumCalculator::audio_selection() const
 	return impl_->audio_selection();
 }
 
+
+// HexLayout
+
+
+HexLayout::HexLayout()
+	: WithInternalFlags()
+{
+	set_show_base(false);
+	set_uppercase(true);
+}
+
+
+void HexLayout::set_show_base(const bool base)
+{
+	flags().set_flag(0, base);
+}
+
+
+bool HexLayout::shows_base() const
+{
+	return flags().flag(0);
+}
+
+
+void HexLayout::set_uppercase(const bool uppercase)
+{
+	flags().set_flag(1, uppercase);
+}
+
+
+bool HexLayout::is_uppercase() const
+{
+	return flags().flag(1);
+}
+
+
+std::string HexLayout::do_format(InputTuple t) const
+{
+	auto checksum = std::get<0>(t);
+	auto width    = std::get<1>(t);
+
+	std::ostringstream ss;
+
+	if (shows_base())
+	{
+		ss << std::showbase;
+	}
+
+	if (is_uppercase())
+	{
+		ss << std::uppercase;
+	}
+
+	ss << std::hex << std::setw(width) << std::setfill('0') << checksum.value();
+
+	return ss.str();
+}
+
 } // namespace calc
 } // namespace arcsapp
 

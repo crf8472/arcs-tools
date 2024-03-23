@@ -12,10 +12,7 @@
  * also be used to construct new layouts.
  */
 
-#include <array>                  // for array
 #include <cstdint>                // for uint32_t
-#include <memory>                 // for unique_ptr
-#include <string>                 // for string
 #include <tuple>                  // for tuple, make_tuple
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
@@ -30,27 +27,6 @@
 
 namespace arcsapp
 {
-namespace details
-{
-
-/**
- * \brief Convert an object to its underlying value.
- *
- * Convenience function to convert typed enum values to their underlying
- * value.
- *
- * \param[in] e The value to convert
- *
- * \return Underlying type of \c e.
- */
-template <typename E>
-inline constexpr auto to_underlying(E e) noexcept
-{
-    return static_cast<std::underlying_type_t<E>>(e);
-}
-
-} // namespace details
-
 
 /**
  * \brief Provide easy format templates for subclasses.
@@ -71,14 +47,14 @@ public:
 	/**
 	 * \brief Virtual default destructor
 	 */
-	inline virtual ~Layout() = default;
+	virtual ~Layout() = default;
 
 	/**
 	 * \brief Format objects.
 	 *
 	 * \param[in] t Tuple of the objects to format
 	 */
-	inline T format(InputTuple t) const
+	T format(InputTuple t) const
 	{
 		this->assertions(t);
 		return this->do_format(t);
@@ -91,7 +67,7 @@ public:
 	 *
 	 * \param[in] args The objects to format
 	 */
-	inline T format(const Args&... args) const
+	T format(const Args&... args) const
 	{
 		return this->format(std::make_tuple(args...));
 	}
@@ -240,81 +216,26 @@ private:
 };
 
 
-/**
- * \brief Interface for formatting Checksums.
- */
-using ChecksumLayout = Layout<std::string, arcstk::Checksum, int>;
-
-
-/**
- * \brief Format Checksums in hexadecimal representation.
- */
-class HexLayout : protected WithInternalFlags
-				, public ChecksumLayout
+namespace details
 {
-public:
-
-	/**
-	 * \brief Constructor
-	 */
-	HexLayout();
-
-	/**
-	 * \brief Make the base '0x' visible
-	 *
-	 * \param[in] base Flag for showing the base
-	 */
-	void set_show_base(const bool base);
-
-	/**
-	 * \brief Return TRUE if the base is shown, otherwise FALSE
-	 *
-	 * \return TRUE if the base is shown, otherwise FALSE
-	 */
-	bool shows_base() const;
-
-	/**
-	 * \brief Make the hex digits A-F uppercase
-	 *
-	 * \param[in] base Flag for making hex digits A-F uppercase
-	 */
-	void set_uppercase(const bool base);
-
-	/**
-	 * \brief Return TRUE if A-F are uppercase, otherwise FALSE
-	 *
-	 * \return TRUE if A-F are uppercase, otherwise FALSE
-	 */
-	bool is_uppercase() const;
-
-private:
-
-	std::string do_format(InputTuple t) const override;
-};
-
 
 /**
- * \brief Interface for formatting DBARTriplets.
+ * \brief Convert an object to its underlying value.
+ *
+ * Convenience function to convert typed enum values to their underlying
+ * value.
+ *
+ * \param[in] e The value to convert
+ *
+ * \return Underlying type of \c e.
  */
-using TripletLayout = Layout<std::string, int, arcstk::DBARTriplet>;
-
-
-/**
- * \brief Interface for formatting DBARTriplet instances for output.
- */
-class DBARTripletLayout : protected WithInternalFlags
-						, public TripletLayout
+template <typename E>
+inline constexpr auto to_underlying(E e) noexcept
 {
-public:
+    return static_cast<std::underlying_type_t<E>>(e);
+}
 
-	using TripletLayout::Layout;
-
-private:
-
-	// no assertions()
-
-	std::string do_format(InputTuple t) const override;
-};
+} // namespace details
 
 } // namespace arcsapp
 

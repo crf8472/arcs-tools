@@ -9,7 +9,6 @@
  * Options, Configurator and Application for calc application.
  */
 
-#include <cstdint>     // for uint8_t, uint16_t
 #include <memory>      // for unique_ptr
 #include <string>      // for string
 #include <tuple>       // for tuple
@@ -25,10 +24,10 @@
 #endif
 
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
-#include "application.hpp"
+#include "application.hpp"         // for Application
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
-#include "config.hpp"
+#include "config.hpp"              // for Configurator
 #endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"             // for Layout

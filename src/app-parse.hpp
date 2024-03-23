@@ -10,10 +10,9 @@
  */
 
 
-#include <cstdint>          // for uint8_t
 #include <memory>           // for unique_ptr
 #include <string>           // for string
-#include <utility>          // for pair
+
 
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"     // for Application
@@ -22,10 +21,12 @@
 namespace arcsapp
 {
 
+
 class Application;
 class Configurator;
 class Options;
 class Result;
+
 
 /**
  * \brief Application to parse AccurateRip responses.

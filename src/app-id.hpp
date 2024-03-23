@@ -9,7 +9,6 @@
  * Options, Configurator and Application for id application.
  */
 
-#include <cstdint>          // for uint8_t
 #include <memory>           // for unique_ptr
 #include <string>           // for string
 #include <utility>          // for pair

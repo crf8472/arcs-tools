@@ -6,7 +6,6 @@
 #include <ios>         // for boolalpha
 #include <map>         // for map
 #include <memory>      // for unique_ptr
-#include <stdexcept>   // for runtime_error
 #include <ostream>     // for ostream
 #include <sstream>     // for ostringstream
 #include <string>      // for string

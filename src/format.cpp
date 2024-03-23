@@ -45,8 +45,8 @@
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"             // for Result, ResultObject
 #endif
-#ifndef __ARCSTOOLS_FMTARID_HPP__ // for ARIdLayout
-#include "fmtarid.hpp"
+#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__ // for ARIdLayout
+#include "tools-arid.hpp"
 #endif
 
 namespace arcsapp

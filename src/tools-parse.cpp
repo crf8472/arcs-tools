@@ -27,6 +27,9 @@
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
+#ifndef __LIBARCSTK_CALCULATE_HPP__
+#include <arcstk/calculate.hpp>   // for Checksum
+#endif
 #ifndef __LIBARCSTK_DBAR_HPP__
 #include <arcstk/dbar.hpp>
 #endif
@@ -37,8 +40,11 @@
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"            // for DBARTripletLayout
 #endif
-#ifndef __ARCSTOOLS_FMTARID_HPP__ // for ARIdLayout
-#include "fmtarid.hpp"
+#ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
+#include "tools-calc.hpp"         // for HexLayout
+#endif
+#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__ // for ARIdLayout
+#include "tools-arid.hpp"
 #endif
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"        // for Output
@@ -266,6 +272,49 @@ void PrintParseHandler::do_end_input()
 	std::ostringstream ss;
 	ss << "========== Blocks: " << std::dec << block_counter_ << '\n';
 	this->print(ss.str());
+}
+
+
+// DBARTripletLayout
+
+
+std::string DBARTripletLayout::do_format(InputTuple t) const
+{
+	using arcstk::Checksum;
+
+	const auto track   = std::get<0>(t);
+	const auto triplet = std::get<1>(t);
+
+	calc::HexLayout hex; // TODO Make this configurable, inherit from WithChecksums...
+	hex.set_show_base(false);
+	hex.set_uppercase(true);
+
+	const int width_arcs = 8;
+	const int width_conf = 2;
+
+	const auto unparsed_value = std::string { "????????" };
+
+	std::ostringstream out;
+
+	// TODO Make label configurable
+	out << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
+
+	out << std::setw(width_arcs)
+			<< hex.format(Checksum { triplet.arcs() }, width_arcs);
+
+	out << " ";
+
+	out << "(";
+	out << std::setw(width_conf) << std::setfill('0')
+			<< static_cast<unsigned int>(triplet.confidence());
+	out << ") ";
+
+	out << std::setw(width_arcs)
+			<< hex.format(Checksum { triplet.frame450_arcs() }, width_arcs);
+
+	out << '\n';
+
+	return out.str();
 }
 
 } // namespace arcsapp

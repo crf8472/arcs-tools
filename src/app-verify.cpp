@@ -37,8 +37,8 @@
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"               // for ResultObject, Result
 #endif
-#ifndef __ARCSTOOLS_FMTARID_HPP__
-#include "fmtarid.hpp"              // for ARIdLayout
+#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
+#include "tools-arid.hpp"              // for ARIdLayout
 #endif
 #ifndef __ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"                // for StringTableLayout, BoolDecorator
@@ -1265,6 +1265,8 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::create_formatter(
 	}
 
 	// Layouts for Checksums + ARId
+
+	using calc::HexLayout;
 
 	fmt->set_checksum_layout(std::make_unique<HexLayout>());
 

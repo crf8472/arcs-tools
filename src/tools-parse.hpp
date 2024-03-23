@@ -24,6 +24,10 @@
 #include <arcstk/dbar.hpp>
 #endif
 
+#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"            // for Layout
+#endif
+
 namespace arcsapp
 {
 
@@ -217,6 +221,30 @@ private:
 	 * \brief Internal layout used for printing the triplets.
 	 */
 	std::unique_ptr<DBARTripletLayout> triplet_layout_;
+};
+
+
+/**
+ * \brief Interface for formatting DBARTriplets.
+ */
+using TripletLayout = Layout<std::string, int, arcstk::DBARTriplet>;
+
+
+/**
+ * \brief Interface for formatting DBARTriplet instances for output.
+ */
+class DBARTripletLayout : protected WithInternalFlags
+						, public TripletLayout
+{
+public:
+
+	using TripletLayout::Layout;
+
+private:
+
+	// no assertions()
+
+	std::string do_format(InputTuple t) const override;
 };
 
 } // namespace arcsapp

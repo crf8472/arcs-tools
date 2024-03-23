@@ -157,10 +157,10 @@ add_library (${PROJECT_NAME}-objects OBJECT
 	${PROJECT_SOURCE_DIR}/ansi.cpp
 	${PROJECT_SOURCE_DIR}/clitokens.cpp
 	${PROJECT_SOURCE_DIR}/config.cpp
-	${PROJECT_SOURCE_DIR}/fmtarid.cpp
 	${PROJECT_SOURCE_DIR}/format.cpp
 	${PROJECT_SOURCE_DIR}/layouts.cpp
 	${PROJECT_SOURCE_DIR}/table.cpp
+	${PROJECT_SOURCE_DIR}/tools-arid.cpp
 	${PROJECT_SOURCE_DIR}/tools-calc.cpp
 	${PROJECT_SOURCE_DIR}/tools-fs.cpp
 	${PROJECT_SOURCE_DIR}/tools-info.cpp

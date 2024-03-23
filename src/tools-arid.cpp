@@ -1,11 +1,11 @@
-#ifndef __ARCSTOOLS_FMTARID_HPP__
-#include "fmtarid.hpp"
+#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
+#include "tools-arid.hpp"
 #endif
 
 /**
  * \file
  *
- * \brief Implements symbols from fmtarid.hpp.
+ * \brief Implements symbols from tools-arid.hpp.
  */
 
 #include <iomanip>      // for setw, setfill

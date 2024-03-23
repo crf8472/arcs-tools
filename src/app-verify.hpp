@@ -33,7 +33,7 @@
 #include "application.hpp"       // for Application
 #endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"           // for Layout, TableFormatter
+#include "layouts.hpp"           // for Layout
 #endif
 
 
@@ -42,6 +42,7 @@ namespace arcsapp
 
 class Configurator;
 class Options;
+class TableFormatter;
 class Result;
 
 using arcstk::Checksum;

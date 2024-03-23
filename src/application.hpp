@@ -15,9 +15,8 @@
 #include <iostream>    // for cout
 #include <memory>      // for unique_ptr, allocator
 #include <mutex>       // for mutex, lock_guard
-#include <ostream>     // for ostream
+#include <fstream>     // for fstream
 #include <string>      // for string
-#include <utility>     // for pair
 
 namespace arcsapp
 {

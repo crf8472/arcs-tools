@@ -10,8 +10,14 @@
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"
 #endif
-#ifndef __ARCSTOOLS_FMTARID_HPP__
-#include "fmtarid.hpp"
+#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
+#include "tools-arid.hpp"
+#endif
+#ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
+#include "tools-parse.hpp"
+#endif
+#ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
+#include "tools-calc.hpp"
 #endif
 
 TEST_CASE ( "InternalFlags", "[internalflags]" )
@@ -43,7 +49,7 @@ TEST_CASE ( "InternalFlags", "[internalflags]" )
 TEST_CASE ( "HexLayout", "[hexlayout]" )
 {
 	using arcstk::Checksum;
-	using arcsapp::HexLayout;
+	using arcsapp::calc::HexLayout;
 
 	auto hex_layout = std::make_unique<HexLayout>();
 

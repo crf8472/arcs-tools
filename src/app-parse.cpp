@@ -24,7 +24,7 @@
 #include "result.hpp"              // for Result
 #endif
 #ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
-#include "tools-parse.hpp"        // for PrintParseHandler,
+#include "tools-parse.hpp"        // for PrintParseHandler, DBARTripletLayout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
 #include "tools-fs.hpp"

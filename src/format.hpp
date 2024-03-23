@@ -10,7 +10,6 @@
 #include <cstddef>      // for size_t
 #include <cstdint>      // for uint32_t
 #include <memory>       // for unique_ptr
-#include <ostream>      // for ostream
 #include <string>       // for string
 #include <utility>      // for move
 #include <vector>       // for vector
@@ -27,6 +26,9 @@
 
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"      // for WithInternalFlags, ARIdLayout, ChecksumLayout
+#endif
+#ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
+#include "tools-calc.hpp"
 #endif
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"       // for Result, ResultObject
@@ -835,6 +837,7 @@ public:
 	void create_records() const;
 };
 
+using calc::ChecksumLayout;
 
 /**
  * \brief Abstract base class for result formatting.

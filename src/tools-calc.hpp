@@ -23,6 +23,10 @@
 #include <arcsdec/selection.hpp>       // FileReaderSelection
 #endif
 
+#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"                 // for Layout
+#endif
+
 namespace arcsapp
 {
 namespace calc
@@ -199,6 +203,59 @@ private:
 	 * \brief Internal implementation instance
 	 */
 	std::unique_ptr<Impl> impl_;
+};
+
+
+/**
+ * \brief Interface for formatting Checksums.
+ */
+using ChecksumLayout = Layout<std::string, arcstk::Checksum, int>;
+
+
+/**
+ * \brief Format Checksums in hexadecimal representation.
+ */
+class HexLayout : protected WithInternalFlags
+				, public ChecksumLayout
+{
+public:
+
+	/**
+	 * \brief Constructor
+	 */
+	HexLayout();
+
+	/**
+	 * \brief Make the base '0x' visible
+	 *
+	 * \param[in] base Flag for showing the base
+	 */
+	void set_show_base(const bool base);
+
+	/**
+	 * \brief Return TRUE if the base is shown, otherwise FALSE
+	 *
+	 * \return TRUE if the base is shown, otherwise FALSE
+	 */
+	bool shows_base() const;
+
+	/**
+	 * \brief Make the hex digits A-F uppercase
+	 *
+	 * \param[in] base Flag for making hex digits A-F uppercase
+	 */
+	void set_uppercase(const bool base);
+
+	/**
+	 * \brief Return TRUE if A-F are uppercase, otherwise FALSE
+	 *
+	 * \return TRUE if A-F are uppercase, otherwise FALSE
+	 */
+	bool is_uppercase() const;
+
+private:
+
+	std::string do_format(InputTuple t) const override;
 };
 
 } // namespace calc
