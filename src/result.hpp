@@ -29,7 +29,7 @@ public:
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	inline virtual ~Result() noexcept = default;
+	virtual ~Result() noexcept = default;
 
 	/**
 	 * \brief Print the result to a specified stream.
@@ -64,7 +64,7 @@ public:
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	inline virtual ~ResultList() noexcept = default;
+	~ResultList() noexcept = default;
 
 	/**
 	 * \brief Append a result to the list of results.
@@ -103,7 +103,7 @@ public:
 	 *
 	 * \param[in] args Arguments
 	 */
-	inline explicit ResultObject(Args&&... args)
+	explicit ResultObject(Args&&... args)
 		: t_ { std::make_tuple(std::forward<Args&&>(args)...) }
 	{
 		// empty
@@ -117,7 +117,7 @@ public:
 	/**
 	 * \brief Join another ResultObject to the list of arguments.
 	 */
-	inline void join(ResultObject&& r)
+	void join(ResultObject&& r)
 	{
 		t_ = std::tuple_cat(t_, r.object());
 	}
@@ -125,7 +125,7 @@ public:
 	/**
 	 * \brief Return the tuple of arguments.
 	 */
-	inline const Tuple& object() const
+	const Tuple& object() const
 	{
 		return t_;
 	}
@@ -138,7 +138,7 @@ private:
 	 * The tuple members are printed in the order they occurr in the tuple.
 	 * Each tuple member is printed using operator '<<'.
 	 */
-	inline void do_print(std::ostream& o) const final
+	void do_print(std::ostream& o) const final
 	{
 		std::apply(
 			[&o](const Args&... elements)
@@ -155,22 +155,6 @@ private:
 	Tuple t_;
 };
 
-
-/**
- * \brief Interface for providing a Result object.
- */
-class ResultProvider
-{
-	virtual std::unique_ptr<Result> do_result() const
-	= 0;
-
-public:
-
-	/**
-	 * \brief Return the result object.
-	 */
-	std::unique_ptr<Result> result() const;
-};
 
 } // namespace v_1_0_0
 } // namespace arcsapp

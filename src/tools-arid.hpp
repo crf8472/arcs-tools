@@ -7,6 +7,7 @@
  * \brief Formatter for ARId objects.
  */
 
+#include <array>
 #include <memory>       // for unique_ptr
 #include <ostream>      // for ostream
 #include <string>       // for string

@@ -53,14 +53,6 @@ void ResultList::do_print(std::ostream& o) const
 }
 
 
-// ResultProvider
-
-
-std::unique_ptr<Result> ResultProvider::result() const
-{
-	return do_result();
-}
-
 } // namespace v_1_0_0
 } // namespace arcsapp
 

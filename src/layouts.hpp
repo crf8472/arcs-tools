@@ -15,16 +15,6 @@
 #include <cstdint>                // for uint32_t
 #include <tuple>                  // for tuple, make_tuple
 
-#ifndef __LIBARCSTK_IDENTIFIER_HPP__
-#include <arcstk/identifier.hpp>  // for ARId
-#endif
-#ifndef __LIBARCSTK_CALCULATE_HPP__
-#include <arcstk/calculate.hpp>   // for Checksum
-#endif
-#ifndef __LIBARCSTK_DBAR_HPP__
-#include <arcstk/dbar.hpp>       // for DBARTriplet
-#endif
-
 namespace arcsapp
 {
 inline namespace v_1_0_0

@@ -543,7 +543,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 		? c.calculate(audiofilenames, as_first, as_last) //Tracks/Album w/o TOC
 		: c.calculate(audiofilenames, metafilename);     //Album: with TOC
 
-	return std::make_tuple(checksums, arid, std::move(toc));
+	return std::forward_as_tuple(checksums, arid, std::move(toc));
 }
 
 

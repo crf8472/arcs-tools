@@ -9,16 +9,6 @@
 #endif
 
 #include <cstdint>             // for uint32_t, uint16_t
-#include <iomanip>             // for setw, setfill
-#include <ios>                 // for left, showbase, hex, uppercase
-#include <memory>              // for unique_ptr, make_unique
-#include <sstream>             // for ostringstream
-#include <string>              // for string, to_string
-#include <tuple>               // for get
-
-#ifndef __LIBARCSTK_CALCULATE_HPP__
-#include <arcstk/calculate.hpp>   // for Checksum
-#endif
 
 namespace arcsapp
 {
