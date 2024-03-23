@@ -42,6 +42,12 @@ namespace arcsapp
 
 class Result;
 
+// libarcstk
+using arcstk::ARId;
+using arcstk::Checksums;
+using arcstk::TOC;
+
+// arcsapp
 using table::ATTR;
 using table::FieldCreator;
 using table::TableFormatter;
@@ -159,11 +165,6 @@ private:
 
 	// void do_validate(const Configuration& configuration) const;
 };
-
-
-using arcstk::ARId;
-using arcstk::Checksums;
-using arcstk::TOC;
 
 
 /**

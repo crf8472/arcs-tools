@@ -10,7 +10,7 @@
 #include <string>
 
 /**
- * \brief Classes for arcstk and its applications.
+ * \brief Framework for applications, options, configuration and results.
  */
 namespace arcsapp
 {
@@ -58,6 +58,15 @@ extern const std::string ARCSTOOLS_GIT_VERSION;
  * \brief Namespace for implementation details.
  */
 namespace details
+{
+// empty
+}
+
+/**
+ * \internal
+ * \brief Namespace for registering operations for apps.
+ */
+namespace registered
 {
 // empty
 }

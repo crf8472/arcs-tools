@@ -87,6 +87,27 @@ set (PROJECT_LOG_DIR          "${PROJECT_BINARY_DIR}/log" )
 ## "Target directory for generated sources and configuration"
 set (PROJECT_BUILD_SOURCE_DIR "${PROJECT_BINARY_DIR}/generated-sources" )
 
+set (PRIVATE_HEADERS
+	${PROJECT_SOURCE_DIR}/ansi.hpp
+	${PROJECT_SOURCE_DIR}/app-calc.hpp
+	${PROJECT_SOURCE_DIR}/app-id.hpp
+	${PROJECT_SOURCE_DIR}/app-parse.hpp
+	${PROJECT_SOURCE_DIR}/app-verify.hpp
+	${PROJECT_SOURCE_DIR}/application.hpp
+	${PROJECT_SOURCE_DIR}/appregistry.hpp
+	${PROJECT_SOURCE_DIR}/clitokens.hpp
+	${PROJECT_SOURCE_DIR}/config.hpp
+	${PROJECT_SOURCE_DIR}/layouts.hpp
+	${PROJECT_SOURCE_DIR}/table.hpp
+	${PROJECT_SOURCE_DIR}/tools-arid.hpp
+	${PROJECT_SOURCE_DIR}/tools-calc.hpp
+	${PROJECT_SOURCE_DIR}/tools-dbar.hpp
+	${PROJECT_SOURCE_DIR}/tools-fs.hpp
+	${PROJECT_SOURCE_DIR}/tools-info.hpp
+	${PROJECT_SOURCE_DIR}/tools-table.hpp
+	${PROJECT_SOURCE_DIR}/result.hpp
+	${PROJECT_SOURCE_DIR}/version.hpp
+)
 
 
 ## --- Create Log directory
@@ -148,13 +169,13 @@ configure_file (${PROJECT_SOURCE_DIR}/version.cpp.in
 
 ## All objects, used as dependency in tests
 add_library (${PROJECT_NAME}-objects OBJECT
+	${PROJECT_SOURCE_DIR}/ansi.cpp
 	${PROJECT_SOURCE_DIR}/app-calc.cpp
 	${PROJECT_SOURCE_DIR}/app-id.cpp
 	${PROJECT_SOURCE_DIR}/app-parse.cpp
 	${PROJECT_SOURCE_DIR}/app-verify.cpp
 	${PROJECT_SOURCE_DIR}/application.cpp
 	${PROJECT_SOURCE_DIR}/appregistry.cpp
-	${PROJECT_SOURCE_DIR}/ansi.cpp
 	${PROJECT_SOURCE_DIR}/clitokens.cpp
 	${PROJECT_SOURCE_DIR}/config.cpp
 	${PROJECT_SOURCE_DIR}/layouts.cpp

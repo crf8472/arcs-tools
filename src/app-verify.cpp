@@ -1,3 +1,4 @@
+#include "clitokens.hpp"
 #ifndef __ARCSTOOLS_APPARVERIFY_HPP__
 #include "app-verify.hpp"
 #endif
@@ -108,7 +109,9 @@ constexpr OptionCode VERIFY::NOOUTPUT;
 
 void ARVerifyConfigurator::do_flush_local_options(OptionRegistry &r) const
 {
+	using input::OP_VALUE;
 	using std::end;
+
 	r.insert(end(r),
 	{
 		// from FORMATBASE
@@ -1107,6 +1110,8 @@ void ColorizingVerifyResultFormatter::set_color_bg(DecorationType d, Color c)
 
 DBAR DBARParser::load_data(const std::string& responsefile) const
 {
+	using input::CallSyntaxException;
+
 	auto builder = DBARBuilder {};
 
 	try
@@ -1185,6 +1190,9 @@ std::string ColorSpecParser::start_message() const
 
 ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 {
+	using input::CallSyntaxException;
+	using input::OP_VALUE;
+
 	if (input == OP_VALUE::USE_DEFAULT)
 	{
 		return ColorRegistry{ /* default colors */ };
@@ -1279,8 +1287,6 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::create_formatter(
 	}
 
 	// Layouts for Checksums + ARId
-
-	using calc::HexLayout;
 
 	fmt->set_checksum_layout(std::make_unique<HexLayout>());
 

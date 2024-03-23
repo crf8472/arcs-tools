@@ -14,6 +14,10 @@
 
 namespace arcsapp
 {
+
+/**
+ * \brief ANSI color management.
+ */
 namespace ansi
 {
 

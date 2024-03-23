@@ -31,11 +31,11 @@ TEST_CASE ( "parse()", "[parse]" )
 	using arcsapp::OptionCode;
 	using arcsapp::Option;
 	using arcsapp::OptionRegistry;
-	using arcsapp::CallSyntaxException;
 
 	using arcsapp::input::ARGUMENT;
 	using arcsapp::input::DASH;
 	using arcsapp::input::DDASH;
+	using arcsapp::input::CallSyntaxException;
 	//using arcsapp::input::get_tokens;
 
 	struct TEST

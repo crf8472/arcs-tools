@@ -120,6 +120,9 @@ std::string to_sep_list(const Container c, const std::string delim,
 } // namespace details
 
 
+/**
+ * \brief Data structures, interfaces and formatters for tables.
+ */
 namespace table
 {
 

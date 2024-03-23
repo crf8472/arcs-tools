@@ -90,6 +90,10 @@ bool operator == (const Option &lhs, const Option &rhs) noexcept
 }
 
 
+namespace input
+{
+
+
 // CallSyntaxException
 
 
@@ -98,10 +102,6 @@ CallSyntaxException::CallSyntaxException(const std::string &what_arg)
 {
 	// empty
 }
-
-
-namespace input
-{
 
 /**
  * \brief Parse input chars as an option symbol.

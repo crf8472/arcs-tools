@@ -120,7 +120,7 @@ unsigned read_from_stdin(const std::size_t amount_of_bytes, ParseHandler* p,
 
 
 /**
- * \brief Content handler that just prints the parsed content immediately.
+ * \brief ParseHandler that just prints the parsed content immediately.
  *
  * Printing is performed to Output by default.
  */

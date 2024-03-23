@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 	using arcsapp::ARCSTOOLS_BINARY_NAME;
 	using arcsapp::ARCSTOOLS_VERSION;
 	using arcsapp::ApplicationFactory;
-	using arcsapp::CallSyntaxException;
+	using arcsapp::input::CallSyntaxException;
 
 	// Was binary called by some alias?
 	const auto CALL_NAME = std::string { argv[0] ? argv[0] : "" };
@@ -80,7 +80,7 @@ int main(int argc, char** argv)
 					// skip first token
 					return application->run(argc - 1, argv + 1);
 				}
-			} catch (const arcsapp::CallSyntaxException &cse)
+			} catch (const CallSyntaxException &cse)
 			{
 				std::cerr << "Syntax error: " << cse.what() << '\n';
 				application->print_usage();

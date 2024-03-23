@@ -39,15 +39,15 @@ set (DOC_COMMENT          "Build documentation for APIs" )
 ## Deployed mainpage file
 set (DOC_MAINPAGE         ${DOC_TEXTS_GEN_DIR}/MAINPAGE.md )
 
-## Define input for documentation
-set (DOC_SOURCES          ${INTERFACE_HEADERS} ${DOC_MAINPAGE} )
-
 ## Define the target name and location of the base Doxyfile to be included
 set (DOC_DOXYFILE_BASE    ${DOC_BINARY_DIR}/Doxyfile-base )
 
 ## Define the target name and location of the base Doxyfile to be included
 set (DOC_DOXYFILE_BASE_TEMPLATE ${PROJECT_DOC_DIR}/Doxyfile.in )
 
+## Define input for documentation
+set (DOC_SOURCES          ${INTERFACE_HEADERS} ${PRIVATE_HEADERS}
+						  ${DOC_MAINPAGE} )
 
 
 ## --- Generate documentation output directory

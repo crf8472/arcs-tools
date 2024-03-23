@@ -129,7 +129,7 @@ private:
 	/**
 	 * \brief Internal shorthand symbol.
 	 */
-	char        shorthand_;
+	char shorthand_;
 
 	/**
 	 * \brief Internal symbol.
@@ -139,7 +139,7 @@ private:
 	/**
 	 * \brief Flag to indicate whether the option requires a value.
 	 */
-	bool        needs_value_;
+	bool needs_value_;
 
 	/**
 	 * \brief Default argument, if any.
@@ -153,6 +153,23 @@ private:
 	 */
 	std::string description_;
 };
+
+
+/**
+ * \brief Type to associate actual OptionCodes with Option objects.
+ *
+ * The contained type must be a pair with the OptionCode as first element and
+ * the Option as second element. The container must allow iteration.
+ */
+using OptionRegistry = std::vector<std::pair<OptionCode, Option>>;
+// FIXME This definition is repeated in config.hpp
+
+
+/**
+ * \brief Parse the command line input.
+ */
+namespace input
+{
 
 
 /**
@@ -195,19 +212,6 @@ public:
 
 
 /**
- * \brief Type to associate actual OptionCodes with Option objects.
- *
- * The contained type must be a pair with the OptionCode as first element and
- * the Option as second element. The container must allow iteration.
- */
-using OptionRegistry = std::vector<std::pair<OptionCode, Option>>;
-// FIXME This definition is repeated in config.hpp
-
-
-namespace input
-{
-
-/**
  * \brief OptionCode representing an argument.
  */
 inline constexpr OptionCode ARGUMENT = 0;
@@ -241,26 +245,27 @@ using option_callback =
  * ARGUMENT.
  *
  *  - Syntactically, an option is a double hyphen followed by a sequence
- *    of alphanumeric characters and hyphens like this: <tt>--my-option</tt>.
+ *    of alphanumeric characters and hyphens like this: <tt>\-\-my\-option</tt>.
  *    The sequence is only allowed to contain single hyphens surrounded by
  *    alphanumeric characters. Other non-alphanumeric characters are forbidden.
- *  - Alternatively, an option is a single hyphen '-' followed by a single
- *    alphanumeric character, like this: <tt>-v</tt>.
+ *  - Alternatively, an option is a single hyphen '\-' followed by a single
+ *    alphanumeric character, like this: <tt>\-v</tt>.
  *  - An option may require a value. If a value is expected, it must appear
  *    immediately after the option token. A blank ' ' may or may not separate
- *    the option from its value. Example: <tt>-i value</tt> or
- *    <tt>-ivalue</tt> <tt>--my-option value</tt>.
+ *    the option from its value. Example: <tt>\-i value</tt> or
+ *    <tt>\-ivalue</tt> <tt>\-\-my\-option value</tt>.
  *  - The variant starting with a double hyphen may separate its value by a
- *    an 'equals' character like in <tt>--my-option=value</tt>.
+ *    an 'equals' character like in <tt>\-\-my\-option=value</tt>.
  *  - Options that do not require values can be grouped after a single hyphen,
- *    so, for example, <tt>-tbn</tt> is equivalent to <tt>-t -b -n</tt>.
- *  - Options can appear in any order, thus -tbn is equivalent to <tt>-ntb</tt>.
- *  - Options can appear multiple times.
+ *    so, for example, <tt>\-tbn</tt> is equivalent to <tt>\-t \-b \-n</tt>.
+ *  - Options can appear in any order, thus <tt>\-tbn</tt> is equivalent to
+ *    <tt>\-ntb</tt>.
+ *  - The same option may or may not appear multiple times.
  *  - Options typically precede other nonoption arguments:
- *    <tt>-ltr nonoption</tt>.
- *  - The '--' argument terminates options. What follows thereafter is parsed
+ *    <tt>\-ltr nonoption</tt>.
+ *  - The '\-\-' argument terminates options. What follows thereafter is parsed
  *    as arguments.
- *  - The '-' argument is accepted but not assigned any semantics.
+ *  - The '\-' argument is accepted but not assigned any semantics.
  *
  * This intends to obey the POSIX conventions.
  *
