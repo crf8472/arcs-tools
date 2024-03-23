@@ -20,9 +20,6 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"              // for DefaultConfigurator
 #endif
-#ifndef __ARCSTOOLS_RESULT_HPP__
-#include "result.hpp"              // for Result
-#endif
 #ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
 #include "tools-dbar.hpp"        // for PrintParseHandler, DBARTripletLayout
 #endif
