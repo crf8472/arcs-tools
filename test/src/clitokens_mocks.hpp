@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_MOCKS_PARSE_HPP__
-#define __ARCSTOOLS_MOCKS_PARSE_HPP__
+#ifndef __ARCSTOOLS_CLITOKENS_MOCKS_HPP__
+#define __ARCSTOOLS_CLITOKENS_MOCKS_HPP__
 
 #include <string>  // for string
 #include <vector>  // for vector
@@ -69,10 +69,8 @@ private:
  *
  * \return List of command line input tokens
  */
-std::vector<Token> get_tokens(const int argc, const char* const * const argv,
-		const OptionRegistry& supported);
-
-std::vector<Token> get_tokens(const int argc, const char* const * const argv,
+inline std::vector<Token> get_tokens(const int argc,
+		const char* const * const argv,
 		const OptionRegistry& supported)
 {
 	std::vector<Token> tokens;

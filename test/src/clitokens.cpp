@@ -4,8 +4,8 @@
 #include "clitokens.hpp"
 #endif
 
-#ifndef __ARCSTOOLS_MOCKS_PARSE_HPP__
-#include "mocks_parse.hpp"
+#ifndef __ARCSTOOLS_CLITOKENS_MOCKS_HPP__
+#include "clitokens_mocks.hpp"
 #endif
 
 
