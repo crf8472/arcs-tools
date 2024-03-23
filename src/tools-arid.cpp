@@ -308,6 +308,34 @@ std::unique_ptr<ARIdLayout> ARIdTableLayout::do_clone() const
 	return std::make_unique<ARIdTableLayout>(*this);
 }
 
+
+// build_id
+
+
+RichARId build_id(const TOC* /*toc*/, const ARId& arid,
+		const std::string& alt_prefix, const ARIdLayout& layout)
+{
+	return RichARId { arid, layout.clone(), alt_prefix };
+}
+
+
+// default_arid_layout
+
+
+std::unique_ptr<ARIdLayout> default_arid_layout(const bool& with_labels)
+{
+	return std::make_unique<ARIdTableLayout>(
+				with_labels, /* field label */
+				true,  /* print ID */
+				true,  /* print URL */
+				false, /* no filenames */
+				false, /* no tracks */
+				false, /* no id 1 */
+				false, /* no id 2 */
+				false  /* no cddb id */
+	);
+}
+
 } // namespace arid
 } // namespace v_1_0_0
 } // namespace arcsapp

@@ -1058,18 +1058,6 @@ protected:
 		std::vector<std::unique_ptr<FieldCreator>>& field_creators) const;
 
 	/**
-	 * \brief Build an ARId enriched with print information.
-	 *
-	 * \param[in] toc        TOC by which \c arid was created
-	 * \param[in] arid       Actual ARId
-	 * \param[in] alt_prefix Alternative URL prefix
-	 *
-	 * \return ARId container
-	 */
-	RichARId build_id(const TOC* toc, const ARId& arid,
-		const std::string& alt_prefix) const;
-
-	/**
 	 * \brief Print my checksums.
 	 *
 	 * Used by build_table().

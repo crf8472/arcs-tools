@@ -31,6 +31,7 @@ namespace arid
 {
 
 using ARId = arcstk::ARId;
+using TOC  = arcstk::TOC;
 
 
 /**
@@ -363,6 +364,29 @@ public:
  * \brief Stream insertion operator for RichARId.
  */
 std::ostream& operator << (std::ostream& o, const RichARId& a);
+
+
+/**
+ * \brief Build an ARId enriched with print information.
+ *
+ * \param[in] toc        TOC by which \c arid was created
+ * \param[in] arid       Actual ARId
+ * \param[in] alt_prefix Alternative URL prefix
+ * \param[in] layout     Layout to print ARId
+ *
+ * \return ARId container
+ */
+RichARId build_id(const TOC* /*toc*/, const ARId& arid,
+		const std::string& alt_prefix, const ARIdLayout& layout);
+
+/**
+ * \brief Define default layout for ARIds.
+ *
+ * \param[in] with_labels Iff TRUE, print field labels.
+ *
+ * \return Default layout for ARIds
+ */
+std::unique_ptr<ARIdLayout> default_arid_layout(const bool& with_labels);
 
 } // namespace arid
 } // namespace v_1_0_0

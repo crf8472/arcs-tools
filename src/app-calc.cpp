@@ -401,7 +401,7 @@ std::unique_ptr<Result> CalcResultFormatter::do_format(InputTuple t) const
 	if (!arid.empty() && arid_layout())
 	{
 		result->append(std::make_unique<ResultObject<RichARId>>(
-			build_id(toc, arid, alt_prefix)));
+			build_id(toc, arid, alt_prefix, *arid_layout())));
 	}
 
 	const auto print_flags { create_print_flags(toc, filenames) };

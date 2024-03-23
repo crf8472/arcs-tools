@@ -1089,27 +1089,6 @@ void TableFormatter::init_composer(TableComposer& c) const
 }
 
 
-RichARId TableFormatter::build_id(const TOC* /*toc*/, const ARId& arid,
-		const std::string& alt_prefix) const
-{
-	if (arid_layout())
-	{
-		return RichARId { arid, arid_layout()->clone(), alt_prefix };
-	}
-
-	return RichARId { arid, std::make_unique<ARIdTableLayout>(/* default */
-				formats_label(), /* field label */
-				true,  /* print ID */
-				true,  /* print URL */
-				false, /* no filenames */
-				false, /* no tracks */
-				false, /* no id 1 */
-				false, /* no id 2 */
-				false),/* no cddb id */
-		alt_prefix };
-}
-
-
 void TableFormatter::mine_checksum(const Checksum& checksum,
 		const int record, const int field, TableComposer* c) const
 {

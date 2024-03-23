@@ -797,6 +797,9 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 	const auto filenames      = std::get<8>(t);
 	const auto alt_prefix     = std::get<9>(t);
 
+	using arid::build_id;
+	using arid::default_arid_layout;
+
 	auto result = std::make_unique<ResultList>();
 
 	const auto best_block_declared = bool { block > -1 };
@@ -804,15 +807,19 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 	// If a DBAR is used for the references with a block (not PRINTALL)
 	if (best_block_declared && reference_is_dbar(dBAR, refvalues))
 	{
+		auto layout { arid_layout()
+			? arid_layout()->clone()
+			: default_arid_layout(formats_label()) };
+
 		// Use ARId of specified block for "Theirs" ARId
 		result->append(std::make_unique<ResultObject<RichARId>>(
-				build_id(toc, dBAR.block(block).id(), alt_prefix)));
+				build_id(toc, dBAR.block(block).id(), alt_prefix, *layout)));
 	} else
 	{
 		if (!arid.empty() && arid_layout())
 		{
 			result->append(std::make_unique<ResultObject<RichARId>>(
-				build_id(toc, arid, alt_prefix)));
+				build_id(toc, arid, alt_prefix, *arid_layout())));
 		}
 	}
 
