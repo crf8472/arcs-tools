@@ -32,8 +32,8 @@
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"             // for Layout
 #endif
-#ifndef __ARCSTOOLS_FORMAT_HPP__
-#include "format.hpp"              // for TableFormatter
+#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
+#include "tools-table.hpp"         // for TableFormatter
 #endif
 
 

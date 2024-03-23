@@ -21,14 +21,14 @@ set (TEST_SETS )
 
 ## default tests
 list (APPEND TEST_SETS clitokens   )
+list (APPEND TEST_SETS config      ) ## custom test script
 list (APPEND TEST_SETS layouts     )
-list (APPEND TEST_SETS tools-fs    )
-list (APPEND TEST_SETS tools-calc  )
-#list (APPEND TEST_SETS tools-parse )
 list (APPEND TEST_SETS table       )
-## custom test scripts
-list (APPEND TEST_SETS config      )
-list (APPEND TEST_SETS format      )
+list (APPEND TEST_SETS tools-arid  )
+list (APPEND TEST_SETS tools-calc  )
+list (APPEND TEST_SETS tools-fs    )
+#list (APPEND TEST_SETS tools-parse )
+list (APPEND TEST_SETS tools-table )
 
 
 ## --- Add common configuration for all testsuites (catch2 + project deps)

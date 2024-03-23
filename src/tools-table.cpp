@@ -1,11 +1,11 @@
 /**
  * \file
  *
- * \brief Implements symbols from format.hpp.
+ * \brief Implements symbols from tools-table.hpp.
  */
 
-#ifndef __ARCSTOOLS_FORMAT_HPP__
-#include "format.hpp"
+#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
+#include "tools-table.hpp"
 #endif
 
 #include <algorithm>    // for find

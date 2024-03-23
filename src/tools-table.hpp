@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_FORMAT_HPP__
-#define __ARCSTOOLS_FORMAT_HPP__
+#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
+#define __ARCSTOOLS_TOOLS_TABLE_HPP__
 
 /**
  * \file

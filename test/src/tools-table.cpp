@@ -1,7 +1,7 @@
 #include "catch2/catch_test_macros.hpp"
 
-#ifndef __ARCSTOOLS_FORMAT_HPP__
-#include "format.hpp"
+#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
+#include "tools-table.hpp"
 #endif
 #ifndef __ARCSTOOLS_APPVERIFY_HPP__
 #include "app-verify.hpp"     // for MatchDecorator
