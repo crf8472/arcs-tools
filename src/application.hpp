@@ -20,6 +20,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 /**
  * \brief An output stream.
@@ -262,6 +264,7 @@ private:
 	= 0;
 };
 
+} // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif

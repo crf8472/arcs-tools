@@ -38,6 +38,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 namespace calc
 {
 
@@ -509,5 +511,6 @@ std::string HexLayout::do_format(InputTuple t) const
 }
 
 } // namespace calc
+} // namespace v_1_0_0
 } // namespace arcsapp
 

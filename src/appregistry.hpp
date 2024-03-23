@@ -24,7 +24,8 @@
 
 namespace arcsapp
 {
-
+inline namespace v_1_0_0
+{
 namespace details
 {
 
@@ -219,6 +220,7 @@ public:
 	}
 };
 
+} // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif

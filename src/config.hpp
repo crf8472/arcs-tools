@@ -34,6 +34,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 
 /**
@@ -714,6 +716,7 @@ inline std::vector<T> parse_list_to_objects(const std::string& list,
 }
 
 
+} // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif

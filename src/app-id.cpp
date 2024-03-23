@@ -43,6 +43,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 namespace registered
 {
@@ -244,5 +246,6 @@ std::unique_ptr<Configurator> ARIdApplication::do_create_configurator() const
 	return std::make_unique<ARIdConfigurator>();
 }
 
+} // namespace v_1_0_0
 } // namespace arcsapp
 

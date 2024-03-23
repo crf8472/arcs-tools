@@ -42,6 +42,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 // forward declarations
 namespace arid {
@@ -1292,6 +1294,7 @@ public:
 
 
 } // namespace table
+} // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif

@@ -20,6 +20,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 
 class Application;
@@ -42,6 +44,7 @@ class ARParseApplication final : public Application
 	int do_run(const Configuration& config) final;
 };
 
+} // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif

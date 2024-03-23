@@ -22,6 +22,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 // InternalFlags
 
@@ -68,5 +70,6 @@ bool InternalFlags::only(const int idx) const
 	return flag(idx) && only_one_flag();
 }
 
+} // namespace v_1_0_0
 } // namespace arcsapp
 

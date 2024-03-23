@@ -32,6 +32,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 namespace registered
 {
@@ -85,5 +87,6 @@ int ARParseApplication::do_run(const Configuration& config)
 	return EXIT_SUCCESS;
 }
 
+} // namespace v_1_0_0
 } // namespace arcsapp
 

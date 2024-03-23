@@ -29,6 +29,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 /**
  * \brief Tools and helpers for managing AccurateRip checksums.
@@ -263,6 +265,7 @@ private:
 };
 
 } // namespace calc
+} // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif

@@ -23,6 +23,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 /**
  * \brief Type for the unique id of a supported option
@@ -282,7 +284,7 @@ void parse(const int argc, const char* const * const argv,
 		const OptionRegistry &supported, const option_callback& pass_token);
 
 } // namespace input
-
+} // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif

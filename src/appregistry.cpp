@@ -6,6 +6,9 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 	std::unique_ptr<ApplicationFactory::MapType> ApplicationFactory::map_;
+} // namespace v_1_0_0
 } // namespace arcsapp
 

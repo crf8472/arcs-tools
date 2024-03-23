@@ -41,6 +41,8 @@ int main(int argc, char** argv)
 	using arcstk::Logging;
 	using arcstk::LOGLEVEL;
 
+	// Perform default setup for the logging of all applications.
+
 	// We do not know whether the application is required to run quiet,
 	// so initial level is NOT default level but quiet level.
 	// Application decides about setting the level.
@@ -55,6 +57,7 @@ int main(int argc, char** argv)
 	using arcsapp::input::CallSyntaxException;
 
 	// Was binary called by some alias?
+
 	const auto CALL_NAME = std::string { argv[0] ? argv[0] : "" };
 	const auto is_call_by_alias = bool {
 		CALL_NAME.length() >= ARCSTOOLS_BINARY_NAME.length()
@@ -63,9 +66,11 @@ int main(int argc, char** argv)
 			!= ARCSTOOLS_BINARY_NAME
 	};
 
+	// Select application by name requested in call and run it
+
 	if (argc > 1 or is_call_by_alias)
 	{
-		const auto* requested_name = argc ? argv[!is_call_by_alias]: argv[0];
+		const auto* requested_name = argc ? argv[!is_call_by_alias] : argv[0];
 		auto application { ApplicationFactory::lookup(requested_name) };
 
 		if (application)

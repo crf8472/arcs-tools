@@ -16,6 +16,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 /**
  * \brief Holds data and can be printed.
@@ -170,6 +172,7 @@ public:
 	std::unique_ptr<Result> result() const;
 };
 
+} // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif

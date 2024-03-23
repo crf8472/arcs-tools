@@ -13,6 +13,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 namespace file
 {
 
@@ -66,5 +68,6 @@ bool file_is_readable(const std::string &filename)
 }
 
 } // namespace file
+} // namespace v_1_0_0
 } // namespace arcsapp
 

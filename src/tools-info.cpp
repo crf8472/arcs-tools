@@ -21,7 +21,8 @@
 
 namespace arcsapp
 {
-
+inline namespace v_1_0_0
+{
 
 /**
  * \brief Collect descriptor infos
@@ -186,6 +187,6 @@ const StringTable& AvailableFileReaders::toc()
 	return table;
 }
 
-
-} //namespace arcsapp
+} // namespace v_1_0_0
+} // namespace arcsapp
 

@@ -14,6 +14,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 namespace arid
 {
 
@@ -307,5 +309,6 @@ std::unique_ptr<ARIdLayout> ARIdTableLayout::do_clone() const
 }
 
 } // namespace arid
+} // namespace v_1_0_0
 } // namespace arcsapp
 

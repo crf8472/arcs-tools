@@ -46,6 +46,9 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
+
 namespace registered
 {
 const auto calc = RegisterApplicationType<ARCalcApplication>("calc");
@@ -709,5 +712,6 @@ std::unique_ptr<Configurator> ARCalcApplication::do_create_configurator() const
 	return std::make_unique<ARCalcConfigurator>();
 }
 
+} // namespace v_1_0_0
 } // namespace arcsapp
 

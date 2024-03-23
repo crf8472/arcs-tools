@@ -51,6 +51,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 namespace table
 {
 
@@ -1165,5 +1167,6 @@ void TableFormatter::do_their_mismatch(const Checksum& checksum,
 }
 
 } // namespace table
+} // namespace v_1_0_0
 } // namespace arcsapp
 

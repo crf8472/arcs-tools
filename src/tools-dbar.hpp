@@ -30,7 +30,10 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
+// forward declarations
 namespace arid
 {
 class Application;
@@ -261,6 +264,7 @@ private:
 };
 
 } // namespace dbar
+} // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif

@@ -16,6 +16,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 // Result
 
@@ -59,5 +61,6 @@ std::unique_ptr<Result> ResultProvider::result() const
 	return do_result();
 }
 
+} // namespace v_1_0_0
 } // namespace arcsapp
 

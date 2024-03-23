@@ -18,6 +18,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 // ConfigurationException
 
@@ -408,5 +410,6 @@ void parse_list(const std::string& list, const char delim,
 	}
 }
 
+} // namespace v_1_0_0
 } // namespace arcsapp
 

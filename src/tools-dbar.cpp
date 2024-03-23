@@ -53,6 +53,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 // libarcstk
 using arcstk::ARId;
@@ -325,5 +327,6 @@ std::string DBARTripletLayout::do_format(InputTuple t) const
 }
 
 } // namespace dbar
+} // namespace v_1_0_0
 } // namespace arcsapp
 

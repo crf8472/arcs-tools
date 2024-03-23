@@ -62,15 +62,6 @@ namespace details
 // empty
 }
 
-/**
- * \internal
- * \brief Namespace for registering operations for apps.
- */
-namespace registered
-{
-// empty
-}
-
 } // namespace v_1_0_0
 } // namespace arcsapp
 

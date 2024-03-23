@@ -21,6 +21,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 /**
  * \brief Tools and helpers for managing ARIds.
@@ -363,6 +365,7 @@ public:
 std::ostream& operator << (std::ostream& o, const RichARId& a);
 
 } // namespace arid
+} // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif

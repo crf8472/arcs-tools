@@ -13,6 +13,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 namespace ansi
 {
 
@@ -152,5 +154,6 @@ std::string colored(const Highlight hl, const Color color_fg,
 
 
 } // namespace ansi
+} // namespace v_1_0_0
 } // namespace arcsapp
 

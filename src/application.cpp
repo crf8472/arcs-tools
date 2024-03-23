@@ -29,6 +29,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 // Output
 
@@ -353,5 +355,6 @@ void Application::output(std::unique_ptr<Result> result) const
 	}
 }
 
-} //namespace arcsapp
+} // namespace v_1_0_0
+} // namespace arcsapp
 

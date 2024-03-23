@@ -27,6 +27,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 namespace details
 {
 
@@ -1383,6 +1385,7 @@ std::ostream& operator << (std::ostream &o,
 
 
 } // namespace table
+} // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif

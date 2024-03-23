@@ -26,6 +26,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 class Result;
 
@@ -95,6 +97,7 @@ class ARIdApplication final : public ARCalcApplicationBase
 	std::unique_ptr<Configurator> do_create_configurator() const final;
 };
 
+} // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif

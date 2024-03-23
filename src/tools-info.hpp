@@ -13,6 +13,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 using table::StringTable;
 
@@ -38,6 +40,7 @@ public:
 	static const StringTable& toc();
 };
 
+} // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif

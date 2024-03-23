@@ -14,6 +14,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 // Option
 
@@ -416,6 +418,6 @@ void parse_shorthand(const char * const token, const char * const next,
 }
 
 } // namespace input
-
+} // namespace v_1_0_0
 } // namespace arcsapp
 

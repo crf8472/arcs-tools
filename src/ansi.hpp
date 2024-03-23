@@ -14,7 +14,8 @@
 
 namespace arcsapp
 {
-
+inline namespace v_1_0_0
+{
 /**
  * \brief ANSI color management.
  */
@@ -177,6 +178,7 @@ std::string colored(Highlight hl, const Color color_fg, const Color color_bg,
 		const std::string& s);
 
 } // namespace ansi
+} // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif

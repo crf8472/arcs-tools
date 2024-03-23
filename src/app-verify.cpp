@@ -62,6 +62,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 namespace registered
 {
@@ -1619,5 +1621,6 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	return { exit_code, std::move(result) };
 }
 
+} // namespace v_1_0_0
 } // namespace arcsapp
 

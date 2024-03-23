@@ -26,7 +26,8 @@
 
 namespace arcsapp
 {
-
+inline namespace v_1_0_0
+{
 namespace details
 {
 
@@ -106,7 +107,6 @@ void insert_or_resize(std::vector<T> &v, const int rows, const int row,
 }
 
 } // details
-
 
 
 namespace table
@@ -996,7 +996,6 @@ std::unique_ptr<CellDecorator> CellDecorator::clone() const
 namespace details
 {
 
-
 void DecoratorRegistry::register_to_col(const int j,
 		std::unique_ptr<CellDecorator> d)
 {
@@ -1106,7 +1105,6 @@ bool operator == (const DecoratorRegistry &lhs, const DecoratorRegistry &rhs)
 }
 
 } // namespace details
-
 
 
 namespace table
@@ -1899,5 +1897,6 @@ std::ostream& operator << (std::ostream &o,
 }
 
 } // namespace table
+} // namespace v_1_0_0
 } // namespace arcsapp
 

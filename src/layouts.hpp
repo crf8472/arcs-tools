@@ -27,6 +27,8 @@
 
 namespace arcsapp
 {
+inline namespace v_1_0_0
+{
 
 /**
  * \brief Provide easy format templates for subclasses.
@@ -236,6 +238,7 @@ inline constexpr auto to_underlying(E e) noexcept
 }
 
 } // namespace details
+} // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif
