@@ -35,13 +35,16 @@
 #include "config.hpp"               // for Options, Configurator
 #endif
 #ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
-#include "tools-arid.hpp"              // for ARIdLayout
+#include "tools-arid.hpp"           // for ARIdLayout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"           // for ARCSMultifileAlbumCalculator
 #endif
 #ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
 #include "tools-info.hpp"           // for AvailableFileReaders
+#endif
+#ifndef __ARCSTOOLS_RESULT_HPP__
+#include "result.hpp"               // for ResultObject, Result
 #endif
 
 namespace arcsapp
@@ -417,8 +420,9 @@ std::unique_ptr<Result> CalcTableCreator::do_format(InputTuple t) const
 	populate_result_creators(creators, print_flags, field_list, types_to_print,
 			checksums);
 
-	result->append(format_table(field_list, checksums.size(),
-				formats_labels(), creators));
+	result->append(std::make_unique<ResultObject<
+		std::unique_ptr<PrintableTable>>>(format_table(
+				field_list, checksums.size(), formats_labels(), creators)));
 
 	return result;
 }

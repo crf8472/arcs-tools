@@ -30,9 +30,6 @@
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"
 #endif
-#ifndef __ARCSTOOLS_RESULT_HPP__
-#include "result.hpp"       // for Result, ResultObject
-#endif
 #ifndef __ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"        // for PrintableTable, StringTable,
                             // StringTableLayout, CellDecorator,
@@ -1060,9 +1057,9 @@ protected:
 	 * \param[in] with_labels    Decide whether to print field labels
 	 * \param[in] field_creators List of field creators
 	 *
-	 * \return Result table
+	 * \return Table
 	 */
-	std::unique_ptr<Result> format_table(
+	std::unique_ptr<PrintableTable> format_table(
 		const std::vector<ATTR>& field_types,
 		const std::size_t total_records,
 		const bool with_labels,

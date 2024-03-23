@@ -35,9 +35,6 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"               // for Configurator
 #endif
-#ifndef __ARCSTOOLS_RESULT_HPP__
-#include "result.hpp"               // for ResultObject, Result
-#endif
 #ifndef __ARCSTOOLS_ANSI_HPP__
 #include "ansi.hpp"                 // for Colorize
 #endif
@@ -58,6 +55,9 @@
 #endif
 #ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
 #include "tools-table.hpp"          // for StringTableLayout, CellDecorator
+#endif
+#ifndef __ARCSTOOLS_RESULT_HPP__
+#include "result.hpp"               // for ResultObject, Result
 #endif
 
 namespace arcsapp
@@ -848,8 +848,9 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 	populate_result_creators(creators, print_flags, field_list, types_to_print,
 			*vresult, block, checksums, *ref_src, total_theirs_per_block);
 
-	result->append(format_table(field_list, checksums.size(), formats_labels(),
-				creators));
+	result->append(std::make_unique<ResultObject<
+		std::unique_ptr<PrintableTable>>>(format_table(
+				field_list, checksums.size(), formats_labels(), creators)));
 
 	return result;
 }

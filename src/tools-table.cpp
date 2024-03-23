@@ -42,9 +42,6 @@
 #include "table.hpp"              // for StringTable, StringTableLayout
                                   // CellDecorator, DecoratedStringTable
 #endif
-#ifndef __ARCSTOOLS_RESULT_HPP__
-#include "result.hpp"             // for Result, ResultObject
-#endif
 #ifndef __ARCSTOOLS_TOOLS_ARID_HPP__ // for ARIdLayout
 #include "tools-arid.hpp"
 #endif
@@ -1004,7 +1001,7 @@ TableCreator::print_flag_t TableCreator::create_print_flags(
 }
 
 
-std::unique_ptr<Result> TableCreator::format_table(
+std::unique_ptr<PrintableTable> TableCreator::format_table(
 		const std::vector<ATTR>& field_list,
 		const std::size_t total_records,
 		const bool with_labels,
@@ -1027,8 +1024,7 @@ std::unique_ptr<Result> TableCreator::format_table(
 	composer->set_layout(
 			std::make_unique<StringTableLayout>(copy_table_layout()));
 
-	return std::make_unique<ResultObject<std::unique_ptr<PrintableTable>>>(
-			std::move(composer->table()));
+	return std::unique_ptr<PrintableTable>(std::move(composer->table()));
 }
 
 

@@ -32,7 +32,7 @@
 #include "result.hpp"                 // for ResultObject
 #endif
 #ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
-#include "tools-arid.hpp"                // for ARIdLayout
+#include "tools-arid.hpp"             // for ARIdLayout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"             // for IdSelection
