@@ -33,7 +33,7 @@
 #include "layouts.hpp"             // for Layout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
-#include "tools-table.hpp"         // for TableFormatter
+#include "tools-table.hpp"         // for TableCreator
 #endif
 
 
@@ -52,7 +52,7 @@ using arcstk::TOC;
 // arcsapp
 using table::ATTR;
 using table::FieldCreator;
-using table::TableFormatter;
+using table::TableCreator;
 
 /**
  * \brief Options to configure Application instances that do ARCS calculation.
@@ -185,7 +185,7 @@ using Calc6Layout = Layout<std::unique_ptr<Result>
 /**
  * \brief Format the results of the ARCalcApplication.
  */
-class CalcResultFormatter final : public TableFormatter
+class CalcTableCreator final : public TableCreator
 								, public Calc6Layout
 {
 protected:
@@ -326,7 +326,7 @@ private:
 	 *
 	 * \param[in] options  The options parsed from command line
 	 */
-	std::unique_ptr<CalcResultFormatter> create_formatter(
+	std::unique_ptr<CalcTableCreator> create_formatter(
 			const Configuration &config) const;
 
 

@@ -321,10 +321,10 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 }
 
 
-// CalcResultFormatter
+// CalcTableCreator
 
 
-void CalcResultFormatter::add_result_fields(std::vector<ATTR>& field_list,
+void CalcTableCreator::add_result_fields(std::vector<ATTR>& field_list,
 		const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types_to_print) const
 {
@@ -346,7 +346,7 @@ void CalcResultFormatter::add_result_fields(std::vector<ATTR>& field_list,
 }
 
 
-void CalcResultFormatter::populate_result_creators(
+void CalcTableCreator::populate_result_creators(
 		std::vector<std::unique_ptr<FieldCreator>>& creators,
 		const print_flag_t print_flags,
 		const std::vector<ATTR>& field_list,
@@ -376,7 +376,7 @@ void CalcResultFormatter::populate_result_creators(
 }
 
 
-void CalcResultFormatter::assertions(InputTuple t) const
+void CalcTableCreator::assertions(InputTuple t) const
 {
 	const auto checksums = std::get<1>(t);
 	const auto arid      = std::get<2>(t);
@@ -388,7 +388,7 @@ void CalcResultFormatter::assertions(InputTuple t) const
 }
 
 
-std::unique_ptr<Result> CalcResultFormatter::do_format(InputTuple t) const
+std::unique_ptr<Result> CalcTableCreator::do_format(InputTuple t) const
 {
 	const auto types_to_print = std::get<0>(t);
 	const auto checksums  = std::get<1>(t);
@@ -418,7 +418,7 @@ std::unique_ptr<Result> CalcResultFormatter::do_format(InputTuple t) const
 			checksums);
 
 	result->append(format_table(field_list, checksums.size(),
-				formats_label(), creators));
+				formats_labels(), creators));
 
 	return result;
 }
@@ -543,12 +543,12 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 }
 
 
-std::unique_ptr<CalcResultFormatter> ARCalcApplication::create_formatter(
+std::unique_ptr<CalcTableCreator> ARCalcApplication::create_formatter(
 		const Configuration& config) const
 {
-	auto fmt = std::unique_ptr<CalcResultFormatter>
+	auto fmt = std::unique_ptr<CalcTableCreator>
 	{
-		std::make_unique<CalcResultFormatter>()
+		std::make_unique<CalcTableCreator>()
 	};
 
 	// Layouts for Checksums + ARId
@@ -575,24 +575,24 @@ std::unique_ptr<CalcResultFormatter> ARCalcApplication::create_formatter(
 	}
 
 	// Print labels or not
-	fmt->format_label(!config.is_set(CALC::NOLABELS));
+	fmt->set_format_labels(!config.is_set(CALC::NOLABELS));
 
 	// TOC present? Helper for determining other properties
 	const bool has_toc = !config.value(CALC::METAFILE).empty();
 
 	// Print track numbers if they are not forbidden and a TOC is present
-	fmt->format_data(ATTR::TRACK,
+	fmt->set_format_field(ATTR::TRACK,
 			config.is_set(CALC::NOTRACKS) ? false : has_toc);
 
 	// Print offsets if they are not forbidden and a TOC is present
-	fmt->format_data(ATTR::OFFSET,
+	fmt->set_format_field(ATTR::OFFSET,
 			config.is_set(CALC::NOOFFSETS) ? false : has_toc);
 
 	// Print lengths if they are not forbidden
-	fmt->format_data(ATTR::LENGTH, !config.is_set(CALC::NOLENGTHS));
+	fmt->set_format_field(ATTR::LENGTH, !config.is_set(CALC::NOLENGTHS));
 
 	// Print filenames if they are not forbidden and a TOC is _not_ present
-	fmt->format_data(ATTR::FILENAME,
+	fmt->set_format_field(ATTR::FILENAME,
 			config.is_set(CALC::NOFILENAMES) ? false : !has_toc);
 
 	auto layout { std::make_unique<StringTableLayout>() };

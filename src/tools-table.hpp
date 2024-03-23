@@ -748,7 +748,7 @@ private:
 };
 
 
-// Required for TableFormatter
+// Required for TableCreator
 
 
 using arcstk::ARId;
@@ -851,11 +851,18 @@ public:
 using calc::ChecksumLayout;
 
 /**
- * \brief Abstract base class for result formatting.
+ * \brief Abstract base class for creating a layouted table.
  *
- * \todo Use a bitmask for flags of p_tracks, p_offsets, p_lengths, p_filenames
+ * TableCreator provides a public configuration interface for setting
+ * the respective layout objects for fields of the table, switch on/off the
+ * visibility of single fields and field labels.
+ *
+ * For subclasses, it provides all the workers that use this configuration
+ * while formatting the table. Subclasses of TableCreator may also
+ * subclass a specialization of Layout and use format_table() as a worker
+ * in do_format().
  */
-class TableFormatter : public WithInternalFlags
+class TableCreator : public WithInternalFlags
 {
 	template <enum ATTR> friend class AddField;
 
@@ -924,7 +931,7 @@ public:
 	 *
 	 * \return Flag for printing the label
 	 */
-	bool formats_label() const;
+	bool formats_labels() const;
 
 	/**
 	 * \brief Activate or deactivate the printing of labels.
@@ -933,14 +940,14 @@ public:
 	 *
 	 * \param[in] label Flag to set for printing the labels
 	 */
-	void format_label(const bool &label);
+	void set_format_labels(const bool &label);
 
 	/**
 	 * \brief TRUE iff data attribute \c a is to be formatted by this instance.
 	 *
 	 * \return TRUE iff \c a is formatted by this instance, otherwise FALSE.
 	 */
-	bool formats_data(const ATTR a) const;
+	bool formats_field(const ATTR a) const;
 
 	/**
 	 * \brief Set data type to be formatted in the output.
@@ -951,7 +958,7 @@ public:
 	 * \param[in] a     Data attributes to be formatted or not
 	 * \param[in] value Flag value to activate or deactivate formatting of \c d
 	 */
-	void format_data(const ATTR a, const bool value);
+	void set_format_field(const ATTR a, const bool value);
 
 protected:
 
@@ -1058,9 +1065,7 @@ protected:
 		std::vector<std::unique_ptr<FieldCreator>>& field_creators) const;
 
 	/**
-	 * \brief Print my checksums.
-	 *
-	 * Used by build_table().
+	 * \brief Worker: print a MINE checksum.
 	 *
 	 * Note that \c record also determines access to \c checksums.
 	 *
@@ -1073,9 +1078,7 @@ protected:
 		const int record, const int field, TableComposer* c) const;
 
 	/**
-	 * \brief Print their checksums.
-	 *
-	 * Used by build_table().
+	 * \brief Worker: print a THEIR checksum.
 	 *
 	 * Note that \c record also determines access to \c checksums.
 	 *
@@ -1126,7 +1129,7 @@ private:
 	/**
 	 * \brief Internal TableComposerBuilder.
 	 */
-	std::unique_ptr<TableComposerBuilder> builder_creator_;
+	std::unique_ptr<TableComposerBuilder> table_composer_builder_;
 
 	/**
 	 * \brief Format for the result StringTable.
@@ -1214,13 +1217,13 @@ template <>
 class AddField<ATTR::CHECKSUM_ARCS1> final : public FieldCreator
 {
 	const Checksums* checksums_;
-	const TableFormatter* formatter_;
+	const TableCreator* formatter_;
 
 	void do_create(TableComposer* c, const int record_idx) const final;
 
 public:
 
-	AddField(const Checksums* checksums, const TableFormatter* formatter);
+	AddField(const Checksums* checksums, const TableCreator* formatter);
 };
 
 
@@ -1228,13 +1231,13 @@ template <>
 class AddField<ATTR::CHECKSUM_ARCS2> final : public FieldCreator
 {
 	const Checksums* checksums_;
-	const TableFormatter* formatter_;
+	const TableCreator* formatter_;
 
 	void do_create(TableComposer* c, const int record_idx) const final;
 
 public:
 
-	AddField(const Checksums* checksums, const TableFormatter* formatter);
+	AddField(const Checksums* checksums, const TableCreator* formatter);
 };
 
 
@@ -1248,7 +1251,7 @@ class AddField<ATTR::THEIRS> final : public FieldCreator
 	const int block_;
 	const ChecksumSource* checksums_;
 	const std::vector<arcstk::checksum::type>* types_to_print_;
-	const TableFormatter* formatter_;
+	const TableCreator* formatter_;
 	const int total_theirs_per_block_;
 	const bool print_confidence_;
 
@@ -1260,7 +1263,7 @@ public:
 			const VerificationResult* vresult,
 			const int block,
 			const ChecksumSource* checksums,
-			const TableFormatter* formatter,
+			const TableCreator* formatter,
 			const int total_theirs_per_block,
 			const bool print_confidence);
 };

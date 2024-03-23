@@ -576,29 +576,29 @@ std::unique_ptr<CellDecorator> MatchDecorator::do_clone() const
 }
 
 
-// VerifyResultFormatter
+// VerifyTableCreator
 
 
-VerifyResultFormatter::VerifyResultFormatter()
+VerifyTableCreator::VerifyTableCreator()
 	: match_symbol_ {}
 {
 	// empty
 }
 
 
-void VerifyResultFormatter::set_match_symbol(const std::string &match_symbol)
+void VerifyTableCreator::set_match_symbol(const std::string &match_symbol)
 {
 	match_symbol_ = match_symbol;
 }
 
 
-const std::string& VerifyResultFormatter::match_symbol() const
+const std::string& VerifyTableCreator::match_symbol() const
 {
 	return match_symbol_;
 }
 
 
-void VerifyResultFormatter::update_field_labels(TableComposer& c) const
+void VerifyTableCreator::update_field_labels(TableComposer& c) const
 {
 	const auto label_for_mine = std::string { "Mine" };
 
@@ -614,7 +614,7 @@ void VerifyResultFormatter::update_field_labels(TableComposer& c) const
 }
 
 
-void VerifyResultFormatter::add_result_fields(std::vector<ATTR>& field_list,
+void VerifyTableCreator::add_result_fields(std::vector<ATTR>& field_list,
 		const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const std::size_t total_theirs_per_block) const
@@ -647,14 +647,14 @@ void VerifyResultFormatter::add_result_fields(std::vector<ATTR>& field_list,
 }
 
 
-bool VerifyResultFormatter::reference_is_dbar(
+bool VerifyTableCreator::reference_is_dbar(
 			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const
 {
 	return dBAR.size() > 0;
 }
 
 
-std::size_t VerifyResultFormatter::total_blocks_in_reference(
+std::size_t VerifyTableCreator::total_blocks_in_reference(
 			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const
 {
 	return reference_is_dbar(dBAR, refvalues)
@@ -664,7 +664,7 @@ std::size_t VerifyResultFormatter::total_blocks_in_reference(
 
 
 std::unique_ptr<const ChecksumSource>
-	VerifyResultFormatter::create_reference_source(
+	VerifyTableCreator::create_reference_source(
 			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const
 {
 	std::unique_ptr<const ChecksumSource> ref_src;
@@ -688,7 +688,7 @@ std::unique_ptr<const ChecksumSource>
 }
 
 
-void VerifyResultFormatter::populate_result_creators(
+void VerifyTableCreator::populate_result_creators(
 		std::vector<std::unique_ptr<FieldCreator>>& creators,
 		const print_flag_t print_flags,
 		const std::vector<ATTR>& field_list,
@@ -738,7 +738,7 @@ void VerifyResultFormatter::populate_result_creators(
 }
 
 
-void VerifyResultFormatter::assertions(const InputTuple t) const
+void VerifyTableCreator::assertions(const InputTuple t) const
 {
 	const auto checksums = std::get<3>(t);
 	const auto arid      = std::get<4>(t);
@@ -788,7 +788,7 @@ void VerifyResultFormatter::assertions(const InputTuple t) const
 }
 
 
-std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
+std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 {
 	const auto types_to_print = std::get<0>(t);
 	const auto vresult        = std::get<1>(t);
@@ -813,7 +813,7 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 	{
 		auto layout { arid_layout()
 			? arid_layout()->clone()
-			: default_arid_layout(formats_label()) };
+			: default_arid_layout(formats_labels()) };
 
 		// Use ARId of specified block for "Theirs" ARId
 		result->append(std::make_unique<ResultObject<RichARId>>(
@@ -848,24 +848,24 @@ std::unique_ptr<Result> VerifyResultFormatter::do_format(InputTuple t) const
 	populate_result_creators(creators, print_flags, field_list, types_to_print,
 			*vresult, block, checksums, *ref_src, total_theirs_per_block);
 
-	result->append(format_table(field_list, checksums.size(), formats_label(),
+	result->append(format_table(field_list, checksums.size(), formats_labels(),
 				creators));
 
 	return result;
 }
 
 
-// MonochromeVerifyResultFormatter
+// MonochromeVerifyTableCreator
 
 
-void MonochromeVerifyResultFormatter::do_init_composer(TableComposer& c) const
+void MonochromeVerifyTableCreator::do_init_composer(TableComposer& c) const
 {
 	// Overwrite default labels for local Checksums
 	this->update_field_labels(c);
 }
 
 
-void MonochromeVerifyResultFormatter::do_their_match(const Checksum& checksum,
+void MonochromeVerifyTableCreator::do_their_match(const Checksum& checksum,
 		const int record_idx, const int field_idx, TableComposer* c) const
 {
 	// XXX Why a fixed symbol? Should be configurable by decoration
@@ -873,7 +873,7 @@ void MonochromeVerifyResultFormatter::do_their_match(const Checksum& checksum,
 }
 
 
-void MonochromeVerifyResultFormatter::do_their_mismatch(
+void MonochromeVerifyTableCreator::do_their_mismatch(
 		const Checksum& checksum, const int record_idx,
 		const int field_idx, TableComposer* c) const
 {
@@ -1009,25 +1009,25 @@ void ColorRegistry::clear()
 }
 
 
-// ColorizingVerifyResultFormatter
+// ColorizingVerifyTableCreator
 
 
-ColorizingVerifyResultFormatter::ColorizingVerifyResultFormatter()
-	: ColorizingVerifyResultFormatter(ColorRegistry{})
+ColorizingVerifyTableCreator::ColorizingVerifyTableCreator()
+	: ColorizingVerifyTableCreator(ColorRegistry{})
 {
 	// empty
 }
 
 
-ColorizingVerifyResultFormatter::
-	ColorizingVerifyResultFormatter(const ColorRegistry& colors)
+ColorizingVerifyTableCreator::
+	ColorizingVerifyTableCreator(const ColorRegistry& colors)
 	: colors_ { colors }
 {
 	// empty
 }
 
 
-void ColorizingVerifyResultFormatter::register_decorators(TableComposer& c)
+void ColorizingVerifyTableCreator::register_decorators(TableComposer& c)
 	const
 {
 	using ansi::Highlight;
@@ -1054,7 +1054,7 @@ void ColorizingVerifyResultFormatter::register_decorators(TableComposer& c)
 }
 
 
-void ColorizingVerifyResultFormatter::do_init_composer(TableComposer& c) const
+void ColorizingVerifyTableCreator::do_init_composer(TableComposer& c) const
 {
 	// Overwrite default labels for local Checksums
 	this->update_field_labels(c);
@@ -1064,7 +1064,7 @@ void ColorizingVerifyResultFormatter::do_init_composer(TableComposer& c) const
 }
 
 
-void ColorizingVerifyResultFormatter::do_their_match(const Checksum& checksum,
+void ColorizingVerifyTableCreator::do_their_match(const Checksum& checksum,
 		const int record_idx, const int field_idx, TableComposer* c) const
 {
 	c->set_field(record_idx, field_idx, this->checksum(checksum));
@@ -1076,7 +1076,7 @@ void ColorizingVerifyResultFormatter::do_their_match(const Checksum& checksum,
 }
 
 
-void ColorizingVerifyResultFormatter::do_their_mismatch(
+void ColorizingVerifyTableCreator::do_their_mismatch(
 		const Checksum& checksum, const int record_idx, const int field_idx,
 		TableComposer* c) const
 {
@@ -1087,32 +1087,32 @@ void ColorizingVerifyResultFormatter::do_their_mismatch(
 }
 
 
-std::pair<ansi::Color, ansi::Color> ColorizingVerifyResultFormatter::colors(
+std::pair<ansi::Color, ansi::Color> ColorizingVerifyTableCreator::colors(
 		DecorationType d) const
 {
 	return colors_.get(d);
 }
 
 
-ansi::Color ColorizingVerifyResultFormatter::color_fg(DecorationType d) const
+ansi::Color ColorizingVerifyTableCreator::color_fg(DecorationType d) const
 {
 	return colors_.has(d) ? colors_.get_fg(d) : ansi::Color::FG_DEFAULT;
 }
 
 
-ansi::Color ColorizingVerifyResultFormatter::color_bg(DecorationType d) const
+ansi::Color ColorizingVerifyTableCreator::color_bg(DecorationType d) const
 {
 	return colors_.has(d) ? colors_.get_fg(d) : ansi::Color::FG_DEFAULT;
 }
 
 
-void ColorizingVerifyResultFormatter::set_color_fg(DecorationType d, Color c)
+void ColorizingVerifyTableCreator::set_color_fg(DecorationType d, Color c)
 {
 	colors_.set_fg(d, c);
 }
 
 
-void ColorizingVerifyResultFormatter::set_color_bg(DecorationType d, Color c)
+void ColorizingVerifyTableCreator::set_color_bg(DecorationType d, Color c)
 {
 	colors_.set_bg(d, c);
 }
@@ -1285,18 +1285,18 @@ ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 // ARVerifyApplication
 
 
-std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::create_formatter(
+std::unique_ptr<VerifyTableCreator> ARVerifyApplication::create_formatter(
 		const Configuration& config) const
 {
-	auto fmt = std::unique_ptr<VerifyResultFormatter>();
+	auto fmt = std::unique_ptr<VerifyTableCreator>();
 
 	if (config.is_set(VERIFY::COLORED))
 	{
-		fmt = std::make_unique<ColorizingVerifyResultFormatter>(
+		fmt = std::make_unique<ColorizingVerifyTableCreator>(
 				config.object<ColorRegistry>(VERIFY::COLORED));
 	} else
 	{
-		fmt = std::make_unique<MonochromeVerifyResultFormatter>();
+		fmt = std::make_unique<MonochromeVerifyTableCreator>();
 	}
 
 	// Layouts for Checksums + ARId
@@ -1323,31 +1323,31 @@ std::unique_ptr<VerifyResultFormatter> ARVerifyApplication::create_formatter(
 	}
 
 	// Print labels or not
-	fmt->format_label(!config.is_set(VERIFY::NOLABELS));
+	fmt->set_format_labels(!config.is_set(VERIFY::NOLABELS));
 
 	// TOC present? Helper for determining other properties
 	const bool has_toc = !config.value(VERIFY::METAFILE).empty();
 
 	// Print track numbers if they are not forbidden and a TOC is present
-	fmt->format_data(ATTR::TRACK,
+	fmt->set_format_field(ATTR::TRACK,
 			config.is_set(VERIFY::NOTRACKS) ? false : has_toc);
 
 	// Print offsets if they are not forbidden and a TOC is present
-	fmt->format_data(ATTR::OFFSET,
+	fmt->set_format_field(ATTR::OFFSET,
 			config.is_set(VERIFY::NOOFFSETS) ? false : has_toc);
 
 	// Print lengths if they are not forbidden
-	fmt->format_data(ATTR::LENGTH, !config.is_set(VERIFY::NOLENGTHS));
+	fmt->set_format_field(ATTR::LENGTH, !config.is_set(VERIFY::NOLENGTHS));
 
 	// Print filenames if they are not forbidden and a TOC is _not_ present
-	fmt->format_data(ATTR::FILENAME,
+	fmt->set_format_field(ATTR::FILENAME,
 			!config.is_set(VERIFY::NOFILENAMES) || !has_toc);
 
 	// Indicate a matching checksum by this symbol
 	fmt->set_match_symbol("==");
 
 	// Indicate that confidence values should be printed (if available)
-	fmt->format_data(ATTR::CONFIDENCE, config.is_set(VERIFY::CONFIDENCE));
+	fmt->set_format_field(ATTR::CONFIDENCE, config.is_set(VERIFY::CONFIDENCE));
 
 	// Method for creating the result table
 	fmt->set_builder(std::make_unique<RowTableComposerBuilder>());

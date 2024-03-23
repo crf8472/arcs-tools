@@ -346,7 +346,7 @@ using Verify10Layout = Layout<std::unique_ptr<Result>
 /**
  * \brief Interface for formatting the results of an ARVerifyApplication.
  */
-class VerifyResultFormatter : public TableFormatter
+class VerifyTableCreator : public TableCreator
 							, public Verify10Layout
 {
 public:
@@ -354,7 +354,7 @@ public:
 	/**
 	 * \brief Default constructor.
 	 */
-	VerifyResultFormatter();
+	VerifyTableCreator();
 
 	/**
 	 * \brief Set the symbol to be printed on identity of two checksum values.
@@ -470,7 +470,7 @@ private:
 
 	std::unique_ptr<Result> do_format(InputTuple t) const final;
 
-	// TableFormatter
+	// TableCreator
 
 	/*
 	std::vector<ATTR> do_create_field_types(
@@ -479,7 +479,7 @@ private:
 		const int total_theirs) const final;
 		*/
 
-	// VerifyResultFormatter
+	// VerifyTableCreator
 
 	virtual void do_their_match(const Checksum& checksum, const int record,
 			const int field, TableComposer* c) const
@@ -502,9 +502,9 @@ private:
 /**
  * \brief Format monochrome output.
  */
-class MonochromeVerifyResultFormatter final : public VerifyResultFormatter
+class MonochromeVerifyTableCreator final : public VerifyTableCreator
 {
-	// VerifyResultFormatter
+	// VerifyTableCreator
 
 	void do_init_composer(TableComposer& c) const override;
 
@@ -613,7 +613,7 @@ public:
  * All cells containing matches are green. All cells containing mismatches are
  * red.
  */
-class ColorizingVerifyResultFormatter final : public VerifyResultFormatter
+class ColorizingVerifyTableCreator final : public VerifyTableCreator
 {
 	using Color = ansi::Color;
 
@@ -632,11 +632,11 @@ class ColorizingVerifyResultFormatter final : public VerifyResultFormatter
 	void register_decorators(TableComposer& c) const;
 
 
-	// TableFormatter
+	// TableCreator
 
 	void do_init_composer(TableComposer& c) const final;
 
-	// VerifyResultFormatter
+	// VerifyTableCreator
 
 	void do_their_match(const Checksum& checksum, const int record,
 			const int field, TableComposer* c) const final;
@@ -649,14 +649,14 @@ public:
 	/**
 	 * \brief Default constructor.
 	 */
-	ColorizingVerifyResultFormatter();
+	ColorizingVerifyTableCreator();
 
 	/**
 	 * \brief Constructor.
 	 *
 	 * \param[in] colors Colorset to use
 	 */
-	ColorizingVerifyResultFormatter(const ColorRegistry& colors);
+	ColorizingVerifyTableCreator(const ColorRegistry& colors);
 
 	/**
 	 * \brief Return colors for coloring output of type \c d.
@@ -768,7 +768,7 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	 *
 	 * \param[in] config   The Application configuration
 	 */
-	std::unique_ptr<VerifyResultFormatter> create_formatter(
+	std::unique_ptr<VerifyTableCreator> create_formatter(
 			const Configuration& config) const;
 
 	/**
