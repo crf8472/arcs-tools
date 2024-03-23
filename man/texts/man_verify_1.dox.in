@@ -94,12 +94,12 @@ BG_DEFAULT
 \endmanonly
 Use colored output for match results. This is only useful for output printed to
 command line. Output to a file will be cluttered with ANSI escape sequences. If
-used without a parameter, \b --colors will use the default colors, which are
-FG_GREEN+BG_DEFAULT for matches, FG_RED+BG_DEFAULT for mismatches and
-FG_DEFAULT+BG_DEFAULT for locally computed checksums a.k.a. "MINE". A
-semicolon-separated list of pairs of a TYPE and a color specification separated
-by a colon ':' is accepted as an optional parameter. TYPE is one of MATCH,
-MISMATCH or MINE. MATCH defines the color for "Theirs" matching "Mine".
+used without a parameter, \b --colors or \b --colors=default will use the
+default colors, which are FG_GREEN+BG_DEFAULT for matches, FG_RED+BG_DEFAULT for
+mismatches and FG_DEFAULT+BG_DEFAULT for locally computed checksums a.k.a.
+"MINE". A semicolon-separated list of pairs of a TYPE and a color specification
+separated by a colon ':' is accepted as an optional parameter. TYPE is one of
+MATCH, MISMATCH or MINE. MATCH defines the color for "Theirs" matching "Mine".
 Accordingly, MISMATCH defines the color for "Theirs" checksums not matching
 "Mine". MINE defines the color for "Mine" checksums. The color specification is
 either a single color name or a plus-separated pair of color names. Hence, their
