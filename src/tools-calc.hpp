@@ -264,6 +264,23 @@ private:
 	std::string do_format(InputTuple t) const override;
 };
 
+
+/**
+ * \brief Validate the input objects common to every result.
+ *
+ * Throws if validation fails.
+ *
+ * \param[in] checksums  Checksums as resulted
+ * \param[in] toc        TOC as resulted
+ * \param[in] arid       ARId as resulted
+ * \param[in] filenames  Filenames as resulted
+ *
+ * \throws invalid_argument If validation fails
+ */
+void validate(const Checksums& checksums, const TOC* toc,
+	const ARId& arid, const std::vector<std::string>& filenames);
+
+
 } // namespace calc
 } // namespace v_1_0_0
 } // namespace arcsapp

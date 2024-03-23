@@ -895,57 +895,6 @@ void TableFormatter::format_data(const ATTR a, const bool value)
 }
 
 
-void TableFormatter::validate(const Checksums& checksums, const TOC* toc,
-		const ARId& arid, const std::vector<std::string>& filenames) const
-{
-	const auto total_tracks = checksums.size();
-
-	if (total_tracks == 0)
-	{
-		throw std::invalid_argument("Missing value: "
-				"Need some Checksums to print");
-	}
-
-	if (checksums.at(0).empty() || checksums.at(0).types().empty())
-	{
-		throw std::invalid_argument("Missing value: "
-				"Checksums seem to hold no checksums");
-	}
-
-	if (!toc && filenames.empty())
-	{
-		throw std::invalid_argument("Missing value: "
-				"Need either TOC data or filenames to print results");
-	}
-
-	if (toc && static_cast<uint16_t>(toc->total_tracks()) != total_tracks)
-	{
-		throw std::invalid_argument("Mismatch: "
-				"Checksums for " + std::to_string(total_tracks)
-				+ " files/tracks, but TOC specifies "
-				+ std::to_string(toc->total_tracks()) + " tracks.");
-	}
-
-	if (!(filenames.empty()
-				|| filenames.size() == total_tracks || filenames.size() == 1))
-	{
-		throw std::invalid_argument("Mismatch: "
-				"Checksums for " + std::to_string(total_tracks)
-				+ " files/tracks, but " + std::to_string(filenames.size())
-				+ " files.");
-	}
-
-	if (!(arid.empty()
-		|| static_cast<uint16_t>(arid.track_count()) == total_tracks))
-	{
-		throw std::invalid_argument("Mismatch: "
-				"Checksums for " + std::to_string(total_tracks)
-				+ " files/tracks, but AccurateRip id specifies "
-				+ std::to_string(arid.track_count()) + " tracks.");
-	}
-}
-
-
 std::vector<ATTR> TableFormatter::create_optional_fields(
 		const print_flag_t print_flags) const
 {

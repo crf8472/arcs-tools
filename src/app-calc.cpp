@@ -383,6 +383,7 @@ void CalcResultFormatter::assertions(InputTuple t) const
 	const auto toc       = std::get<3>(t);
 	const auto filenames = std::get<4>(t);
 
+	using calc::validate;
 	validate(checksums, toc, arid, filenames);
 }
 

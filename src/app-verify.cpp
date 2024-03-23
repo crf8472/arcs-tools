@@ -745,6 +745,7 @@ void VerifyResultFormatter::assertions(const InputTuple t) const
 	const auto toc       = std::get<5>(t);
 	const auto filenames = std::get<8>(t);
 
+	using calc::validate;
 	validate(checksums, toc, arid, filenames);
 
 	// Specific for verify

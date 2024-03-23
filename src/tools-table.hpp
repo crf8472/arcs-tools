@@ -1042,7 +1042,7 @@ protected:
 	void init_composer(TableComposer& c) const;
 
 	/**
-	 * \brief Actually format the result table.
+	 * \brief Worker: actually format the table.
 	 *
 	 * \param[in] field_types    List of fields to format for print
 	 * \param[in] total_records  Number of records to print
@@ -1100,21 +1100,6 @@ protected:
 	 * \return Formatted checksum
 	 */
 	std::string checksum(const Checksum& checksum) const;
-
-	/**
-	 * \brief Validate the result objects common to every result.
-	 *
-	 * Throws if validation fails.
-	 *
-	 * \param[in] checksums  Checksums as resulted
-	 * \param[in] toc        TOC as resulted
-	 * \param[in] arid       ARId as resulted
-	 * \param[in] filenames  Filenames as resulted
-	 *
-	 * \throws invalid_argument If validation fails
-	 */
-	void validate(const Checksums& checksums, const TOC* toc,
-		const ARId& arid, const std::vector<std::string>& filenames) const;
 
 private:
 
