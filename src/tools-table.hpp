@@ -861,6 +861,10 @@ using calc::ChecksumLayout;
  * while formatting the table. Subclasses of TableCreator may also
  * subclass a specialization of Layout and use format_table() as a worker
  * in do_format().
+ *
+ * Actual data for the table can be provided by AddField specializations.
+ * TableCreator uses a TableComposer for inserting the actual data to the
+ * table.
  */
 class TableCreator : public WithInternalFlags
 {
