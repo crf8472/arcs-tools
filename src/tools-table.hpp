@@ -873,20 +873,6 @@ class TableCreator : public WithInternalFlags
 public:
 
 	/**
-	 * \brief Set the TableComposerBuilder to use.
-	 *
-	 * \param[in] c The TableComposerBuilder to use
-	 */
-	void set_builder(std::unique_ptr<TableComposerBuilder> c);
-
-	/**
-	 * \brief The TableComposerBuilder to use.
-	 *
-	 * \return The TableComposerBuilder to use
-	 */
-	const TableComposerBuilder* builder() const;
-
-	/**
 	 * \brief Set the layout to use for formatting the output table.
 	 *
 	 * \param[in] layout The StringTableLayout to set
@@ -963,6 +949,20 @@ public:
 	 * \param[in] value Flag value to activate or deactivate formatting of \c d
 	 */
 	void set_format_field(const ATTR a, const bool value);
+
+	/**
+	 * \brief Set the TableComposerBuilder to use.
+	 *
+	 * \param[in] c The TableComposerBuilder to use
+	 */
+	void set_builder(std::unique_ptr<TableComposerBuilder> c);
+
+	/**
+	 * \brief The TableComposerBuilder to use.
+	 *
+	 * \return The TableComposerBuilder to use
+	 */
+	const TableComposerBuilder* builder() const;
 
 protected:
 
