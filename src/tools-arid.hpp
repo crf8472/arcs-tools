@@ -363,6 +363,9 @@ public:
 
 /**
  * \brief Stream insertion operator for RichARId.
+ *
+ * \param[in] o Stream to output object to
+ * \param[in] a RichARId to print to stream
  */
 std::ostream& operator << (std::ostream& o, const RichARId& a);
 
