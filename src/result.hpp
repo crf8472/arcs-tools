@@ -20,7 +20,7 @@ inline namespace v_1_0_0
 {
 
 /**
- * \brief Holds data and can be printed.
+ * \brief Abstract base class of a printable result object.
  */
 class Result
 {
@@ -89,7 +89,7 @@ private:
  * \brief Hold a list of objects and print them in the order of appearance.
  */
 template <typename ...Args>
-class ResultObject : public Result
+class ResultObject final : public Result
 {
 public:
 
@@ -161,7 +161,7 @@ private:
  *
  * Wraps a ResultList.
  */
-class ResultBuffer
+class ResultBuffer final
 {
 	/**
 	 * \brief Internal list of objects.

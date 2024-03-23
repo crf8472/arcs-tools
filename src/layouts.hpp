@@ -21,10 +21,10 @@ inline namespace v_1_0_0
 {
 
 /**
- * \brief Provide easy format templates for subclasses.
+ * \brief Abstract base class for formatters.
  *
- * Each concrete subclass will provide a function \c format() that accepts
- * exactly the parameters from the template parameter pack as const references.
+ * Each subclass will provide a function \c format() that accepts exactly the
+ * parameters from the template parameter pack as const references.
  */
 template <typename T, typename ...Args>
 class Layout

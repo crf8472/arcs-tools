@@ -52,12 +52,15 @@ class Result;
 // libarcstk
 using arcstk::Checksum;
 using arcstk::Checksums;
+using arcstk::ChecksumSource;
+using arcstk::ChecksumSourceOf;
 using arcstk::DBAR;
 using arcstk::VerificationResult;
 using arcstk::Verifier;
 
 // arcsapp
 using table::TableComposer;
+
 using RefValuesType = std::vector<uint32_t>;
 
 /**
@@ -110,12 +113,6 @@ private:
 
 	void do_validate(const Configuration& c) const final;
 };
-
-
-using arcstk::Checksum;
-using arcstk::Checksums;
-using arcstk::ChecksumSource;
-using arcstk::ChecksumSourceOf;
 
 
 /**
@@ -326,8 +323,8 @@ public:
 /**
  * \brief Interface to format result objects of a verification process.
  *
- * Formatter for VERIFY results can use this interface for inheriting the
- * appropriate Layout interface.
+ * Formatters for VERIFY results can inherit from this type and implement
+ * do_format().
  */
 using Verify10Layout = Layout<std::unique_ptr<Result>
 	,const std::vector<arcstk::checksum::type>& /* mandatory: types to print */
@@ -472,12 +469,7 @@ private:
 
 	// TableCreator
 
-	/*
-	std::vector<ATTR> do_create_field_types(
-		const print_flag_t print_flags,
-		const std::vector<arcstk::checksum::type>& types_to_print,
-		const int total_theirs) const final;
-		*/
+	//
 
 	// VerifyTableCreator
 
@@ -489,6 +481,14 @@ private:
 			const int field, TableComposer* c) const
 	= 0;
 
+	/**
+	 * \brief Worker: dispatch formatting of a THEIR checksum.
+	 *
+	 * \param[in] checksum   Checksum to format
+	 * \param[in] does_match Match flag
+	 *
+	 * \return Formatted checksum
+	 */
 	std::string format_their_checksum(const Checksum& checksum,
 		const bool does_match) const;
 

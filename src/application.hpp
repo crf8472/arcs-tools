@@ -26,7 +26,7 @@ inline namespace v_1_0_0
 /**
  * \brief An output stream.
  */
-class Output
+class Output final
 {
 public:
 

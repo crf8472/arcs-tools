@@ -34,9 +34,13 @@ namespace details
  *
  * \tparam T    The type to instantiate
  * \tparam Args The constructor arguments
+ *
+ * \param args Argument list
+ *
+ * \return Application requested by input arguments
  */
 template <class T, typename... Args>
-std::unique_ptr<Application> instantiateApplication(Args&&... args)
+inline std::unique_ptr<Application> instantiateApplication(Args&&... args)
 {
 	return std::make_unique<T>(std::forward<Args>(args)...);
 }
@@ -83,13 +87,18 @@ public:
 	using MapType = std::map<std::string, FunctionReturning<Application>>;
 
 	/**
+	 * \brief Virtual default destructor.
+	 */
+	virtual ~ApplicationFactory() = default;
+
+	/**
 	 * \brief Return first match for a key name with \c callstr
 	 *
 	 * \param[in] callstr Name of an application type or call string
 	 *
 	 * \return Instance of the first application type matching the input
 	 */
-	static std::unique_ptr<Application> lookup(std::string const &callstr)
+	static std::unique_ptr<Application> lookup(const std::string &callstr)
 	{
 		// TODO Use find on a map???
 		for (const auto& [app_name, app_creator] : *get_map())
@@ -110,7 +119,7 @@ public:
 	 *
 	 * \return Instance of the requested application type
 	 */
-	static std::unique_ptr<Application> instantiate(std::string const &name)
+	static std::unique_ptr<Application> instantiate(const std::string& name)
 	{
 		auto it = MapType::iterator { get_map()->find(name) };
 
@@ -171,7 +180,7 @@ protected:
 	 *
 	 * \return Instance returned by \c create
 	 */
-	static std::unique_ptr<Application> instantiate(std::string const &,
+	static std::unique_ptr<Application> instantiate(const std::string&,
 			FunctionReturning<Application> create)
 	{
 		return create();
@@ -195,6 +204,8 @@ private:
 	 * \brief Map associating Application types with names
 	 */
 	static std::unique_ptr<MapType> map_;
+
+	virtual void do_not_make_this_class_abstract() const = 0;
 };
 
 
@@ -203,9 +214,11 @@ private:
  *
  * \tparam T The type to register
  */
-template <class T>
-class RegisterApplicationType : ApplicationFactory //TODO SFINAE exclude types
+template <class T> //TODO SFINAE exclude types
+class RegisterApplicationType final : ApplicationFactory
 {
+	virtual void do_not_make_this_class_abstract() const final { /* empty */ }
+
 public:
 
 	/**
@@ -213,7 +226,7 @@ public:
 	 *
 	 * \param[in] name The name to register the application type
 	 */
-	RegisterApplicationType(std::string const& name)
+	RegisterApplicationType(const std::string& name)
 	{
 		get_map()->insert(
 				std::make_pair(name, &details::instantiateApplication<T>));

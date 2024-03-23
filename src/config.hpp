@@ -39,9 +39,9 @@ inline namespace v_1_0_0
 
 
 /**
- * \brief Reports a problem with the OptionsObject.
+ * \brief Reports a problem while defining the configuration.
  */
-class ConfigurationException : public std::runtime_error
+class ConfigurationException final : public std::runtime_error
 {
 public:
 
@@ -216,7 +216,7 @@ struct OPTION
 
 
 /**
- * \brief Parse a string to an object.
+ * \brief Abstract base class for string parsers.
  *
  * The result class is a std::any that can be put into a Configuration.
  */
@@ -242,16 +242,12 @@ public:
 	 *
 	 * \return Result object
 	 */
-	std::any parse(const std::string& s) const
-	{
-		ARCS_LOG(DEBUG1) << "=> " << start_message();
-		return this->do_parse(s);
-	}
+	std::any parse(const std::string& s) const;
 };
 
 
 /**
- * \brief Parser for an input string for option values.
+ * \brief Abstract base class for for option value string parsers.
  *
  * \tparam T Result type
  */
@@ -269,7 +265,7 @@ class InputStringParser : public StringParser
 	virtual auto do_parse_empty() const -> T
 	{
 		ARCS_LOG(DEBUG1) << "Empty parser input, return default object";
-		return T { /* empty */ };
+		return T { /* empty */ }; // TODO Use declval?
 	}
 
 	/**
@@ -307,7 +303,7 @@ using OptionParsers = std::vector<std::pair<OptionCode,
 class Configuration;
 
 /**
- * \brief Abstract base class for Configurators.
+ * \brief Abstract base class for creating a configuration from options.
  *
  * A Configurator performs every step necessary to provide the configuration
  * object.
@@ -506,7 +502,7 @@ private:
 /**
  * \brief Application input as there is configuration and arguments.
  */
-class Configuration
+class Configuration final
 {
 	/**
 	 * \brief Options.
@@ -621,7 +617,7 @@ public:
 /**
  * \brief Default Configurator without any specific options.
  */
-class DefaultConfigurator : public Configurator
+class DefaultConfigurator final : public Configurator
 {
 public:
 

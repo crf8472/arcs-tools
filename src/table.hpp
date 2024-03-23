@@ -94,7 +94,7 @@ std::vector<std::string> split(std::string str, const std::string& delim);
  * \brief Transform container content to a delimiter separated list.
  */
 template <typename Container> // TODO SFINAE stuff: empty(), size(), b+e, rbegin
-std::string to_sep_list(const Container c, const std::string delim,
+inline std::string to_sep_list(const Container c, const std::string delim,
 		const std::function<std::string(const typename Container::value_type &)>
 		&f)
 {
@@ -828,6 +828,7 @@ public:
 			const std::size_t max_len) const;
 
 	void set_splitter(std::unique_ptr<StringSplitter> s);
+
 	const StringSplitter* splitter() const;
 
 private:
@@ -850,6 +851,7 @@ private:
 	};
 
 	bool flag_get(const Flag f) const;
+
 	void flag_set(const Flag f, const bool value);
 
 	flag_store_type flags_;
@@ -869,6 +871,7 @@ private:
 	};
 
 	std::string delim_get(const Index i) const;
+
 	void delim_set(const Index i, const std::string& value);
 
 	delim_store_type delims_;

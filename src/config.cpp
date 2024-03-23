@@ -31,6 +31,39 @@ ConfigurationException::ConfigurationException(const std::string &what_arg)
 }
 
 
+// log_cli_input
+
+
+void log_cli_input(const Options& options, const OptionRegistry& registry)
+{
+	ARCS_LOG(DEBUG1) << "Command line options:";
+
+	for (const auto& [code, value] : options.options_)
+	{
+		for (const auto& p : registry)
+		{
+			if (code == p.first)
+			{
+				ARCS_LOG(DEBUG1) << "--" << p.second.symbol()
+					<< " (" << code << ")"
+					<< " = "
+					<< (value.empty() ? "TRUE" : "'" + value + "'");
+				break;
+			}
+		}
+	}
+
+	ARCS_LOG(DEBUG1) << "Command line arguments:";
+
+	auto i = int { 0 };
+	for (const auto& arg : *options.arguments())
+	{
+		ARCS_LOG(DEBUG1) << "Arg " << std::setw(2) << i << ": '" << arg << "'";
+		++i;
+	}
+}
+
+
 // Options
 
 
@@ -126,36 +159,13 @@ bool Options::empty() const
 }
 
 
-// log_cli_input
+// StringParser
 
 
-void log_cli_input(const Options& options, const OptionRegistry& registry)
+std::any StringParser::parse(const std::string& s) const
 {
-	ARCS_LOG(DEBUG1) << "Command line options:";
-
-	for (const auto& [code, value] : options.options_)
-	{
-		for (const auto& p : registry)
-		{
-			if (code == p.first)
-			{
-				ARCS_LOG(DEBUG1) << "--" << p.second.symbol()
-					<< " (" << code << ")"
-					<< " = "
-					<< (value.empty() ? "TRUE" : "'" + value + "'");
-				break;
-			}
-		}
-	}
-
-	ARCS_LOG(DEBUG1) << "Command line arguments:";
-
-	auto i = int { 0 };
-	for (const auto& arg : *options.arguments())
-	{
-		ARCS_LOG(DEBUG1) << "Arg " << std::setw(2) << i << ": '" << arg << "'";
-		++i;
-	}
+	ARCS_LOG(DEBUG1) << "=> " << start_message();
+	return this->do_parse(s);
 }
 
 
