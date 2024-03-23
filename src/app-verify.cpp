@@ -761,6 +761,9 @@ void VerifyResultFormatter::assertions(const InputTuple t) const
 				"nothing to print.");
 	}
 
+	// TODO dBAR should have at least one block with size == checksums.size()
+	// TODO dBAR should have at least one block with id == arid
+
 	if (!refvalues.empty() && refvalues.size() != checksums.size())
 	{
 		throw std::invalid_argument("Mismatch: "
@@ -775,7 +778,7 @@ void VerifyResultFormatter::assertions(const InputTuple t) const
 				"nothing to print.");
 	}
 
-	if (block > vresult->total_blocks())
+	if (block > vresult->total_blocks()) // block < 0 is ok (means: no block)
 	{
 		throw std::invalid_argument("Mismatch: "
 				"Match contains no block " + std::to_string(block)
