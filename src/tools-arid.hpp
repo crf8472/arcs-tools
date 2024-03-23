@@ -22,6 +22,12 @@
 namespace arcsapp
 {
 
+/**
+ * \brief Tools and helpers for managing ARIds.
+ */
+namespace arid
+{
+
 using ARId = arcstk::ARId;
 
 
@@ -264,11 +270,15 @@ protected:
 
 	/**
 	 * \brief Getter for the show flags.
+	 *
+	 * \return Show flags
 	 */
 	auto show_flags() const -> decltype( show_flags_ );
 
 	/**
 	 * \brief Getter for the flag labels.
+	 *
+	 * \return Flag labels
 	 */
 	auto labels() const -> decltype( labels_ );
 };
@@ -352,6 +362,7 @@ public:
  */
 std::ostream& operator << (std::ostream& o, const RichARId& a);
 
+} // namespace arid
 } // namespace arcsapp
 
 #endif

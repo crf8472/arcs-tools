@@ -43,8 +43,23 @@
 namespace arcsapp
 {
 
-class ARIdLayout;
-class RichARId;
+// forward declarations
+namespace arid {
+	class ARIdLayout;
+	class RichARId;
+}
+
+// arcsapp
+using arid::ARIdLayout;
+using arid::RichARId;
+using table::CellDecorator;
+using table::DecoratedStringTable;
+using table::PrintableTable;
+using table::StringTableLayout;
+
+
+namespace table
+{
 
 /**
  * \brief Interface for composing a container object holding records.
@@ -283,12 +298,6 @@ constexpr int MAX_ATTR = 7;
  */
 template<ATTR A>
 std::string DefaultLabel();
-
-
-using table::PrintableTable;
-using table::StringTableLayout;
-using table::CellDecorator;
-using table::DecoratedStringTable;
 
 
 /**
@@ -1282,6 +1291,7 @@ public:
 };
 
 
+} // namespace table
 } // namespace arcsapp
 
 #endif

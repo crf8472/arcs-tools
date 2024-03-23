@@ -52,8 +52,19 @@ extern const std::string ARCSTOOLS_VERSION;
  */
 extern const std::string ARCSTOOLS_GIT_VERSION;
 
+
+/**
+ * \internal
+ * \brief Namespace for implementation details.
+ */
+namespace details
+{
+// empty
+}
+
 } // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif
+
 

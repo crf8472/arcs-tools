@@ -51,6 +51,12 @@
 
 namespace arcsapp
 {
+namespace table
+{
+
+// arcsapp
+using arcsapp::arid::ARIdTableLayout;
+
 
 // DefaultLabel
 
@@ -1158,5 +1164,6 @@ void TableFormatter::do_their_mismatch(const Checksum& checksum,
 	// do nothing
 }
 
+} // namespace table
 } // namespace arcsapp
 

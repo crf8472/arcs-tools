@@ -14,6 +14,8 @@
 
 namespace arcsapp
 {
+namespace arid
+{
 
 // RichARId
 
@@ -304,5 +306,6 @@ std::unique_ptr<ARIdLayout> ARIdTableLayout::do_clone() const
 	return std::make_unique<ARIdTableLayout>(*this);
 }
 
+} // namespace arid
 } // namespace arcsapp
 

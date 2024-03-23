@@ -42,6 +42,10 @@ namespace arcsapp
 
 class Result;
 
+using table::ATTR;
+using table::FieldCreator;
+using table::TableFormatter;
+
 /**
  * \brief Options to configure Application instances that do ARCS calculation.
  */

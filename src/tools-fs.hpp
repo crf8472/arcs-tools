@@ -11,6 +11,10 @@
 
 namespace arcsapp
 {
+
+/**
+ * \brief Tools and helpers for accessing the file system.
+ */
 namespace file
 {
 

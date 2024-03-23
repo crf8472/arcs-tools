@@ -1,13 +1,14 @@
 #include "catch2/catch_test_macros.hpp"
 
-#ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
-#include "tools-parse.hpp"
+#ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
+#include "tools-dbar.hpp"
 #endif
 
 
 TEST_CASE ( "DBARTripletLayout", "[artripletlayout]" )
 {
-	using arcsapp::DBARTripletLayout;
+	using arcsapp::dbar::DBARTripletLayout;
+
 	using arcstk::DBARTriplet;
 
 	auto t = DBARTriplet { 0xFFAABBCC, 24, 0x12345678 };

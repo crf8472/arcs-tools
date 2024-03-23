@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
-#include "tools-parse.hpp"
+#ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
+#include "tools-dbar.hpp"
 #endif
 
 #ifdef _WIN32 // XXX This is completely untested
@@ -54,11 +54,18 @@
 namespace arcsapp
 {
 
+// libarcstk
 using arcstk::ARId;
-
 using arcstk::DBAR;
 using arcstk::DBARTriplet;
 using arcstk::parse_stream;
+
+namespace dbar
+{
+
+// arcsapp
+using arcsapp::arid::ARIdTableLayout;
+
 
 // StdIn
 
@@ -317,5 +324,6 @@ std::string DBARTripletLayout::do_format(InputTuple t) const
 	return out.str();
 }
 
+} // namespace dbar
 } // namespace arcsapp
 

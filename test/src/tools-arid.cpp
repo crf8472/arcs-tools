@@ -4,10 +4,11 @@
 #include "tools-arid.hpp"
 #endif
 
+// TODO Testcase RichARId
 
 TEST_CASE ( "ARIdTableLayout", "[aridtablelayout]" )
 {
-	using arcsapp::ARIdTableLayout;
+	using arcsapp::arid::ARIdTableLayout;
 
 	ARIdTableLayout lyt(false, false, true, false, false, false, false, false);
 

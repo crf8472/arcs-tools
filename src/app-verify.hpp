@@ -35,6 +35,9 @@
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"           // for Layout
 #endif
+#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
+#include "tools-table.hpp"
+#endif
 
 
 namespace arcsapp
@@ -42,15 +45,17 @@ namespace arcsapp
 
 class Configurator;
 class Options;
-class TableFormatter;
 class Result;
 
+// libarcstk
 using arcstk::Checksum;
 using arcstk::Checksums;
 using arcstk::DBAR;
 using arcstk::VerificationResult;
 using arcstk::Verifier;
 
+// arcsapp
+using table::TableComposer;
 using RefValuesType = std::vector<uint32_t>;
 
 /**

@@ -7,18 +7,19 @@
 #include "app-verify.hpp"     // for MatchDecorator
 #endif
 
-// TODO Testcase RichARId
 // TODO Testcase RowTableComposer
 // TODO Testcase ColTableComposer
 // TODO Testcase RowTableComposerBuilder
 // TODO Testcase ColTableComposerBuilder
-// TODO ResultFormatter
+// TODO Testcase TableFormatter
 
 
+// FIXME Should go to unit 'app-verify' since MatchDecorator is verify specific
 TEST_CASE ( "MatchDecorator", "[matchdecorator]" )
 {
-	using arcsapp::CellDecorator;
 	using arcsapp::MatchDecorator;
+	using arcsapp::table::CellDecorator;
+
 	using arcsapp::ansi::Color;
 	using arcsapp::ansi::Highlight;
 

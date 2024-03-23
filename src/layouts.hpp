@@ -236,7 +236,6 @@ inline constexpr auto to_underlying(E e) noexcept
 }
 
 } // namespace details
-
 } // namespace arcsapp
 
 #endif

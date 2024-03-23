@@ -29,6 +29,10 @@
 
 namespace arcsapp
 {
+
+/**
+ * \brief Tools and helpers for managing AccurateRip checksums.
+ */
 namespace calc
 {
 

@@ -23,8 +23,8 @@
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"              // for Result
 #endif
-#ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
-#include "tools-parse.hpp"        // for PrintParseHandler, DBARTripletLayout
+#ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
+#include "tools-dbar.hpp"        // for PrintParseHandler, DBARTripletLayout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
 #include "tools-fs.hpp"
@@ -37,6 +37,9 @@ namespace registered
 {
 const auto parse = RegisterApplicationType<ARParseApplication>("parse");
 }
+
+// arcsapp
+using dbar::PrintParseHandler;
 
 
 // ARParseApplication

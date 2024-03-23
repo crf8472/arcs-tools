@@ -51,11 +51,23 @@ namespace registered
 const auto calc = RegisterApplicationType<ARCalcApplication>("calc");
 }
 
+// libarcstk
 using arcstk::ARId;
-using arcstk::Checksum;
 using arcstk::Checksums;
-using arcstk::DBAR;
 using arcstk::TOC;
+
+// arcsapp
+using arid::ARIdLayout;
+using arid::ARIdTableLayout;
+using arid::RichARId;
+using calc::HexLayout;
+using table::ATTR;
+using table::AddField;
+using table::ColTableComposerBuilder;
+using table::FieldCreator;
+using table::RowTableComposerBuilder;
+using table::TableComposerBuilder;
+using table::StringTableLayout;
 
 
 // CALCBASE
@@ -313,16 +325,16 @@ void CalcResultFormatter::add_result_fields(std::vector<ATTR>& field_list,
 		const print_flag_t print_flags,
 		const std::vector<arcstk::checksum::type>& types_to_print) const
 {
-	using checksum = arcstk::checksum::type;
+	using ChecksumType = arcstk::checksum::type;
 
 	for (const auto& t : types_to_print)
 	{
-		if (checksum::ARCS1 == t)
+		if (ChecksumType::ARCS1 == t)
 		{
 			field_list.emplace_back(ATTR::CHECKSUM_ARCS1);
 		} else
 		{
-			if (checksum::ARCS2 == t)
+			if (ChecksumType::ARCS2 == t)
 			{
 				field_list.emplace_back(ATTR::CHECKSUM_ARCS2);
 			}
@@ -536,8 +548,6 @@ std::unique_ptr<CalcResultFormatter> ARCalcApplication::create_formatter(
 	};
 
 	// Layouts for Checksums + ARId
-
-	using calc::HexLayout;
 
 	fmt->set_checksum_layout(std::make_unique<HexLayout>());
 

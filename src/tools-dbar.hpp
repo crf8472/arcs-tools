@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
-#define __ARCSTOOLS_TOOLS_PARSE_HPP__
+#ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
+#define __ARCSTOOLS_TOOLS_DBAR_HPP__
 
 /**
  * \file
@@ -31,14 +31,27 @@
 namespace arcsapp
 {
 
+namespace arid
+{
 class Application;
 class ARIdLayout;
+}
+
+/**
+ * \brief Tools and helpers for DBAR input.
+ */
+namespace dbar
+{
+
 class DBARTripletLayout;
 
+// libarcstk
 using arcstk::DBAR;
 using arcstk::ParseHandler;
 using arcstk::ParseErrorHandler;
 
+// arcsapp
+using arcsapp::arid::ARIdLayout;
 
 /**
  * \brief Wrap a vector in an istream.
@@ -247,6 +260,7 @@ private:
 	std::string do_format(InputTuple t) const override;
 };
 
+} // namespace dbar
 } // namespace arcsapp
 
 #endif

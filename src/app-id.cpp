@@ -49,9 +49,14 @@ namespace registered
 const auto id = RegisterApplicationType<ARIdApplication>("id");
 }
 
+// libarcstk
 using arcstk::ARId;
 
+// libarcsdec
 using arcsdec::ARIdCalculator;
+
+// arcsapp
+using arid::ARIdTableLayout;
 
 
 // ARIdConfigurator

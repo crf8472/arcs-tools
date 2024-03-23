@@ -26,8 +26,8 @@ list (APPEND TEST_SETS layouts     )
 list (APPEND TEST_SETS table       )
 list (APPEND TEST_SETS tools-arid  )
 list (APPEND TEST_SETS tools-calc  )
+list (APPEND TEST_SETS tools-dbar  )
 list (APPEND TEST_SETS tools-fs    )
-#list (APPEND TEST_SETS tools-parse )
 list (APPEND TEST_SETS tools-table )
 
 

@@ -37,26 +37,26 @@
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"               // for ResultObject, Result
 #endif
-#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
-#include "tools-arid.hpp"              // for ARIdLayout
-#endif
-#ifndef __ARCSTOOLS_TABLE_HPP__
-#include "table.hpp"                // for StringTableLayout, BoolDecorator
-#endif
 #ifndef __ARCSTOOLS_ANSI_HPP__
 #include "ansi.hpp"                 // for Colorize
 #endif
-#ifndef __ARCSTOOLS_TOOLS_PARSE_HPP__
-#include "tools-parse.hpp"          // for ContentHandler
+#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
+#include "tools-arid.hpp"           // for ARIdLayout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"           // for audiofile_layout
+#endif
+#ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
+#include "tools-dbar.hpp"           // for ContentHandler
 #endif
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
 #include "tools-fs.hpp"             // for file_exists
 #endif
 #ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
 #include "tools-info.hpp"           // for SupportedFormats
+#endif
+#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
+#include "tools-table.hpp"          // for StringTableLayout, CellDecorator
 #endif
 
 namespace arcsapp
@@ -67,6 +67,7 @@ namespace registered
 const auto verify = RegisterApplicationType<ARVerifyApplication>("verify");
 }
 
+// libarcstk
 using arcstk::Checksum;
 using arcstk::Checksums;
 using arcstk::DBARBuilder;
@@ -74,6 +75,19 @@ using arcstk::DBARSource;
 using arcstk::Logging;
 using arcstk::AlbumVerifier;
 using arcstk::TracksetVerifier;
+
+// arcsapp
+using arid::ARIdLayout;
+using arid::ARIdTableLayout;
+using arid::RichARId;
+using calc::HexLayout;
+using dbar::read_from_stdin;
+using table::ATTR;
+using table::AddField;
+using table::CellDecorator;
+using table::FieldCreator;
+using table::RowTableComposerBuilder;
+using table::TableComposer;
 
 
 // VERIFY
