@@ -10,7 +10,6 @@
 #include <ostream>     // for ostream
 #include <memory>      // for unique_ptr
 #include <tuple>       // for tuple, tuple_cat, make_tuple, apply
-#include <type_traits>
 #include <utility>     // for forward
 #include <vector>      // for vector
 

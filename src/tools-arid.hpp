@@ -377,7 +377,7 @@ std::ostream& operator << (std::ostream& o, const RichARId& a);
  *
  * \return ARId container
  */
-RichARId build_id(const TOC* /*toc*/, const ARId& arid,
+RichARId build_id(const TOC* toc, const ARId& arid,
 		const std::string& alt_prefix, const ARIdLayout& layout);
 
 /**

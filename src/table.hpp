@@ -1066,7 +1066,8 @@ private:
 	/**
 	 * \brief Convert row to inner row index.
 	 *
-	 * \param[in] row Row
+	 * \param[in] i Row
+	 *
 	 * \return Inner row index
 	 */
 	int row_idx(const int i) const;
@@ -1074,10 +1075,11 @@ private:
 	/**
 	 * \brief Convert column to inner column index.
 	 *
-	 * \param[in] col Column
+	 * \param[in] j Column
+	 *
 	 * \return Inner col index
 	 */
-	int col_idx(const int i) const;
+	int col_idx(const int j) const;
 
 	/**
 	 * \brief Set flag for a cell to TRUE or FALSE.

@@ -690,7 +690,7 @@ void parse_list(const std::string& list, const char delim,
  * \brief Parse \c list as a sequence of strings separated by \c delim and
  * convert each entry by \c convert_func.
  *
- * \tparam Type of requested objects
+ * \tparam T Type of requested objects
  *
  * \param[in] list         Input string to parse as a list
  * \param[in] delim        Delimiter for list entries

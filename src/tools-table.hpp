@@ -973,7 +973,7 @@ protected:
 	/**
 	 * \brief Worker: TRUE iff field \c f is requested for output.
 	 *
-	 * \param[in] a Field to check
+	 * \param[in] f Field to check
 	 *
 	 * \return TRUE iff \c f is requested for output, otherwise FALSE
 	 */

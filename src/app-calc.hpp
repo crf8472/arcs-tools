@@ -317,7 +317,7 @@ private:
 	 *
 	 * The format object returned will not yet have formatted the checksums.
 	 *
-	 * \param[in] options  The options parsed from command line
+	 * \param[in] config The configuration parsed from command line
 	 */
 	std::unique_ptr<CalcTableCreator> create_formatter(
 			const Configuration &config) const;

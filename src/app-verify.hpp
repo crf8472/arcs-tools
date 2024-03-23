@@ -423,7 +423,7 @@ protected:
 	 * \return Actual number of blocks in reference
 	 */
 	std::size_t total_blocks_in_reference(
-			const DBAR& dbar, const std::vector<uint32_t>& refvalues) const;
+			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const;
 
 	/**
 	 * \brief Create reference source
@@ -436,7 +436,7 @@ protected:
 	 * \return Type-normalized reference source
 	 */
 	std::unique_ptr<const ChecksumSource> create_reference_source(
-			const DBAR& dbar, const std::vector<uint32_t>& refvalues) const;
+			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const;
 
 	/**
 	 * \brief Add result-specific data creators to an existing list of creators.

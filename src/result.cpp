@@ -53,7 +53,7 @@ void ResultList::do_print(std::ostream& o) const
 }
 
 
-//
+// ResultBuffer
 
 
 ResultBuffer::ResultBuffer()
