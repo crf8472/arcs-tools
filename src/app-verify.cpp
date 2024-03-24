@@ -270,7 +270,7 @@ std::string ChecksumListParser::start_message() const
 }
 
 
-std::vector<uint32_t> ChecksumListParser::do_parse_nonempty(
+RefValuesType ChecksumListParser::do_parse_nonempty(
 		const std::string& checksum_list) const
 {
 	auto i = int { 0 };
@@ -645,7 +645,7 @@ void ARVerifyConfigurator::do_validate(const Configuration& c) const
 	// No reference checksums at all? => Error
 
 	if (c.object<DBAR>(VERIFY::RESPONSEFILE).size() == 0
-		&& c.object<std::vector<uint32_t>>(VERIFY::REFVALUES).empty())
+		&& c.object<RefValuesType>(VERIFY::REFVALUES).empty())
 	{
 		throw std::runtime_error(
 				"No reference checksums for verification available.");
@@ -1223,7 +1223,7 @@ void ColorizingVerifyTableCreator::set_color_bg(DecorationType d, Color c)
 
 
 bool SourceCreator::reference_is_dbar(
-			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const
+			const DBAR& dBAR, const RefValuesType& refvalues) const
 {
 	return dBAR.size() > 0;
 }
@@ -1231,7 +1231,7 @@ bool SourceCreator::reference_is_dbar(
 
 std::unique_ptr<const ChecksumSource>
 SourceCreator::create_reference_source(const DBAR& dBAR,
-		const std::vector<uint32_t>& refvalues) const
+		const RefValuesType& refvalues) const
 {
 	std::unique_ptr<const ChecksumSource> ref_src;
 
@@ -1255,8 +1255,8 @@ SourceCreator::create_reference_source(const DBAR& dBAR,
 
 
 std::unique_ptr<const ChecksumSource>
-SourceCreator::operator()(const DBAR& dBAR,
-		const std::vector<uint32_t>& refvalues) const
+SourceCreator::operator()(const DBAR& dBAR, const RefValuesType& refvalues)
+	const
 {
 	return create_reference_source(dBAR, refvalues);
 }
@@ -1523,7 +1523,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	-> std::pair<int, std::unique_ptr<Result>>
 {
 	const auto dbar   = config.object<DBAR>(VERIFY::RESPONSEFILE);
-	const auto refvls = config.object<std::vector<uint32_t>>(VERIFY::REFVALUES);
+	const auto refvls = config.object<RefValuesType>(VERIFY::REFVALUES);
 
 	const auto get_src = SourceCreator {};
 	const auto ref_source { get_src(dbar, refvls) };

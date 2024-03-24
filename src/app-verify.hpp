@@ -67,7 +67,7 @@ using RefValuesType = std::vector<uint32_t>;
 /**
  * \brief Access list of reference values by block and index.
  */
-class RefvaluesSource final : public ChecksumSourceOf<std::vector<uint32_t>>
+class RefvaluesSource final : public ChecksumSourceOf<RefValuesType>
 {
 	ARId do_id(const ChecksumSource::size_type block_idx) const final;
 	Checksum do_checksum(const ChecksumSource::size_type block_idx,
@@ -147,11 +147,11 @@ class DBARParser final : public InputStringParser<DBAR>
  * Accepts a comma-separated list of hexadecimal values as input for option
  * VERIFY::REFVALUES.
  */
-class ChecksumListParser final : public InputStringParser<std::vector<uint32_t>>
+class ChecksumListParser final : public InputStringParser<RefValuesType>
 {
 	std::string start_message() const final;
 
-	std::vector<uint32_t> do_parse_nonempty(const std::string& s) const final;
+	RefValuesType do_parse_nonempty(const std::string& s) const final;
 };
 
 
@@ -276,10 +276,13 @@ public:
 	 * Dispatches for matches and mismatches. Intended to be used
 	 * by AddField.
 	 *
-	 * \param[in] checksum   Checksum to format
+	 * \param[in] checksum   Checksums to format
 	 * \param[in] does_match Match flag
+	 * \param[in] record     Record index
+	 * \param[in] field      Field index
+	 * \param[in] c          TableComposer to use
 	 */
-	void their_checksum(const Checksum& checksums, const bool does_match,
+	void their_checksum(const Checksum& checksum, const bool does_match,
 		const int record, const int field, TableComposer* c) const;
 
 protected:
@@ -742,7 +745,7 @@ class SourceCreator
 	 * \return TRUE iff DBAR is the actual reference, otherwise FALSE
 	 */
 	bool reference_is_dbar(
-			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const;
+			const DBAR& dBAR, const RefValuesType& refvalues) const;
 
 	/**
 	 * \brief Create the reference object from the input.
@@ -753,7 +756,7 @@ class SourceCreator
 	 * \return The reference source for the verification
 	 */
 	std::unique_ptr<const ChecksumSource> create_reference_source(
-			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const;
+			const DBAR& dBAR, const RefValuesType& refvalues) const;
 
 public:
 
@@ -766,7 +769,7 @@ public:
 	 * \return The reference source for the verification
 	 */
 	std::unique_ptr<const ChecksumSource> operator()(
-			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const;
+			const DBAR& dBAR, const RefValuesType& refvalues) const;
 };
 
 
