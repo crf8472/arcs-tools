@@ -43,6 +43,10 @@
 #ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
 #include "tools-info.hpp"           // for AvailableFileReaders
 #endif
+#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
+#include "tools-table.hpp"          // for StringTableLayout, CellDecorator,
+									// TableComposer
+#endif
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"               // for ResultObject, Result
 #endif
@@ -70,6 +74,7 @@ using arid::RichARId;
 using calc::HexLayout;
 using table::ATTR;
 using table::AddField;
+using table::TableComposer;
 using table::ColTableComposerBuilder;
 using table::FieldCreator;
 using table::RowTableComposerBuilder;
@@ -369,13 +374,15 @@ void CalcTableCreator::populate_result_creators(
 	if (required(field_list, ATTR::CHECKSUM_ARCS1))
 	{
 		creators.emplace_back(
-			std::make_unique<AddField<ATTR::CHECKSUM_ARCS1>>(&checksums, this));
+			std::make_unique<AddField<ATTR::CHECKSUM_ARCS1>>(
+				&checksums, this->checksum_layout()));
 	}
 
 	if (required(field_list, ATTR::CHECKSUM_ARCS2))
 	{
 		creators.emplace_back(
-			std::make_unique<AddField<ATTR::CHECKSUM_ARCS2>>(&checksums, this));
+			std::make_unique<AddField<ATTR::CHECKSUM_ARCS2>>(
+				&checksums, this->checksum_layout()));
 	}
 }
 
@@ -389,6 +396,12 @@ void CalcTableCreator::assertions(InputTuple t) const
 
 	using calc::validate;
 	validate(checksums, toc, arid, filenames);
+}
+
+
+void CalcTableCreator::do_init_composer(TableComposer& c) const
+{
+	// do nothing
 }
 
 
@@ -415,15 +428,15 @@ std::unique_ptr<Result> CalcTableCreator::do_format(InputTuple t) const
 		buf.append(build_id(toc, arid, alt_prefix, *layout));
 	}
 
-	const auto print_flags { create_print_flags(toc, filenames) };
+	const auto print_flags { create_field_requests(toc, filenames) };
 
-	auto field_list { create_optional_fields(print_flags) };
+	auto field_list { create_field_types(print_flags) };
 
 	add_result_fields(field_list, print_flags, types_to_print);
 
 	std::vector<std::unique_ptr<FieldCreator>> creators;
 
-	populate_common_creators(creators, field_list, *toc, checksums, filenames);
+	populate_creators_list(creators, field_list, *toc, checksums, filenames);
 	populate_result_creators(creators, print_flags, field_list, types_to_print,
 			checksums);
 

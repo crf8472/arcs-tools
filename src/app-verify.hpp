@@ -387,6 +387,18 @@ public:
 	 */
 	const std::string& match_symbol() const;
 
+	/**
+	 * \brief Callback worker: add formatted THEIR checksum to result table.
+	 *
+	 * Dispatches for matches and mismatches. Intended to be used
+	 * by AddField.
+	 *
+	 * \param[in] checksum   Checksum to format
+	 * \param[in] does_match Match flag
+	 */
+	void their_checksum(const Checksum& checksums, const bool does_match,
+		const int record, const int field, TableComposer* c) const;
+
 protected:
 
 	/**
@@ -437,19 +449,6 @@ protected:
 		const ChecksumSource& ref_source,
 		const int total_theirs_per_block) const;
 
-	// Commented out for the moment, but left as a note
-
-	/* *
-	 * \brief Worker: dispatch formatting of a THEIR checksum.
-	 *
-	 * \param[in] checksum   Checksum to format
-	 * \param[in] does_match Match flag
-	 *
-	 * \return Formatted checksum
-	 */
-	//std::string their_checksum(const Checksum& checksum,
-	//	const bool does_match) const;
-
 private:
 
 	// Verify10Layout
@@ -464,10 +463,16 @@ private:
 
 	// VerifyTableCreator
 
+	/**
+	 * \brief Called by their_checksum() on a match.
+	 */
 	virtual void do_their_match(const Checksum& checksum, const int record,
 			const int field, TableComposer* c) const
 	= 0;
 
+	/**
+	 * \brief Called by their_checksum() on a mismatch.
+	 */
 	virtual void do_their_mismatch(const Checksum& checksum, const int record,
 			const int field, TableComposer* c) const
 	= 0;
@@ -735,6 +740,34 @@ class ColorSpecParser final : public InputStringParser<ColorRegistry>
 	std::string start_message() const final;
 
 	ColorRegistry do_parse_nonempty(const std::string& s) const final;
+};
+
+
+/**
+ * \brief Creates Theirs-columns with optional Confidence-columns
+ */
+template <>
+class table::AddField<ATTR::THEIRS> final : public FieldCreator
+{
+	const VerificationResult* vresult_;
+	const int block_;
+	const ChecksumSource* checksums_;
+	const std::vector<arcstk::checksum::type>* types_to_print_;
+	const VerifyTableCreator* formatter_;
+	const int total_theirs_per_block_;
+	const bool print_confidence_;
+
+	void do_create(TableComposer* c, const int record_idx) const final;
+
+public:
+
+	AddField(const std::vector<arcstk::checksum::type>* types,
+			const VerificationResult* vresult,
+			const int block,
+			const ChecksumSource* checksums,
+			const VerifyTableCreator* formatter,
+			const int total_theirs_per_block,
+			const bool print_confidence);
 };
 
 

@@ -5,6 +5,7 @@
 
 #include <algorithm>       // for replace, max, transform
 #include <cctype>          // for toupper
+#include <cmath>           // for ceil
 #include <cstddef>         // for size_t
 #include <cstdint>         // for uint32_t
 #include <cstdlib>         // for EXIT_SUCCESS
@@ -55,6 +56,7 @@
 #endif
 #ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
 #include "tools-table.hpp"          // for StringTableLayout, CellDecorator
+									// TableComposer
 #endif
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"               // for ResultObject, Result
@@ -94,236 +96,236 @@ using table::RowTableComposerBuilder;
 using table::TableComposer;
 
 
-// VERIFY
+	// VERIFY
 
 
-constexpr OptionCode VERIFY::NOFIRST;
-constexpr OptionCode VERIFY::NOLAST;
-constexpr OptionCode VERIFY::NOALBUM;
-constexpr OptionCode VERIFY::RESPONSEFILE;
-constexpr OptionCode VERIFY::REFVALUES;
-constexpr OptionCode VERIFY::PRINTALL;
-constexpr OptionCode VERIFY::BOOLEAN;
-constexpr OptionCode VERIFY::NOOUTPUT;
+	constexpr OptionCode VERIFY::NOFIRST;
+	constexpr OptionCode VERIFY::NOLAST;
+	constexpr OptionCode VERIFY::NOALBUM;
+	constexpr OptionCode VERIFY::RESPONSEFILE;
+	constexpr OptionCode VERIFY::REFVALUES;
+	constexpr OptionCode VERIFY::PRINTALL;
+	constexpr OptionCode VERIFY::BOOLEAN;
+	constexpr OptionCode VERIFY::NOOUTPUT;
 
 
-// ARVerifyConfigurator
+	// ARVerifyConfigurator
 
 
-void ARVerifyConfigurator::do_flush_local_options(OptionRegistry &r) const
-{
-	using input::OP_VALUE;
-	using std::end;
-
-	r.insert(end(r),
+	void ARVerifyConfigurator::do_flush_local_options(OptionRegistry &r) const
 	{
-		// from FORMATBASE
+		using input::OP_VALUE;
+		using std::end;
 
-		{ VERIFY::READERID ,
-		{  "reader", true, OP_VALUE::AUTO,
-			"Force use of audio reader with specified id" }},
-
-		{ VERIFY::PARSERID ,
-		{  "parser", true, OP_VALUE::AUTO,
-			"Force use of toc parser with specified id" }},
-
-		{ VERIFY::LIST_TOC_FORMATS ,
-		{  "list-toc-formats", false, OP_VALUE::FALSE,
-			"List all supported file formats for TOC metadata" }},
-
-		{ VERIFY::LIST_AUDIO_FORMATS ,
-		{  "list-audio-formats", false, OP_VALUE::FALSE,
-			"List all supported audio codec/container formats" }},
-
-		// from CALCBASE
-
-		{ VERIFY::METAFILE ,
-		{  'm', "metafile", true, OP_VALUE::NONE,
-			"Specify metadata file (TOC) to use" }},
-
-		{ VERIFY::NOTRACKS ,
-		{  "no-track-nos", false, OP_VALUE::FALSE,
-			"Do not print track numbers" }},
-
-		{ VERIFY::NOFILENAMES ,
-		{  "no-filenames", false, OP_VALUE::FALSE,
-			"Do not print the filenames" }},
-
-		{ VERIFY::NOOFFSETS ,
-		{  "no-offsets", false, OP_VALUE::FALSE,
-			"Do not print track offsets" }},
-
-		{ VERIFY::NOLENGTHS ,
-		{  "no-lengths", false, OP_VALUE::FALSE,
-			"Do not print track lengths" }},
-
-		{ VERIFY::NOLABELS ,
-		{  "no-labels", false, OP_VALUE::FALSE,
-			"Do not print column or row labels" }},
-
-		{ VERIFY::COLDELIM ,
-		{  "col-delim", true, "ASCII-32", "Specify column delimiter" }},
-
-		{ VERIFY::PRINTID ,
-		{  "print-id", false, OP_VALUE::FALSE,
-			"Print the AccurateRip Id of the album" }},
-
-		{ VERIFY::PRINTURL ,
-		{  "print-url", false, OP_VALUE::FALSE,
-			"Print the AccurateRip URL of the album" }},
-
-		// from VERIFY
-
-		{ VERIFY::NOFIRST ,
-		{  "no-first", false, OP_VALUE::FALSE,
-			"Do not treat first audio file as first track" }},
-
-		{ VERIFY::NOLAST ,
-		{  "no-last", false, OP_VALUE::FALSE,
-			"Do not treat last audio file as last track" }},
-
-		{ VERIFY::NOALBUM ,
-		{  "no-album", false, OP_VALUE::FALSE,
-			"Abbreviates \"--no-first --no-last\"" }},
-
-		{ VERIFY::RESPONSEFILE ,
-		{  'r', "response", true, OP_VALUE::NONE,
-			"Specify AccurateRip response file" }},
-
-		{ VERIFY::REFVALUES ,
-		{  "refvalues", true, OP_VALUE::NONE,
-			"Specify AccurateRip reference values (as hex value list)" }},
-
-		{ VERIFY::PRINTALL ,
-		{  "print-all-matches", false, OP_VALUE::FALSE,
-			"Print verification results for all blocks" }},
-
-		{ VERIFY::BOOLEAN ,
-		{  'b', "boolean", false, OP_VALUE::FALSE,
-			"Return number of differing tracks in best match" }},
-
-		{ VERIFY::NOOUTPUT ,
-		{  'n', "no-output", false, OP_VALUE::FALSE,
-			"Do not print the result (implies --boolean)" }},
-
-		{ VERIFY::COLORED ,
-		{  "colors", true, OP_VALUE::USE_DEFAULT,
-			"Use colored output and optionally specify colors" }},
-
-		{ VERIFY::CONFIDENCE ,
-		{  "confidence", false, OP_VALUE::FALSE,
-			"Print confidence values if available" }}
-	});
-}
-
-
-std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
-		std::unique_ptr<Options> options) const
-{
-	auto voptions = configure_calcbase_options(std::move(options));
-
-	auto no_album_options = std::string{}; // for log messages
-
-	// Album mode
-
-	if (voptions->is_set(VERIFY::NOALBUM))
-	{
-		ARCS_LOG(DEBUG1) << "Activate option NOFIRST due to NOALBUM";
-		voptions->set(VERIFY::NOFIRST);
-
-		ARCS_LOG(DEBUG1) << "Activate option NOLAST due to NOALBUM";
-		voptions->set(VERIFY::NOLAST);
-
-		no_album_options = "--no-album";
-	} else
-	{
-		if (voptions->is_set(VERIFY::NOFIRST))
+		r.insert(end(r),
 		{
-			no_album_options += "--no-first";
-		}
+			// from FORMATBASE
 
-		if (voptions->is_set(VERIFY::NOLAST))
-		{
-			if (no_album_options.empty()) { no_album_options += ","; }
-			no_album_options += "--no-last";
-		}
+			{ VERIFY::READERID ,
+			{  "reader", true, OP_VALUE::AUTO,
+				"Force use of audio reader with specified id" }},
 
-		if(voptions->is_set(VERIFY::NOFIRST) and
-				voptions->is_set(VERIFY::NOLAST))
-		{
-			ARCS_LOG(DEBUG1) <<
-				"Activate option NOALBUM due to NOFIRST and NOLAST";
-			voptions->set(VERIFY::NOALBUM);
-		}
+			{ VERIFY::PARSERID ,
+			{  "parser", true, OP_VALUE::AUTO,
+				"Force use of toc parser with specified id" }},
+
+			{ VERIFY::LIST_TOC_FORMATS ,
+			{  "list-toc-formats", false, OP_VALUE::FALSE,
+				"List all supported file formats for TOC metadata" }},
+
+			{ VERIFY::LIST_AUDIO_FORMATS ,
+			{  "list-audio-formats", false, OP_VALUE::FALSE,
+				"List all supported audio codec/container formats" }},
+
+			// from CALCBASE
+
+			{ VERIFY::METAFILE ,
+			{  'm', "metafile", true, OP_VALUE::NONE,
+				"Specify metadata file (TOC) to use" }},
+
+			{ VERIFY::NOTRACKS ,
+			{  "no-track-nos", false, OP_VALUE::FALSE,
+				"Do not print track numbers" }},
+
+			{ VERIFY::NOFILENAMES ,
+			{  "no-filenames", false, OP_VALUE::FALSE,
+				"Do not print the filenames" }},
+
+			{ VERIFY::NOOFFSETS ,
+			{  "no-offsets", false, OP_VALUE::FALSE,
+				"Do not print track offsets" }},
+
+			{ VERIFY::NOLENGTHS ,
+			{  "no-lengths", false, OP_VALUE::FALSE,
+				"Do not print track lengths" }},
+
+			{ VERIFY::NOLABELS ,
+			{  "no-labels", false, OP_VALUE::FALSE,
+				"Do not print column or row labels" }},
+
+			{ VERIFY::COLDELIM ,
+			{  "col-delim", true, "ASCII-32", "Specify column delimiter" }},
+
+			{ VERIFY::PRINTID ,
+			{  "print-id", false, OP_VALUE::FALSE,
+				"Print the AccurateRip Id of the album" }},
+
+			{ VERIFY::PRINTURL ,
+			{  "print-url", false, OP_VALUE::FALSE,
+				"Print the AccurateRip URL of the album" }},
+
+			// from VERIFY
+
+			{ VERIFY::NOFIRST ,
+			{  "no-first", false, OP_VALUE::FALSE,
+				"Do not treat first audio file as first track" }},
+
+			{ VERIFY::NOLAST ,
+			{  "no-last", false, OP_VALUE::FALSE,
+				"Do not treat last audio file as last track" }},
+
+			{ VERIFY::NOALBUM ,
+			{  "no-album", false, OP_VALUE::FALSE,
+				"Abbreviates \"--no-first --no-last\"" }},
+
+			{ VERIFY::RESPONSEFILE ,
+			{  'r', "response", true, OP_VALUE::NONE,
+				"Specify AccurateRip response file" }},
+
+			{ VERIFY::REFVALUES ,
+			{  "refvalues", true, OP_VALUE::NONE,
+				"Specify AccurateRip reference values (as hex value list)" }},
+
+			{ VERIFY::PRINTALL ,
+			{  "print-all-matches", false, OP_VALUE::FALSE,
+				"Print verification results for all blocks" }},
+
+			{ VERIFY::BOOLEAN ,
+			{  'b', "boolean", false, OP_VALUE::FALSE,
+				"Return number of differing tracks in best match" }},
+
+			{ VERIFY::NOOUTPUT ,
+			{  'n', "no-output", false, OP_VALUE::FALSE,
+				"Do not print the result (implies --boolean)" }},
+
+			{ VERIFY::COLORED ,
+			{  "colors", true, OP_VALUE::USE_DEFAULT,
+				"Use colored output and optionally specify colors" }},
+
+			{ VERIFY::CONFIDENCE ,
+			{  "confidence", false, OP_VALUE::FALSE,
+				"Print confidence values if available" }}
+		});
 	}
 
-	// Album requested but no TOC info provided?
 
-	if (not voptions->is_set(VERIFY::NOALBUM)
-		and voptions->value(VERIFY::METAFILE).empty())
+	std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
+			std::unique_ptr<Options> options) const
 	{
-		// Album requires dedicated first + last track.
-		// If no TOC is passed, an album can only be verified when passed a
-		// single file for each track.
+		auto voptions = configure_calcbase_options(std::move(options));
 
-		// This means we must ensure
-		// (total reference track checksums == total input track files)
-		// and it will be OK. We can do this only later when command line input
-		// was parsed.
+		auto no_album_options = std::string{}; // for log messages
+
+		// Album mode
+
+		if (voptions->is_set(VERIFY::NOALBUM))
+		{
+			ARCS_LOG(DEBUG1) << "Activate option NOFIRST due to NOALBUM";
+			voptions->set(VERIFY::NOFIRST);
+
+			ARCS_LOG(DEBUG1) << "Activate option NOLAST due to NOALBUM";
+			voptions->set(VERIFY::NOLAST);
+
+			no_album_options = "--no-album";
+		} else
+		{
+			if (voptions->is_set(VERIFY::NOFIRST))
+			{
+				no_album_options += "--no-first";
+			}
+
+			if (voptions->is_set(VERIFY::NOLAST))
+			{
+				if (no_album_options.empty()) { no_album_options += ","; }
+				no_album_options += "--no-last";
+			}
+
+			if(voptions->is_set(VERIFY::NOFIRST) and
+					voptions->is_set(VERIFY::NOLAST))
+			{
+				ARCS_LOG(DEBUG1) <<
+					"Activate option NOALBUM due to NOFIRST and NOLAST";
+				voptions->set(VERIFY::NOALBUM);
+			}
+		}
+
+		// Album requested but no TOC info provided?
+
+		if (not voptions->is_set(VERIFY::NOALBUM)
+			and voptions->value(VERIFY::METAFILE).empty())
+		{
+			// Album requires dedicated first + last track.
+			// If no TOC is passed, an album can only be verified when passed a
+			// single file for each track.
+
+			// This means we must ensure
+			// (total reference track checksums == total input track files)
+			// and it will be OK. We can do this only later when command line input
+			// was parsed.
+		}
+
+		if (voptions->is_set(VERIFY::NOFIRST) or voptions->is_set(VERIFY::NOLAST))
+		{
+			if (voptions->is_set(VERIFY::METAFILE))
+			{
+				ARCS_LOG(WARNING) << "Passing TOC file "
+					<< voptions->value(VERIFY::METAFILE)
+					<< " requests album calculation, but adding "
+					<< no_album_options
+					<< " will ignore album calculation at least partly."
+					<< " Expect unwanted results.";
+			}
+		}
+
+		// Only print those things from the reference data that we actually may have
+
+		if (voptions->is_set(VERIFY::REFVALUES))
+		{
+			if (voptions->is_set(VERIFY::PRINTID))
+			{
+				ARCS_LOG_WARNING <<
+					"Ignore option PRINTID since option REFVALUES is active "
+					"and reference values do not provide an ID to print.";
+				voptions->unset(VERIFY::PRINTID);
+			}
+			if (voptions->is_set(VERIFY::PRINTURL))
+			{
+				ARCS_LOG_WARNING <<
+					"Ignore option PRINTURL since option REFVALUES is active "
+					"and reference values do not provide an URL to print.";
+				voptions->unset(VERIFY::PRINTURL);
+			}
+			if (voptions->is_set(VERIFY::CONFIDENCE))
+			{
+				ARCS_LOG_WARNING <<
+					"Ignore option CONFIDENCE since option REFVALUES is active and "
+					"reference values do not provide confidence values to print.";
+				voptions->unset(VERIFY::CONFIDENCE);
+			}
+		}
+
+		// NOOUTPUT implies BOOLEAN
+
+		if (voptions->is_set(VERIFY::NOOUTPUT))
+		{
+			voptions->set(VERIFY::BOOLEAN);
+		}
+
+		return voptions;
 	}
 
-	if (voptions->is_set(VERIFY::NOFIRST) or voptions->is_set(VERIFY::NOLAST))
-	{
-		if (voptions->is_set(VERIFY::METAFILE))
-		{
-			ARCS_LOG(WARNING) << "Passing TOC file "
-				<< voptions->value(VERIFY::METAFILE)
-				<< " requests album calculation, but adding "
-				<< no_album_options
-				<< " will ignore album calculation at least partly."
-				<< " Expect unwanted results.";
-		}
-	}
 
-	// Only print those things from the reference data that we actually may have
-
-	if (voptions->is_set(VERIFY::REFVALUES))
-	{
-		if (voptions->is_set(VERIFY::PRINTID))
-		{
-			ARCS_LOG_WARNING <<
-				"Ignore option PRINTID since option REFVALUES is active "
-				"and reference values do not provide an ID to print.";
-			voptions->unset(VERIFY::PRINTID);
-		}
-		if (voptions->is_set(VERIFY::PRINTURL))
-		{
-			ARCS_LOG_WARNING <<
-				"Ignore option PRINTURL since option REFVALUES is active "
-				"and reference values do not provide an URL to print.";
-			voptions->unset(VERIFY::PRINTURL);
-		}
-		if (voptions->is_set(VERIFY::CONFIDENCE))
-		{
-			ARCS_LOG_WARNING <<
-				"Ignore option CONFIDENCE since option REFVALUES is active and "
-				"reference values do not provide confidence values to print.";
-			voptions->unset(VERIFY::CONFIDENCE);
-		}
-	}
-
-	// NOOUTPUT implies BOOLEAN
-
-	if (voptions->is_set(VERIFY::NOOUTPUT))
-	{
-		voptions->set(VERIFY::BOOLEAN);
-	}
-
-	return voptions;
-}
-
-
-void ARVerifyConfigurator::do_validate(const Options& options) const
+	void ARVerifyConfigurator::do_validate(const Options& options) const
 {
 	if (options.is_set(VERIFY::RESPONSEFILE)
 			and options.is_set(VERIFY::REFVALUES))
@@ -694,7 +696,7 @@ void VerifyTableCreator::add_result_fields(std::vector<ATTR>& field_list,
 		{
 			field_list.emplace_back(ATTR::THEIRS);
 
-			if (print_flags(ATTR::CONFIDENCE))
+			if (is_requested(ATTR::CONFIDENCE))
 			{
 				field_list.emplace_back(ATTR::CONFIDENCE);
 			}
@@ -731,14 +733,15 @@ void VerifyTableCreator::populate_result_creators(
 					creators.emplace_back(
 					std::make_unique<AddField<ATTR::THEIRS>>(&types, &vresult,
 						block, &ref_source, this, total_theirs_per_block,
-						print_flags(ATTR::CONFIDENCE)));
+						is_requested(ATTR::CONFIDENCE)));
 				}
 			};
 
 	if (required(field_list, ATTR::CHECKSUM_ARCS1))
 	{
 		creators.emplace_back(
-			std::make_unique<AddField<ATTR::CHECKSUM_ARCS1>>(&checksums, this));
+			std::make_unique<AddField<ATTR::CHECKSUM_ARCS1>>(
+				&checksums, this->checksum_layout()));
 
 		populate_theirs();
 	}
@@ -746,7 +749,8 @@ void VerifyTableCreator::populate_result_creators(
 	if (required(field_list, ATTR::CHECKSUM_ARCS2))
 	{
 		creators.emplace_back(
-			std::make_unique<AddField<ATTR::CHECKSUM_ARCS2>>(&checksums, this));
+			std::make_unique<AddField<ATTR::CHECKSUM_ARCS2>>(
+				&checksums, this->checksum_layout()));
 
 		populate_theirs();
 	}
@@ -760,25 +764,28 @@ void VerifyTableCreator::assertions(const InputTuple t) const
 	const auto toc        = std::get<5>(t);
 	const auto filenames  = std::get<7>(t);
 
-	calc::validate(checksums, toc, arid, filenames);
-
 	// Specific for verify
-
 	const auto ref_source = std::get<6>(t);
 	const auto vresult    = std::get<1>(t);
 	const auto block      = std::get<2>(t);
 
-	// FIXME use ChecksumSource
-	//validate(checksums, toc, arid, filenames, reference, vresult, block);
+	validate(checksums, toc, arid, filenames, *ref_source, vresult, block);
 }
 
-/*
-std::string VerifyTableCreator::their_checksum(const Checksum& checksum,
-		const bool does_match) const
+
+void VerifyTableCreator::their_checksum(const Checksum& checksum,
+		const bool does_match, const int record, const int field,
+		TableComposer* c) const
 {
-
+	if (does_match)
+	{
+		do_their_match(checksum, record, field, c);
+	} else
+	{
+		do_their_mismatch(checksum, record, field, c);
+	}
 }
-*/
+
 
 std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 {
@@ -807,9 +814,9 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 		buf.append(build_id(toc, mine_arid, alt_prefix, *layout));
 	}
 
-	const auto print_flags { create_print_flags(toc, filenames) };
+	const auto print_flags { create_field_requests(toc, filenames) };
 
-	auto field_list { create_optional_fields(print_flags) };
+	auto field_list { create_field_types(print_flags) };
 
 	// Determine total number of 'theirs' field_types per reference block
 	// (Maybe 0 for empty response and empty refvalues)
@@ -823,7 +830,7 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 
 	std::vector<std::unique_ptr<FieldCreator>> creators;
 
-	populate_common_creators(creators, field_list, *toc, checksums, filenames);
+	populate_creators_list(creators, field_list, *toc, checksums, filenames);
 	populate_result_creators(creators, print_flags, field_list, types_to_print,
 			*vresult, block, checksums, *ref_source, total_theirs_per_block);
 
@@ -856,7 +863,8 @@ void MonochromeVerifyTableCreator::do_their_mismatch(
 		const Checksum& checksum, const int record_idx,
 		const int field_idx, TableComposer* c) const
 {
-	c->set_field(record_idx, field_idx, this->checksum(checksum));
+	c->set_field(record_idx, field_idx,
+			checksum_layout()->format(checksum, 8));
 }
 
 
@@ -1046,7 +1054,8 @@ void ColorizingVerifyTableCreator::do_init_composer(TableComposer& c) const
 void ColorizingVerifyTableCreator::do_their_match(const Checksum& checksum,
 		const int record_idx, const int field_idx, TableComposer* c) const
 {
-	c->set_field(record_idx, field_idx, this->checksum(checksum));
+	c->set_field(record_idx, field_idx,
+			checksum_layout()->format(checksum, 8));
 
 	ARCS_LOG(DEBUG2) << "Mark cell " << record_idx << ", " << field_idx
 		<< " as match-decorated";
@@ -1059,7 +1068,8 @@ void ColorizingVerifyTableCreator::do_their_mismatch(
 		const Checksum& checksum, const int record_idx, const int field_idx,
 		TableComposer* c) const
 {
-	c->set_field(record_idx, field_idx, this->checksum(checksum));
+	c->set_field(record_idx, field_idx,
+			checksum_layout()->format(checksum, 8));
 
 	ARCS_LOG(DEBUG2) << "Mark cell " << record_idx << ", " << field_idx
 		<< " as mismatch-decorated";
@@ -1301,6 +1311,82 @@ SourceCreator::operator()(const DBAR& dBAR,
 		const std::vector<uint32_t>& refvalues) const
 {
 	return create_reference_source(dBAR, refvalues);
+}
+
+
+// AddField
+
+
+void AddField<ATTR::THEIRS>::do_create(TableComposer* c, const int record_idx)
+	const
+{
+	auto block_idx  = int { 0 }; // Iterate over blocks of checksums
+	auto curr_type  { types_to_print_->at(0) }; // Current checksum type
+	auto does_match = bool { false }; // Is current checksum a match?
+
+	// Total number of THEIRS fields in the entire record type
+	const auto total_theirs =
+		total_theirs_per_block_ * types_to_print_->size();
+
+	// 1-based number of the reference block to print
+	auto idx_label = int { 0 };
+
+	// field index of the "theirs"-column
+	auto field_idx = int { 0 };
+
+	// Create all "theirs" fields
+	for (auto b = int { 0 }; b < total_theirs; ++b)
+	{
+		// Enumerate one or more blocks
+		// (If block_ < 0 PRINTALL is present)
+		block_idx =  block_ >= 0  ? block_  : b % total_theirs_per_block_;
+
+		curr_type =
+			types_to_print_->at(std::ceil(b / total_theirs_per_block_));
+
+		does_match = vresult_->track(block_idx, record_idx,
+						curr_type == arcstk::checksum::type::ARCS2);
+
+		idx_label = block_idx + 1;
+		field_idx = c->field_idx(ATTR::THEIRS, b + 1);
+
+		// Update field label to show best block index
+		c->set_label(field_idx, DefaultLabel<ATTR::THEIRS>()
+					+ (idx_label < 10 ? std::string{" "} : std::string{})
+					// XXX Block index greater than 99 will screw up labels
+					+ std::to_string(idx_label));
+
+		formatter_->their_checksum(
+				checksums_->checksum(block_idx, record_idx), does_match,
+				record_idx, field_idx, c);
+
+		if (print_confidence_)
+		{
+			using std::to_string;
+			table::add_field(c, record_idx, field_idx + 1,
+				to_string(checksums_->confidence(block_idx, record_idx)));
+		}
+	}
+}
+
+
+AddField<ATTR::THEIRS>::AddField(
+		const std::vector<arcstk::checksum::type>* types,
+		const VerificationResult* vresult,
+		const int block,
+		const ChecksumSource* checksums,
+		const VerifyTableCreator* formatter,
+		const int total_theirs_per_block,
+		const bool print_confidence)
+	: types_to_print_         { types     }
+	, vresult_                { vresult   }
+	, block_                  { block     }
+	, checksums_              { checksums }
+	, formatter_              { formatter }
+	, total_theirs_per_block_ { total_theirs_per_block }
+	, print_confidence_       { print_confidence       }
+{
+	/* empty */
 }
 
 

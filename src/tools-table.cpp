@@ -9,7 +9,6 @@
 #endif
 
 #include <algorithm>    // for find
-#include <cmath>        // for ceil
 #include <cstddef>      // for size_t
 #include <cstdint>      // for uint16_t
 #include <iterator>     // for begin, end
@@ -664,9 +663,6 @@ void AddRecords::operator()(
 // add_field
 
 
-/**
- * \brief Worker for implementing \c do_create() in AddField subclasses.
- */
 void add_field(TableComposer* c, const int record_idx, const ATTR a,
 		const std::string& s)
 {
@@ -674,9 +670,6 @@ void add_field(TableComposer* c, const int record_idx, const ATTR a,
 }
 
 
-/**
- * \brief Worker for implementing \c do_create() in AddField subclasses.
- */
 void add_field(TableComposer* c, const int record_idx, const int field_idx,
 		const std::string& s)
 {
@@ -746,16 +739,21 @@ AddField<ATTR::FILENAME>::AddField(const std::vector<std::string>* filenames)
 void AddField<ATTR::CHECKSUM_ARCS1>::do_create(TableComposer* c,
 		const int record_idx) const
 {
-	formatter_->mine_checksum(
-			checksums_->at(record_idx).get(arcstk::checksum::type::ARCS1),
-			record_idx, c->field_idx(ATTR::CHECKSUM_ARCS1), c);
+	using arcstk::checksum::type;
+
+	add_field(c, record_idx, ATTR::CHECKSUM_ARCS1,
+			layout_->format(checksums_->at(record_idx).get(type::ARCS1), 8));
+
+	//formatter_->checksum(
+	//		checksums_->at(record_idx).get(arcstk::checksum::type::ARCS1),
+	//		record_idx, c->field_idx(ATTR::CHECKSUM_ARCS1), c);
 }
 
 
 AddField<ATTR::CHECKSUM_ARCS1>::AddField(const Checksums* checksums,
-		const TableCreator* formatter)
+		const ChecksumLayout* layout)
 	: checksums_ { checksums }
-	, formatter_ { formatter }
+	, layout_    { layout    }
 {
 	/* empty */
 }
@@ -764,93 +762,26 @@ AddField<ATTR::CHECKSUM_ARCS1>::AddField(const Checksums* checksums,
 void AddField<ATTR::CHECKSUM_ARCS2>::do_create(TableComposer* c,
 		const int record_idx) const
 {
-	formatter_->mine_checksum(
-			checksums_->at(record_idx).get(arcstk::checksum::type::ARCS2),
-			record_idx, c->field_idx(ATTR::CHECKSUM_ARCS2), c);
+	using arcstk::checksum::type;
+
+	add_field(c, record_idx, ATTR::CHECKSUM_ARCS2,
+			layout_->format(checksums_->at(record_idx).get(type::ARCS2), 8));
+
+	//formatter_->checksum(
+	//		checksums_->at(record_idx).get(arcstk::checksum::type::ARCS2),
+	//		record_idx, c->field_idx(ATTR::CHECKSUM_ARCS2), c);
 }
 
 
 AddField<ATTR::CHECKSUM_ARCS2>::AddField(const Checksums* checksums,
-		const TableCreator* formatter)
+		const ChecksumLayout* layout)
 	: checksums_ { checksums }
-	, formatter_ { formatter }
+	, layout_    { layout    }
+
 {
 	/* empty */
 }
 
-
-
-void AddField<ATTR::THEIRS>::do_create(TableComposer* c, const int record_idx)
-	const
-{
-	auto block_idx  = int { 0 }; // Iterate over blocks of checksums
-	auto curr_type  { types_to_print_->at(0) }; // Current checksum type
-	auto does_match = bool { false }; // Is current checksum a match?
-
-	// Total number of THEIRS fields in the entire record type
-	const auto total_theirs =
-		total_theirs_per_block_ * types_to_print_->size();
-
-	// 1-based number of the reference block to print
-	auto idx_label = int { 0 };
-
-	// field index of the "theirs"-column
-	auto field_idx = int { 0 };
-
-	// Create all "theirs" fields
-	for (auto b = int { 0 }; b < total_theirs; ++b)
-	{
-		// Enumerate one or more blocks
-		// (If block_ < 0 PRINTALL is present)
-		block_idx =  block_ >= 0  ? block_  : b % total_theirs_per_block_;
-
-		curr_type =
-			types_to_print_->at(std::ceil(b / total_theirs_per_block_));
-
-		does_match = vresult_->track(block_idx, record_idx,
-						curr_type == arcstk::checksum::type::ARCS2);
-
-		idx_label = block_idx + 1;
-		field_idx = c->field_idx(ATTR::THEIRS, b + 1);
-
-		// Update field label to show best block index
-		c->set_label(field_idx, DefaultLabel<ATTR::THEIRS>()
-					+ (idx_label < 10 ? std::string{" "} : std::string{})
-					// XXX Block index greater than 99 will screw up labels
-					+ std::to_string(idx_label));
-
-		formatter_->their_checksum(
-				checksums_->checksum(block_idx, record_idx), does_match,
-				record_idx, field_idx, c);
-
-		if (print_confidence_)
-		{
-			using std::to_string;
-			add_field(c, record_idx, field_idx + 1,
-				to_string(checksums_->confidence(block_idx, record_idx)));
-		}
-	}
-}
-
-
-AddField<ATTR::THEIRS>::AddField(
-		const std::vector<arcstk::checksum::type>* types,
-		const VerificationResult* vresult,
-		const int block,
-		const ChecksumSource* checksums,
-		const TableCreator* formatter,
-		const int total_theirs_per_block,
-		const bool print_confidence)
-	: types_to_print_         { types     }
-	, vresult_                { vresult   }
-	, block_                  { block     }
-	, checksums_              { checksums }
-	, formatter_              { formatter }
-	, total_theirs_per_block_ { total_theirs_per_block }
-	, print_confidence_       { print_confidence       }
-{
-	/* empty */
-}
 
 
 // TableCreator
@@ -930,7 +861,7 @@ void TableCreator::set_format_field(const ATTR a, const bool value)
 }
 
 
-std::vector<ATTR> TableCreator::create_optional_fields(
+std::vector<ATTR> TableCreator::create_field_types(
 		const print_flag_t print_flags) const
 {
 	std::vector<ATTR> fields;
@@ -948,14 +879,14 @@ std::vector<ATTR> TableCreator::create_optional_fields(
 
 
 
-void TableCreator::populate_common_creators(
+void TableCreator::populate_creators_list(
 			std::vector<std::unique_ptr<FieldCreator>>& creators,
-			const std::vector<ATTR>& fields, const TOC& toc,
+			const std::vector<ATTR>& field_types, const TOC& toc,
 			const Checksums& checksums,
 			const std::vector<std::string>& filenames) const
 {
 
-	creators.reserve(fields.size());
+	creators.reserve(field_types.size());
 
 	// do not repeat the find mechanism
 	const auto required = [](const std::vector<ATTR>& fields, const ATTR f)
@@ -966,25 +897,25 @@ void TableCreator::populate_common_creators(
 				return find(begin(fields), end(fields), f) != end(fields);
 			};
 
-	if (required(fields, ATTR::TRACK))
+	if (required(field_types, ATTR::TRACK))
 	{
 		creators.emplace_back(
 				std::make_unique<AddField<ATTR::TRACK>>());
 	}
 
-	if (required(fields, ATTR::OFFSET))
+	if (required(field_types, ATTR::OFFSET))
 	{
 		creators.emplace_back(
 				std::make_unique<AddField<ATTR::OFFSET>>(&toc));
 	}
 
-	if (required(fields, ATTR::LENGTH))
+	if (required(field_types, ATTR::LENGTH))
 	{
 		creators.emplace_back(
 				std::make_unique<AddField<ATTR::LENGTH>>(&checksums));
 	}
 
-	if (required(fields, ATTR::FILENAME))
+	if (required(field_types, ATTR::FILENAME))
 	{
 		creators.emplace_back(
 				std::make_unique<AddField<ATTR::FILENAME>>(&filenames));
@@ -1012,7 +943,7 @@ bool TableCreator::is_requested(const ATTR a) const
 }
 
 
-TableCreator::print_flag_t TableCreator::create_print_flags(
+TableCreator::print_flag_t TableCreator::create_field_requests(
 		const TOC* toc, const std::vector<std::string>& filenames) const
 {
 	const bool has_toc       { toc != nullptr };
@@ -1026,14 +957,12 @@ TableCreator::print_flag_t TableCreator::create_print_flags(
 	flags.set(ATTR::OFFSET,     has_toc && is_requested(ATTR::OFFSET));
 	flags.set(ATTR::LENGTH,     has_toc && is_requested(ATTR::LENGTH));
 	flags.set(ATTR::FILENAME,   has_filenames && is_requested(ATTR::FILENAME));
-	flags.set(ATTR::CONFIDENCE, is_requested(ATTR::CONFIDENCE));
 
 	ARCS_LOG(DEBUG1) << "Request flags for printing:";
 	ARCS_LOG(DEBUG1) << " tracks=      " << flags(ATTR::TRACK);
 	ARCS_LOG(DEBUG1) << " offsets=     " << flags(ATTR::OFFSET);
 	ARCS_LOG(DEBUG1) << " lengths=     " << flags(ATTR::LENGTH);
 	ARCS_LOG(DEBUG1) << " filenames=   " << flags(ATTR::FILENAME);
-	ARCS_LOG(DEBUG1) << " confidences= " << flags(ATTR::CONFIDENCE);
 
 	return flags;
 }
@@ -1061,56 +990,6 @@ std::unique_ptr<PrintableTable> TableCreator::format_table(
 void TableCreator::init_composer(TableComposer& c) const
 {
 	do_init_composer(c);
-}
-
-
-void TableCreator::mine_checksum(const Checksum& checksum,
-		const int record, const int field, TableComposer* c) const
-{
-	do_mine_checksum(checksum, record, field, c);
-}
-
-
-void TableCreator::their_checksum(const Checksum& checksum,
-		const bool does_match, const int record, const int field,
-		TableComposer* c) const
-{
-	if (does_match)
-	{
-		do_their_match(checksum, record, field, c);
-	} else
-	{
-		do_their_mismatch(checksum, record, field, c);
-	}
-}
-
-
-std::string TableCreator::checksum(const Checksum& checksum) const
-{
-	return checksum_layout()->format(checksum, 8);
-	// 8 chars for hexadecimal represented 32 bit checksums
-}
-
-
-void TableCreator::do_mine_checksum(const Checksum& checksum,
-		const int record, const int field, TableComposer* c)
-		const
-{
-	c->set_field(record, field, this->checksum(checksum));
-}
-
-
-void TableCreator::do_their_match(const Checksum& checksum, const int record,
-		const int field, TableComposer* c) const
-{
-	// do nothing
-}
-
-
-void TableCreator::do_their_mismatch(const Checksum& checksum,
-		const int record, const int field, TableComposer* c) const
-{
-	// do nothing
 }
 
 } // namespace table

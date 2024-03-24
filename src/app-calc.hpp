@@ -52,6 +52,7 @@ using arcstk::TOC;
 // arcsapp
 using table::ATTR;
 using table::FieldCreator;
+using table::TableComposer;
 using table::TableCreator;
 
 /**
@@ -185,7 +186,7 @@ using Calc6Layout = Layout<std::unique_ptr<Result>
 /**
  * \brief Format the results of the ARCalcApplication.
  */
-class CalcTableCreator final : public TableCreator
+class CalcTableCreator final	: public TableCreator
 								, public Calc6Layout
 {
 protected:
@@ -220,6 +221,8 @@ protected:
 private:
 
 	void assertions(InputTuple t) const final;
+
+	void do_init_composer(TableComposer& c) const final;
 
 	std::unique_ptr<Result> do_format(InputTuple t) const final;
 };

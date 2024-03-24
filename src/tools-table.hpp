@@ -890,8 +890,6 @@ using calc::ChecksumLayout;
  */
 class TableCreator : public WithInternalFlags
 {
-	template <enum ATTR> friend class AddField;
-
 public:
 
 	/**
@@ -1005,14 +1003,17 @@ protected:
 	bool is_requested(const ATTR f) const;
 
 	/**
-	 * \brief Worker: produce print flags for all printable attributes.
+	 * \brief Worker: produce print flags for optional printable fields.
+	 *
+	 * Creates the print flags for non-result fields, i.e. TRACK, OFFSET,
+	 * LENGTH and FILENAME.
 	 *
 	 * \param[in] toc       TOC available
 	 * \param[in] filenames Filenames available
 	 *
 	 * \return Print flags for all printable attributes
 	 */
-	print_flag_t create_print_flags(const TOC* toc,
+	print_flag_t create_field_requests(const TOC* toc,
 			const std::vector<std::string>& filenames) const;
 
 	/**
@@ -1025,11 +1026,11 @@ protected:
 	 *
 	 * \return List of field types
 	 */
-	std::vector<ATTR> create_optional_fields(const print_flag_t print_flags)
+	std::vector<ATTR> create_field_types(const print_flag_t print_flags)
 		const;
 
 	/**
-	 * \brief Populate the list of common FieldCreators.
+	 * \brief Populate the list of FieldCreators for optional fields.
 	 *
 	 * These are the TRACK, OFFSET, LENGTH and FILENAME fields.
 	 *
@@ -1039,7 +1040,7 @@ protected:
 	 * \param[in] checksums      Calculated checksums
 	 * \param[in] filenames      List of input filenames
 	 */
-	void populate_common_creators(
+	void populate_creators_list(
 			std::vector<std::unique_ptr<FieldCreator>>& field_creators,
 			const std::vector<ATTR>& field_types, const TOC& toc,
 			const Checksums& checksums,
@@ -1048,7 +1049,7 @@ protected:
 	/**
 	 * \brief Create the internal TableComposer to compose the result data.
 	 *
-	 * Uses the internal TableComposer instance.
+	 * Uses the internal TableComposerBuilder instance.
 	 *
 	 * \param[in] total_records Number of records to print
 	 * \param[in] field_types   List of fields to format for print
@@ -1090,67 +1091,10 @@ protected:
 		const bool with_labels,
 		std::vector<std::unique_ptr<FieldCreator>>& field_creators) const;
 
-	/**
-	 * \brief Worker: print a MINE checksum.
-	 *
-	 * Note that \c record also determines access to \c checksums.
-	 *
-	 * \param[in] checksum   Local checksum to be formatted
-	 * \param[in] record     Index of the record in \c c to edit
-	 * \param[in] field      Index of the field in \c c to edit
-	 * \param[in] c          TableComposer to use
-	 */
-	void mine_checksum(const Checksum& checksum,
-		const int record, const int field, TableComposer* c) const;
-
-	/**
-	 * \brief Worker: print a THEIR checksum.
-	 *
-	 * Note that \c record also determines access to \c checksums.
-	 *
-	 * \param[in] checksums  Reference checksum to be formatted
-	 * \param[in] does_match Print as matching or as not matching
-	 * \param[in] record     Index of the record in \c b to edit
-	 * \param[in] field      Index of the field in \c b to edit
-	 * \param[in] c          TableComposer to use
-	 */
-	void their_checksum(const Checksum& checksums, const bool does_match,
-		const int record, const int field, TableComposer* c) const;
-
-	/**
-	 * \brief Worker: print a checksum to the result object.
-	 *
-	 * If checksum_layout() is available for formatting the checksums, it
-	 * is used, otherwise the fitting implementation of operator '<<' is
-	 * picked (which could be libarcstk's).
-	 *
-	 * \param[in] checksum  Result checksum
-	 *
-	 * \return Formatted checksum
-	 */
-	std::string checksum(const Checksum& checksum) const;
-
 private:
 
-	virtual void do_init_composer(TableComposer& c) const;
-
-	/**
-	 * \brief Implements mine_checksum().
-	 */
-	virtual void do_mine_checksum(const Checksum& checksum,
-		const int record, const int field, TableComposer* c) const;
-
-	/**
-	 * \brief Called by their_checksum() on a match.
-	 */
-	virtual void do_their_match(const Checksum& checksum, const int record,
-			const int field, TableComposer* c) const;
-
-	/**
-	 * \brief Called by their_checksum() on a mismatch.
-	 */
-	virtual void do_their_mismatch(const Checksum& checksum, const int record,
-			const int field, TableComposer* c) const;
+	virtual void do_init_composer(TableComposer& c) const
+	= 0;
 
 	/**
 	 * \brief Internal TableComposerBuilder.
@@ -1172,6 +1116,30 @@ private:
 	 */
 	std::unique_ptr<ChecksumLayout> checksum_layout_;
 };
+
+
+/**
+ * \brief Worker for implementing \c do_create() in AddField subclasses.
+ *
+ * \param[in] c          Composer to use
+ * \param[in] record_idx Record to add field to
+ * \param[in] f          Field type
+ * \param[in] s          Field value
+ */
+void add_field(TableComposer* c, const int record_idx, const ATTR f,
+		const std::string& s);
+
+
+/**
+ * \brief Worker for implementing \c do_create() in AddField subclasses.
+ *
+ * \param[in] c          Composer to use
+ * \param[in] record_idx Record to add field to
+ * \param[in] field_idx  Field index
+ * \param[in] s          Field value
+ */
+void add_field(TableComposer* c, const int record_idx, const int field_idx,
+		const std::string& s);
 
 
 /**
@@ -1243,13 +1211,13 @@ template <>
 class AddField<ATTR::CHECKSUM_ARCS1> final : public FieldCreator
 {
 	const Checksums* checksums_;
-	const TableCreator* formatter_;
+	const ChecksumLayout* layout_;
 
 	void do_create(TableComposer* c, const int record_idx) const final;
 
 public:
 
-	AddField(const Checksums* checksums, const TableCreator* formatter);
+	AddField(const Checksums* checksums, const ChecksumLayout* layout);
 };
 
 
@@ -1257,41 +1225,13 @@ template <>
 class AddField<ATTR::CHECKSUM_ARCS2> final : public FieldCreator
 {
 	const Checksums* checksums_;
-	const TableCreator* formatter_;
+	const ChecksumLayout* layout_;
 
 	void do_create(TableComposer* c, const int record_idx) const final;
 
 public:
 
-	AddField(const Checksums* checksums, const TableCreator* formatter);
-};
-
-
-/**
- * \brief Creates Theirs-columns with optional Confidence-columns
- */
-template <>
-class AddField<ATTR::THEIRS> final : public FieldCreator
-{
-	const VerificationResult* vresult_;
-	const int block_;
-	const ChecksumSource* checksums_;
-	const std::vector<arcstk::checksum::type>* types_to_print_;
-	const TableCreator* formatter_;
-	const int total_theirs_per_block_;
-	const bool print_confidence_;
-
-	void do_create(TableComposer* c, const int record_idx) const final;
-
-public:
-
-	AddField(const std::vector<arcstk::checksum::type>* types,
-			const VerificationResult* vresult,
-			const int block,
-			const ChecksumSource* checksums,
-			const TableCreator* formatter,
-			const int total_theirs_per_block,
-			const bool print_confidence);
+	AddField(const Checksums* checksums, const ChecksumLayout* layout);
 };
 
 
