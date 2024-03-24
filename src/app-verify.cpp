@@ -864,7 +864,7 @@ void MonochromeVerifyTableCreator::do_their_mismatch(
 		const int field_idx, TableComposer* c) const
 {
 	c->set_field(record_idx, field_idx,
-			checksum_layout()->format(checksum, 8));
+			table::formatted(checksum, *checksum_layout()));
 }
 
 
@@ -1055,7 +1055,7 @@ void ColorizingVerifyTableCreator::do_their_match(const Checksum& checksum,
 		const int record_idx, const int field_idx, TableComposer* c) const
 {
 	c->set_field(record_idx, field_idx,
-			checksum_layout()->format(checksum, 8));
+			table::formatted(checksum, *checksum_layout()));
 
 	ARCS_LOG(DEBUG2) << "Mark cell " << record_idx << ", " << field_idx
 		<< " as match-decorated";
@@ -1069,7 +1069,7 @@ void ColorizingVerifyTableCreator::do_their_mismatch(
 		TableComposer* c) const
 {
 	c->set_field(record_idx, field_idx,
-			checksum_layout()->format(checksum, 8));
+			table::formatted(checksum, *checksum_layout()));
 
 	ARCS_LOG(DEBUG2) << "Mark cell " << record_idx << ", " << field_idx
 		<< " as mismatch-decorated";

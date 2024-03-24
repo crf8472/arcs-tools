@@ -742,7 +742,7 @@ void AddField<ATTR::CHECKSUM_ARCS1>::do_create(TableComposer* c,
 	using arcstk::checksum::type;
 
 	add_field(c, record_idx, ATTR::CHECKSUM_ARCS1,
-			layout_->format(checksums_->at(record_idx).get(type::ARCS1), 8));
+			formatted(checksums_->at(record_idx).get(type::ARCS1), *layout_));
 
 	//formatter_->checksum(
 	//		checksums_->at(record_idx).get(arcstk::checksum::type::ARCS1),
@@ -765,7 +765,7 @@ void AddField<ATTR::CHECKSUM_ARCS2>::do_create(TableComposer* c,
 	using arcstk::checksum::type;
 
 	add_field(c, record_idx, ATTR::CHECKSUM_ARCS2,
-			layout_->format(checksums_->at(record_idx).get(type::ARCS2), 8));
+			formatted(checksums_->at(record_idx).get(type::ARCS2), *layout_));
 
 	//formatter_->checksum(
 	//		checksums_->at(record_idx).get(arcstk::checksum::type::ARCS2),
@@ -782,6 +782,15 @@ AddField<ATTR::CHECKSUM_ARCS2>::AddField(const Checksums* checksums,
 	/* empty */
 }
 
+
+// formatted
+
+
+std::string formatted(const Checksum& checksum,
+		const ChecksumLayout& layout)
+{
+	return layout.format(checksum, 8);
+}
 
 
 // TableCreator

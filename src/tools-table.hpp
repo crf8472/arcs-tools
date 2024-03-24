@@ -870,7 +870,22 @@ public:
 			const std::vector<std::unique_ptr<FieldCreator>>& field_creators);
 };
 
+
+
 using calc::ChecksumLayout;
+
+
+/**
+ * \brief Apply \c layout to \c checksum with default parameters.
+ *
+ * \param[in] checksum Checksum to format
+ * \param[in] layout   Layout to use for format
+ *
+ * \return Formatted checksum
+ */
+std::string formatted(const Checksum& checksum,
+		const ChecksumLayout& layout);
+
 
 /**
  * \brief Abstract base class for creating a layouted table.
