@@ -786,7 +786,7 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 	const auto vresult        = std::get<1>(t);
 	const auto block          = std::get<2>(t);
 	const auto checksums      = std::get<3>(t);
-	const auto arid           = std::get<4>(t);
+	const auto mine_arid      = std::get<4>(t);
 	const auto toc            = std::get<5>(t);
 	const auto ref_source     = std::get<6>(t);
 	const auto filenames      = std::get<7>(t);
@@ -797,23 +797,14 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 
 	auto buf = ResultBuffer  {};
 
-	const auto best_block_declared = bool { block > -1 };
-
-	// If a DBAR is used for the references with a block (not PRINTALL)
-	if (best_block_declared)
+	if (!mine_arid.empty())
 	{
 		auto layout { arid_layout()
 			? arid_layout()->clone()
 			: default_arid_layout(formats_labels()) };
 
-		// Use ARId of specified block for "Theirs" ARId
-		buf.append(build_id(toc, ref_source->id(block), alt_prefix, *layout));
-	} else
-	{
-		if (!arid.empty() && arid_layout())
-		{
-			buf.append(build_id(toc, arid, alt_prefix, *arid_layout()));
-		}
+		// Print locally calculated ARId ("Mine")
+		buf.append(build_id(toc, mine_arid, alt_prefix, *layout));
 	}
 
 	const auto print_flags { create_print_flags(toc, filenames) };
@@ -822,6 +813,7 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 
 	// Determine total number of 'theirs' field_types per reference block
 	// (Maybe 0 for empty response and empty refvalues)
+	const auto best_block_declared = bool { block > -1 };
 	const auto total_theirs_per_block {
 		best_block_declared ? 1 : ref_source->size()
 	};
@@ -1490,7 +1482,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	// Calculate the actual ARCSs from input files
 
-	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(
+	auto [ checksums, mine_arid, toc ] = ARCalcApplication::calculate(
 			config.value(VERIFY::METAFILE),
 			*config.arguments(),
 			!config.is_set(VERIFY::NOFIRST),
@@ -1531,7 +1523,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 					"Album requested, but calculation returned no TOC.");
 		}
 
-		if (arid.empty())
+		if (mine_arid.empty())
 		{
 			this->fatal_error(
 					"Album requested, but calculation returned an empty ARId.");
@@ -1550,16 +1542,15 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 		if (!vresult) // No previous result from refvals?
 		{
-			// Process as AccurateRip response
-
 			ARCS_LOG_DEBUG <<
 				"Process reference input as AccurateRip response for album";
 			ARCS_LOG_DEBUG <<
-				"AccurateRip ID: "  << arid.to_string();
+				"Computed AccurateRip ID: "  << mine_arid.to_string();
 			ARCS_LOG_DEBUG <<
-				"AccurateRip URL: " << arid.url();
+				"Computed AccurateRip URL: " << mine_arid.url();
 
-			const auto v = std::make_unique<AlbumVerifier>(checksums, arid);
+			const auto v =
+				std::make_unique<AlbumVerifier>(checksums, mine_arid);
 			vresult = v->perform(*ref_source);
 		}
 
@@ -1656,7 +1647,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		/* verification results */     vresult.get(),
 		/* optional best match */      best_block,
 		/* mine ARCSs */               checksums,
-		/* optional mine ARId */       arid,
+		/* optional mine ARId */       mine_arid,
 		/* optional TOC */             toc.get(),
 		/* reference checksum source */ref_source.get(),
 		/* input audio filenames */    filenames,
