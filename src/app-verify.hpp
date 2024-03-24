@@ -63,57 +63,6 @@ using table::TableComposer;
 
 using RefValuesType = std::vector<uint32_t>;
 
-/**
- * \brief Configuration options for ARVerifyApplications.
- *
- * Access options for verify exclusively by this class, not by CALCBASE.
- */
-class VERIFY : public CALCBASE
-{
-	static constexpr auto& BASE = CALCBASE::SUBCLASS_BASE;
-
-public:
-
-	static constexpr OptionCode NOFIRST      = BASE +  0; // 20
-	static constexpr OptionCode NOLAST       = BASE +  1;
-	static constexpr OptionCode NOALBUM      = BASE +  2;
-	static constexpr OptionCode RESPONSEFILE = BASE +  3;
-	static constexpr OptionCode REFVALUES    = BASE +  4;
-	static constexpr OptionCode PRINTALL     = BASE +  5;
-	static constexpr OptionCode BOOLEAN      = BASE +  6;
-	static constexpr OptionCode NOOUTPUT     = BASE +  7;
-	static constexpr OptionCode COLORED      = BASE +  8;
-	static constexpr OptionCode CONFIDENCE   = BASE +  9; // 29
-};
-
-
-/**
- * \brief Configurator for ARVerifyApplication instances.
- *
- * Respects all VERIFY options.
- */
-class ARVerifyConfigurator final : public ARCalcConfiguratorBase
-{
-public:
-
-	using ARCalcConfiguratorBase::ARCalcConfiguratorBase;
-
-private:
-
-	// Configurator
-
-	void do_flush_local_options(OptionRegistry& r) const final;
-
-	std::unique_ptr<Options> do_configure_options(
-			std::unique_ptr<Options> options) const final;
-
-	void do_validate(const Options& o) const final;
-
-	OptionParsers do_parser_list() const final;
-
-	void do_validate(const Configuration& c) const final;
-};
-
 
 /**
  * \brief Access list of reference values by block and index.
@@ -167,177 +116,111 @@ public:
 
 
 /**
- * \brief Validate the input objects for verification.
+ * \brief Parser for a dBAR response, either from a file or from stdin.
  *
- * Throws if validation fails.
- *
- * \param[in] checksums  Checksums as resulted
- * \param[in] toc        TOC as resulted
- * \param[in] arid       ARId as resulted
- * \param[in] filenames  Filenames as resulted
- * \param[in] reference  Reference checksums
- * \param[in] vresult    VerificationResult
- * \param[in] block      Optional best block
- *
- * \throws invalid_argument If validation fails
+ * Accepts binary input for option VERIFY::RESPONSEFILE.
  */
-void validate(const Checksums& checksums, const TOC* toc,
-	const ARId& arid, const std::vector<std::string>& filenames,
-	const ChecksumSource& reference,
-	const VerificationResult* vresult, const int block);
-
-
-/**
- * \brief Decoratable output cell categories.
- *
- * Decoratable cell categories are matches with "theirs" (MATCH), mismatches
- * with "theirs" (MISMATCH), and locally computed checksums (MINE).
- */
-enum class DecorationType : int
+class DBARParser final : public InputStringParser<DBAR>
 {
-	MATCH,
-	MISMATCH,
-	MINE
+	/**
+	 * \brief Load DBAR from file or from stdin.
+	 *
+	 * In case the filename is empty, input is expected from stdin.
+	 *
+	 * \param[in] file The name of the response file
+	 */
+	DBAR load_data(const std::string& file) const;
+
+	// InputStringParser
+
+	std::string start_message() const final;
+
+	DBAR do_parse_empty() const final;
+
+	DBAR do_parse_nonempty(const std::string& s) const final;
 };
 
 
 /**
- * \brief Get a DecorationType by its name.
+ * \brief Parser for a checksum list.
  *
- * \param[in] name Name of the decoration type
- *
- * \return The DecorationType named as in \c name
+ * Accepts a comma-separated list of hexadecimal values as input for option
+ * VERIFY::REFVALUES.
  */
-DecorationType get_decorationtype(const std::string& name);
-
-
-/**
- * \brief Get name for a DecorationType.
- *
- * \param[in] type DecorationType to get name of
- *
- * \return Name of \c type
- */
-std::string name(const DecorationType type);
-
-
-/**
- * \brief Decorator to highlight matching checksums by color.
- *
- * If a cell is \c decorate_set() to TRUE, it will be printed in
- * \c color_for_match(). The default color for match is FG_GREEN (BRIGHT).
- *
- * If a cell is \c decorate_set() to FALSE, it will be printed in
- * \c color_for_mismatch(). The default color for mismatch is FG_RED (BRIGHT).
- */
-class MatchDecorator final : public CellDecorator
+class ChecksumListParser final : public InputStringParser<std::vector<uint32_t>>
 {
-	using Highlight = ansi::Highlight;
-	using Color = ansi::Color;
+	std::string start_message() const final;
 
-	/**
-	 * \brief Internal highlight store.
-	 */
-	Highlight highlights_[2];
+	std::vector<uint32_t> do_parse_nonempty(const std::string& s) const final;
+};
 
-	/**
-	 * \brief Internal color store.
-	 */
-	Color colors_[4];
 
-	// CellDecorator
+class ColorRegistry;
 
-	std::string do_decorate_set(std::string&& s) const final;
+/**
+ * \brief Parser for a color specification.
+ *
+ * Accepts a comma-separated list of colon-separated name-value pairs. The name
+ * is the name of a DecorationType. The value is a color specification, which is
+ * either a single color name or a pair of color names separated by '+' (plus).
+ */
+class ColorSpecParser final : public InputStringParser<ColorRegistry>
+{
+	std::string start_message() const final;
 
-	std::string do_decorate_unset(std::string&& s) const final;
+	ColorRegistry do_parse_nonempty(const std::string& s) const final;
+};
 
-	std::unique_ptr<CellDecorator> do_clone() const final;
+
+/**
+ * \brief Configuration options for ARVerifyApplications.
+ *
+ * Access options for verify exclusively by this class, not by CALCBASE.
+ */
+class VERIFY : public CALCBASE
+{
+	static constexpr auto& BASE = CALCBASE::SUBCLASS_BASE;
 
 public:
 
-	/**
-	 * \brief Constructor.
-	 *
-	 * \param[in] n            Total number of decoratable entries
-	 * \param[in] match_hl     Highlight for matches
-	 * \param[in] fg_match     Foreground color for matches
-	 * \param[in] bg_match     Background color for matches
-	 * \param[in] mismatch_hl  Highlight for mismatches
-	 * \param[in] fg_mismatch  Foreground color for mismatches
-	 * \param[in] bg_mismatch  Background color for mismatches
-	 */
-	MatchDecorator(const std::size_t n, const Highlight match_hl,
-		const Color fg_match, const Color bg_match,
-		const Highlight mismatch_hl,
-		const Color fg_mismatch, const Color bg_mismatch);
+	static constexpr OptionCode NOFIRST      = BASE +  0; // 20
+	static constexpr OptionCode NOLAST       = BASE +  1;
+	static constexpr OptionCode NOALBUM      = BASE +  2;
+	static constexpr OptionCode RESPONSEFILE = BASE +  3;
+	static constexpr OptionCode REFVALUES    = BASE +  4;
+	static constexpr OptionCode PRINTALL     = BASE +  5;
+	static constexpr OptionCode BOOLEAN      = BASE +  6;
+	static constexpr OptionCode NOOUTPUT     = BASE +  7;
+	static constexpr OptionCode COLORED      = BASE +  8;
+	static constexpr OptionCode CONFIDENCE   = BASE +  9; // 29
+};
 
-	/**
-	 * \brief Constructor.
-	 *
-	 * \param[in] n            Total number of decoratable entries
-	 * \param[in] match_hl     FG+BG highlight for matches
-	 * \param[in] match        FG+BG color for matches
-	 * \param[in] mismatch_hl  FG+BG highlight for mismatches
-	 * \param[in] mismatch     FG+BG colors for mismatches
-	 */
-	MatchDecorator(const std::size_t n, const Highlight match_hl,
-			const std::pair<Color, Color>& match, const Highlight mismatch_hl,
-			const std::pair<Color, Color>& mismatch);
 
-	/**
-	 * \brief Default destructor.
-	 */
-	~MatchDecorator() noexcept final = default;
+/**
+ * \brief Configurator for ARVerifyApplication instances.
+ *
+ * Respects all VERIFY options.
+ */
+class ARVerifyConfigurator final : public ARCalcConfiguratorBase
+{
+public:
 
-	/**
-	 * \brief Return the background color for coloring matches.
-	 *
-	 * The first element is the foreground highlight, the second element is the
-	 * background highlight.
-	 *
-	 * \param[in] d DecorationType to get highlights for
-	 *
-	 * \return Highlights for type \c d
-	 */
-	std::pair<ansi::Highlight, ansi::Highlight> highlights(
-			const DecorationType& d) const;
+	using ARCalcConfiguratorBase::ARCalcConfiguratorBase;
 
-	/**
-	 * \brief Return highlight for specified decoration type.
-	 *
-	 * \param[in] d DecorationType to get highlight for
-	 *
-	 * \return Highlight for type \c d
-	 */
-	Highlight hl(const DecorationType& d) const;
+private:
 
-	/**
-	 * \brief Return the colors for the specified decoration type.
-	 *
-	 * The first element is the foreground color, the second element is the
-	 * background color.
-	 *
-	 * \return Colors for type \c d
-	 */
-	std::pair<Color,Color> colors(const DecorationType& d) const;
+	// Configurator
 
-	/**
-	 * \brief Return foreground color for specified decoration type.
-	 *
-	 * \param[in] d DecorationType to get foreground color for
-	 *
-	 * \return Foreground color for type \c d
-	 */
-	Color fg(const DecorationType& d) const;
+	void do_flush_local_options(OptionRegistry& r) const final;
 
-	/**
-	 * \brief Return background color for specified decoration type.
-	 *
-	 * \param[in] d DecorationType to get background color for
-	 *
-	 * \return Background color for type \c d
-	 */
-	Color bg(const DecorationType& d) const;
+	std::unique_ptr<Options> do_configure_options(
+			std::unique_ptr<Options> options) const final;
+
+	void do_validate(const Options& o) const final;
+
+	OptionParsers do_parser_list() const final;
+
+	void do_validate(const Configuration& c) const final;
 };
 
 
@@ -498,6 +381,160 @@ class MonochromeVerifyTableCreator final : public VerifyTableCreator
 
 	void do_their_mismatch(const Checksum& checksum, const int record,
 			const int field, TableComposer* c) const final;
+};
+
+
+/**
+ * \brief Decoratable output cell categories.
+ *
+ * Decoratable cell categories are matches with "theirs" (MATCH), mismatches
+ * with "theirs" (MISMATCH), and locally computed checksums (MINE).
+ */
+enum class DecorationType : int
+{
+	MATCH,
+	MISMATCH,
+	MINE
+};
+
+
+/**
+ * \brief Get a DecorationType by its name.
+ *
+ * \param[in] name Name of the decoration type
+ *
+ * \return The DecorationType named as in \c name
+ */
+DecorationType get_decorationtype(const std::string& name);
+
+
+/**
+ * \brief Get name for a DecorationType.
+ *
+ * \param[in] type DecorationType to get name of
+ *
+ * \return Name of \c type
+ */
+std::string name(const DecorationType type);
+
+
+/**
+ * \brief Decorator to highlight matching checksums by color.
+ *
+ * If a cell is \c decorate_set() to TRUE, it will be printed in
+ * \c color_for_match(). The default color for match is FG_GREEN (BRIGHT).
+ *
+ * If a cell is \c decorate_set() to FALSE, it will be printed in
+ * \c color_for_mismatch(). The default color for mismatch is FG_RED (BRIGHT).
+ */
+class MatchDecorator final : public CellDecorator
+{
+	using Highlight = ansi::Highlight;
+	using Color = ansi::Color;
+
+	/**
+	 * \brief Internal highlight store.
+	 */
+	Highlight highlights_[2];
+
+	/**
+	 * \brief Internal color store.
+	 */
+	Color colors_[4];
+
+	// CellDecorator
+
+	std::string do_decorate_set(std::string&& s) const final;
+
+	std::string do_decorate_unset(std::string&& s) const final;
+
+	std::unique_ptr<CellDecorator> do_clone() const final;
+
+public:
+
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] n            Total number of decoratable entries
+	 * \param[in] match_hl     Highlight for matches
+	 * \param[in] fg_match     Foreground color for matches
+	 * \param[in] bg_match     Background color for matches
+	 * \param[in] mismatch_hl  Highlight for mismatches
+	 * \param[in] fg_mismatch  Foreground color for mismatches
+	 * \param[in] bg_mismatch  Background color for mismatches
+	 */
+	MatchDecorator(const std::size_t n, const Highlight match_hl,
+		const Color fg_match, const Color bg_match,
+		const Highlight mismatch_hl,
+		const Color fg_mismatch, const Color bg_mismatch);
+
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] n            Total number of decoratable entries
+	 * \param[in] match_hl     FG+BG highlight for matches
+	 * \param[in] match        FG+BG color for matches
+	 * \param[in] mismatch_hl  FG+BG highlight for mismatches
+	 * \param[in] mismatch     FG+BG colors for mismatches
+	 */
+	MatchDecorator(const std::size_t n, const Highlight match_hl,
+			const std::pair<Color, Color>& match, const Highlight mismatch_hl,
+			const std::pair<Color, Color>& mismatch);
+
+	/**
+	 * \brief Default destructor.
+	 */
+	~MatchDecorator() noexcept final = default;
+
+	/**
+	 * \brief Return the background color for coloring matches.
+	 *
+	 * The first element is the foreground highlight, the second element is the
+	 * background highlight.
+	 *
+	 * \param[in] d DecorationType to get highlights for
+	 *
+	 * \return Highlights for type \c d
+	 */
+	std::pair<ansi::Highlight, ansi::Highlight> highlights(
+			const DecorationType& d) const;
+
+	/**
+	 * \brief Return highlight for specified decoration type.
+	 *
+	 * \param[in] d DecorationType to get highlight for
+	 *
+	 * \return Highlight for type \c d
+	 */
+	Highlight hl(const DecorationType& d) const;
+
+	/**
+	 * \brief Return the colors for the specified decoration type.
+	 *
+	 * The first element is the foreground color, the second element is the
+	 * background color.
+	 *
+	 * \return Colors for type \c d
+	 */
+	std::pair<Color,Color> colors(const DecorationType& d) const;
+
+	/**
+	 * \brief Return foreground color for specified decoration type.
+	 *
+	 * \param[in] d DecorationType to get foreground color for
+	 *
+	 * \return Foreground color for type \c d
+	 */
+	Color fg(const DecorationType& d) const;
+
+	/**
+	 * \brief Return background color for specified decoration type.
+	 *
+	 * \param[in] d DecorationType to get background color for
+	 *
+	 * \return Background color for type \c d
+	 */
+	Color bg(const DecorationType& d) const;
 };
 
 
@@ -689,89 +726,6 @@ public:
 
 
 /**
- * \brief Parser for a dBAR response, either from a file or from stdin.
- *
- * Accepts binary input for option VERIFY::RESPONSEFILE.
- */
-class DBARParser final : public InputStringParser<DBAR>
-{
-	/**
-	 * \brief Load DBAR from file or from stdin.
-	 *
-	 * In case the filename is empty, input is expected from stdin.
-	 *
-	 * \param[in] file The name of the response file
-	 */
-	DBAR load_data(const std::string& file) const;
-
-	// InputStringParser
-
-	std::string start_message() const final;
-
-	DBAR do_parse_empty() const final;
-
-	DBAR do_parse_nonempty(const std::string& s) const final;
-};
-
-
-/**
- * \brief Parser for a checksum list.
- *
- * Accepts a comma-separated list of hexadecimal values as input for option
- * VERIFY::REFVALUES.
- */
-class ChecksumListParser final : public InputStringParser<std::vector<uint32_t>>
-{
-	std::string start_message() const final;
-
-	std::vector<uint32_t> do_parse_nonempty(const std::string& s) const final;
-};
-
-
-/**
- * \brief Parser for a color specification.
- *
- * Accepts a comma-separated list of colon-separated name-value pairs. The name
- * is the name of a DecorationType. The value is a color specification, which is
- * either a single color name or a pair of color names separated by '+' (plus).
- */
-class ColorSpecParser final : public InputStringParser<ColorRegistry>
-{
-	std::string start_message() const final;
-
-	ColorRegistry do_parse_nonempty(const std::string& s) const final;
-};
-
-
-/**
- * \brief Creates Theirs-columns with optional Confidence-columns
- */
-template <>
-class table::AddField<ATTR::THEIRS> final : public FieldCreator
-{
-	const VerificationResult* vresult_;
-	const int block_;
-	const ChecksumSource* checksums_;
-	const std::vector<arcstk::checksum::type>* types_to_print_;
-	const VerifyTableCreator* formatter_;
-	const int total_theirs_per_block_;
-	const bool print_confidence_;
-
-	void do_create(TableComposer* c, const int record_idx) const final;
-
-public:
-
-	AddField(const std::vector<arcstk::checksum::type>* types,
-			const VerificationResult* vresult,
-			const int block,
-			const ChecksumSource* checksums,
-			const VerifyTableCreator* formatter,
-			const int total_theirs_per_block,
-			const bool print_confidence);
-};
-
-
-/**
  * \brief Functor to create a ChecksumSource from input objects.
  */
 class SourceCreator
@@ -814,6 +768,55 @@ public:
 	std::unique_ptr<const ChecksumSource> operator()(
 			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const;
 };
+
+
+/**
+ * \brief Creates Theirs-columns with optional Confidence-columns
+ */
+template <>
+class table::AddField<ATTR::THEIRS> final : public FieldCreator
+{
+	const VerificationResult* vresult_;
+	const int block_;
+	const ChecksumSource* checksums_;
+	const std::vector<arcstk::checksum::type>* types_to_print_;
+	const VerifyTableCreator* formatter_;
+	const int total_theirs_per_block_;
+	const bool print_confidence_;
+
+	void do_create(TableComposer* c, const int record_idx) const final;
+
+public:
+
+	AddField(const std::vector<arcstk::checksum::type>* types,
+			const VerificationResult* vresult,
+			const int block,
+			const ChecksumSource* checksums,
+			const VerifyTableCreator* formatter,
+			const int total_theirs_per_block,
+			const bool print_confidence);
+};
+
+
+/**
+ * \brief Validate the input objects for printing.
+ *
+ * Throws if validation fails.
+ *
+ * \param[in] checksums  Checksums as resulted
+ * \param[in] toc        TOC as resulted
+ * \param[in] arid       ARId as resulted
+ * \param[in] filenames  Filenames as resulted
+ * \param[in] reference  Reference checksums
+ * \param[in] vresult    VerificationResult
+ * \param[in] block      Optional best block
+ *
+ * \throws invalid_argument If validation fails
+ */
+void validate(const Checksums& checksums, const TOC* toc,
+	const ARId& arid, const std::vector<std::string>& filenames,
+	const ChecksumSource& reference,
+	const VerificationResult* vresult, const int block);
 
 
 /**

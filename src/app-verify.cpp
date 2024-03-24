@@ -96,279 +96,6 @@ using table::RowTableComposerBuilder;
 using table::TableComposer;
 
 
-	// VERIFY
-
-
-	constexpr OptionCode VERIFY::NOFIRST;
-	constexpr OptionCode VERIFY::NOLAST;
-	constexpr OptionCode VERIFY::NOALBUM;
-	constexpr OptionCode VERIFY::RESPONSEFILE;
-	constexpr OptionCode VERIFY::REFVALUES;
-	constexpr OptionCode VERIFY::PRINTALL;
-	constexpr OptionCode VERIFY::BOOLEAN;
-	constexpr OptionCode VERIFY::NOOUTPUT;
-
-
-	// ARVerifyConfigurator
-
-
-	void ARVerifyConfigurator::do_flush_local_options(OptionRegistry &r) const
-	{
-		using input::OP_VALUE;
-		using std::end;
-
-		r.insert(end(r),
-		{
-			// from FORMATBASE
-
-			{ VERIFY::READERID ,
-			{  "reader", true, OP_VALUE::AUTO,
-				"Force use of audio reader with specified id" }},
-
-			{ VERIFY::PARSERID ,
-			{  "parser", true, OP_VALUE::AUTO,
-				"Force use of toc parser with specified id" }},
-
-			{ VERIFY::LIST_TOC_FORMATS ,
-			{  "list-toc-formats", false, OP_VALUE::FALSE,
-				"List all supported file formats for TOC metadata" }},
-
-			{ VERIFY::LIST_AUDIO_FORMATS ,
-			{  "list-audio-formats", false, OP_VALUE::FALSE,
-				"List all supported audio codec/container formats" }},
-
-			// from CALCBASE
-
-			{ VERIFY::METAFILE ,
-			{  'm', "metafile", true, OP_VALUE::NONE,
-				"Specify metadata file (TOC) to use" }},
-
-			{ VERIFY::NOTRACKS ,
-			{  "no-track-nos", false, OP_VALUE::FALSE,
-				"Do not print track numbers" }},
-
-			{ VERIFY::NOFILENAMES ,
-			{  "no-filenames", false, OP_VALUE::FALSE,
-				"Do not print the filenames" }},
-
-			{ VERIFY::NOOFFSETS ,
-			{  "no-offsets", false, OP_VALUE::FALSE,
-				"Do not print track offsets" }},
-
-			{ VERIFY::NOLENGTHS ,
-			{  "no-lengths", false, OP_VALUE::FALSE,
-				"Do not print track lengths" }},
-
-			{ VERIFY::NOLABELS ,
-			{  "no-labels", false, OP_VALUE::FALSE,
-				"Do not print column or row labels" }},
-
-			{ VERIFY::COLDELIM ,
-			{  "col-delim", true, "ASCII-32", "Specify column delimiter" }},
-
-			{ VERIFY::PRINTID ,
-			{  "print-id", false, OP_VALUE::FALSE,
-				"Print the AccurateRip Id of the album" }},
-
-			{ VERIFY::PRINTURL ,
-			{  "print-url", false, OP_VALUE::FALSE,
-				"Print the AccurateRip URL of the album" }},
-
-			// from VERIFY
-
-			{ VERIFY::NOFIRST ,
-			{  "no-first", false, OP_VALUE::FALSE,
-				"Do not treat first audio file as first track" }},
-
-			{ VERIFY::NOLAST ,
-			{  "no-last", false, OP_VALUE::FALSE,
-				"Do not treat last audio file as last track" }},
-
-			{ VERIFY::NOALBUM ,
-			{  "no-album", false, OP_VALUE::FALSE,
-				"Abbreviates \"--no-first --no-last\"" }},
-
-			{ VERIFY::RESPONSEFILE ,
-			{  'r', "response", true, OP_VALUE::NONE,
-				"Specify AccurateRip response file" }},
-
-			{ VERIFY::REFVALUES ,
-			{  "refvalues", true, OP_VALUE::NONE,
-				"Specify AccurateRip reference values (as hex value list)" }},
-
-			{ VERIFY::PRINTALL ,
-			{  "print-all-matches", false, OP_VALUE::FALSE,
-				"Print verification results for all blocks" }},
-
-			{ VERIFY::BOOLEAN ,
-			{  'b', "boolean", false, OP_VALUE::FALSE,
-				"Return number of differing tracks in best match" }},
-
-			{ VERIFY::NOOUTPUT ,
-			{  'n', "no-output", false, OP_VALUE::FALSE,
-				"Do not print the result (implies --boolean)" }},
-
-			{ VERIFY::COLORED ,
-			{  "colors", true, OP_VALUE::USE_DEFAULT,
-				"Use colored output and optionally specify colors" }},
-
-			{ VERIFY::CONFIDENCE ,
-			{  "confidence", false, OP_VALUE::FALSE,
-				"Print confidence values if available" }}
-		});
-	}
-
-
-	std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
-			std::unique_ptr<Options> options) const
-	{
-		auto voptions = configure_calcbase_options(std::move(options));
-
-		auto no_album_options = std::string{}; // for log messages
-
-		// Album mode
-
-		if (voptions->is_set(VERIFY::NOALBUM))
-		{
-			ARCS_LOG(DEBUG1) << "Activate option NOFIRST due to NOALBUM";
-			voptions->set(VERIFY::NOFIRST);
-
-			ARCS_LOG(DEBUG1) << "Activate option NOLAST due to NOALBUM";
-			voptions->set(VERIFY::NOLAST);
-
-			no_album_options = "--no-album";
-		} else
-		{
-			if (voptions->is_set(VERIFY::NOFIRST))
-			{
-				no_album_options += "--no-first";
-			}
-
-			if (voptions->is_set(VERIFY::NOLAST))
-			{
-				if (no_album_options.empty()) { no_album_options += ","; }
-				no_album_options += "--no-last";
-			}
-
-			if(voptions->is_set(VERIFY::NOFIRST) and
-					voptions->is_set(VERIFY::NOLAST))
-			{
-				ARCS_LOG(DEBUG1) <<
-					"Activate option NOALBUM due to NOFIRST and NOLAST";
-				voptions->set(VERIFY::NOALBUM);
-			}
-		}
-
-		// Album requested but no TOC info provided?
-
-		if (not voptions->is_set(VERIFY::NOALBUM)
-			and voptions->value(VERIFY::METAFILE).empty())
-		{
-			// Album requires dedicated first + last track.
-			// If no TOC is passed, an album can only be verified when passed a
-			// single file for each track.
-
-			// This means we must ensure
-			// (total reference track checksums == total input track files)
-			// and it will be OK. We can do this only later when command line input
-			// was parsed.
-		}
-
-		if (voptions->is_set(VERIFY::NOFIRST) or voptions->is_set(VERIFY::NOLAST))
-		{
-			if (voptions->is_set(VERIFY::METAFILE))
-			{
-				ARCS_LOG(WARNING) << "Passing TOC file "
-					<< voptions->value(VERIFY::METAFILE)
-					<< " requests album calculation, but adding "
-					<< no_album_options
-					<< " will ignore album calculation at least partly."
-					<< " Expect unwanted results.";
-			}
-		}
-
-		// Only print those things from the reference data that we actually may have
-
-		if (voptions->is_set(VERIFY::REFVALUES))
-		{
-			if (voptions->is_set(VERIFY::PRINTID))
-			{
-				ARCS_LOG_WARNING <<
-					"Ignore option PRINTID since option REFVALUES is active "
-					"and reference values do not provide an ID to print.";
-				voptions->unset(VERIFY::PRINTID);
-			}
-			if (voptions->is_set(VERIFY::PRINTURL))
-			{
-				ARCS_LOG_WARNING <<
-					"Ignore option PRINTURL since option REFVALUES is active "
-					"and reference values do not provide an URL to print.";
-				voptions->unset(VERIFY::PRINTURL);
-			}
-			if (voptions->is_set(VERIFY::CONFIDENCE))
-			{
-				ARCS_LOG_WARNING <<
-					"Ignore option CONFIDENCE since option REFVALUES is active and "
-					"reference values do not provide confidence values to print.";
-				voptions->unset(VERIFY::CONFIDENCE);
-			}
-		}
-
-		// NOOUTPUT implies BOOLEAN
-
-		if (voptions->is_set(VERIFY::NOOUTPUT))
-		{
-			voptions->set(VERIFY::BOOLEAN);
-		}
-
-		return voptions;
-	}
-
-
-	void ARVerifyConfigurator::do_validate(const Options& options) const
-{
-	if (options.is_set(VERIFY::RESPONSEFILE)
-			and options.is_set(VERIFY::REFVALUES))
-	{
-		throw ConfigurationException("Cannot process --refvalues along with "
-				" -r/--response, only one of these options is allowed");
-	}
-
-	if (!options.is_set(VERIFY::RESPONSEFILE)
-			and !options.is_set(VERIFY::REFVALUES))
-	{
-		throw ConfigurationException("No reference values specified."
-				" One of --refvalues and -r/--response is required");
-	}
-}
-
-
-OptionParsers ARVerifyConfigurator::do_parser_list() const
-{
-	return {
-		{ VERIFY::RESPONSEFILE,
-			[]{ return std::make_unique<DBARParser>(); } },
-		{ VERIFY::REFVALUES,
-			[]{ return std::make_unique<ChecksumListParser>(); } },
-		{ VERIFY::COLORED,
-			[]{ return std::make_unique<ColorSpecParser>(); } }
-	};
-}
-
-
-void ARVerifyConfigurator::do_validate(const Configuration& c) const
-{
-	// No reference checksums at all? => Error
-
-	if (c.object<DBAR>(VERIFY::RESPONSEFILE).size() == 0
-		&& c.object<std::vector<uint32_t>>(VERIFY::REFVALUES).empty())
-	{
-		throw std::runtime_error(
-				"No reference checksums for verification available.");
-	}
-}
-
-
 // RefvaluesSource
 
 
@@ -489,148 +216,440 @@ std::size_t EmptyChecksumSource::do_size() const
 }
 
 
-// validate
+// DBARParser
 
 
-void validate(const Checksums& checksums, const TOC* toc,
-	const ARId& arid, const std::vector<std::string>& filenames,
-	const ChecksumSource& reference,
-	const VerificationResult* vresult, const int block)
+DBAR DBARParser::load_data(const std::string& responsefile) const
 {
-	calc::validate(checksums, toc, arid, filenames);
+	using input::CallSyntaxException;
 
-	if (!reference.size())
+	auto builder = DBARBuilder {};
+
+	try
 	{
-		throw std::invalid_argument("Missing reference checksums, "
-				"nothing to print.");
+		if (!responsefile.empty())
+		{
+			arcstk::parse_file(responsefile, &builder, nullptr);
+		} else
+		{
+			read_from_stdin(1024, &builder, nullptr);
+		}
+	} catch (const std::exception& e)
+	{
+		throw CallSyntaxException(e.what());
 	}
 
-	// TODO reference should have at least one block with size == checksums.size()
-	// TODO reference should have at least one block with id == arid
+	return builder.result();
+}
 
-	auto at_least_one_block_of_equal_size = bool { false };
-	for (auto i = int {0}; i < reference.size(); ++i)
+
+std::string DBARParser::start_message() const
+{
+	return "AccurateRip reference checksums (=\"Theirs\")";
+}
+
+
+DBAR DBARParser::do_parse_empty() const
+{
+	return this->load_data("");
+}
+
+
+DBAR DBARParser::do_parse_nonempty(const std::string& s) const
+{
+	return this->load_data(s);
+}
+
+
+// ChecksumListParser
+
+
+std::string ChecksumListParser::start_message() const
+{
+	return "List of local reference checksums (=\"Theirs\")";
+}
+
+
+std::vector<uint32_t> ChecksumListParser::do_parse_nonempty(
+		const std::string& checksum_list) const
+{
+	auto i = int { 0 };
+	auto refvals = parse_list_to_objects<uint32_t>(
+				checksum_list,
+				',',
+				[&i](const std::string& s) -> uint32_t
+				{
+					const uint32_t value = std::stoul(s, 0, 16);
+					ARCS_LOG(DEBUG1) << "Parse checksum: " << Checksum { value }
+						<< " (Track " << ++i << ")";
+					return value;
+				});
+
+	ARCS_LOG(DEBUG1) << "Parsed " << refvals.size() << " checksums";
+	return refvals;
+}
+
+
+// ColorSpecParser
+
+
+std::string ColorSpecParser::start_message() const
+{
+	return "List of output color requests";
+}
+
+
+ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
+{
+	using input::CallSyntaxException;
+	using input::OP_VALUE;
+
+	if (input == OP_VALUE::USE_DEFAULT)
 	{
-		if (reference.size(i) == checksums.size())
+		return ColorRegistry{ /* default colors */ };
+	}
+
+	const std::string sep = ":"; // name-value separator
+
+	ColorRegistry r;
+	r.clear(); // remove defaults, use only values from input string
+
+	parse_list(input, ',',
+			[&r,&sep](const std::string& s) // parse a single TYPE:COLOR pair
+			{
+				const auto pos = s.find(sep);
+
+				if (pos == std::string::npos)
+				{
+					std::ostringstream msg;
+					msg << "Could not parse --colors input: '"
+						<< s << "'. Expected a "
+						"comma-separated sequence of pairs like "
+						"'type1:color1,type2:color2,...'";
+					throw CallSyntaxException(msg.str());
+				}
+
+				const auto uppercase = [](std::string str) -> std::string
+				{
+					using std::begin;
+					using std::end;
+					std::transform(begin(str), end(str), begin(str),
+						[](unsigned char c) { return std::toupper(c); });
+					return str;
+				};
+
+				const auto type   { uppercase(s.substr(0, pos)) };
+				const auto colors { uppercase(s.substr(pos + sep.length())) };
+
+				using ansi::get_color;
+
+				const auto plus = colors.find("+");
+				if (plus != std::string::npos)
+				{
+					// Color pair
+
+					const auto color_fg { colors.substr(0, plus)  };
+					const auto color_bg { colors.substr(plus + 1) };
+
+					ARCS_LOG(DEBUG1) << "For " << type << " set "
+							<< color_fg << " as foreground color";
+					ARCS_LOG(DEBUG1) << "For " << type << " set "
+							<< color_bg << " as background color";
+
+					r.set(get_decorationtype(type),
+						get_color(color_fg), get_color(color_bg));
+				} else
+				{
+					// Single color
+
+					if ("BG_" == colors.substr(0,3))
+					{
+						ARCS_LOG(DEBUG1) << "For " << type << " set " << colors
+							<< " as background color";
+						r.set_bg(get_decorationtype(type), get_color(colors));
+					} else
+					{
+						ARCS_LOG(DEBUG1) << "For " << type << " set " << colors
+							<< " as foreground color";
+						r.set_fg(get_decorationtype(type), get_color(colors));
+					}
+				}
+
+			});
+	return r;
+}
+
+
+// VERIFY
+
+
+constexpr OptionCode VERIFY::NOFIRST;
+constexpr OptionCode VERIFY::NOLAST;
+constexpr OptionCode VERIFY::NOALBUM;
+constexpr OptionCode VERIFY::RESPONSEFILE;
+constexpr OptionCode VERIFY::REFVALUES;
+constexpr OptionCode VERIFY::PRINTALL;
+constexpr OptionCode VERIFY::BOOLEAN;
+constexpr OptionCode VERIFY::NOOUTPUT;
+
+
+// ARVerifyConfigurator
+
+
+void ARVerifyConfigurator::do_flush_local_options(OptionRegistry &r) const
+{
+	using input::OP_VALUE;
+	using std::end;
+
+	r.insert(end(r),
+	{
+		// from FORMATBASE
+
+		{ VERIFY::READERID ,
+		{  "reader", true, OP_VALUE::AUTO,
+			"Force use of audio reader with specified id" }},
+
+		{ VERIFY::PARSERID ,
+		{  "parser", true, OP_VALUE::AUTO,
+			"Force use of toc parser with specified id" }},
+
+		{ VERIFY::LIST_TOC_FORMATS ,
+		{  "list-toc-formats", false, OP_VALUE::FALSE,
+			"List all supported file formats for TOC metadata" }},
+
+		{ VERIFY::LIST_AUDIO_FORMATS ,
+		{  "list-audio-formats", false, OP_VALUE::FALSE,
+			"List all supported audio codec/container formats" }},
+
+		// from CALCBASE
+
+		{ VERIFY::METAFILE ,
+		{  'm', "metafile", true, OP_VALUE::NONE,
+			"Specify metadata file (TOC) to use" }},
+
+		{ VERIFY::NOTRACKS ,
+		{  "no-track-nos", false, OP_VALUE::FALSE,
+			"Do not print track numbers" }},
+
+		{ VERIFY::NOFILENAMES ,
+		{  "no-filenames", false, OP_VALUE::FALSE,
+			"Do not print the filenames" }},
+
+		{ VERIFY::NOOFFSETS ,
+		{  "no-offsets", false, OP_VALUE::FALSE,
+			"Do not print track offsets" }},
+
+		{ VERIFY::NOLENGTHS ,
+		{  "no-lengths", false, OP_VALUE::FALSE,
+			"Do not print track lengths" }},
+
+		{ VERIFY::NOLABELS ,
+		{  "no-labels", false, OP_VALUE::FALSE,
+			"Do not print column or row labels" }},
+
+		{ VERIFY::COLDELIM ,
+		{  "col-delim", true, "ASCII-32", "Specify column delimiter" }},
+
+		{ VERIFY::PRINTID ,
+		{  "print-id", false, OP_VALUE::FALSE,
+			"Print the AccurateRip Id of the album" }},
+
+		{ VERIFY::PRINTURL ,
+		{  "print-url", false, OP_VALUE::FALSE,
+			"Print the AccurateRip URL of the album" }},
+
+		// from VERIFY
+
+		{ VERIFY::NOFIRST ,
+		{  "no-first", false, OP_VALUE::FALSE,
+			"Do not treat first audio file as first track" }},
+
+		{ VERIFY::NOLAST ,
+		{  "no-last", false, OP_VALUE::FALSE,
+			"Do not treat last audio file as last track" }},
+
+		{ VERIFY::NOALBUM ,
+		{  "no-album", false, OP_VALUE::FALSE,
+			"Abbreviates \"--no-first --no-last\"" }},
+
+		{ VERIFY::RESPONSEFILE ,
+		{  'r', "response", true, OP_VALUE::NONE,
+			"Specify AccurateRip response file" }},
+
+		{ VERIFY::REFVALUES ,
+		{  "refvalues", true, OP_VALUE::NONE,
+			"Specify AccurateRip reference values (as hex value list)" }},
+
+		{ VERIFY::PRINTALL ,
+		{  "print-all-matches", false, OP_VALUE::FALSE,
+			"Print verification results for all blocks" }},
+
+		{ VERIFY::BOOLEAN ,
+		{  'b', "boolean", false, OP_VALUE::FALSE,
+			"Return number of differing tracks in best match" }},
+
+		{ VERIFY::NOOUTPUT ,
+		{  'n', "no-output", false, OP_VALUE::FALSE,
+			"Do not print the result (implies --boolean)" }},
+
+		{ VERIFY::COLORED ,
+		{  "colors", true, OP_VALUE::USE_DEFAULT,
+			"Use colored output and optionally specify colors" }},
+
+		{ VERIFY::CONFIDENCE ,
+		{  "confidence", false, OP_VALUE::FALSE,
+			"Print confidence values if available" }}
+	});
+}
+
+
+std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
+		std::unique_ptr<Options> options) const
+{
+	auto voptions = configure_calcbase_options(std::move(options));
+
+	auto no_album_options = std::string{}; // for log messages
+
+	// Album mode
+
+	if (voptions->is_set(VERIFY::NOALBUM))
+	{
+		ARCS_LOG(DEBUG1) << "Activate option NOFIRST due to NOALBUM";
+		voptions->set(VERIFY::NOFIRST);
+
+		ARCS_LOG(DEBUG1) << "Activate option NOLAST due to NOALBUM";
+		voptions->set(VERIFY::NOLAST);
+
+		no_album_options = "--no-album";
+	} else
+	{
+		if (voptions->is_set(VERIFY::NOFIRST))
 		{
-			at_least_one_block_of_equal_size = true;
-			break;
+			no_album_options += "--no-first";
+		}
+
+		if (voptions->is_set(VERIFY::NOLAST))
+		{
+			if (no_album_options.empty()) { no_album_options += ","; }
+			no_album_options += "--no-last";
+		}
+
+		if(voptions->is_set(VERIFY::NOFIRST) and
+				voptions->is_set(VERIFY::NOLAST))
+		{
+			ARCS_LOG(DEBUG1) <<
+				"Activate option NOALBUM due to NOFIRST and NOLAST";
+			voptions->set(VERIFY::NOALBUM);
 		}
 	}
 
-	if (!at_least_one_block_of_equal_size)
+	// Album requested but no TOC info provided?
+
+	if (not voptions->is_set(VERIFY::NOALBUM)
+		and voptions->value(VERIFY::METAFILE).empty())
 	{
-		throw std::invalid_argument("Mismatch: "
-				"There are " + std::to_string(checksums.size())
-				+ " local tracks to verify, but no block in reference "
-				" contains exactly this number of tracks");
+		// Album requires dedicated first + last track.
+		// If no TOC is passed, an album can only be verified when passed a
+		// single file for each track.
+
+		// This means we must ensure
+		// (total reference track checksums == total input track files)
+		// and it will be OK. We can do this only later when command line input
+		// was parsed.
 	}
 
-	// TODO reference should have at least one block with id == arid
-
-	if (!vresult)
+	if (voptions->is_set(VERIFY::NOFIRST) or voptions->is_set(VERIFY::NOLAST))
 	{
-		throw std::invalid_argument("Missing match information, "
-				"nothing to print.");
+		if (voptions->is_set(VERIFY::METAFILE))
+		{
+			ARCS_LOG(WARNING) << "Passing TOC file "
+				<< voptions->value(VERIFY::METAFILE)
+				<< " requests album calculation, but adding "
+				<< no_album_options
+				<< " will ignore album calculation at least partly."
+				<< " Expect unwanted results.";
+		}
 	}
 
-	if (block > vresult->total_blocks()) // block < 0 is ok (means: no block)
+	// Only print those things from the reference data that we actually may have
+
+	if (voptions->is_set(VERIFY::REFVALUES))
 	{
-		throw std::invalid_argument("Mismatch: "
-				"Match contains no block " + std::to_string(block)
-				+ " but contains only "
-				+ std::to_string(vresult->total_blocks()) + " blocks.");
+		if (voptions->is_set(VERIFY::PRINTID))
+		{
+			ARCS_LOG_WARNING <<
+				"Ignore option PRINTID since option REFVALUES is active "
+				"and reference values do not provide an ID to print.";
+			voptions->unset(VERIFY::PRINTID);
+		}
+		if (voptions->is_set(VERIFY::PRINTURL))
+		{
+			ARCS_LOG_WARNING <<
+				"Ignore option PRINTURL since option REFVALUES is active "
+				"and reference values do not provide an URL to print.";
+			voptions->unset(VERIFY::PRINTURL);
+		}
+		if (voptions->is_set(VERIFY::CONFIDENCE))
+		{
+			ARCS_LOG_WARNING <<
+				"Ignore option CONFIDENCE since option REFVALUES is active and "
+				"reference values do not provide confidence values to print.";
+			voptions->unset(VERIFY::CONFIDENCE);
+		}
+	}
+
+	// NOOUTPUT implies BOOLEAN
+
+	if (voptions->is_set(VERIFY::NOOUTPUT))
+	{
+		voptions->set(VERIFY::BOOLEAN);
+	}
+
+	return voptions;
+}
+
+
+void ARVerifyConfigurator::do_validate(const Options& options) const
+{
+	if (options.is_set(VERIFY::RESPONSEFILE)
+			and options.is_set(VERIFY::REFVALUES))
+	{
+		throw ConfigurationException("Cannot process --refvalues along with "
+				" -r/--response, only one of these options is allowed");
+	}
+
+	if (!options.is_set(VERIFY::RESPONSEFILE)
+			and !options.is_set(VERIFY::REFVALUES))
+	{
+		throw ConfigurationException("No reference values specified."
+				" One of --refvalues and -r/--response is required");
 	}
 }
 
 
-// MatchDecorator
-
-
-MatchDecorator::MatchDecorator(const std::size_t n, const Highlight match_hl,
-		const Color fg_match, const Color bg_match,
-		const Highlight mismatch_hl, const Color fg_mismatch,
-		const Color bg_mismatch)
-	: CellDecorator(n)
-	, highlights_ { match_hl, mismatch_hl }
-	, colors_     { fg_match, bg_match, fg_mismatch, bg_mismatch }
+OptionParsers ARVerifyConfigurator::do_parser_list() const
 {
-	/* empty */
+	return {
+		{ VERIFY::RESPONSEFILE,
+			[]{ return std::make_unique<DBARParser>(); } },
+		{ VERIFY::REFVALUES,
+			[]{ return std::make_unique<ChecksumListParser>(); } },
+		{ VERIFY::COLORED,
+			[]{ return std::make_unique<ColorSpecParser>(); } }
+	};
 }
 
 
-MatchDecorator::MatchDecorator(const std::size_t n, const Highlight match_hl,
-		const std::pair<Color, Color>& match, const Highlight mismatch_hl,
-		const std::pair<Color, Color>& mismatch)
-	: MatchDecorator(n, match_hl, match.first, match.second,
-			mismatch_hl, mismatch.first, mismatch.second)
+void ARVerifyConfigurator::do_validate(const Configuration& c) const
 {
-	/* empty */
-}
+	// No reference checksums at all? => Error
 
-
-ansi::Highlight MatchDecorator::hl(const DecorationType& d) const
-{
-	if (DecorationType::MATCH == d)
+	if (c.object<DBAR>(VERIFY::RESPONSEFILE).size() == 0
+		&& c.object<std::vector<uint32_t>>(VERIFY::REFVALUES).empty())
 	{
-		return highlights_[0];
+		throw std::runtime_error(
+				"No reference checksums for verification available.");
 	}
-
-	if (DecorationType::MISMATCH == d)
-	{
-		return highlights_[1];
-	}
-
-	return Highlight::NORMAL;
-}
-
-
-std::pair<ansi::Color, ansi::Color> MatchDecorator::colors(
-		const DecorationType& d) const
-{
-	if (DecorationType::MATCH == d)
-	{
-		return { colors_[0], colors_[1] };
-	}
-
-	if (DecorationType::MISMATCH == d)
-	{
-		return { colors_[2], colors_[3] };
-	}
-
-	return { Color::FG_DEFAULT, Color::BG_DEFAULT };
-}
-
-
-ansi::Color MatchDecorator::fg(const DecorationType& d) const
-{
-	return colors(d).first;
-}
-
-
-ansi::Color MatchDecorator::bg(const DecorationType& d) const
-{
-	return colors(d).second;
-}
-
-
-std::string MatchDecorator::do_decorate_set(std::string&& s) const
-{
-	return  colored(hl(DecorationType::MATCH),
-				fg(DecorationType::MATCH), bg(DecorationType::MATCH), s);
-}
-
-
-std::string MatchDecorator::do_decorate_unset(std::string&& s) const
-{
-	return  colored(hl(DecorationType::MISMATCH),
-				fg(DecorationType::MISMATCH), bg(DecorationType::MISMATCH), s);
-}
-
-
-std::unique_ptr<CellDecorator> MatchDecorator::do_clone() const
-{
-	return std::make_unique<MatchDecorator>(*this);
 }
 
 
@@ -887,6 +906,9 @@ DecorationType get_decorationtype(const std::string& name)
 }
 
 
+// name()
+
+
 std::string name(const DecorationType type)
 {
 	using map_type = std::unordered_map<DecorationType, std::string>;
@@ -900,6 +922,96 @@ std::string name(const DecorationType type)
 	}();
 
 	return names[type];
+}
+
+
+// MatchDecorator
+
+
+MatchDecorator::MatchDecorator(const std::size_t n, const Highlight match_hl,
+		const Color fg_match, const Color bg_match,
+		const Highlight mismatch_hl, const Color fg_mismatch,
+		const Color bg_mismatch)
+	: CellDecorator(n)
+	, highlights_ { match_hl, mismatch_hl }
+	, colors_     { fg_match, bg_match, fg_mismatch, bg_mismatch }
+{
+	/* empty */
+}
+
+
+MatchDecorator::MatchDecorator(const std::size_t n, const Highlight match_hl,
+		const std::pair<Color, Color>& match, const Highlight mismatch_hl,
+		const std::pair<Color, Color>& mismatch)
+	: MatchDecorator(n, match_hl, match.first, match.second,
+			mismatch_hl, mismatch.first, mismatch.second)
+{
+	/* empty */
+}
+
+
+ansi::Highlight MatchDecorator::hl(const DecorationType& d) const
+{
+	if (DecorationType::MATCH == d)
+	{
+		return highlights_[0];
+	}
+
+	if (DecorationType::MISMATCH == d)
+	{
+		return highlights_[1];
+	}
+
+	return Highlight::NORMAL;
+}
+
+
+std::pair<ansi::Color, ansi::Color> MatchDecorator::colors(
+		const DecorationType& d) const
+{
+	if (DecorationType::MATCH == d)
+	{
+		return { colors_[0], colors_[1] };
+	}
+
+	if (DecorationType::MISMATCH == d)
+	{
+		return { colors_[2], colors_[3] };
+	}
+
+	return { Color::FG_DEFAULT, Color::BG_DEFAULT };
+}
+
+
+ansi::Color MatchDecorator::fg(const DecorationType& d) const
+{
+	return colors(d).first;
+}
+
+
+ansi::Color MatchDecorator::bg(const DecorationType& d) const
+{
+	return colors(d).second;
+}
+
+
+std::string MatchDecorator::do_decorate_set(std::string&& s) const
+{
+	return  colored(hl(DecorationType::MATCH),
+				fg(DecorationType::MATCH), bg(DecorationType::MATCH), s);
+}
+
+
+std::string MatchDecorator::do_decorate_unset(std::string&& s) const
+{
+	return  colored(hl(DecorationType::MISMATCH),
+				fg(DecorationType::MISMATCH), bg(DecorationType::MISMATCH), s);
+}
+
+
+std::unique_ptr<CellDecorator> MatchDecorator::do_clone() const
+{
+	return std::make_unique<MatchDecorator>(*this);
 }
 
 
@@ -1107,170 +1219,6 @@ void ColorizingVerifyTableCreator::set_color_bg(DecorationType d, Color c)
 }
 
 
-// DBARParser
-
-
-DBAR DBARParser::load_data(const std::string& responsefile) const
-{
-	using input::CallSyntaxException;
-
-	auto builder = DBARBuilder {};
-
-	try
-	{
-		if (!responsefile.empty())
-		{
-			arcstk::parse_file(responsefile, &builder, nullptr);
-		} else
-		{
-			read_from_stdin(1024, &builder, nullptr);
-		}
-	} catch (const std::exception& e)
-	{
-		throw CallSyntaxException(e.what());
-	}
-
-	return builder.result();
-}
-
-
-std::string DBARParser::start_message() const
-{
-	return "AccurateRip reference checksums (=\"Theirs\")";
-}
-
-
-DBAR DBARParser::do_parse_empty() const
-{
-	return this->load_data("");
-}
-
-
-DBAR DBARParser::do_parse_nonempty(const std::string& s) const
-{
-	return this->load_data(s);
-}
-
-
-// ChecksumListParser
-
-
-std::string ChecksumListParser::start_message() const
-{
-	return "List of local reference checksums (=\"Theirs\")";
-}
-
-
-std::vector<uint32_t> ChecksumListParser::do_parse_nonempty(
-		const std::string& checksum_list) const
-{
-	auto i = int { 0 };
-	auto refvals = parse_list_to_objects<uint32_t>(
-				checksum_list,
-				',',
-				[&i](const std::string& s) -> uint32_t
-				{
-					const uint32_t value = std::stoul(s, 0, 16);
-					ARCS_LOG(DEBUG1) << "Parse checksum: " << Checksum { value }
-						<< " (Track " << ++i << ")";
-					return value;
-				});
-
-	ARCS_LOG(DEBUG1) << "Parsed " << refvals.size() << " checksums";
-	return refvals;
-}
-
-
-// ColorSpecParser
-
-
-std::string ColorSpecParser::start_message() const
-{
-	return "List of output color requests";
-}
-
-
-ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
-{
-	using input::CallSyntaxException;
-	using input::OP_VALUE;
-
-	if (input == OP_VALUE::USE_DEFAULT)
-	{
-		return ColorRegistry{ /* default colors */ };
-	}
-
-	const std::string sep = ":"; // name-value separator
-
-	ColorRegistry r;
-	r.clear(); // remove defaults, use only values from input string
-
-	parse_list(input, ',',
-			[&r,&sep](const std::string& s) // parse a single TYPE:COLOR pair
-			{
-				const auto pos = s.find(sep);
-
-				if (pos == std::string::npos)
-				{
-					std::ostringstream msg;
-					msg << "Could not parse --colors input: '"
-						<< s << "'. Expected a "
-						"comma-separated sequence of pairs like "
-						"'type1:color1,type2:color2,...'";
-					throw CallSyntaxException(msg.str());
-				}
-
-				const auto uppercase = [](std::string str) -> std::string
-				{
-					using std::begin;
-					using std::end;
-					std::transform(begin(str), end(str), begin(str),
-						[](unsigned char c) { return std::toupper(c); });
-					return str;
-				};
-
-				const auto type   { uppercase(s.substr(0, pos)) };
-				const auto colors { uppercase(s.substr(pos + sep.length())) };
-
-				using ansi::get_color;
-
-				const auto plus = colors.find("+");
-				if (plus != std::string::npos)
-				{
-					// Color pair
-
-					const auto color_fg { colors.substr(0, plus)  };
-					const auto color_bg { colors.substr(plus + 1) };
-
-					ARCS_LOG(DEBUG1) << "For " << type << " set "
-							<< color_fg << " as foreground color";
-					ARCS_LOG(DEBUG1) << "For " << type << " set "
-							<< color_bg << " as background color";
-
-					r.set(get_decorationtype(type),
-						get_color(color_fg), get_color(color_bg));
-				} else
-				{
-					// Single color
-
-					if ("BG_" == colors.substr(0,3))
-					{
-						ARCS_LOG(DEBUG1) << "For " << type << " set " << colors
-							<< " as background color";
-						r.set_bg(get_decorationtype(type), get_color(colors));
-					} else
-					{
-						ARCS_LOG(DEBUG1) << "For " << type << " set " << colors
-							<< " as foreground color";
-						r.set_fg(get_decorationtype(type), get_color(colors));
-					}
-				}
-
-			});
-	return r;
-}
-
-
 // SourceCreator
 
 
@@ -1387,6 +1335,60 @@ AddField<ATTR::THEIRS>::AddField(
 	, print_confidence_       { print_confidence       }
 {
 	/* empty */
+}
+
+
+// validate
+
+
+void validate(const Checksums& checksums, const TOC* toc,
+	const ARId& arid, const std::vector<std::string>& filenames,
+	const ChecksumSource& reference,
+	const VerificationResult* vresult, const int block)
+{
+	calc::validate(checksums, toc, arid, filenames);
+
+	if (!reference.size())
+	{
+		throw std::invalid_argument("Missing reference checksums, "
+				"nothing to print.");
+	}
+
+	// TODO ref should have at least one block with id == arid
+
+	auto at_least_one_block_of_equal_size = bool { false };
+	for (auto i = int {0}; i < reference.size(); ++i)
+	{
+		if (reference.size(i) == checksums.size())
+		{
+			at_least_one_block_of_equal_size = true;
+			break;
+		}
+	}
+
+	if (!at_least_one_block_of_equal_size)
+	{
+		throw std::invalid_argument("Mismatch: "
+				"There are " + std::to_string(checksums.size())
+				+ " local tracks to verify, but no block in reference "
+				" contains exactly this number of tracks");
+	}
+
+	// TODO reference should have at least one block with id == arid
+
+	if (!vresult)
+	{
+		throw std::invalid_argument("Missing match information, "
+				"nothing to print.");
+	}
+
+	if (block > vresult->total_blocks()) // block < 0 is ok (means: no block)
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Match contains no block " + std::to_string(block)
+				+ " but contains only "
+				+ std::to_string(vresult->total_blocks()) + " blocks.");
+	}
 }
 
 
@@ -1520,14 +1522,14 @@ std::unique_ptr<Configurator> ARVerifyApplication::do_create_configurator()
 auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	-> std::pair<int, std::unique_ptr<Result>>
 {
-	const auto dbar      = config.object<DBAR>(VERIFY::RESPONSEFILE);
-	const auto refvalues = config.object<std::vector<uint32_t>>(VERIFY::REFVALUES);
+	const auto dbar   = config.object<DBAR>(VERIFY::RESPONSEFILE);
+	const auto refvls = config.object<std::vector<uint32_t>>(VERIFY::REFVALUES);
 
 	const auto get_src = SourceCreator {};
-	const auto ref_source { get_src(dbar, refvalues) };
+	const auto ref_source { get_src(dbar, refvls) };
 
-	ARCS_LOG_DEBUG << "Reference checksum source contains " << ref_source->size()
-		<< "blocks of checksums";
+	ARCS_LOG_DEBUG << "Reference checksum source contains "
+		<< ref_source->size() << "blocks of checksums";
 
 	// Album calculation is requested but no metafile is passed
 
