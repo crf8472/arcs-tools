@@ -591,39 +591,77 @@ void FieldCreator::create(TableComposer* c, const int record_idx) const
 }
 
 
-// RecordCreator
+// AddRecord
 
 
-RecordCreator::RecordCreator(TableComposer* c)
-	: fields_    { /* empty */ }
-	, composer_  { c }
+AddRecords::AddRecords(TableComposer* composer)
+	: current_  { 0 }
+	, composer_ { composer }
 {
-	fields_.reserve(c->total_records());
+	// empty
 }
 
 
-void RecordCreator::add_fields(std::unique_ptr<FieldCreator> f)
+void AddRecords::reset_current_record()
 {
-	fields_.emplace_back(std::move(f));
+	current_ = 0;
 }
 
 
-void RecordCreator::create_record(const int record_idx) const
+void AddRecords::inc_current_record()
 {
-	for (const auto& field : fields_)
+	++current_;
+}
+
+
+int AddRecords::current_record() const
+{
+	return current_;
+}
+
+
+void AddRecords::add_field(const FieldCreator& field) const
+{
+	field.create(composer_, current_record());
+}
+
+
+void AddRecords::add_record(
+			const std::vector<std::unique_ptr<FieldCreator>>& fields)
+			const
+{
+	using std::begin;
+	using std::end;
+
+	std::for_each(begin(fields), end(fields),
+			[this](const std::unique_ptr<FieldCreator>& f){
+				this->add_field(*f);
+			});
+}
+
+
+void AddRecords::add_records(
+		const std::vector<std::unique_ptr<FieldCreator>>& field_creators)
+{
+	const auto total_records { composer_->total_records() };
+
+	while (current_record() < total_records)
 	{
-		field->create(composer_, record_idx);
+		add_record(field_creators);
+		inc_current_record();
 	}
 }
 
 
-void RecordCreator::create_records() const
+void AddRecords::operator()(
+		const std::vector<std::unique_ptr<FieldCreator>>& field_creators)
 {
-	for (auto i = int { 0 }; i < composer_->total_records(); ++i)
-	{
-		this->create_record(i);
-	}
+	reset_current_record();
+	add_records(field_creators);
 }
+
+
+// add_field
 
 
 /**
@@ -1007,19 +1045,11 @@ std::unique_ptr<PrintableTable> TableCreator::format_table(
 		const bool with_labels,
 		std::vector<std::unique_ptr<FieldCreator>>& field_creators) const
 {
-	// Create table composer (requires field_types only for alignment)
 	auto composer { create_composer(total_records, field_list, with_labels) };
-	init_composer(*composer);
 
-	// Execute FieldCreators and populate table
-	{
-		RecordCreator rcreator { composer.get() };
-		for (auto& field : field_creators)
-		{
-			rcreator.add_fields(std::move(field));
-		}
-		rcreator.create_records();
-	}
+	init_composer(*composer); // Hook implemented by subclass
+
+	AddRecords(composer.get())(field_creators);
 
 	composer->set_layout(
 			std::make_unique<StringTableLayout>(copy_table_layout()));
@@ -1057,15 +1087,8 @@ void TableCreator::their_checksum(const Checksum& checksum,
 
 std::string TableCreator::checksum(const Checksum& checksum) const
 {
-	if (checksum_layout())
-	{
-		return checksum_layout()->format(checksum, 8);
-		// 8 chars for hexadecimal represented 32 bit checksums
-	}
-
-	std::ostringstream out;
-	out << checksum; // via libarcstk's <<
-	return out.str();
+	return checksum_layout()->format(checksum, 8);
+	// 8 chars for hexadecimal represented 32 bit checksums
 }
 
 

@@ -797,52 +797,77 @@ public:
 
 
 /**
- * \brief Creates records of a table.
+ * \brief Add records to a table.
  *
- * Accepts functors for adding fields to records and recors to the
+ * Accepts functors for adding fields to records and records to the
  * TableComposer. Hence it is possible to "queue" the production of fields by
- * calling \c add_fields() and then produce the entire table by calling
- * \c create_records().
+ * composing a vector of creators and then calling \c perfom() on it.
  */
-class RecordCreator final
+class AddRecords final
 {
-	/**
-	 * \brief Internal list of creators for every field.
-	 */
-	std::vector<std::unique_ptr<FieldCreator>> fields_;
-
-	/**
-	 * \brief Internal table composer to add the fields.
-	 */
+	int current_;
 	TableComposer* composer_;
 
 	/**
-	 * \brief Create a single record containing every field previously added.
-	 *
-	 * \param[in] record_idx The index of the record to create
+	 * \brief Reset the current record index to its initial value.
 	 */
-	void create_record(const int record_idx) const;
+	void reset_current_record();
+
+	/**
+	 * \brief Increase the current record index by one step.
+	 */
+	void inc_current_record();
+
+	/**
+	 * \brief Add a single field to the current record.
+	 *
+	 * \param[in] field Add this field to the current record
+	 */
+	void add_field(const FieldCreator& field) const;
+
+	/**
+	 * \brief Add a single record.
+	 *
+	 * Increases the current record index.
+	 *
+	 * \param[in] fields Add this fields as current record
+	 */
+	void add_record(const std::vector<std::unique_ptr<FieldCreator>>& fields)
+			const;
+
+	/**
+	 * \brief Add all records.
+	 *
+	 * Increases the current record index.
+	 *
+	 * \param[in] field_creators Use this fields to add all records
+	 */
+	void add_records(
+		const std::vector<std::unique_ptr<FieldCreator>>& field_creators);
 
 public:
 
 	/**
-	 * \brief Create records using the specified TableComposer.
+	 * \brief Constructor
 	 *
-	 * \param[in] c TableComposer to be used
+	 * \param[in] composer TableComposer to use
 	 */
-	RecordCreator(TableComposer* c);
+	AddRecords(TableComposer* composer);
 
 	/**
-	 * \brief Add creator for one or more fields.
+	 * \brief Return current record index.
 	 *
-	 * \param[in] f FieldCreator to add fields
+	 * \return Current record index
 	 */
-	void add_fields(std::unique_ptr<FieldCreator> f);
+	int current_record() const;
 
 	/**
-	 * \brief Create all records.
+	 * \brief Adds every record to the table.
+	 *
+	 * \param[in] field_creators Sequence of FieldCreators called in order
 	 */
-	void create_records() const;
+	void operator()(
+			const std::vector<std::unique_ptr<FieldCreator>>& field_creators);
 };
 
 using calc::ChecksumLayout;

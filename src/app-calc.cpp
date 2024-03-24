@@ -401,13 +401,18 @@ std::unique_ptr<Result> CalcTableCreator::do_format(InputTuple t) const
 	const auto filenames  = std::get<4>(t);
 	const auto alt_prefix = std::get<5>(t);
 
+	using arid::build_id;
+	using arid::default_arid_layout;
+
 	auto buf = ResultBuffer {};
 
-	auto result = std::make_unique<ResultList>();
-
-	if (!arid.empty() && arid_layout())
+	if (!arid.empty())
 	{
-		buf.append(build_id(toc, arid, alt_prefix, *arid_layout()));
+		auto layout { arid_layout()
+			? arid_layout()->clone()
+			: default_arid_layout(formats_labels()) };
+
+		buf.append(build_id(toc, arid, alt_prefix, *layout));
 	}
 
 	const auto print_flags { create_print_flags(toc, filenames) };

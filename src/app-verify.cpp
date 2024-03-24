@@ -1443,7 +1443,6 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	ARCS_LOG_DEBUG << "Reference checksum source contains " << ref_source->size()
 		<< "blocks of checksums";
 
-
 	// Album calculation is requested but no metafile is passed
 
 	if (not config.is_set(VERIFY::NOALBUM)
