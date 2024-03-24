@@ -167,6 +167,27 @@ public:
 
 
 /**
+ * \brief Validate the input objects for verification.
+ *
+ * Throws if validation fails.
+ *
+ * \param[in] checksums  Checksums as resulted
+ * \param[in] toc        TOC as resulted
+ * \param[in] arid       ARId as resulted
+ * \param[in] filenames  Filenames as resulted
+ * \param[in] reference  Reference checksums
+ * \param[in] vresult    VerificationResult
+ * \param[in] block      Optional best block
+ *
+ * \throws invalid_argument If validation fails
+ */
+void validate(const Checksums& checksums, const TOC* toc,
+	const ARId& arid, const std::vector<std::string>& filenames,
+	const ChecksumSource& reference,
+	const VerificationResult* vresult, const int block);
+
+
+/**
  * \brief Decoratable output cell categories.
  *
  * Decoratable cell categories are matches with "theirs" (MATCH), mismatches
@@ -326,15 +347,14 @@ public:
  * Formatters for VERIFY results can inherit from this type and implement
  * do_format().
  */
-using Verify10Layout = Layout<std::unique_ptr<Result>
+using Verify9Layout = Layout<std::unique_ptr<Result>
 	,const std::vector<arcstk::checksum::type>& /* mandatory: types to print */
 	,const VerificationResult*        /* mandatory: verification results   */
 	,const int                        /* optional:  best block             */
 	,const Checksums&                 /* mandatory: "mine" checksums       */
 	,const ARId&                      /* optional:  "mine" ARId            */
 	,const TOC*                       /* optional:  "mine" TOC             */
-	,const DBAR&                      /* optional:  ref sums in DBAR       */
-	,const std::vector<uint32_t>&     /* optional:  ref sums passed        */
+	,const ChecksumSource*            /* mandatory: reference sums         */
 	,const std::vector<std::string>&  /* optional:  input audio filenames  */
 	,const std::string&               /* optional:  AccurateRip URL prefix */
 >;
@@ -343,8 +363,8 @@ using Verify10Layout = Layout<std::unique_ptr<Result>
 /**
  * \brief Interface for formatting the results of an ARVerifyApplication.
  */
-class VerifyTableCreator : public TableCreator
-							, public Verify10Layout
+class VerifyTableCreator	: public TableCreator
+							, public Verify9Layout
 {
 public:
 
@@ -394,48 +414,6 @@ protected:
 		const std::size_t total_theirs_per_block) const;
 
 	/**
-	 * \brief Determine whether the DBAR object or the Refvalues are used.
-	 *
-	 * Use this function whenever to decide which source to choose or which
-	 * source was actually chosen.
-	 *
-	 * \param[in] dBAR      DBAR object
-	 * \param[in] refvalues Reference value list
-	 *
-	 * \return TRUE iff DBAR is the actual reference, otherwise FALSE
-	 */
-	bool reference_is_dbar(
-			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const;
-
-	/**
-	 * \brief Determine the total number of blocks in reference.
-	 *
-	 * Value 0 is a legal result.
-	 *
-	 * Uses reference_is_dbar() to determine the actual reference source.
-	 *
-	 * \param[in] dBAR      DBAR object
-	 * \param[in] refvalues Reference value list
-	 *
-	 * \return Actual number of blocks in reference
-	 */
-	std::size_t total_blocks_in_reference(
-			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const;
-
-	/**
-	 * \brief Create reference source
-	 *
-	 * Uses reference_is_dbar() to determine the actual reference object.
-	 *
-	 * \param[in] dBAR      DBAR object
-	 * \param[in] refvalues Reference value list
-	 *
-	 * \return Type-normalized reference source
-	 */
-	std::unique_ptr<const ChecksumSource> create_reference_source(
-			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const;
-
-	/**
 	 * \brief Add result-specific data creators to an existing list of creators.
 	 *
 	 * \param[in,out] creators  List to be added to
@@ -459,6 +437,19 @@ protected:
 		const ChecksumSource& ref_source,
 		const int total_theirs_per_block) const;
 
+	// Commented out for the moment, but left as a note
+
+	/* *
+	 * \brief Worker: dispatch formatting of a THEIR checksum.
+	 *
+	 * \param[in] checksum   Checksum to format
+	 * \param[in] does_match Match flag
+	 *
+	 * \return Formatted checksum
+	 */
+	//std::string their_checksum(const Checksum& checksum,
+	//	const bool does_match) const;
+
 private:
 
 	// Verify10Layout
@@ -480,17 +471,6 @@ private:
 	virtual void do_their_mismatch(const Checksum& checksum, const int record,
 			const int field, TableComposer* c) const
 	= 0;
-
-	/**
-	 * \brief Worker: dispatch formatting of a THEIR checksum.
-	 *
-	 * \param[in] checksum   Checksum to format
-	 * \param[in] does_match Match flag
-	 *
-	 * \return Formatted checksum
-	 */
-	std::string format_their_checksum(const Checksum& checksum,
-		const bool does_match) const;
 
 	/**
 	 * \brief The symbol to be printed on identity of two checksum values.
@@ -755,6 +735,51 @@ class ColorSpecParser final : public InputStringParser<ColorRegistry>
 	std::string start_message() const final;
 
 	ColorRegistry do_parse_nonempty(const std::string& s) const final;
+};
+
+
+/**
+ * \brief Functor to create a ChecksumSource from input objects.
+ */
+class SourceCreator
+{
+	/**
+	 * \brief Determine whether the DBAR object or the Refvalues are used.
+	 *
+	 * Use this function whenever to decide which source to choose or which
+	 * source was actually chosen.
+	 *
+	 * \param[in] dBAR      DBAR object
+	 * \param[in] refvalues Reference value list
+	 *
+	 * \return TRUE iff DBAR is the actual reference, otherwise FALSE
+	 */
+	bool reference_is_dbar(
+			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const;
+
+	/**
+	 * \brief Create the reference object from the input.
+	 *
+	 * \param[in] dBAR      DBAR object
+	 * \param[in] refvalues Refvalues object
+	 *
+	 * \return The reference source for the verification
+	 */
+	std::unique_ptr<const ChecksumSource> create_reference_source(
+			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const;
+
+public:
+
+	/**
+	 * \brief Create the reference object from the input.
+	 *
+	 * \param[in] dBAR      DBAR object
+	 * \param[in] refvalues Refvalues object
+	 *
+	 * \return The reference source for the verification
+	 */
+	std::unique_ptr<const ChecksumSource> operator()(
+			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const;
 };
 
 

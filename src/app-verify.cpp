@@ -67,6 +67,7 @@ inline namespace v_1_0_0
 
 namespace registered
 {
+// Enable ApplicationFactory::lookup() to find this application by its name
 const auto verify = RegisterApplicationType<ARVerifyApplication>("verify");
 }
 
@@ -486,6 +487,61 @@ std::size_t EmptyChecksumSource::do_size() const
 }
 
 
+// validate
+
+
+void validate(const Checksums& checksums, const TOC* toc,
+	const ARId& arid, const std::vector<std::string>& filenames,
+	const ChecksumSource& reference,
+	const VerificationResult* vresult, const int block)
+{
+	calc::validate(checksums, toc, arid, filenames);
+
+	if (!reference.size())
+	{
+		throw std::invalid_argument("Missing reference checksums, "
+				"nothing to print.");
+	}
+
+	// TODO reference should have at least one block with size == checksums.size()
+	// TODO reference should have at least one block with id == arid
+
+	auto at_least_one_block_of_equal_size = bool { false };
+	for (auto i = int {0}; i < reference.size(); ++i)
+	{
+		if (reference.size(i) == checksums.size())
+		{
+			at_least_one_block_of_equal_size = true;
+			break;
+		}
+	}
+
+	if (!at_least_one_block_of_equal_size)
+	{
+		throw std::invalid_argument("Mismatch: "
+				"There are " + std::to_string(checksums.size())
+				+ " local tracks to verify, but no block in reference "
+				" contains exactly this number of tracks");
+	}
+
+	// TODO reference should have at least one block with id == arid
+
+	if (!vresult)
+	{
+		throw std::invalid_argument("Missing match information, "
+				"nothing to print.");
+	}
+
+	if (block > vresult->total_blocks()) // block < 0 is ok (means: no block)
+	{
+		throw std::invalid_argument("Mismatch: "
+				"Match contains no block " + std::to_string(block)
+				+ " but contains only "
+				+ std::to_string(vresult->total_blocks()) + " blocks.");
+	}
+}
+
+
 // MatchDecorator
 
 
@@ -647,47 +703,6 @@ void VerifyTableCreator::add_result_fields(std::vector<ATTR>& field_list,
 }
 
 
-bool VerifyTableCreator::reference_is_dbar(
-			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const
-{
-	return dBAR.size() > 0;
-}
-
-
-std::size_t VerifyTableCreator::total_blocks_in_reference(
-			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const
-{
-	return reference_is_dbar(dBAR, refvalues)
-		? dBAR.size()
-		: (refvalues.empty() ? 0 : 1);
-}
-
-
-std::unique_ptr<const ChecksumSource>
-	VerifyTableCreator::create_reference_source(
-			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const
-{
-	std::unique_ptr<const ChecksumSource> ref_src;
-
-	if (reference_is_dbar(dBAR, refvalues))
-	{
-		ref_src = std::make_unique<DBARSource>(&dBAR);
-	} else
-	{
-		if (!refvalues.empty())
-		{
-			ref_src = std::make_unique<RefvaluesSource>(&refvalues);
-		} else
-		{
-			ref_src = std::make_unique<EmptyChecksumSource>();
-			// TODO Why proceed? Just throw
-		}
-	}
-
-	return ref_src;
-}
-
-
 void VerifyTableCreator::populate_result_creators(
 		std::vector<std::unique_ptr<FieldCreator>>& creators,
 		const print_flag_t print_flags,
@@ -740,53 +755,30 @@ void VerifyTableCreator::populate_result_creators(
 
 void VerifyTableCreator::assertions(const InputTuple t) const
 {
-	const auto checksums = std::get<3>(t);
-	const auto arid      = std::get<4>(t);
-	const auto toc       = std::get<5>(t);
-	const auto filenames = std::get<8>(t);
+	const auto checksums  = std::get<3>(t);
+	const auto arid       = std::get<4>(t);
+	const auto toc        = std::get<5>(t);
+	const auto filenames  = std::get<7>(t);
 
-	using calc::validate;
-	validate(checksums, toc, arid, filenames);
+	calc::validate(checksums, toc, arid, filenames);
 
 	// Specific for verify
 
-	const auto dBAR      = std::get<6>(t);
-	const auto refvalues = std::get<7>(t);
-	const auto vresult   = std::get<1>(t);
-	const auto block     = std::get<2>(t);
+	const auto ref_source = std::get<6>(t);
+	const auto vresult    = std::get<1>(t);
+	const auto block      = std::get<2>(t);
 
-	if (refvalues.empty() && !dBAR.size())
-	{
-		throw std::invalid_argument("Missing reference checksums, "
-				"nothing to print.");
-	}
-
-	// TODO dBAR should have at least one block with size == checksums.size()
-	// TODO dBAR should have at least one block with id == arid
-
-	if (!refvalues.empty() && refvalues.size() != checksums.size())
-	{
-		throw std::invalid_argument("Mismatch: "
-				"Reference for " + std::to_string(refvalues.size())
-				+ " tracks, but Checksums specify "
-				+ std::to_string(checksums.size()) + " tracks.");
-	}
-
-	if (!vresult)
-	{
-		throw std::invalid_argument("Missing match information, "
-				"nothing to print.");
-	}
-
-	if (block > vresult->total_blocks()) // block < 0 is ok (means: no block)
-	{
-		throw std::invalid_argument("Mismatch: "
-				"Match contains no block " + std::to_string(block)
-				+ " but contains only "
-				+ std::to_string(vresult->total_blocks()) + " blocks.");
-	}
+	// FIXME use ChecksumSource
+	//validate(checksums, toc, arid, filenames, reference, vresult, block);
 }
 
+/*
+std::string VerifyTableCreator::their_checksum(const Checksum& checksum,
+		const bool does_match) const
+{
+
+}
+*/
 
 std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 {
@@ -796,27 +788,26 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 	const auto checksums      = std::get<3>(t);
 	const auto arid           = std::get<4>(t);
 	const auto toc            = std::get<5>(t);
-	const auto dBAR           = std::get<6>(t);
-	const auto refvalues      = std::get<7>(t);
-	const auto filenames      = std::get<8>(t);
-	const auto alt_prefix     = std::get<9>(t);
+	const auto ref_source     = std::get<6>(t);
+	const auto filenames      = std::get<7>(t);
+	const auto alt_prefix     = std::get<8>(t);
 
 	using arid::build_id;
 	using arid::default_arid_layout;
 
-	auto buf = ResultBuffer {};
+	auto buf = ResultBuffer  {};
 
 	const auto best_block_declared = bool { block > -1 };
 
 	// If a DBAR is used for the references with a block (not PRINTALL)
-	if (best_block_declared && reference_is_dbar(dBAR, refvalues))
+	if (best_block_declared)
 	{
 		auto layout { arid_layout()
 			? arid_layout()->clone()
 			: default_arid_layout(formats_labels()) };
 
 		// Use ARId of specified block for "Theirs" ARId
-		buf.append(build_id(toc, dBAR.block(block).id(), alt_prefix, *layout));
+		buf.append(build_id(toc, ref_source->id(block), alt_prefix, *layout));
 	} else
 	{
 		if (!arid.empty() && arid_layout())
@@ -825,8 +816,6 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 		}
 	}
 
-	const auto ref_src { create_reference_source(dBAR, refvalues) };
-
 	const auto print_flags { create_print_flags(toc, filenames) };
 
 	auto field_list { create_optional_fields(print_flags) };
@@ -834,7 +823,7 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 	// Determine total number of 'theirs' field_types per reference block
 	// (Maybe 0 for empty response and empty refvalues)
 	const auto total_theirs_per_block {
-		best_block_declared ? 1 : total_blocks_in_reference(dBAR, refvalues)
+		best_block_declared ? 1 : ref_source->size()
 	};
 
 	add_result_fields(field_list, print_flags, types_to_print,
@@ -844,7 +833,7 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 
 	populate_common_creators(creators, field_list, *toc, checksums, filenames);
 	populate_result_creators(creators, print_flags, field_list, types_to_print,
-			*vresult, block, checksums, *ref_src, total_theirs_per_block);
+			*vresult, block, checksums, *ref_source, total_theirs_per_block);
 
 	buf.append(format_table(
 				field_list, checksums.size(), formats_labels(), creators));
@@ -1280,6 +1269,49 @@ ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 }
 
 
+// SourceCreator
+
+
+bool SourceCreator::reference_is_dbar(
+			const DBAR& dBAR, const std::vector<uint32_t>& refvalues) const
+{
+	return dBAR.size() > 0;
+}
+
+
+std::unique_ptr<const ChecksumSource>
+SourceCreator::create_reference_source(const DBAR& dBAR,
+		const std::vector<uint32_t>& refvalues) const
+{
+	std::unique_ptr<const ChecksumSource> ref_src;
+
+	if (reference_is_dbar(dBAR, refvalues))
+	{
+		ref_src = std::make_unique<DBARSource>(&dBAR);
+	} else
+	{
+		if (!refvalues.empty())
+		{
+			ref_src = std::make_unique<RefvaluesSource>(&refvalues);
+		} else
+		{
+			ref_src = std::make_unique<EmptyChecksumSource>();
+			// TODO Why proceed? Just throw
+		}
+	}
+
+	return ref_src;
+}
+
+
+std::unique_ptr<const ChecksumSource>
+SourceCreator::operator()(const DBAR& dBAR,
+		const std::vector<uint32_t>& refvalues) const
+{
+	return create_reference_source(dBAR, refvalues);
+}
+
+
 // ARVerifyApplication
 
 
@@ -1410,9 +1442,15 @@ std::unique_ptr<Configurator> ARVerifyApplication::do_create_configurator()
 auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	-> std::pair<int, std::unique_ptr<Result>>
 {
-	auto ref_respns = config.object<DBAR>(VERIFY::RESPONSEFILE);
+	const auto dbar      = config.object<DBAR>(VERIFY::RESPONSEFILE);
+	const auto refvalues = config.object<std::vector<uint32_t>>(VERIFY::REFVALUES);
 
-	auto ref_values = config.object<std::vector<uint32_t>>(VERIFY::REFVALUES);
+	const auto get_src = SourceCreator {};
+	const auto ref_source { get_src(dbar, refvalues) };
+
+	ARCS_LOG_DEBUG << "Reference checksum source contains " << ref_source->size()
+		<< "blocks of checksums";
+
 
 	// Album calculation is requested but no metafile is passed
 
@@ -1427,21 +1465,8 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		// This means we must ensure that the total number of reference track
 		// checksums is equal to the total number of input track files.
 
-		auto tracks_mismatch = bool { false };
-
-		if (/* DBAR object passed */ ref_respns.size() > 0)
-		{
-			tracks_mismatch =
-				ref_respns.block(0).size() != config.arguments()->size();
-			// TODO Check every block, at least one has to match
-		} else
-		if (/* Reference value list passed */ !ref_values.empty())
-		{
-			tracks_mismatch =
-				ref_values.size() != config.arguments()->size();
-		};
-
-		if (tracks_mismatch)
+		if (!ref_source->size()
+				|| ref_source->size(0) != config.arguments()->size())
 		{
 			this->fatal_error("Album requested, but number of AccurateRip "
 					"references does not match number of input audio files.");
@@ -1486,8 +1511,12 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	if (config.is_set(VERIFY::REFVALUES))
 	{
+		// Process as list of reference values
+
+		ARCS_LOG_DEBUG << "Process reference input as value list";
+
 		const auto v = std::make_unique<TracksetVerifier>(checksums);
-		vresult = v->perform(RefvaluesSource(&ref_values));
+		vresult = v->perform(*ref_source);
 	}
 
 	bool print_filenames = true;
@@ -1519,10 +1548,19 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 				" some but not all tracks are currently unsupported");
 		}
 
-		if (!vresult) // No result from refvals?
+		if (!vresult) // No previous result from refvals?
 		{
+			// Process as AccurateRip response
+
+			ARCS_LOG_DEBUG <<
+				"Process reference input as AccurateRip response for album";
+			ARCS_LOG_DEBUG <<
+				"AccurateRip ID: "  << arid.to_string();
+			ARCS_LOG_DEBUG <<
+				"AccurateRip URL: " << arid.url();
+
 			const auto v = std::make_unique<AlbumVerifier>(checksums, arid);
-			vresult = v->perform(DBARSource(&ref_respns));
+			vresult = v->perform(*ref_source);
 		}
 
 		print_filenames = !single_audio_file;
@@ -1532,8 +1570,11 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 		if (!vresult) // No result from refvals?
 		{
+			ARCS_LOG_DEBUG <<
+				"Process reference input as AccurateRip response for tracks";
+
 			const auto v = std::make_unique<TracksetVerifier>(checksums);
-			vresult = v->perform(DBARSource(&ref_respns));
+			vresult = v->perform(*ref_source);
 		}
 
 		if (Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG))
@@ -1617,8 +1658,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		/* mine ARCSs */               checksums,
 		/* optional mine ARId */       arid,
 		/* optional TOC */             toc.get(),
-		/* optional DBAR */            ref_respns,
-		/* optional input ref sums */  ref_values,
+		/* reference checksum source */ref_source.get(),
 		/* input audio filenames */    filenames,
 		/* optional URL prefix */      alt_prefix
 	)};
