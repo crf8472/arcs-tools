@@ -281,6 +281,18 @@ protected:
 	 */
 	std::pair<int, std::unique_ptr<Result>> run_calculation(
 			const Configuration &config) const;
+
+	/**
+	 * \brief Select a file reader by id.
+	 *
+	 * If no id is requested, no selection will be returned.
+	 *
+	 * \param[in] request OptionCode for requesting a parser or reader
+	 * \param[in] config  Current configuration
+	 */
+	std::unique_ptr<arcsdec::FileReaderSelection> file_reader_by_id(
+			const OptionCode& request,
+			const Configuration& options) const;
 };
 
 

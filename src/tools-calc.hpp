@@ -74,7 +74,6 @@ using arcsdec::FileReaderSelection;
  */
 std::tuple<bool,bool,std::vector<std::string>> audiofile_layout(const TOC &toc);
 
-
 /**
  * \brief Create a selection for a specific FileReader Id.
  */

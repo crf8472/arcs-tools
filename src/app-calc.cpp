@@ -1,3 +1,4 @@
+#include <arcsdec/descriptor.hpp>
 #ifndef __ARCSTOOLS_APPCALC_HPP__
 #include "app-calc.hpp"
 #endif
@@ -525,6 +526,37 @@ std::pair<int, std::unique_ptr<Result>> ARCalcApplicationBase::run_calculation(
 }
 
 
+std::unique_ptr<arcsdec::FileReaderSelection>
+	ARCalcApplicationBase::file_reader_by_id(const OptionCode& request,
+		const Configuration& config) const
+{
+	auto selection =
+		std::unique_ptr<arcsdec::FileReaderSelection>{ nullptr };
+
+	if (config.is_set(request))
+	{
+		using arcsdec::InputFormatException;
+
+		const calc::IdSelection id_selection;
+		try
+		{
+			selection = id_selection(config.value(request));
+		} catch (const InputFormatException& e)
+		{
+			Output::instance().output(std::string
+				{ "Failed to acquire file reader '" }
+				+ config.value(CALC::READERID)
+				+ "'"
+			);
+
+			return nullptr;
+		}
+	}
+
+	return selection;
+}
+
+
 // ARCalcApplication
 
 
@@ -664,15 +696,8 @@ auto ARCalcApplication::do_run_calculation(const Configuration &config) const
 
 	// Configure selections (e.g. --reader and --parser)
 
-	const calc::IdSelection id_selection;
-
-	auto audio_selection = config.is_set(CALC::READERID)
-		? id_selection(config.value(CALC::READERID))
-		: nullptr;
-
-	auto toc_selection = config.is_set(CALC::PARSERID)
-		? id_selection(config.value(CALC::PARSERID))
-		: nullptr;
+	auto audio_selection = file_reader_by_id(CALC::READERID, config);
+	auto toc_selection   = file_reader_by_id(CALC::PARSERID, config);
 
 	// If no selections are assigned, the libarcsdec default selections
 	// will be used.

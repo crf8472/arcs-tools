@@ -112,13 +112,14 @@ other command line options except \b --help will be evaluated.
 
 \par --parser=STRING
 Force to process the TOC file (if any) by the parser with the specified id.
-The following parsers are available with this version of libarcsdec.
+The following parsers are available with libarcsdec if compiled.
 \manonly
 .TS
 tab(|);
 ll.
 ID|Description
-cuesheet|CueSheet parser based on libcue
+cuesheet|Internal CueSheet parser, experimental
+libcue  |CueSheet parser based on libcue
 .TE
 \endmanonly
 
