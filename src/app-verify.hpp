@@ -784,19 +784,19 @@ class table::AddField<ATTR::THEIRS> final : public FieldCreator
 	const ChecksumSource* checksums_;
 	const std::vector<arcstk::checksum::type>* types_to_print_;
 	const VerifyTableCreator* formatter_;
-	const int total_theirs_per_block_;
+	const std::size_t total_theirs_per_block_;
 	const bool print_confidence_;
 
 	void do_create(TableComposer* c, const int record_idx) const final;
 
 public:
 
-	AddField(const std::vector<arcstk::checksum::type>* types,
-			const VerificationResult* vresult,
+	AddField(const VerificationResult* vresult,
 			const int block,
 			const ChecksumSource* checksums,
+			const std::vector<arcstk::checksum::type>* types,
 			const VerifyTableCreator* formatter,
-			const int total_theirs_per_block,
+			const std::size_t total_theirs_per_block,
 			const bool print_confidence);
 };
 
@@ -844,7 +844,7 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	 * \param[in] version   The ARCS version to match tracks for
 	 */
 	void log_matching_files(const Checksums &checksums,
-		const VerificationResult& vresult, const uint32_t block,
+		const VerificationResult& vresult, const int block,
 		const bool version = true) const;
 
 

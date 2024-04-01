@@ -10,14 +10,12 @@
 #include <cstdint>         // for uint32_t
 #include <cstdlib>         // for EXIT_SUCCESS
 #include <exception>       // for exception
-#include <iomanip>         // for setw
 #include <iterator>        // for begin, end
 #include <memory>          // for unique_ptr, make_unique
 #include <stdexcept>       // for invalid_argument, runtime_error
 #include <sstream>         // for istringstream, ostringstream
 #include <string>          // for stoul, string, to_string
 #include <tuple>           // for get, make_tuple, tuple
-#include <type_traits>     // for add_const<>::type, underlying_type_t
 #include <utility>         // for move, pair
 
 #ifndef __LIBARCSTK_VERIFY_HPP__
@@ -47,12 +45,6 @@
 #endif
 #ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
 #include "tools-dbar.hpp"           // for ContentHandler
-#endif
-#ifndef __ARCSTOOLS_TOOLS_FS_HPP__
-#include "tools-fs.hpp"             // for file_exists
-#endif
-#ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
-#include "tools-info.hpp"           // for SupportedFormats
 #endif
 #ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
 #include "tools-table.hpp"          // for StringTableLayout, CellDecorator
@@ -99,7 +91,7 @@ using table::TableComposer;
 // RefvaluesSource
 
 
-ARId RefvaluesSource::do_id(const ChecksumSource::size_type block_idx) const
+ARId RefvaluesSource::do_id(const ChecksumSource::size_type /*block_idx*/) const
 {
 	return arcstk::EmptyARId;
 }
@@ -166,14 +158,15 @@ const uint32_t EmptyChecksumSource::zero;
 EmptyChecksumSource::EmptyChecksumSource() = default;
 
 
-ARId EmptyChecksumSource::do_id(const ChecksumSource::size_type block_idx) const
+ARId EmptyChecksumSource::do_id(const ChecksumSource::size_type /*block_idx*/)
+	const
 {
 	return arcstk::EmptyARId;
 }
 
 
 Checksum EmptyChecksumSource::do_checksum(const ChecksumSource::size_type /*b*/,
-		const ChecksumSource::size_type idx) const
+		const ChecksumSource::size_type /*idx*/) const
 {
 	return arcstk::EmptyChecksum;
 }
@@ -181,7 +174,7 @@ Checksum EmptyChecksumSource::do_checksum(const ChecksumSource::size_type /*b*/,
 
 const uint32_t& EmptyChecksumSource::do_arcs_value(
 		const ChecksumSource::size_type /*b*/,
-		const ChecksumSource::size_type track) const
+		const ChecksumSource::size_type /*track*/) const
 {
 	return zero;
 }
@@ -197,14 +190,14 @@ const uint32_t& EmptyChecksumSource::do_confidence(
 
 const uint32_t& EmptyChecksumSource::do_frame450_arcs_value(
 		const ChecksumSource::size_type /*b*/,
-		const ChecksumSource::size_type track) const
+		const ChecksumSource::size_type /*track*/) const
 {
 	return zero;
 }
 
 
 std::size_t EmptyChecksumSource::do_size(
-		const ChecksumSource::size_type /* block_idx */) const
+		const ChecksumSource::size_type /*block_idx*/) const
 {
 	return 0;
 }
@@ -279,7 +272,7 @@ RefValuesType ChecksumListParser::do_parse_nonempty(
 				',',
 				[&i](const std::string& s) -> uint32_t
 				{
-					const uint32_t value = std::stoul(s, 0, 16);
+					const uint32_t value = std::stoul(s, nullptr, 16);
 					ARCS_LOG(DEBUG1) << "Parse checksum: " << Checksum { value }
 						<< " (Track " << ++i << ")";
 					return value;
@@ -692,7 +685,7 @@ void VerifyTableCreator::update_field_labels(TableComposer& c) const
 
 
 void VerifyTableCreator::add_result_fields(std::vector<ATTR>& field_list,
-		const print_flag_t print_flags,
+		const print_flag_t /*print_flags*/,
 		const std::vector<arcstk::checksum::type>& types_to_print,
 		const std::size_t total_theirs_per_block) const
 {
@@ -711,7 +704,7 @@ void VerifyTableCreator::add_result_fields(std::vector<ATTR>& field_list,
 			}
 		}
 
-		for (auto i = int { 0 }; i < total_theirs_per_block; ++i)
+		for (auto i = std::size_t { 0 }; i < total_theirs_per_block; ++i)
 		{
 			field_list.emplace_back(ATTR::THEIRS);
 
@@ -726,7 +719,7 @@ void VerifyTableCreator::add_result_fields(std::vector<ATTR>& field_list,
 
 void VerifyTableCreator::populate_result_creators(
 		std::vector<std::unique_ptr<FieldCreator>>& creators,
-		const print_flag_t print_flags,
+		const print_flag_t /*print_flags*/,
 		const std::vector<ATTR>& field_list,
 		const std::vector<arcstk::checksum::type>& types,
 		const VerificationResult& vresult,
@@ -750,8 +743,8 @@ void VerifyTableCreator::populate_result_creators(
 				for (auto i = int { 0 }; i < total_theirs_per_block; ++i)
 				{
 					creators.emplace_back(
-					std::make_unique<AddField<ATTR::THEIRS>>(&types, &vresult,
-						block, &ref_source, this, total_theirs_per_block,
+					std::make_unique<AddField<ATTR::THEIRS>>(&vresult, block,
+						&ref_source, &types, this, total_theirs_per_block,
 						is_requested(ATTR::CONFIDENCE)));
 				}
 			};
@@ -870,7 +863,7 @@ void MonochromeVerifyTableCreator::do_init_composer(TableComposer& c) const
 }
 
 
-void MonochromeVerifyTableCreator::do_their_match(const Checksum& checksum,
+void MonochromeVerifyTableCreator::do_their_match(const Checksum& /*checksum*/,
 		const int record_idx, const int field_idx, TableComposer* c) const
 {
 	// XXX Why a fixed symbol? Should be configurable by decoration
@@ -1223,7 +1216,7 @@ void ColorizingVerifyTableCreator::set_color_bg(DecorationType d, Color c)
 
 
 bool SourceCreator::reference_is_dbar(
-			const DBAR& dBAR, const RefValuesType& refvalues) const
+			const DBAR& dBAR, const RefValuesType& /*refvalues*/) const
 {
 	return dBAR.size() > 0;
 }
@@ -1265,16 +1258,23 @@ SourceCreator::operator()(const DBAR& dBAR, const RefValuesType& refvalues)
 // AddField
 
 
-void AddField<ATTR::THEIRS>::do_create(TableComposer* c, const int record_idx)
+void AddField<ATTR::THEIRS>::do_create(TableComposer* c, const int r_idx)
 	const
 {
-	auto block_idx  = int { 0 }; // Iterate over blocks of checksums
+	if (r_idx < 0)
+	{
+		//throw;
+	}
+	const auto record_idx = static_cast<std::size_t>(r_idx);
+
+	using std::to_string;
+
+	auto block_idx  = std::size_t { 0 }; // Iterate over blocks of checksums
 	auto curr_type  { types_to_print_->at(0) }; // Current checksum type
 	auto does_match = bool { false }; // Is current checksum a match?
 
 	// Total number of THEIRS fields in the entire record type
-	const auto total_theirs =
-		total_theirs_per_block_ * types_to_print_->size();
+	const auto total_theirs = total_theirs_per_block_ * types_to_print_->size();
 
 	// 1-based number of the reference block to print
 	auto idx_label = int { 0 };
@@ -1283,11 +1283,13 @@ void AddField<ATTR::THEIRS>::do_create(TableComposer* c, const int record_idx)
 	auto field_idx = int { 0 };
 
 	// Create all "theirs" fields
-	for (auto b = int { 0 }; b < total_theirs; ++b)
+	for (auto b = std::size_t { 0 }; b < total_theirs; ++b)
 	{
 		// Enumerate one or more blocks
 		// (If block_ < 0 PRINTALL is present)
-		block_idx =  block_ >= 0  ? block_  : b % total_theirs_per_block_;
+		block_idx =  block_ >= 0
+			? static_cast<std::size_t>(block_)
+			: b % total_theirs_per_block_;
 
 		curr_type =
 			types_to_print_->at(std::ceil(b / total_theirs_per_block_));
@@ -1302,7 +1304,7 @@ void AddField<ATTR::THEIRS>::do_create(TableComposer* c, const int record_idx)
 		c->set_label(field_idx, DefaultLabel<ATTR::THEIRS>()
 					+ (idx_label < 10 ? std::string{" "} : std::string{})
 					// XXX Block index greater than 99 will screw up labels
-					+ std::to_string(idx_label));
+					+ to_string(idx_label));
 
 		formatter_->their_checksum(
 				checksums_->checksum(block_idx, record_idx), does_match,
@@ -1310,7 +1312,6 @@ void AddField<ATTR::THEIRS>::do_create(TableComposer* c, const int record_idx)
 
 		if (print_confidence_)
 		{
-			using std::to_string;
 			table::add_field(c, record_idx, field_idx + 1,
 				to_string(checksums_->confidence(block_idx, record_idx)));
 		}
@@ -1319,17 +1320,17 @@ void AddField<ATTR::THEIRS>::do_create(TableComposer* c, const int record_idx)
 
 
 AddField<ATTR::THEIRS>::AddField(
-		const std::vector<arcstk::checksum::type>* types,
 		const VerificationResult* vresult,
 		const int block,
 		const ChecksumSource* checksums,
+		const std::vector<arcstk::checksum::type>* types,
 		const VerifyTableCreator* formatter,
-		const int total_theirs_per_block,
+		const std::size_t total_theirs_per_block,
 		const bool print_confidence)
-	: types_to_print_         { types     }
-	, vresult_                { vresult   }
+	: vresult_                { vresult   }
 	, block_                  { block     }
 	, checksums_              { checksums }
+	, types_to_print_         { types     }
 	, formatter_              { formatter }
 	, total_theirs_per_block_ { total_theirs_per_block }
 	, print_confidence_       { print_confidence       }
@@ -1357,7 +1358,7 @@ void validate(const Checksums& checksums, const TOC* toc,
 	// TODO ref should have at least one block with id == arid
 
 	auto at_least_one_block_of_equal_size = bool { false };
-	for (auto i = int {0}; i < reference.size(); ++i)
+	for (auto i = std::size_t {0}; i < reference.size(); ++i)
 	{
 		if (reference.size(i) == checksums.size())
 		{
@@ -1476,7 +1477,7 @@ std::unique_ptr<VerifyTableCreator> ARVerifyApplication::create_formatter(
 
 
 void ARVerifyApplication::log_matching_files(const Checksums &checksums,
-		const VerificationResult& vresult, const uint32_t block,
+		const VerificationResult& vresult, const int block,
 		const bool version) const
 {
 	auto unmatched { checksums.size() };
@@ -1554,15 +1555,8 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	// Configure selections (e.g. --reader and --parser)
 
-	const calc::IdSelection id_selection;
-
-	auto audio_selection = config.is_set(VERIFY::READERID)
-		? id_selection(config.value(VERIFY::READERID))
-		: nullptr;
-
-	auto toc_selection = config.is_set(VERIFY::PARSERID)
-		? id_selection(config.value(VERIFY::PARSERID))
-		: nullptr;
+	auto audio_selection = file_reader_by_id(CALC::READERID, config);
+	auto toc_selection   = file_reader_by_id(CALC::PARSERID, config);
 
 	// If no selections are assigned, the libarcsdec default selections
 	// will be used.
