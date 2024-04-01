@@ -142,12 +142,12 @@ void parse(const int argc, const char* const * const argv,
 	}
 
 	auto pos = int { 1 };   // Current Position in argv, ignore argv[0]
-	const char * token = 0; // Current token
-	const char * next  = 0; // Next token
+	const char * token = nullptr; // Current token
+	const char * next  = nullptr; // Next token
 
-	using unsigned_char = unsigned char;
-	auto first_ch  = unsigned_char { 0 }; // First char in argv[pos]
-	auto second_ch = unsigned_char { 0 }; // Second char in argv[pos]
+	//using unsigned_char = unsigned char;
+	auto first_ch  = /*unsigned_*/char { 0 }; // First char in argv[pos]
+	auto second_ch = /*unsigned_*/char { 0 }; // Second char in argv[pos]
 
 	while (pos < argc)
 	{
@@ -161,7 +161,7 @@ void parse(const int argc, const char* const * const argv,
 			{
 				// Get Next token
 				token = argv[pos];
-				next  = (pos + 1 < argc) ? argv[pos + 1] : 0;
+				next  = (pos + 1 < argc) ? argv[pos + 1] : nullptr;
 
 				if (second_ch == '-')
 				{
@@ -229,7 +229,7 @@ void parse_symbol(const char * const token, const char * const next,
 		{
 			if (sup_op.symbol().length() == sym_len)
 			{
-				// Exact Match: Stop Search
+				// Exact match: stop search
 				option = &sup_op;
 				code = entry.first;
 				exact = true;
@@ -273,7 +273,7 @@ void parse_symbol(const char * const token, const char * const next,
 		throw CallSyntaxException(msg.str());
 	}
 
-	// Move Token Pointer for Caller
+	// Move token pointer for caller
 	++pos;
 
 	if (token[sym_len + 2]) // Expect syntax '--some-option=foo'
@@ -327,7 +327,7 @@ void parse_symbol(const char * const token, const char * const next,
 			}
 		} else
 		{
-			// Move Token Pointer for Caller
+			// Move token pointer for caller
 			++pos;
 			pass_token(code, next);
 		}
@@ -350,11 +350,11 @@ void parse_shorthand(const char * const token, const char * const next,
 
 	using unsigned_char = unsigned char;
 	auto c = unsigned_char { 0 }; // Current character
-	auto cind = int { 1 };        // Position Index of Character c in Token
+	auto cind = int { 1 };        // Position index of character c in token
 
 	while (cind > 0)
 	{
-		const auto c = unsigned_char (token[cind]); // Consider Next Character
+		c = unsigned_char (token[cind]); // Check next character
 		option = nullptr;
 
 		if (c != 0)
@@ -371,7 +371,7 @@ void parse_shorthand(const char * const token, const char * const next,
 			}
 		}
 
-		// Supported Option Represented by 'c' is 'option'
+		// Supported Option represented by 'c' is 'option'
 
 		if (!option)
 		{
@@ -382,21 +382,21 @@ void parse_shorthand(const char * const token, const char * const next,
 
 		++cind;
 
-		if (token[cind] == 0) // Token is Completely Processed
+		if (token[cind] == 0) // Token is completely processed
 		{
 			cind = 0;
-			++pos; // Move Token Pointer for Caller
+			++pos; // Move token pointer for caller
 		}
 
 		if (option->needs_value())
 		{
 			if (cind > 0 and token[cind])
 			{
-				// Consume Trailing Part as Option Value
+				// Consume trailing part as Option value
 				pass_token(code, &token[cind]);
 			} else
 			{
-				// No trailing part, consider Next Token as Value
+				// No trailing part, consider next token as value
 
 				if (!next or !next[0])
 				{

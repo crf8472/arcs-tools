@@ -36,8 +36,10 @@ TEST_CASE ( "parse()", "[parse]" )
 	using arcsapp::input::DASH;
 	using arcsapp::input::DDASH;
 	using arcsapp::input::CallSyntaxException;
-	//using arcsapp::input::get_tokens;
 
+	/**
+	 * Mock for supported OptionCodes
+	 */
 	struct TEST
 	{
 		const OptionCode METAFILE     = 1;
@@ -53,6 +55,9 @@ TEST_CASE ( "parse()", "[parse]" )
 
 	auto my_test = TEST {};
 
+	/**
+	 * Mock for supported options
+	 */
 	const OptionRegistry supported_options =
 	{
 		{ my_test.NOALBUM,
