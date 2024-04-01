@@ -93,7 +93,7 @@ int main(int argc, char** argv)
 
 			} catch (const std::exception &e)
 			{
-				std::cerr << "Error: " << e.what() << '\n';
+				std::cerr << "ERROR: " << e.what() << '\n';
 				return EXIT_FAILURE;
 			}
 		} else
