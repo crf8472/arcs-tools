@@ -167,8 +167,8 @@ configure_file (${PROJECT_SOURCE_DIR}/version.cpp.in
 
 ## --- Add and configure project target
 
-## All objects, used as dependency in tests
-add_library (${PROJECT_NAME}-objects OBJECT
+## All objects, used as dependency in tests as well as in the application
+add_library (objects OBJECT
 	${PROJECT_SOURCE_DIR}/ansi.cpp
 	${PROJECT_SOURCE_DIR}/app-calc.cpp
 	${PROJECT_SOURCE_DIR}/app-id.cpp
@@ -189,19 +189,16 @@ add_library (${PROJECT_NAME}-objects OBJECT
 	${PROJECT_SOURCE_DIR}/result.cpp
 	${PROJECT_BUILD_SOURCE_DIR}/version.cpp )
 
-target_include_directories (${PROJECT_NAME}-objects
-	PRIVATE ${PROJECT_BUILD_SOURCE_DIR} ${PROJECT_SOURCE_DIR} )
+target_include_directories (objects PRIVATE ${PROJECT_SOURCE_DIR} )
 
-
+## Actual application binary
 add_executable (${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/main.cpp )
-
-target_link_libraries (${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-objects )
-
-
-option (WITH_SUBMODULES "Compile libarcstk and libarcsdec as submodules" OFF )
+target_link_libraries (${PROJECT_NAME} PRIVATE objects )
 
 
 ## --- Dependencies with or without submodules
+
+option (WITH_SUBMODULES "Compile libarcstk and libarcsdec as submodules" OFF )
 
 if (WITH_SUBMODULES )
 
@@ -234,11 +231,10 @@ if (TARGET libarcstk::libarcstk )
 	if (WITH_SUBMODULES )
 		# Force to set RPATH instead of RUNPATH, point to .so's in build tree.
 		# Note that this is for development and will not support installation.
-		target_link_libraries (${PROJECT_NAME}-objects
+		target_link_libraries (objects
 			PUBLIC libarcstk::libarcstk -Wl,--disable-new-dtags )
 	else()
-		target_link_libraries (${PROJECT_NAME}-objects
-			PUBLIC libarcstk::libarcstk )
+		target_link_libraries (objects PUBLIC libarcstk::libarcstk )
 	endif()
 else()
 	message (FATAL_ERROR "libarcstk targets are not present" )
@@ -253,11 +249,10 @@ if (TARGET libarcsdec::libarcsdec )
 	if (WITH_SUBMODULES )
 		# Force to set RPATH instead of RUNPATH, point to .so's in build tree.
 		# Note that this is for development and will not support installation.
-		target_link_libraries (${PROJECT_NAME}-objects
+		target_link_libraries (objects
 			PUBLIC libarcsdec::libarcsdec -Wl,--disable-new-dtags )
 	else()
-		target_link_libraries (${PROJECT_NAME}-objects
-			PUBLIC libarcsdec::libarcsdec )
+		target_link_libraries (objects PUBLIC libarcsdec::libarcsdec )
 	endif()
 else()
 	message (FATAL_ERROR "libarcsdec targets are not present" )

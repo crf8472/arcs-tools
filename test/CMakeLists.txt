@@ -55,7 +55,7 @@ foreach (_testcase ${TEST_SETS} )
 			libarcstk::libarcstk
 			libarcsdec::libarcsdec
 			-Wl,--disable-new-dtags ## set RPATH instead of RUNPATH
-			$<TARGET_OBJECTS:${PROJECT_NAME}-objects>
+			$<TARGET_OBJECTS:objects>
 		)
 		## Setting RPATH forces loading the lib*.so files from the build tree,
 		## even if system wide installed versions are present.
@@ -65,7 +65,7 @@ foreach (_testcase ${TEST_SETS} )
 			Catch2::Catch2WithMain
 			libarcstk::libarcstk
 			libarcsdec::libarcsdec
-			$<TARGET_OBJECTS:${PROJECT_NAME}-objects>
+			$<TARGET_OBJECTS:objects>
 		)
 		## Link against system wide binaries
 	endif()

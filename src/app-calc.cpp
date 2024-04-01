@@ -335,7 +335,7 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 
 
 void CalcTableCreator::add_result_fields(std::vector<ATTR>& field_list,
-		const print_flag_t print_flags,
+		const print_flag_t /*print_flags*/,
 		const std::vector<arcstk::checksum::type>& types_to_print) const
 {
 	using ChecksumType = arcstk::checksum::type;
@@ -358,9 +358,9 @@ void CalcTableCreator::add_result_fields(std::vector<ATTR>& field_list,
 
 void CalcTableCreator::populate_result_creators(
 		std::vector<std::unique_ptr<FieldCreator>>& creators,
-		const print_flag_t print_flags,
+		const print_flag_t /*print_flags*/,
 		const std::vector<ATTR>& field_list,
-		const std::vector<arcstk::checksum::type>& types,
+		const std::vector<arcstk::checksum::type>& /*types*/,
 		const Checksums& checksums) const
 {
 	// do not repeat the find mechanism
@@ -400,7 +400,7 @@ void CalcTableCreator::assertions(InputTuple t) const
 }
 
 
-void CalcTableCreator::do_init_composer(TableComposer& c) const
+void CalcTableCreator::do_init_composer(TableComposer& /*c*/) const
 {
 	// do nothing
 }
