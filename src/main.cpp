@@ -98,13 +98,15 @@ int main(int argc, char** argv)
 			}
 		} else
 		{
+			std::cerr << ARCSTOOLS_BINARY_NAME << " ";
+			std::cerr << ARCSTOOLS_VERSION << '\n';
+
 			std::cerr << "No application selected." << '\n';
 		}
 	}
 
 	// No input? Print usage.
 
-	std::cout << ARCSTOOLS_BINARY_NAME << " " << ARCSTOOLS_VERSION << '\n';
 	std::cout << "Usage: " << ARCSTOOLS_BINARY_NAME << " [";
 	{
 		const auto apps { ApplicationFactory::registered_names() };
