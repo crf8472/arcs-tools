@@ -83,6 +83,11 @@ class Options final
 public:
 
 	/**
+	 * \brief Constructor.
+	 */
+	Options();
+
+	/**
 	 * \brief Returns TRUE iff the option is set, otherwise FALSE.
 	 *
 	 * \param[in] option The option to check for
@@ -294,6 +299,17 @@ class InputStringParser : public StringParser
 
 using OptionRegistry = std::vector<std::pair<OptionCode, Option>>;
 //FIXME This definition is repeated from clitokens.hpp
+
+/**
+ * \brief TRUE iff OptionRegistry \c r contains a pair with OptionCode \c c.
+ *
+ * \param[in] c OptionCode to search for
+ * \param[in] r Registry to search
+ *
+ * \return TRUE iff \c r contains \c c, otherwise FALSE
+ */
+bool contains(const arcsapp::OptionCode c, const arcsapp::OptionRegistry& r);
+
 
 using OptionParsers = std::vector<std::pair<OptionCode,
 		std::function<std::unique_ptr<StringParser>(void)>

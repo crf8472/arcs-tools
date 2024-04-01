@@ -67,6 +67,14 @@ void log_cli_input(const Options& options, const OptionRegistry& registry)
 // Options
 
 
+Options::Options()
+	: options_   { /* empty */ }
+	, arguments_ { /* empty */ }
+{
+	// empty
+}
+
+
 bool Options::is_set(const OptionCode &option) const
 {
 	using std::end;
@@ -169,6 +177,25 @@ std::any StringParser::parse(const std::string& s) const
 }
 
 
+// contains()
+
+
+bool contains(const arcsapp::OptionCode c, const arcsapp::OptionRegistry& r)
+{
+	using std::begin;
+	using std::end;
+	using std::find_if;
+
+	const auto code_equals =
+		[c](const std::pair<arcsapp::OptionCode, arcsapp::Option>& p)
+		{
+			return p.first == c;
+		};
+
+	return find_if(begin(r), end(r), code_equals) != end(r);
+}
+
+
 // Configurator
 
 
@@ -255,7 +282,7 @@ OptionRegistry Configurator::common_options() const
 }
 
 
-void Configurator::do_validate(const Options& o) const
+void Configurator::do_validate(const Options& /*o*/) const
 {
 	// Default implementation will just validate the options
 	// without any checks
@@ -310,7 +337,7 @@ void Configurator::apply_parsers(Configuration& config) const
 }
 
 
-void Configurator::do_validate(const Configuration& c) const
+void Configurator::do_validate(const Configuration& /*c*/) const
 {
 	// Default implementation will just validate the configuration
 	// without any checks
@@ -367,7 +394,7 @@ bool Configuration::no_arguments() const
 // DefaultConfigurator
 
 
-void DefaultConfigurator::do_flush_local_options(OptionRegistry& r) const
+void DefaultConfigurator::do_flush_local_options(OptionRegistry& /*r*/) const
 {
 	// empty
 }
