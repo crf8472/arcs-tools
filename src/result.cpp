@@ -38,6 +38,13 @@ std::ostream& operator << (std::ostream& o, const Result& result)
 // ResultList
 
 
+ResultList::ResultList()
+	: results_ { /* empty */ }
+{
+	// empty
+}
+
+
 void ResultList::append(std::unique_ptr<Result> r)
 {
 	results_.emplace_back(std::move(r));

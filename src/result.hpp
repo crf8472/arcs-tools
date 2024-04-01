@@ -62,6 +62,11 @@ class ResultList final : public Result
 public:
 
 	/**
+	 * \brief Constructor.
+	 */
+	ResultList();
+
+	/**
 	 * \brief Virtual default destructor.
 	 */
 	~ResultList() noexcept = default;
