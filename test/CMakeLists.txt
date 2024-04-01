@@ -29,7 +29,10 @@ list (APPEND TEST_SETS tools-calc  )
 list (APPEND TEST_SETS tools-dbar  )
 list (APPEND TEST_SETS tools-fs    )
 list (APPEND TEST_SETS tools-table )
-
+list (APPEND TEST_SETS app-id      )
+list (APPEND TEST_SETS app-calc    )
+list (APPEND TEST_SETS app-verify  )
+## no tests for app-parse
 
 ## --- Add common configuration for all testsuites (catch2 + project deps)
 
