@@ -29,17 +29,17 @@ void InternalFlags::set_flag(const int idx, const bool value)
 {
 	if (value)
 	{
-		flags_ |= (1 << idx);  // <= true
+		flags_ |=  (1u << idx); // <= true
 	} else
 	{
-		flags_ &= ~(1 << idx); // <= false
+		flags_ &= ~(1u << idx); // <= false
 	}
 }
 
 
 bool InternalFlags::flag(const int idx) const
 {
-	return flags_ & (1 << idx);
+	return flags_ & (1u << idx);
 }
 
 
