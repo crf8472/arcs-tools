@@ -247,6 +247,7 @@ std::string ARIdTableLayout::do_format(InputTuple t) const
 	// TODO Use optimal_label_width?
 	//auto label_width = fieldlabels() ? optimal_width(labels()) : 0;
 	auto label_width = fieldlabels() ? 8 : 0;
+	auto label_idx = std::size_t { 0 };
 
 	for (const auto& sflag : show_flags())
 	{
@@ -256,9 +257,11 @@ std::string ARIdTableLayout::do_format(InputTuple t) const
 
 		if (fieldlabels())
 		{
+			label_idx = static_cast<std::size_t>(details::to_underlying(sflag));
+
 			stream << std::setw(label_width)
 				<< std::left
-				<< labels()[details::to_underlying(sflag)]
+				<< labels()[label_idx]
 				<< " ";
 		}
 
