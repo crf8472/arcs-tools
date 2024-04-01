@@ -315,7 +315,7 @@ std::string DBARTripletLayout::do_format(InputTuple t) const
 
 	out << "(";
 	out << std::setw(width_conf) << std::setfill('0')
-			<< static_cast<unsigned int>(triplet.confidence());
+			<< triplet.confidence();
 	out << ") ";
 
 	out << std::setw(width_arcs)
