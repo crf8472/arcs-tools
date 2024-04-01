@@ -13,6 +13,12 @@
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
 #endif
+#ifndef __LIBARCSTK_VERSION_HPP__
+#include <arcstk/version.hpp>         // for LIBARCSTK_VERSION
+#endif
+#ifndef __LIBARCSDEC_VERSION_HPP__
+#include <arcsdec/version.hpp>         // for LIBARCSDEC_VERSION
+#endif
 
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"          // for Configurator
@@ -294,7 +300,11 @@ void Application::print_usage() const
 
 void Application::print_version() const
 {
+	std::cout << ARCSTOOLS_BINARY_NAME << " ";
 	std::cout << this->name() << " " << ARCSTOOLS_VERSION << '\n';
+
+	std::cout << "  libarcstk:  " << arcstk::LIBARCSTK_VERSION   << '\n';
+	std::cout << "  libarcsdec: " << arcsdec::LIBARCSDEC_VERSION << '\n';
 }
 
 
