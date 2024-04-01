@@ -385,7 +385,8 @@ endif()
 
 ## Compiler: Activate Warnings
 
-target_compile_options (${PROJECT_NAME} PUBLIC ${PROJECT_CXX_FLAGS_WARNINGS} )
+target_compile_options (objects         PRIVATE ${PROJECT_CXX_FLAGS_WARNINGS} )
+target_compile_options (${PROJECT_NAME} PRIVATE ${PROJECT_CXX_FLAGS_WARNINGS} )
 
 message (STATUS "Warning Flags: ${PROJECT_CXX_FLAGS_WARNINGS}" )
 
@@ -395,6 +396,8 @@ message (STATUS "Warning Flags: ${PROJECT_CXX_FLAGS_WARNINGS}" )
 if (WITH_NATIVE )
 
 	message (STATUS "Build with platform specific optimization" )
+
+	target_compile_options (objects PRIVATE ${PROJECT_CXX_FLAGS_OPTIMIZE} )
 
 	target_compile_options (${PROJECT_NAME}
 		PRIVATE ${PROJECT_CXX_FLAGS_OPTIMIZE} )
