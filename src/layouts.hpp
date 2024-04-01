@@ -186,6 +186,11 @@ public:
 	 */
 	WithInternalFlags() : WithInternalFlags(0) { /* empty */ }
 
+	/**
+	 * \brief Virtual default destructor.
+	 */
+	virtual ~WithInternalFlags() noexcept = default;
+
 protected:
 
 	/**
