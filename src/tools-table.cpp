@@ -10,12 +10,8 @@
 
 #include <algorithm>    // for find
 #include <cstddef>      // for size_t
-#include <cstdint>      // for uint16_t
 #include <iterator>     // for begin, end
 #include <memory>       // for unique_ptr, make_unique
-#include <ostream>      // for ostream
-#include <sstream>      // for ostringstream
-#include <stdexcept>    // for invalid_argument
 #include <string>       // for string, to_string
 #include <type_traits>  // for underlying_type_t
 #include <utility>      // for move
@@ -346,13 +342,13 @@ std::string RowTableComposer::do_label_by_index(const int field_idx) const
 }
 
 
-int RowTableComposer::do_get_row(const int i, const int j) const
+int RowTableComposer::do_get_row(const int i, const int /*j*/) const
 {
 	return i;
 }
 
 
-int RowTableComposer::do_get_col(const int i, const int j) const
+int RowTableComposer::do_get_col(const int /*i*/, const int j) const
 {
 	return j;
 }
@@ -426,13 +422,13 @@ std::string ColTableComposer::do_label_by_index(const int field_idx) const
 }
 
 
-int ColTableComposer::do_get_row(const int i, const int j) const
+int ColTableComposer::do_get_row(const int /*i*/, const int j) const
 {
 	return j;
 }
 
 
-int ColTableComposer::do_get_col(const int i, const int j) const
+int ColTableComposer::do_get_col(const int i, const int /*j*/) const
 {
 	return i;
 }
@@ -691,7 +687,8 @@ void AddField<ATTR::TRACK>::do_create(TableComposer* c, const int record_idx)
 }
 
 
-void AddField<ATTR::OFFSET>::do_create(TableComposer* c, const int record_idx) const
+void AddField<ATTR::OFFSET>::do_create(TableComposer* c, const int record_idx)
+	const
 {
 	using std::to_string;
 	add_field(c, record_idx, ATTR::OFFSET,
@@ -705,11 +702,12 @@ AddField<ATTR::OFFSET>::AddField(const TOC* toc)
 }
 
 
-void AddField<ATTR::LENGTH>::do_create(TableComposer* c, const int record_idx) const
+void AddField<ATTR::LENGTH>::do_create(TableComposer* c, const int record_idx)
+	const
 {
 	using std::to_string;
 	add_field(c, record_idx, ATTR::LENGTH,
-			to_string((*checksums_).at(record_idx).length()));
+		to_string((*checksums_).at(record_idx).length()));
 }
 
 AddField<ATTR::LENGTH>::AddField(const Checksums* checksums)
@@ -724,8 +722,8 @@ void AddField<ATTR::FILENAME>::do_create(TableComposer* c,
 {
 	// TODO if (filenames_.empty())
 	add_field(c, record_idx, ATTR::FILENAME,
-		(filenames_->size() > 1) ? filenames_->at(record_idx) /* by index */
-								 : *(filenames_->begin())/* single one */);
+		(filenames_->size() > 1) ? filenames_->at(record_idx) /*by index*/
+		                         : *(filenames_->begin()) /*single one*/);
 }
 
 
@@ -743,10 +741,6 @@ void AddField<ATTR::CHECKSUM_ARCS1>::do_create(TableComposer* c,
 
 	add_field(c, record_idx, ATTR::CHECKSUM_ARCS1,
 			formatted(checksums_->at(record_idx).get(type::ARCS1), *layout_));
-
-	//formatter_->checksum(
-	//		checksums_->at(record_idx).get(arcstk::checksum::type::ARCS1),
-	//		record_idx, c->field_idx(ATTR::CHECKSUM_ARCS1), c);
 }
 
 
@@ -766,10 +760,6 @@ void AddField<ATTR::CHECKSUM_ARCS2>::do_create(TableComposer* c,
 
 	add_field(c, record_idx, ATTR::CHECKSUM_ARCS2,
 			formatted(checksums_->at(record_idx).get(type::ARCS2), *layout_));
-
-	//formatter_->checksum(
-	//		checksums_->at(record_idx).get(arcstk::checksum::type::ARCS2),
-	//		record_idx, c->field_idx(ATTR::CHECKSUM_ARCS2), c);
 }
 
 
@@ -794,6 +784,16 @@ std::string formatted(const Checksum& checksum,
 
 
 // TableCreator
+
+
+TableCreator::TableCreator()
+	: table_composer_builder_ { /* empty */ }
+	, table_layout_           { /* empty */ }
+	, arid_layout_            { /* empty */ }
+	, checksum_layout_        { /* empty */ }
+{
+	// empty
+}
 
 
 void TableCreator::set_builder(
@@ -992,7 +992,7 @@ std::unique_ptr<PrintableTable> TableCreator::format_table(
 	composer->set_layout(
 			std::make_unique<StringTableLayout>(copy_table_layout()));
 
-	return std::unique_ptr<PrintableTable>(std::move(composer->table()));
+	return composer->table();
 }
 
 

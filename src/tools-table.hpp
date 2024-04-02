@@ -331,6 +331,11 @@ class DecorationInterface
 public:
 
 	/**
+	 * \brief Virtual default destructor.
+	 */
+	virtual ~DecorationInterface() noexcept = default;
+
+	/**
 	 * \brief Register a decorator for a certain record.
 	 *
 	 * \param[in] record_idx Record index
@@ -507,10 +512,10 @@ private:
 	std::string do_label_by_type(const ATTR& field_type) const final;
 
 	virtual void do_set_label_by_index(const int field_idx,
-			const std::string& label)
+			const std::string& label) override
 	= 0;
 
-	virtual std::string do_label_by_index(const int field_idx) const
+	virtual std::string do_label_by_index(const int field_idx) const override
 	= 0;
 
 	int do_field_idx(const ATTR& field_type, const int i) const final;
@@ -908,6 +913,11 @@ class TableCreator : public WithInternalFlags
 public:
 
 	/**
+	 * \brief Constructor.
+	 */
+	TableCreator();
+
+	/**
 	 * \brief Set the layout to use for formatting the output table.
 	 *
 	 * \param[in] layout The StringTableLayout to set
@@ -1175,6 +1185,9 @@ public:
 };
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+
 
 template <>
 class AddField<ATTR::TRACK> final : public FieldCreator
@@ -1249,6 +1262,7 @@ public:
 	AddField(const Checksums* checksums, const ChecksumLayout* layout);
 };
 
+#pragma GCC diagnostic pop
 
 } // namespace table
 } // namespace v_1_0_0
