@@ -133,7 +133,7 @@ std::string PrintableTable::cell(int row, int col) const
 }
 
 
-int PrintableTable::rows() const
+std::size_t PrintableTable::rows() const
 {
 	return do_rows();
 }
@@ -151,7 +151,7 @@ std::size_t PrintableTable::max_height(int row) const
 }
 
 
-int PrintableTable::cols() const
+std::size_t PrintableTable::cols() const
 {
 	return do_cols();
 }
@@ -196,8 +196,8 @@ const StringTableLayout* PrintableTable::layout() const
 // StringTable
 
 
-StringTable::StringTable(const std::string &title, const int rows,
-		const int cols)
+StringTable::StringTable(const std::string &title, const std::size_t rows,
+		const std::size_t cols)
 	: title_              { title }
 	, rows_               { rows }
 	, default_max_height_ {  5 } // Max height for a row is 5 lines
@@ -216,7 +216,7 @@ StringTable::StringTable(const std::string &title, const int rows,
 }
 
 
-StringTable::StringTable(const int rows, const int cols)
+StringTable::StringTable(const std::size_t rows, const std::size_t cols)
 	: StringTable(std::string{/*empty title*/}, rows, cols)
 {
 	// empty
@@ -398,7 +398,7 @@ void StringTable::append_rows(const int rows)
 {
 	if (rows > 0)
 	{
-		insert_rows_after(rows, std::max(0, this->rows() - 1));
+		insert_rows_after(rows, this->rows() > 0 ? this->rows() - 1 : 0);
 	}
 }
 
@@ -466,7 +466,7 @@ std::string StringTable::do_cell(int row, int col) const
 }
 
 
-int StringTable::do_rows() const
+std::size_t StringTable::do_rows() const
 {
 	return rows_;
 }
@@ -484,7 +484,7 @@ std::size_t StringTable::do_max_height(int row) const
 }
 
 
-int StringTable::do_cols() const
+std::size_t StringTable::do_cols() const
 {
 	return cols_;
 }
@@ -1114,7 +1114,7 @@ namespace table
 
 
 DecoratedStringTable::DecoratedStringTable(const std::string& title,
-		const int rows, const int cols)
+		const std::size_t rows, const std::size_t cols)
 	: table_    { std::make_unique<StringTable>(title, rows, cols) }
 	, registry_ { std::make_unique<details::DecoratorRegistry>() }
 {
@@ -1122,8 +1122,9 @@ DecoratedStringTable::DecoratedStringTable(const std::string& title,
 }
 
 
-DecoratedStringTable::DecoratedStringTable(const int rows, const int cols)
-	: DecoratedStringTable(std::string{/* empty title */}, rows, cols)
+DecoratedStringTable::DecoratedStringTable(const std::size_t rows,
+		const std::size_t cols)
+	: DecoratedStringTable(std::string{/*empty title*/}, rows, cols)
 {
 	// empty
 }
@@ -1239,7 +1240,7 @@ std::string DecoratedStringTable::do_cell(int row, int col) const
 }
 
 
-int DecoratedStringTable::do_rows() const
+std::size_t DecoratedStringTable::do_rows() const
 {
 	return table()->rows();
 }
@@ -1257,7 +1258,7 @@ std::size_t DecoratedStringTable::do_max_height(int row) const
 }
 
 
-int DecoratedStringTable::do_cols() const
+std::size_t DecoratedStringTable::do_cols() const
 {
 	return table()->cols();
 }
@@ -1537,7 +1538,7 @@ void TablePrinter::Impl::row_cells_worker(std::ostream &o,
 		std::vector<std::size_t> col_widths, const StringTableLayout &l,
 		const print_cell_func &cell_f) const
 {
-	const auto rightmost_col = std::max(0, t.cols() - 1);
+	const auto rightmost_col = t.cols() > 0 ? t.cols() - 1 : 0;
 
 	// Collect the splitted fields of columns
 	// XXX Since we do access by index, wouldn't a vector be good enough?

@@ -298,7 +298,7 @@ RowTableComposer::RowTableComposer(const std::size_t entries,
 	}
 
 	// Columns that may appear multiple times
-	for (auto i = int { 0 }; i < this->from_table().cols(); ++i)
+	for (auto i = std::size_t { 0 }; i < this->from_table().cols(); ++i)
 	{
 		// Stretch the "theirs" columns to a width of 8
 		if (ATTR::THEIRS == field_types[i])
@@ -390,7 +390,7 @@ ColTableComposer::ColTableComposer(const std::size_t total_records,
 			static_cast<int>(total_records)))
 {
 	// Each column contains each type, therefore each column is RIGHT
-	for (auto col = int { 0 }; col < from_table().cols(); ++col)
+	for (auto col = std::size_t { 0 }; col < from_table().cols(); ++col)
 	{
 		in_table().set_align(col, table::Align::RIGHT);
 	}
@@ -517,7 +517,7 @@ void TableComposerBuilder::assign_default_labels(TableComposer& c,
 
 	auto p { end(labels_) };
 
-	for (auto i = int { 0 }; i < field_types.size(); ++i)
+	for (auto i = std::size_t { 0 }; i < field_types.size(); ++i)
 	{
 		p = labels_.find(field_types.at(i));
 

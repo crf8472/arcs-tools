@@ -190,7 +190,7 @@ public:
 	 *
 	 * \return Number of rows
 	 */
-	int rows() const;
+	std::size_t rows() const;
 
 	/**
 	 * \brief Label of specified row.
@@ -215,7 +215,7 @@ public:
 	 *
 	 * \return Number of columns
 	 */
-	int cols() const;
+	std::size_t cols() const;
 
 	/**
 	 * \brief Label of specified column.
@@ -280,7 +280,7 @@ private:
 	virtual std::string do_cell(int row, int col) const
 	= 0;
 
-	virtual int do_rows() const
+	virtual std::size_t do_rows() const
 	= 0;
 
 	virtual std::string do_row_label(int row) const
@@ -289,7 +289,7 @@ private:
 	virtual std::size_t do_max_height(int row) const
 	= 0;
 
-	virtual int do_cols() const
+	virtual std::size_t do_cols() const
 	= 0;
 
 	virtual std::string do_col_label(int col) const
@@ -337,7 +337,7 @@ public:
 	 * \param[in] rows Number of rows
 	 * \param[in] cols Number of columns
 	 */
-	StringTable(const int rows, const int cols);
+	StringTable(const std::size_t rows, const std::size_t cols);
 
 	/**
 	 * \brief Constructor.
@@ -346,7 +346,8 @@ public:
 	 * \param[in] rows  Number of rows
 	 * \param[in] cols  Number of columns
 	 */
-	StringTable(const std::string& title, const int rows, const int cols);
+	StringTable(const std::string& title, const std::size_t rows,
+			const std::size_t cols);
 
 	StringTable(const StringTable& rhs);
 
@@ -544,13 +545,13 @@ private:
 
 	std::string do_cell(int row, int col) const final;
 
-	int do_rows() const final;
+	std::size_t do_rows() const final;
 
 	std::string do_row_label(int row) const final;
 
 	std::size_t do_max_height(int row) const final;
 
-	int do_cols() const final;
+	std::size_t do_cols() const final;
 
 	std::string do_col_label(int col) const final;
 
@@ -636,7 +637,7 @@ private:
 	/**
 	 * \brief Number of actual rows.
 	 */
-	int rows_;
+	std::size_t rows_;
 
 	/**
 	 * \brief Default maximum height of a cell.
@@ -646,7 +647,7 @@ private:
 	/**
 	 * \brief Number of actual columns.
 	 */
-	int cols_;
+	std::size_t cols_;
 
 	/**
 	 * \brief Default maximum width of a cell
@@ -1159,8 +1160,8 @@ public:
 	 * \param[in] rows  Number of rows
 	 * \param[in] cols  Number of columns
 	 */
-	DecoratedStringTable(const std::string &title, const int rows,
-			const int cols);
+	DecoratedStringTable(const std::string &title, const std::size_t rows,
+			const std::size_t cols);
 
 	/**
 	 * \brief Constructor.
@@ -1170,7 +1171,7 @@ public:
 	 * \param[in] rows  Number of rows
 	 * \param[in] cols  Number of columns
 	 */
-	DecoratedStringTable(const int rows, const int cols);
+	DecoratedStringTable(const std::size_t rows, const std::size_t cols);
 
 	/**
 	 * \brief Default destructor.
@@ -1310,13 +1311,13 @@ private:
 
 	std::string do_cell(int row, int col) const final;
 
-	int do_rows() const final;
+	std::size_t do_rows() const final;
 
 	std::string do_row_label(int row) const final;
 
 	std::size_t do_max_height(int row) const final;
 
-	int do_cols() const final;
+	std::size_t do_cols() const final;
 
 	std::string do_col_label(int col) const final;
 
