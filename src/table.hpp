@@ -510,14 +510,14 @@ public:
 	 * \param[in] rows Number of rows to insert
 	 * \param[in] row  Row after which the rows are inserted
 	 */
-	void insert_rows_after(const int rows, const int row);
+	void insert_rows_after(const std::size_t rows, const int row);
 
 	/**
-	 * \brief Append rows to the table.
+	 * \brief Append rows after the last row.
 	 *
 	 * \param[in] rows Number of rows to be appended to the table
 	 */
-	void append_rows(const int rows);
+	void append_rows(const std::size_t rows);
 
 	/**
 	 * \brief Set the layout to be use for printing.

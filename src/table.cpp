@@ -92,17 +92,51 @@ std::vector<std::string> split(std::string str, const std::string& delim)
 
 /**
  * \brief Insert or resize.
+ *
+ * If the specified vector \c v is empty, it will be resized to new size
+ * \c rows. If \c v contains elements, \c rows new elements will be inserted
+ * after index \c row.
+ *
+ * \tparam T Vector value_type to use
+ *
+ * \param[in] v				Vector to modify
+ * \param[in] elements      Number of elements to insert or to resize to
+ * \param[in] after_pos     Index to insert elements after
+ * \param[in] default_value Default value for new rows/cells
  */
 template <typename T>
-void insert_or_resize(std::vector<T>& v, const int rows, const int row,
-		T&& value)
+void insert_or_resize(std::vector<T>& v, const std::size_t elements,
+	const int after_pos, const T& default_value)
 {
+	if (after_pos < 0 || elements == 0)
+	{
+		return;
+	}
+
 	if (v.empty())
 	{
-		v.resize(rows);
+		v.resize(elements);
 	} else
 	{
-		v.insert(std::begin(v) + row, std::forward<T>(value));
+		using std::begin;
+		using std::end;
+		using std::rbegin;
+
+		const auto exceeds { static_cast<std::size_t>(after_pos) >= v.size() };
+
+		// Step to the nearest: 'row' or to last element
+		const auto pos { exceeds ? end(v) : begin(v) += after_pos };
+
+		// Actual amount of rows to insert
+		auto amount { elements };
+		if (exceeds)
+		{
+			// Add the amount of elements necessary to fill the vector up to
+			// position 'after_pos'.
+			amount += static_cast<std::size_t>(after_pos) - v.size() + 1;
+		}
+
+		v.insert(pos, amount, default_value);
 	}
 }
 
@@ -293,10 +327,10 @@ std::string& StringTable::operator()(int row, int col)
 
 std::string& StringTable::cell(int row, int col)
 {
-	const auto rows { row - this->rows() + 1 };
-	if (rows > 0)
+	const auto r { static_cast<std::size_t>(row < 0 ? 0 : row) };
+	if (r >= this->rows())
 	{
-		this->append_rows(rows);
+		this->append_rows(r - this->rows() + 1u);
 	}
 	return this->operator()(row, col);
 }
@@ -363,9 +397,14 @@ bool StringTable::col_exists(const int col) const
 }
 
 
-void StringTable::insert_rows_after(const int rows, const int row)
+void StringTable::insert_rows_after(const std::size_t rows, const int row)
 {
-	if (!this->cols())
+	if (!rows) // nothing to insert
+	{
+		return;
+	}
+
+	if (!this->cols()) // no table
 	{
 		throw std::runtime_error(
 				"Cannot insert row in table with zero columns");
@@ -373,34 +412,26 @@ void StringTable::insert_rows_after(const int rows, const int row)
 
 	using std::begin;
 	using std::end;
+	using details::insert_or_resize;
 
-	if (cells_.empty())
-	{
-		cells_.resize(rows * this->cols());
-	} else
-	{
-		auto after_pos { begin(cells_) };
-		using dist_type = decltype(after_pos)::difference_type;
-		after_pos += static_cast<dist_type>(index(row, this->cols()));
+	// Adjust table cell store
 
-		store_type new_rows(rows * this->cols());
-		cells_.insert(after_pos, begin(new_rows), end(new_rows));
-	}
+	insert_or_resize(cells_, rows * this->cols(), /* amount of cells */
+			index(row, this->cols()), /* position after specified row */
+			std::string{});
+
 	rows_ += rows;
 
-	arcsapp::details::insert_or_resize(row_labels_,      rows, row,
-			std::string());
-	arcsapp::details::insert_or_resize(row_max_heights_, rows, row,
-			default_max_height());
+	// Adjust internal stores for labels + heights
+
+	insert_or_resize(row_labels_,      rows, row, std::string{});
+	insert_or_resize(row_max_heights_, rows, row, default_max_height());
 }
 
 
-void StringTable::append_rows(const int rows)
+void StringTable::append_rows(const std::size_t rows)
 {
-	if (rows > 0)
-	{
-		insert_rows_after(rows, this->rows() > 0 ? this->rows() - 1 : 0);
-	}
+	insert_rows_after(rows, this->rows() > 0 ? this->rows() - 1 : 0);
 }
 
 
