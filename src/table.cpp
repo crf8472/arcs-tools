@@ -1314,29 +1314,105 @@ class TablePrinter::Impl
 {
 public:
 
+	/**
+	 * \brief Print table.
+	 *
+	 * \param[in] o Stream to print table to
+	 * \param[in] t Table to print
+	 */
 	void print(std::ostream& o, const PrintableTable& t) const;
 
 protected:
 
-	// Those could be virtual since they directly use o <<
-
+	/**
+	 * \brief Print title.
+	 */
 	void title(std::ostream& o, const PrintableTable& t,
 		const StringTableLayout& l) const;
+
+	/**
+	 * \brief Print single row label.
+	 */
 	void row_label(std::ostream& o, const PrintableTable& t, const int row,
 		const std::size_t width) const;
+
+	/**
+	 * \brief Print single column label.
+	 */
 	void col_label(std::ostream& o, const PrintableTable& t, const int col,
 		const std::size_t width) const;
+
+	/**
+	 * \brief Print row of all column labels.
+	 *
+	 * Calls empty_cell(), col_label(), and row_worker().
+	 */
+	void col_labels(std::ostream& o, const PrintableTable& t,
+		std::vector<std::size_t> col_widths, const StringTableLayout& l) const;
+
+	/**
+	 * \brief Print row of cells.
+	 *
+	 * Calls row_worker().
+	 */
+	void row(std::ostream& o, const PrintableTable& t, const int row,
+		std::vector<std::size_t> col_widths, const StringTableLayout& l) const;
+
+	/**
+	 * \brief Print all rows.
+	 *
+	 * Calls row().
+	 */
+	void rows(std::ostream& o, const PrintableTable& t,
+		std::vector<std::size_t> col_widths, const StringTableLayout& l) const;
+
+	using print_label_func = std::function<void(std::ostream& o,
+			const PrintableTable& t, const int row, const std::size_t width)>;
+
+	using print_cell_func = std::function<void(std::ostream& o,
+			const PrintableTable& t, const int row, const int col,
+			const std::size_t width)>;
+
+	/**
+	 * \brief Worker to print single row.
+	 *
+	 * Calls row_label_worker(), row_cells_worker(), row_labels() and some
+	 * delimiter printing functions.
+	 */
+	void row_worker(std::ostream& o, const PrintableTable& t,
+		const int row, std::vector<std::size_t> col_widths,
+		const StringTableLayout& l, const print_label_func& label_f,
+		const print_cell_func& cell_f) const;
+
+	/**
+	 * \brief Worker to print single row label.
+	 */
+	void row_label_worker(std::ostream& o, const PrintableTable& t, const int row,
+		const print_label_func& f) const;
+
+	/**
+	 * \brief Worker to print all cells of a row.
+	 */
+	void row_cells_worker(std::ostream& o, const PrintableTable& t, const int row,
+		std::vector<std::size_t> col_widths, const StringTableLayout& l,
+		const print_cell_func& f) const;
+
+	/**
+	 * \brief Print single cell.
+	 */
 	void cell(std::ostream& o, const PrintableTable& t, const int row,
 		const int col, const std::size_t width) const;
 
-	// All that follows seems to be non-virtual
+	/**
+	 * \brief Print single empty cell.
+	 */
+	void empty_cell(std::ostream& o, const std::size_t width) const;
 
-	void col_labels(std::ostream& o, const PrintableTable& t,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l) const;
-	void row(std::ostream& o, const PrintableTable& t, const int row,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l) const;
-	void rows(std::ostream& o, const PrintableTable& t,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l) const;
+	/**
+	 * \brief Print subsequent line in multiline cell.
+	 */
+	void line_n(std::ostream& o, const std::size_t width,
+		const std::string& text) const;
 
 	void top_delim(std::ostream& o, const PrintableTable& t,
 		const StringTableLayout& l) const;
@@ -1350,37 +1426,15 @@ protected:
 		const StringTableLayout& l) const;
 	void bottom_delim(std::ostream& o, const PrintableTable& t,
 		const StringTableLayout& l) const;
-
 	void row_delim(std::ostream& o, const PrintableTable& t,
 		const StringTableLayout& l, const std::size_t width) const;
-
 	void row_delimiters(std::ostream& o, const PrintableTable& t,
 		std::vector<std::size_t> col_widths, const StringTableLayout& l) const;
 
 	std::vector<std::size_t> printed_widths(const PrintableTable& t,
 		const StringTableLayout& l) const;
+
 	std::size_t optimal_row_label_width(const PrintableTable& t) const;
-
-	using print_label_func = std::function<void(std::ostream& o,
-			const PrintableTable& t, const int row, const std::size_t width)>;
-
-	using print_cell_func = std::function<void(std::ostream& o,
-			const PrintableTable& t, const int row, const int col,
-			const std::size_t width)>;
-
-	void row_worker(std::ostream& o, const PrintableTable& t,
-		const int row, std::vector<std::size_t> col_widths,
-		const StringTableLayout& l, const print_label_func& label_f,
-		const print_cell_func& cell_f) const;
-	void row_label_worker(std::ostream& o, const PrintableTable& t, const int row,
-		const print_label_func& f) const;
-	void row_cells_worker(std::ostream& o, const PrintableTable& t, const int row,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l,
-		const print_cell_func& f) const;
-
-	void empty_cell(std::ostream& o, const std::size_t width) const;
-	void line_n(std::ostream& o, const std::size_t width,
-		const std::string& text) const;
 };
 
 
@@ -1407,32 +1461,6 @@ void TablePrinter::Impl::col_label(std::ostream& o, const PrintableTable& t,
 {
 	o << std::setw(width) << std::left << t.col_label(col) << std::setfill(' ');
 	// Col labels are always aligned LEFT
-}
-
-
-void TablePrinter::Impl::cell(std::ostream& o, const PrintableTable& t,
-		const int row, const int col, const std::size_t col_width) const
-{
-	o << std::setw(col_width);
-
-	switch (t.align(col))
-	{
-		case Align::LEFT:
-		{
-			o << std::left << t.cell(row, col);
-			break;
-		}
-		case Align::RIGHT:
-		{
-			o << std::right << t.cell(row, col);
-			break;
-		}
-		case Align::BLOCK:
-		{
-			o << t.cell(row, col);
-			break;
-		}
-	};
 }
 
 
@@ -1641,6 +1669,32 @@ void TablePrinter::Impl::row_cells_worker(std::ostream& o,
 		} // for
 
 	} while (line < lines);
+}
+
+
+void TablePrinter::Impl::cell(std::ostream& o, const PrintableTable& t,
+		const int row, const int col, const std::size_t col_width) const
+{
+	o << std::setw(col_width);
+
+	switch (t.align(col))
+	{
+		case Align::LEFT:
+		{
+			o << std::left << t.cell(row, col);
+			break;
+		}
+		case Align::RIGHT:
+		{
+			o << std::right << t.cell(row, col);
+			break;
+		}
+		case Align::BLOCK:
+		{
+			o << t.cell(row, col);
+			break;
+		}
+	};
 }
 
 
