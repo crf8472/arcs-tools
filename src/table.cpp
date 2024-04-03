@@ -1573,9 +1573,9 @@ void TablePrinter::Impl::row_cells_worker(std::ostream& o,
 	std::map<std::size_t, std::vector<std::string>> fields;
 
 	auto field { fields.begin() };
-	auto lines { 0 };
-	auto line  { 0 };
 
+	auto lines = std::size_t { 0 };
+	auto line  = std::size_t { 0 };
 	auto width = std::size_t { 0 };
 
 	// Print multiline row
