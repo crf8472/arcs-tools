@@ -1042,7 +1042,7 @@ namespace details
 using arcsapp::table::CellDecorator;
 
 class DecoratorRegistry;
-bool operator == (const DecoratorRegistry &lhs, const DecoratorRegistry &rhs)
+bool operator == (const DecoratorRegistry& lhs, const DecoratorRegistry& rhs)
 	noexcept;
 
 /**
@@ -1052,8 +1052,8 @@ class DecoratorRegistry final
 {
 public:
 
-	friend bool operator == (const DecoratorRegistry &lhs,
-			const DecoratorRegistry &rhs) noexcept;
+	friend bool operator == (const DecoratorRegistry& lhs,
+			const DecoratorRegistry& rhs) noexcept;
 
 	/**
 	 * \brief Register a decorator for column \c j.
@@ -1227,7 +1227,7 @@ public:
 	 * \param[in] rows  Number of rows
 	 * \param[in] cols  Number of columns
 	 */
-	DecoratedStringTable(const std::string &title, const std::size_t rows,
+	DecoratedStringTable(const std::string& title, const std::size_t rows,
 			const std::size_t cols);
 
 	/**
@@ -1422,7 +1422,7 @@ public:
 	 * \param[in] o   The output stream to print to
 	 * \param[in] t   The StringTable to print
 	 */
-	void print(std::ostream &o, const PrintableTable& t) const;
+	void print(std::ostream& o, const PrintableTable& t) const;
 
 private:
 
@@ -1440,7 +1440,7 @@ private:
  *
  * \return Output stream
  */
-std::ostream& operator << (std::ostream &o, const PrintableTable &table);
+std::ostream& operator << (std::ostream& o, const PrintableTable& table);
 
 
 /**
@@ -1451,8 +1451,8 @@ std::ostream& operator << (std::ostream &o, const PrintableTable &table);
  *
  * \return Output stream
  */
-std::ostream& operator << (std::ostream &o,
-		const std::unique_ptr<PrintableTable> &table);
+std::ostream& operator << (std::ostream& o,
+		const std::unique_ptr<PrintableTable>& table);
 
 
 } // namespace table
