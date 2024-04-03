@@ -592,6 +592,17 @@ protected:
 	index_type index(const int row, const int col) const;
 
 	/**
+	 * \brief Turn a row or column to an index.
+	 *
+	 * Casts type, does no math.
+	 *
+	 * \param[in] i Value to turn to an index
+	 *
+	 * \return Value \c i as an index
+	 */
+	index_type i(const int i) const;
+
+	/**
 	 * \brief Returns the internal index for a specified cell.
 	 *
 	 * A std::runtime_error is thrown iff the actual cell does not exist.
@@ -971,12 +982,16 @@ class CellDecorator
 
 protected:
 
+	using index_type = decltype(flags_)::size_type;
+
 	/**
 	 * \brief Copy constructor for subclasses.
 	 *
 	 * \param[in] rhs Instance to copy
 	 */
 	CellDecorator(const CellDecorator& rhs);
+
+	index_type i(const int index) const;
 
 public:
 

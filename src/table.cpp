@@ -338,13 +338,13 @@ std::string& StringTable::cell(int row, int col)
 
 void StringTable::set_row_label(int row, const std::string& label)
 {
-	row_labels_[row] = label;
+	row_labels_[i(row)] = label;
 }
 
 
 void StringTable::set_max_height(int row, std::size_t height)
 {
-	row_max_heights_[row] = height;
+	row_max_heights_[i(row)] = height;
 }
 
 
@@ -356,13 +356,13 @@ std::size_t StringTable::default_max_height() const
 
 void StringTable::set_col_label(int col, const std::string& label)
 {
-	col_labels_[col] = label;
+	col_labels_[i(col)] = label;
 }
 
 
 void StringTable::set_max_width(int col, std::size_t width)
 {
-	col_max_widths_[col] = width;
+	col_max_widths_[i(col)] = width;
 }
 
 
@@ -374,7 +374,7 @@ std::size_t StringTable::default_max_width() const
 
 void StringTable::set_align(int col, Align align)
 {
-	aligns_[col] = align;
+	aligns_[i(col)] = align;
 }
 
 
@@ -464,6 +464,12 @@ StringTable::index_type StringTable::index(const int row, const int col) const
 }
 
 
+StringTable::index_type StringTable::i(const int i) const
+{
+	return static_cast<index_type>(i);
+}
+
+
 StringTable::index_type StringTable::safe_index(const int row, const int col)
 	const
 {
@@ -505,13 +511,13 @@ std::size_t StringTable::do_rows() const
 
 std::string StringTable::do_row_label(int row) const
 {
-	return row_labels_[row];
+	return row_labels_[i(row)];
 }
 
 
 std::size_t StringTable::do_max_height(int row) const
 {
-	return row_max_heights_[row];
+	return row_max_heights_[i(row)];
 }
 
 
@@ -523,19 +529,19 @@ std::size_t StringTable::do_cols() const
 
 std::string StringTable::do_col_label(int col) const
 {
-	return col_labels_[col];
+	return col_labels_[i(col)];
 }
 
 
 std::size_t StringTable::do_max_width(int col) const
 {
-	return col_max_widths_[col];
+	return col_max_widths_[i(col)];
 }
 
 
 Align StringTable::do_align(int col) const
 {
-	return aligns_[col];
+	return aligns_[i(col)];
 }
 
 
@@ -678,7 +684,7 @@ StringTableLayout::StringTableLayout()
 StringTableLayout::StringTableLayout(const StringTableLayout& rhs)
 	: flags_    { rhs.flags_ }
 	, delims_   { rhs.delims_ }
-	, splitter_ { std::move(rhs.splitter_->clone()) }
+	, splitter_ { rhs.splitter_->clone() }
 {
 	// empty
 }
@@ -991,21 +997,27 @@ CellDecorator::CellDecorator(const CellDecorator& rhs)
 }
 
 
-void CellDecorator::set(const int i)
+CellDecorator::index_type CellDecorator::i(const int index) const
 {
-	flags_[i] = true;
+	return static_cast<index_type>(index);
 }
 
 
-void CellDecorator::unset(const int i)
+void CellDecorator::set(const int idx)
 {
-	flags_[i] = false;
+	flags_[i(idx)] = true;
 }
 
 
-bool CellDecorator::is_set(const int i) const
+void CellDecorator::unset(const int idx)
 {
-	return flags_[i];
+	flags_[i(idx)] = false;
+}
+
+
+bool CellDecorator::is_set(const int idx) const
+{
+	return flags_[i(idx)];
 }
 
 
