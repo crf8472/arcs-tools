@@ -816,107 +816,107 @@ void StringTableLayout::flag_set(const Flag f, const bool value)
 
 void StringTableLayout::set_top_delim(const std::string &d)
 {
-	delim_set(Index::ROW_TOP_DELIM, d);
+	delim_set(Delimiter::ROW_TOP_DELIM, d);
 }
 
 
 void StringTableLayout::set_row_header_delim(const std::string &d)
 {
-	delim_set(Index::ROW_HEADER_DELIM, d);
+	delim_set(Delimiter::ROW_HEADER_DELIM, d);
 }
 
 
 void StringTableLayout::set_row_inner_delim(const std::string &d)
 {
-	delim_set(Index::ROW_INNER_DELIM, d);
+	delim_set(Delimiter::ROW_INNER_DELIM, d);
 }
 
 
 void StringTableLayout::set_bottom_delim(const std::string &d)
 {
-	delim_set(Index::ROW_BOTTOM_DELIM, d);
+	delim_set(Delimiter::ROW_BOTTOM_DELIM, d);
 }
 
 
 void StringTableLayout::set_left_outer_delim(const std::string &d)
 {
-	delim_set(Index::COL_LEFT_OUTER_DELIM, d);
+	delim_set(Delimiter::COL_LEFT_OUTER_DELIM, d);
 }
 
 
 void StringTableLayout::set_col_labels_delim(const std::string &d)
 {
-	delim_set(Index::COL_LABELS_DELIM, d);
+	delim_set(Delimiter::COL_LABELS_DELIM, d);
 }
 
 
 void StringTableLayout::set_col_inner_delim(const std::string &d)
 {
-	delim_set(Index::COL_INNER_DELIM, d);
+	delim_set(Delimiter::COL_INNER_DELIM, d);
 }
 
 
 void StringTableLayout::set_right_outer_delim(const std::string &d)
 {
-	delim_set(Index::COL_RIGHT_OUTER_DELIM, d);
+	delim_set(Delimiter::COL_RIGHT_OUTER_DELIM, d);
 }
 
 
 std::string StringTableLayout::top_delim() const
 {
-	return delim_get(Index::ROW_TOP_DELIM);
+	return delim_get(Delimiter::ROW_TOP_DELIM);
 }
 
 
 std::string StringTableLayout::row_header_delim() const
 {
-	return delim_get(Index::ROW_HEADER_DELIM);
+	return delim_get(Delimiter::ROW_HEADER_DELIM);
 }
 
 
 std::string StringTableLayout::row_inner_delim() const
 {
-	return delim_get(Index::ROW_INNER_DELIM);
+	return delim_get(Delimiter::ROW_INNER_DELIM);
 }
 
 
 std::string StringTableLayout::bottom_delim() const
 {
-	return delim_get(Index::ROW_BOTTOM_DELIM);
+	return delim_get(Delimiter::ROW_BOTTOM_DELIM);
 }
 
 
 std::string StringTableLayout::left_outer_delim() const
 {
-	return delim_get(Index::COL_LEFT_OUTER_DELIM);
+	return delim_get(Delimiter::COL_LEFT_OUTER_DELIM);
 }
 
 
 std::string StringTableLayout::col_labels_delim() const
 {
-	return delim_get(Index::COL_LABELS_DELIM);
+	return delim_get(Delimiter::COL_LABELS_DELIM);
 }
 
 
 std::string StringTableLayout::col_inner_delim() const
 {
-	return delim_get(Index::COL_INNER_DELIM);
+	return delim_get(Delimiter::COL_INNER_DELIM);
 }
 
 
 std::string StringTableLayout::right_outer_delim() const
 {
-	return delim_get(Index::COL_RIGHT_OUTER_DELIM);
+	return delim_get(Delimiter::COL_RIGHT_OUTER_DELIM);
 }
 
 
-void StringTableLayout::delim_set(const Index i, const std::string &value)
+void StringTableLayout::delim_set(const Delimiter i, const std::string &value)
 {
 	delims_[static_cast<std::underlying_type_t<Flag>>(i)] = value;
 }
 
 
-std::string StringTableLayout::delim_get(const Index i) const
+std::string StringTableLayout::delim_get(const Delimiter i) const
 {
 	return delims_[static_cast<std::underlying_type_t<Flag>>(i)];
 

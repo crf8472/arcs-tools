@@ -44,13 +44,12 @@ namespace details
  * \return A string representation of \c value
  */
 template <typename T> // T must have <<
-std::string to_string(T&& value)
+inline std::string to_string(T&& value)
 {
 	std::ostringstream s;
 	s << std::boolalpha << std::forward<T>(value);
 	return s.str();
 }
-
 
 /**
  * \brief Remove leading and trailing whitespace from a string.
@@ -89,9 +88,12 @@ std::vector<std::string> split(std::string str, const std::size_t max_len);
  */
 std::vector<std::string> split(std::string str, const std::string& delim);
 
-
 /**
  * \brief Transform container content to a delimiter separated list.
+ *
+ * \param[in] c     Container to transform
+ * \param[in] delim Delimiter to place between every two container elements
+ * \param[in] f     Function to transform container element to string
  */
 template <typename Container> // TODO SFINAE stuff: empty(), size(), b+e, rbegin
 inline std::string to_sep_list(const Container c, const std::string delim,
@@ -418,7 +420,7 @@ public:
 	 * \param[in] value Value to set
 	 */
 	template <typename T>
-	inline void set_cell(int row, int col, T&& value)
+	void set_cell(int row, int col, T&& value)
 	{
 		using details::to_string;
 		cell(row,col) = to_string(std::forward<T>(value));
@@ -716,7 +718,9 @@ public:
 			const std::size_t max_len) const;
 
 	/**
-	 * \brief Deep copy of the instance.
+	 * \brief Deep copy of this instance.
+	 *
+	 * \return Deep copy of this instance
 	 */
 	std::unique_ptr<StringSplitter> clone() const;
 
@@ -754,8 +758,16 @@ class StringTableLayout final
 {
 public:
 
+	/**
+	 * \brief Constructor.
+	 */
 	StringTableLayout();
 
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param[in] s The splitter to use
+	 */
 	StringTableLayout(std::unique_ptr<StringSplitter> s);
 
 	StringTableLayout(const StringTableLayout& rhs);
@@ -828,15 +840,31 @@ public:
 	std::vector<std::string> split(const std::string& str,
 			const std::size_t max_len) const;
 
+	/**
+	 * \brief Set splitter to use for formatting cells.
+	 *
+	 * \param[in] s Splitter to use for splitting lines in cells
+	 */
 	void set_splitter(std::unique_ptr<StringSplitter> s);
 
+	/**
+	 * \brief Return splitter for formatting cells.
+	 *
+	 * \return Splitter to use for splitting lines in cells
+	 */
 	const StringSplitter* splitter() const;
 
 private:
 
+	/**
+	 * \brief Internal type to store actual flags.
+	 */
 	using flag_store_type = std::vector<bool>;
 
-	enum class Flag : unsigned int
+	/**
+	 * \brief Flags for printing aspects of the table.
+	 */
+	enum class Flag : flag_store_type::size_type
 	{
 		TITLE,
 		ROW_LABELS,
@@ -851,15 +879,35 @@ private:
 		COL_RIGHT_OUTER_DELIMS
 	};
 
-	bool flag_get(const Flag f) const;
-
-	void flag_set(const Flag f, const bool value);
-
+	/**
+	 * \brief Internal flag store.
+	 */
 	flag_store_type flags_;
 
+	/**
+	 * \brief Get value for flag \c f.
+	 *
+	 * \return Value for flag \c f.
+	 */
+	bool flag_get(const Flag f) const;
+
+	/**
+	 * \brief Set value for flag \c f.
+	 *
+	 * \param[in] f     Flag to set value for
+	 * \param[in] value Value for flag \c f.
+	 */
+	void flag_set(const Flag f, const bool value);
+
+	/**
+	 * \brief Internal type to store delimiters.
+	 */
 	using delim_store_type = std::vector<std::string>;
 
-	enum class Index : delim_store_type::size_type
+	/**
+	 * \brief Delimiter type.
+	 */
+	enum class Delimiter : delim_store_type::size_type
 	{
 		ROW_TOP_DELIM,
 		ROW_HEADER_DELIM,
@@ -871,12 +919,29 @@ private:
 		COL_RIGHT_OUTER_DELIM
 	};
 
-	std::string delim_get(const Index i) const;
-
-	void delim_set(const Index i, const std::string& value);
-
+	/**
+	 * \brief Internal delimiter store.
+	 */
 	delim_store_type delims_;
 
+	/**
+	 * \brief Get delimiter \c d.
+	 *
+	 * \return Delimiter \c d.
+	 */
+	std::string delim_get(const Delimiter d) const;
+
+	/**
+	 * \brief Set delimiter string for delimiter \c d.
+	 *
+	 * \param[in] d Delimiter type to set string for
+	 * \param[in] s Delimiter \c d.
+	 */
+	void delim_set(const Delimiter d, const std::string& s);
+
+	/**
+	 * \brief Internal splitter for formatting multiline cells.
+	 */
 	std::unique_ptr<StringSplitter> splitter_;
 };
 
@@ -916,7 +981,9 @@ protected:
 public:
 
 	/**
-	 * \brief Constructor for a decorator with \c n entries.
+	 * \brief Constructor for a decorator with \c n flags.
+	 *
+	 * \param[in] n Total number of flags
 	 */
 	CellDecorator(const std::size_t n);
 
@@ -1282,8 +1349,6 @@ public:
 
 	/**
 	 * \brief Return the inner (undecorated) table.
-	 *
-	 * This allows to skip the costs for respecting decoration in the output.
 	 *
 	 * This is useful if either the decoration is decided to be skipped entirely
 	 * or no decoration was requested in the first place.
