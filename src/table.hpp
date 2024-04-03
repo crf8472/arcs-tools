@@ -1056,6 +1056,11 @@ public:
 			const DecoratorRegistry& rhs) noexcept;
 
 	/**
+	 * \brief DecoratorRegistry.
+	 */
+	DecoratorRegistry();
+
+	/**
 	 * \brief Register a decorator for column \c j.
 	 *
 	 * \param[in] j Column to register a decorator for

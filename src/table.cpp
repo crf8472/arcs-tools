@@ -583,17 +583,18 @@ std::vector<std::string> DefaultSplitter::do_split(
 
 	using std::begin;
 	using std::end;
+
 	std::for_each(begin(delimited), end(delimited),
-		[&parts,max_len](std::string str)
+		[&parts, max_len](std::string s)
 		{
 			// Split every substring that is still too long
-			if (str.length() > max_len)
+			if (s.length() > max_len)
 			{
-				auto splitted { details::split(str, max_len) };
+				auto splitted { details::split(s, max_len) };
 				parts.insert(end(parts), begin(splitted), end(splitted));
 			} else
 			{
-				parts.push_back(str);
+				parts.push_back(s);
 			}
 		});
 
@@ -995,6 +996,12 @@ std::unique_ptr<CellDecorator> CellDecorator::clone() const
 
 namespace details
 {
+
+DecoratorRegistry::DecoratorRegistry()
+	: internal_registry_ { /*empty*/ }
+{
+	// empty
+}
 
 void DecoratorRegistry::register_to_col(const int j,
 		std::unique_ptr<CellDecorator> d)
@@ -1468,22 +1475,23 @@ void TablePrinter::Impl::col_labels(std::ostream& o, const PrintableTable& t,
 		std::vector<std::size_t> col_widths, const StringTableLayout& l) const
 {
 	// Wrapper for row_label()
-	const auto row_label_f = [&](std::ostream& o, const PrintableTable& t,
-		const int /*ignore*/, std::size_t width)
+	const auto row_label_f = [&](std::ostream& out,
+		const PrintableTable& /*ignore*/, const int /*ignore*/,
+		std::size_t width)
 	{
 		// Leftmost visual column is the column with the row labels,
 		// just fill it
 		if (width > 0)
 		{
-			empty_cell(o, width);
+			empty_cell(out, width);
 		}
 	};
 
 	// Wrapper for col_label()
-	const auto col_label_f = [&](std::ostream& o, const PrintableTable& t,
-		const int /* ignore */, const int col, std::size_t width)
+	const auto col_label_f = [&](std::ostream& out, const PrintableTable& table,
+		const int /*ignore*/, const int col, std::size_t width)
 	{
-		col_label(o, t, col, width);
+		col_label(out, table, col, width);
 	};
 
 	row_worker(o, t, -1/*ignored*/, col_widths, l, row_label_f, col_label_f);
@@ -1694,6 +1702,11 @@ void TablePrinter::Impl::cell(std::ostream& o, const PrintableTable& t,
 			o << t.cell(row, col);
 			break;
 		}
+		default: /* unused, avoid warning */
+		{
+			o << t.cell(row, col);
+			break;
+		}
 	};
 }
 
@@ -1712,7 +1725,7 @@ void TablePrinter::Impl::line_n(std::ostream& o, const std::size_t width,
 }
 
 
-void TablePrinter::Impl::top_delim(std::ostream& o, const PrintableTable& t,
+void TablePrinter::Impl::top_delim(std::ostream& o, const PrintableTable& /*t\*/,
 		const StringTableLayout& l) const
 {
 	o << l.top_delim();
@@ -1720,41 +1733,41 @@ void TablePrinter::Impl::top_delim(std::ostream& o, const PrintableTable& t,
 
 
 void TablePrinter::Impl::left_outer_col_delim(std::ostream& o,
-		const PrintableTable& t, const StringTableLayout& l) const
+		const PrintableTable& /*t\*/, const StringTableLayout& l) const
 {
 	o << l.left_outer_delim();
 }
 
 
 void TablePrinter::Impl::labels_col_delim(std::ostream& o,
-		const PrintableTable& t, const StringTableLayout& l) const
+		const PrintableTable& /*t\*/, const StringTableLayout& l) const
 {
 	o << l.col_labels_delim();
 }
 
 
 void TablePrinter::Impl::inner_col_delim(std::ostream& o,
-		const PrintableTable& t, const StringTableLayout& l) const
+		const PrintableTable& /*t\*/, const StringTableLayout& l) const
 {
 	o << l.col_inner_delim();
 }
 
 
 void TablePrinter::Impl::right_outer_col_delim(std::ostream& o,
-		const PrintableTable& t, const StringTableLayout& l) const
+		const PrintableTable& /*t\*/, const StringTableLayout& l) const
 {
 	o << l.right_outer_delim() << '\n';
 }
 
 
 void TablePrinter::Impl::bottom_delim(std::ostream& o,
-		const PrintableTable& t, const StringTableLayout& l) const
+		const PrintableTable& /*t\*/, const StringTableLayout& l) const
 {
 	o << l.bottom_delim();
 }
 
 
-void TablePrinter::Impl::row_delim(std::ostream& o, const PrintableTable& t,
+void TablePrinter::Impl::row_delim(std::ostream& o, const PrintableTable& /*t\*/,
 		const StringTableLayout& l, const std::size_t width) const
 {
 	const auto n { width / l.row_header_delim().length() };
