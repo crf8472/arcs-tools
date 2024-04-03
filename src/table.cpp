@@ -461,7 +461,8 @@ void StringTable::swap(StringTable& rhs) noexcept
 
 StringTable::index_type StringTable::index(const int row, const int col) const
 {
-	return row * this->cols() + col;
+	return static_cast<index_type>(row) * this->cols()
+		+ static_cast<index_type>(col);
 }
 
 
