@@ -380,7 +380,8 @@ void StringTable::insert_rows_after(const int rows, const int row)
 	} else
 	{
 		auto after_pos { begin(cells_) };
-		after_pos += index(row, this->cols());
+		using dist_type = decltype(after_pos)::difference_type;
+		after_pos += static_cast<dist_type>(index(row, this->cols()));
 
 		store_type new_rows(rows * this->cols());
 		cells_.insert(after_pos, begin(new_rows), end(new_rows));
@@ -513,7 +514,7 @@ std::size_t StringTable::do_optimal_width(const int col) const
 	auto width = std::size_t { 0 };
 	auto optimal_width { width };
 
-	for(auto row = int { 0 }; row < rows(); ++row)
+	for(auto row = std::size_t { 0 }; row < rows(); ++row)
 	{
 		width = cell(row, col).length();
 		if (width > optimal_width) { optimal_width = width; }
@@ -1522,7 +1523,7 @@ void TablePrinter::Impl::rows(std::ostream& o, const PrintableTable& t,
 		std::vector<std::size_t> col_widths, const StringTableLayout& l) const
 {
 	// Table rows
-	for (auto r = 0; r < t.rows(); ++r)
+	for (auto r = std::size_t { 0 }; r < t.rows(); ++r)
 	{
 		row(o, t, r, col_widths, l);
 
@@ -1774,7 +1775,7 @@ void TablePrinter::Impl::row_delim(std::ostream& o, const PrintableTable& /*t\*/
 	// FIXME This won't work for any width that is not a multiple of the
 	// delimiter length
 
-	for (int i = 0; i < n; ++i)
+	for (auto i = std::size_t { 0 }; i < n; ++i)
 	{
 		o << l.row_header_delim();
 	}
@@ -1805,7 +1806,7 @@ void TablePrinter::Impl::row_delimiters(std::ostream& o,
 
 	// Header row for table columns
 	const auto max_col = t.cols() - 1;
-	auto c { 0 };
+	auto c = std::size_t { 0 };
 	for (const auto& w : col_widths)
 	{
 		this->row_delim(o, t, l, w);
@@ -1837,7 +1838,7 @@ std::vector<std::size_t> TablePrinter::Impl::printed_widths(
 	auto width = std::size_t { 0 };
 
 	// Collect the real widths for print
-	for (auto c = 0; c < t.cols(); ++c)
+	for (auto c = std::size_t { 0 }; c < t.cols(); ++c)
 	{
 		width = l.col_labels()
 			? std::max(t.optimal_width(c), t.col_label(c).length())
@@ -1864,7 +1865,7 @@ std::size_t TablePrinter::Impl::optimal_row_label_width(
 	auto optimal_width { t.row_label(0).length() };
 	auto curr_width { optimal_width };
 
-	for (auto r = 1; r < t.rows(); ++r)
+	for (auto r = std::size_t { 1 }; r < t.rows(); ++r)
 	{
 		curr_width = t.row_label(r).length();
 		if (curr_width > optimal_width)
