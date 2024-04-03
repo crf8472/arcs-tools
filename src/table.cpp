@@ -410,8 +410,6 @@ void StringTable::insert_rows_after(const std::size_t rows, const int row)
 				"Cannot insert row in table with zero columns");
 	}
 
-	using std::begin;
-	using std::end;
 	using details::insert_or_resize;
 
 	// Adjust table cell store
