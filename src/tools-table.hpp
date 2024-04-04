@@ -409,7 +409,7 @@ public:
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	virtual ~TableComposer() noexcept = default;
+	virtual ~TableComposer() noexcept override = default;
 
 	/**
 	 * \brief Get the fields of the table to construct.
