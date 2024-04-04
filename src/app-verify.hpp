@@ -773,6 +773,10 @@ public:
 };
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+
+
 /**
  * \brief Creates Theirs-columns with optional Confidence-columns
  */
@@ -799,6 +803,8 @@ public:
 			const std::size_t total_theirs_per_block,
 			const bool print_confidence);
 };
+
+#pragma GCC diagnostic pop
 
 
 /**
