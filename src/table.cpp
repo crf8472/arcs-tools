@@ -32,18 +32,23 @@ namespace details
 {
 
 
-std::string trim(std::string str)
+std::string trim(std::string s)
 {
 	static const auto whitespace = [](int c) { return !std::isspace(c); };
 
+	using std::begin;
+	using std::end;
+
 	// left
-	str.erase(str.begin(), std::find_if(str.begin(), str.end(), whitespace));
+	s.erase(begin(s), std::find_if(begin(s), end(s), whitespace));
+
+	using std::rbegin;
+	using std::rend;
 
 	// right
-	str.erase(std::find_if(str.rbegin(), str.rend(), whitespace).base(),
-			str.end());
+	s.erase(std::find_if(rbegin(s), rend(s), whitespace).base(), end(s));
 
-	return str;
+	return s;
 }
 
 
@@ -61,7 +66,7 @@ std::vector<std::string> split(std::string str, const std::size_t max_len)
 
 	std::vector<std::string> parts;
 
-	for (std::size_t i = 0; i < str.length(); i += max_len)
+	for (auto i = std::size_t { 0 }; i < str.length(); i += max_len)
 	{
 		parts.push_back(str.substr(i, max_len));
 	}
@@ -120,7 +125,6 @@ void insert_or_resize(std::vector<T>& v, const std::size_t elements,
 	{
 		using std::begin;
 		using std::end;
-		using std::rbegin;
 
 		const auto exceeds { static_cast<std::size_t>(after_pos) >= v.size() };
 
