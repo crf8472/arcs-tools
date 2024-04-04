@@ -290,7 +290,7 @@ protected:
 	 * \param[in] request OptionCode for requesting a parser or reader
 	 * \param[in] config  Current configuration
 	 */
-	std::unique_ptr<arcsdec::FileReaderSelection> file_reader_by_id(
+	std::unique_ptr<arcsdec::FileReaderSelection> create_selection(
 			const OptionCode& request,
 			const Configuration& options) const;
 };

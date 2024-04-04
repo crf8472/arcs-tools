@@ -1555,8 +1555,8 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	// Configure selections (e.g. --reader and --parser)
 
-	auto audio_selection = file_reader_by_id(CALC::READERID, config);
-	auto toc_selection   = file_reader_by_id(CALC::PARSERID, config);
+	auto audio_selection = create_selection(CALC::READERID, config);
+	auto toc_selection   = create_selection(CALC::PARSERID, config);
 
 	// If no selections are assigned, the libarcsdec default selections
 	// will be used.
