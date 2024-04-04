@@ -609,7 +609,7 @@ void AddRecords::inc_current_record()
 }
 
 
-int AddRecords::current_record() const
+std::size_t AddRecords::current_record() const
 {
 	return current_;
 }

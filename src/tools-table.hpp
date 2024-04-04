@@ -810,7 +810,14 @@ public:
  */
 class AddRecords final
 {
-	int current_;
+	/**
+	 * \brief Internal index of the current record.
+	 */
+	std::size_t current_;
+
+	/**
+	 * \brief Internal TableComposer to use.
+	 */
 	TableComposer* composer_;
 
 	/**
@@ -864,7 +871,7 @@ public:
 	 *
 	 * \return Current record index
 	 */
-	int current_record() const;
+	std::size_t current_record() const;
 
 	/**
 	 * \brief Adds every record to the table.
