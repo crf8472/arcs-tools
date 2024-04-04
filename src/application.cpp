@@ -273,7 +273,7 @@ void Application::print_usage() const
 	const auto& options { this->create_configurator()->supported_options() };
 	// Reference points to static local member
 
-	table::StringTable table { static_cast<int>(options.size()), 3 };
+	table::StringTable table { options.size(), 3 };
 
 	table.set_col_label(0, "Option");
 	table.set_col_label(1, "Default");
