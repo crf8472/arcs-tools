@@ -21,7 +21,7 @@
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
 #ifndef __LIBARCSTK_CALCULATE_HPP__
-#include <arcstk/calculate.hpp>   // for Checksum
+#include <arcstk/calculate.hpp>   // for Checksum, Checksums
 #endif
 #ifndef __LIBARCSTK_VERIFY_HPP__
 #include <arcstk/verify.hpp>      // for VerificationResult
@@ -706,8 +706,10 @@ void AddField<ATTR::LENGTH>::do_create(TableComposer* c, const int record_idx)
 	const
 {
 	using std::to_string;
-	add_field(c, record_idx, ATTR::LENGTH,
-		to_string((*checksums_).at(record_idx).length()));
+	using index_type = arcstk::Checksums::size_type;
+
+	add_field(c, record_idx, ATTR::LENGTH, to_string(
+			(*checksums_).at(static_cast<index_type>(record_idx)).length()));
 }
 
 AddField<ATTR::LENGTH>::AddField(const Checksums* checksums)
@@ -720,10 +722,21 @@ AddField<ATTR::LENGTH>::AddField(const Checksums* checksums)
 void AddField<ATTR::FILENAME>::do_create(TableComposer* c,
 		const int record_idx) const
 {
-	// TODO if (filenames_.empty())
-	add_field(c, record_idx, ATTR::FILENAME,
-		(filenames_->size() > 1) ? filenames_->at(record_idx) /*by index*/
-		                         : *(filenames_->begin()) /*single one*/);
+	if (filenames_->empty())
+	{
+		return;
+	}
+
+	// XXX decltype(filenames_)::size_type
+	using index_type = std::vector<std::string>::size_type;
+	const auto r { static_cast<index_type>(record_idx) };
+
+	const auto element { filenames_->size() > r
+		? filenames_->at(r)      /*by index: get element*/
+		: *(filenames_->begin()) /*no index: get first*/
+	};
+
+	add_field(c, record_idx, ATTR::FILENAME, element);
 }
 
 
@@ -738,9 +751,11 @@ void AddField<ATTR::CHECKSUM_ARCS1>::do_create(TableComposer* c,
 		const int record_idx) const
 {
 	using arcstk::checksum::type;
+	using index_type = arcstk::Checksums::size_type;
 
-	add_field(c, record_idx, ATTR::CHECKSUM_ARCS1,
-			formatted(checksums_->at(record_idx).get(type::ARCS1), *layout_));
+	add_field(c, record_idx, ATTR::CHECKSUM_ARCS1, formatted(
+		checksums_->at(static_cast<index_type>(record_idx)).get(type::ARCS1),
+		*layout_));
 }
 
 
@@ -757,9 +772,11 @@ void AddField<ATTR::CHECKSUM_ARCS2>::do_create(TableComposer* c,
 		const int record_idx) const
 {
 	using arcstk::checksum::type;
+	using index_type = arcstk::Checksums::size_type;
 
-	add_field(c, record_idx, ATTR::CHECKSUM_ARCS2,
-			formatted(checksums_->at(record_idx).get(type::ARCS2), *layout_));
+	add_field(c, record_idx, ATTR::CHECKSUM_ARCS2, formatted(
+		checksums_->at(static_cast<index_type>(record_idx)).get(type::ARCS2),
+		*layout_));
 }
 
 

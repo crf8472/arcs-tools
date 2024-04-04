@@ -18,7 +18,7 @@
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
 #ifndef __LIBARCSTK_CALCULATE_HPP__
-#include <arcstk/calculate.hpp>   // for Checksum
+#include <arcstk/calculate.hpp>   // for Checksum, Checksums
 #endif
 #ifndef __LIBARCSTK_VERIFY_HPP__
 #include <arcstk/verify.hpp>      // for VerificationResult
