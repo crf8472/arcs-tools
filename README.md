@@ -77,5 +77,5 @@ $ curl "$(arcstk-id --url /path/to/cuefile.cue -a /path/to/audiofile.flac)" | ar
 
 [1]: https://github.com/crf8472/libarcstk
 [2]: https://github.com/crf8472/libarcsdec
-[3]: https://github.com/crf8472/libarcsdec/BUILD.md
+[3]: https://github.com/crf8472/libarcsdec/blob/main/BUILD.md
 
