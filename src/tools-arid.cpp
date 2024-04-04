@@ -79,14 +79,14 @@ ARIdLayout::ARIdLayout(const bool labels, const bool id, const bool url,
 		const bool filename, const bool track_count, const bool disc_id_1,
 		const bool disc_id_2, const bool cddb_id)
 	: WithInternalFlags(
-			0
-			| (id          << details::to_underlying(ARID_FLAG::ID))
-			| (url         << details::to_underlying(ARID_FLAG::URL))
-			| (filename    << details::to_underlying(ARID_FLAG::FILENAME))
-			| (track_count << details::to_underlying(ARID_FLAG::TRACKS))
-			| (disc_id_1   << details::to_underlying(ARID_FLAG::ID1))
-			| (disc_id_2   << details::to_underlying(ARID_FLAG::ID2))
-			| (cddb_id     << details::to_underlying(ARID_FLAG::CDDBID))
+			static_cast<uint32_t>(0)
+			| flag_operand(ARID_FLAG::ID,       id)
+			| flag_operand(ARID_FLAG::URL,      url)
+			| flag_operand(ARID_FLAG::FILENAME, filename)
+			| flag_operand(ARID_FLAG::TRACKS,   track_count)
+			| flag_operand(ARID_FLAG::ID1,      disc_id_1)
+			| flag_operand(ARID_FLAG::ID2,      disc_id_2)
+			| flag_operand(ARID_FLAG::CDDBID,   cddb_id)
 		)
 	, field_labels_ { labels }
 {
@@ -309,6 +309,12 @@ std::string ARIdTableLayout::do_format(InputTuple t) const
 std::unique_ptr<ARIdLayout> ARIdTableLayout::do_clone() const
 {
 	return std::make_unique<ARIdTableLayout>(*this);
+}
+
+
+uint32_t ARIdLayout::flag_operand(const ARID_FLAG type, const bool value) const
+{
+	return static_cast<uint32_t>(value) << details::to_underlying(type);
 }
 
 

@@ -213,7 +213,16 @@ public:
 	 */
 	bool has_only(const ARID_FLAG flag) const;
 
+	/**
+	 * \brief Deep copy of this instance.
+	 *
+	 * \return Deep copy of this instance
+	 */
 	std::unique_ptr<ARIdLayout> clone() const;
+
+protected:
+
+	uint32_t flag_operand(const ARID_FLAG type, const bool value) const;
 
 private:
 
