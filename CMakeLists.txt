@@ -7,7 +7,7 @@ cmake_minimum_required (VERSION 3.15 )
 cmake_policy (SET CMP0048 NEW )
 
 
-project (arcstk VERSION 0.1.0 LANGUAGES CXX )
+project (arcstk VERSION 0.1.1 LANGUAGES CXX )
 
 
 ## --- Setup Version Information
@@ -16,7 +16,7 @@ set (PROJECT_BRIEF_DESC "Example Toolkit for libarcstk" )
 
 set (PROJECT_URL "https://github.com/crf8472/${PROJECT_NAME}/" )
 
-set (PROJECT_VERSION_SUFFIX "alpha.4" )
+set (PROJECT_VERSION_SUFFIX "alpha.1" )
 
 set (PROJECT_DEFAULT_BUILD_TYPE "Release" )
 
