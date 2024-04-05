@@ -3,10 +3,9 @@
 
 #include <algorithm>   // for max
 #include <cstddef>     // for size_t
-#include <ios>         // for boolalpha
+#include <iterator>    // for begin, end
 #include <map>         // for map
 #include <memory>      // for unique_ptr
-#include <ostream>     // for ostream
 #include <sstream>     // for ostringstream
 #include <string>      // for string
 #include <type_traits> // for enable_if, is_unsigned
@@ -16,7 +15,7 @@
 // to_sep_list requirements:
 //#include <algorithm>   // for transform
 #include <functional>  // for function
-#include <iterator>    // for ostream_iterator
+//#include <iterator>    // for ostream_iterator
 //#include <sstream>     // for ostringstream
 
 /**
@@ -109,13 +108,15 @@ inline std::string to_sep_list(const Container c, const std::string delim,
 
 	if (c.size() > 1)
 	{
-		std::transform(c.begin(), --c.rbegin().base(),
+		using std::begin;
+
+		std::transform(begin(c), --c.rbegin().base(),
 			std::ostream_iterator<std::string>(list_stream, delim.c_str()), f);
 
 		list_stream << f(*c.rbegin());
 	} else
 	{
-		list_stream << f(*c.begin());
+		list_stream << f(*begin(c));
 	}
 
 	return list_stream.str();

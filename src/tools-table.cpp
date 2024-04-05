@@ -26,9 +26,6 @@
 #ifndef __LIBARCSTK_VERIFY_HPP__
 #include <arcstk/verify.hpp>      // for VerificationResult
 #endif
-#ifndef __LIBARCSTK_DBAR_HPP__
-#include <arcstk/dbar.hpp>        // for DBAR
-#endif
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>     // for ARCS_LOG* (_DEBUG, _ERROR)
 #endif
@@ -39,6 +36,9 @@
 #endif
 #ifndef __ARCSTOOLS_TOOLS_ARID_HPP__ // for ARIdLayout
 #include "tools-arid.hpp"
+#endif
+#ifndef __ARCSTOOLS_TOOLS_CALC_HPP__ // for ChecksumLayout
+#include "tools-calc.hpp"
 #endif
 
 namespace arcsapp

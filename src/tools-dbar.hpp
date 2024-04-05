@@ -11,13 +11,9 @@
 
 #include <cstddef>           // for size_t
 #include <cstdint>           // for uint32_t, uint8_t
-#include <exception>         // for exception
-#include <istream>           // for istream
 #include <memory>            // for unique_ptr
 #include <streambuf>         // for basic_streambuf
-#include <stdexcept>         // for runtime_error, domain_error
 #include <string>            // for string, char_traits
-#include <utility>           // for move, swap
 #include <vector>            // for vector
 
 #ifndef __LIBARCSTK_DBAR_HPP__
@@ -25,7 +21,7 @@
 #endif
 
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"            // for Layout
+#include "layouts.hpp"       // for Layout
 #endif
 
 namespace arcsapp

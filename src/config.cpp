@@ -2,15 +2,20 @@
 #include "config.hpp"
 #endif
 
-#include <algorithm>     // for replace
+#include <algorithm>     // for find_if, replace
 #include <cstddef>       // for size_t
 #include <iomanip>       // for setw
 #include <memory>        // for unique_ptr, make_unique
 #include <ostream>       // for ostream, endl, operator<<
+#include <sstream>       // for istringstream
 #include <stdexcept>     // for runtime_error
 #include <string>        // for string
 #include <utility>       // for make_pair, move
 #include <vector>        // for vector
+
+#ifndef __LIBARCSTK_LOGGING_HPP__
+#include <arcstk/logging.hpp>
+#endif
 
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
 #include "clitokens.hpp"    // for parse

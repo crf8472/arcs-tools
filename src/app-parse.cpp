@@ -5,7 +5,6 @@
 #include <cstdlib>             // for EXIT_SUCCESS
 #include <memory>              // for make_unique, unique_ptr
 #include <string>              // for string
-#include <utility>             // for move, pair
 
 #ifndef __LIBARCSTK_DBAR_HPP__
 #include <arcstk/dbar.hpp>
@@ -21,10 +20,7 @@
 #include "config.hpp"              // for DefaultConfigurator
 #endif
 #ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
-#include "tools-dbar.hpp"        // for PrintParseHandler, DBARTripletLayout
-#endif
-#ifndef __ARCSTOOLS_TOOLS_FS_HPP__
-#include "tools-fs.hpp"
+#include "tools-dbar.hpp"          // for PrintParseHandler, DBARTripletLayout
 #endif
 
 namespace arcsapp

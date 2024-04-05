@@ -17,7 +17,7 @@
 #include "application.hpp"  // for Application
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
-#include "config.hpp"       // for Configurator
+#include "config.hpp"       // for Configurator, OptionCode
 #endif
 #ifndef __ARCSTOOLS_APPCALC_HPP__
 #include "app-calc.hpp"     // for ARCalcApplicationBase

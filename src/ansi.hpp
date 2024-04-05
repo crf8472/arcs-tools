@@ -9,8 +9,7 @@
 
 #include <ostream>                // for ostream
 #include <string>                 // for to_string
-#include <sstream>                // for ostringstream
-#include <vector>
+#include <vector>                 // for vector
 
 namespace arcsapp
 {

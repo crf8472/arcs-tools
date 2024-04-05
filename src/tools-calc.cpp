@@ -6,6 +6,8 @@
 #include "tools-calc.hpp"
 #endif
 
+#include <cstdint>                  // for uint16_t
+#include <iomanip>                  // for setw, setfill
 #include <memory>                   // for unique_ptr, make_unique
 #include <sstream>                  // for ostringstream
 #include <stdexcept>                // for invalid_argument
@@ -15,11 +17,11 @@
 #include <utility>                  // for move
 #include <vector>                   // for vector
 
-#ifndef __LIBARCSTK_IDENTIFIER_HPP__
-#include <arcstk/identifier.hpp>       // for ARId, EmptyARId
-#endif
 #ifndef __LIBARCSTK_CALCULATE_HPP__
-#include <arcstk/calculate.hpp>        // for Checksums, type
+#include <arcstk/calculate.hpp>     // for Checksums, type
+#endif
+#ifndef __LIBARCSTK_IDENTIFIER_HPP__
+#include <arcstk/identifier.hpp>    // for ARId, EmptyARId
 #endif
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
@@ -33,7 +35,7 @@
 #endif
 
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
-#include "tools-fs.hpp"             // for path
+#include "tools-fs.hpp"             // for path, prepend_path
 #endif
 
 namespace arcsapp

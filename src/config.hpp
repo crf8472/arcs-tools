@@ -16,6 +16,7 @@
 #include <any>           // for any
 #include <cstddef>       // for size_t
 #include <functional>    // for function
+#include <iterator>      // for end
 #include <map>           // for map
 #include <memory>        // for unique_ptr
 #include <ostream>       // for ostream

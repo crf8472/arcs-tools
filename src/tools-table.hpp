@@ -8,7 +8,8 @@
  */
 
 #include <cstddef>      // for size_t
-#include <cstdint>      // for uint32_t
+#include <cstdint>      // for uint8_t
+#include <map>          // for map
 #include <memory>       // for unique_ptr
 #include <string>       // for string
 #include <utility>      // for move

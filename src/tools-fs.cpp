@@ -6,10 +6,6 @@
 #include <fstream>    // for ifstream
 #include <string>     // for string
 
-#ifndef __LIBARCSTK_LOGGING_HPP__
-#include <arcstk/logging.hpp>  // for ARCS_LOG_DEBUG
-#endif
-
 
 namespace arcsapp
 {
@@ -18,7 +14,6 @@ inline namespace v_1_0_0
 namespace file
 {
 
-// TODO Implementations of path() and prepend_path() are heavily redundant
 
 std::string path(const std::string &filename)
 {
@@ -27,9 +22,7 @@ std::string path(const std::string &filename)
 		return std::string{};
 	}
 
-	namespace fs = std::filesystem;
-
-	auto filepath = fs::path(filename);
+	auto filepath = std::filesystem::path(filename);
 	filepath.remove_filename();
 	filepath.make_preferred();
 
@@ -45,9 +38,7 @@ void prepend_path(const std::string &path, std::string &filename)
 		return;
 	}
 
-	namespace fs = std::filesystem;
-
-	auto filepath = fs::path(path);
+	auto filepath = std::filesystem::path(path);
 	filepath.replace_filename(filename);
 	filepath.make_preferred();
 

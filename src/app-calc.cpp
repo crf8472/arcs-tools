@@ -19,10 +19,7 @@
 #include <arcstk/identifier.hpp>    // for ARId, TOC
 #endif
 #ifndef __LIBARCSTK_CALCULATE_HPP__
-#include <arcstk/calculate.hpp>     // for Checksum, Checksums
-#endif
-#ifndef __LIBARCSTK_DBAR_HPP__
-#include <arcstk/dbar.hpp>          // for DBAR
+#include <arcstk/calculate.hpp>     // for type, Checksum, Checksums, TOC ...
 #endif
 
 #ifndef __LIBARCSDEC_SELECTION_HPP__
@@ -44,10 +41,10 @@
 #ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
 #include "tools-info.hpp"           // for AvailableFileReaders
 #endif
-#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
-#include "tools-table.hpp"          // for StringTableLayout, CellDecorator,
-									// TableComposer
-#endif
+//#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
+//#include "tools-table.hpp"          // for StringTableLayout,
+//									// TableComposer
+//#endif
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"               // for ResultObject, Result
 #endif

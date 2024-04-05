@@ -8,8 +8,11 @@
 #include "ansi.hpp"
 #endif
 
-#include <unordered_map>               // for unordered_map
+#include <iterator>                    // for end
+#include <ostream>                     // for ostream
+#include <sstream>                     // for ostringstream
 #include <type_traits>                 // for underlying_type_t
+#include <unordered_map>               // for unordered_map
 
 namespace arcsapp
 {

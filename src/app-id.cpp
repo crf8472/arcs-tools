@@ -26,7 +26,7 @@
 #include "appregistry.hpp"            // for RegisterApplicationType
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
-#include "config.hpp"                 // for Configurator
+#include "config.hpp"                 // for Configurator, OptionCode
 #endif
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"                 // for ResultObject

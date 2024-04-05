@@ -2,6 +2,7 @@
 #include "application.hpp"
 #endif
 
+#include <cstdio>      // for stdout
 #include <cstdlib>     // for EXIT_SUCCESS
 #include <iostream>    // for cout
 #include <memory>      // for unique_ptr, make_unique
@@ -16,12 +17,13 @@
 #ifndef __LIBARCSTK_VERSION_HPP__
 #include <arcstk/version.hpp>         // for LIBARCSTK_VERSION
 #endif
+
 #ifndef __LIBARCSDEC_VERSION_HPP__
-#include <arcsdec/version.hpp>         // for LIBARCSDEC_VERSION
+#include <arcsdec/version.hpp>        // for LIBARCSDEC_VERSION
 #endif
 
 #ifndef __ARCSTOOLS_CONFIG_HPP__
-#include "config.hpp"          // for Configurator
+#include "config.hpp"          // for Configurator, OptionCode
 #endif
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"          // for Result

@@ -5,8 +5,8 @@
  */
 
 #include <cstdlib>           // for EXIT_SUCCESS, EXIT_FAILURE
-#include <iostream>          // for operator<<, endl, cout, cerr
 #include <exception>         // for exception
+#include <iostream>          // for operator<<, endl, cout, cerr
 #include <string>            // for string
 
 #ifndef __LIBARCSTK_LOGGING_HPP__

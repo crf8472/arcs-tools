@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_FMTARID_HPP__
-#define __ARCSTOOLS_FMTARID_HPP__
+#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
+#define __ARCSTOOLS_TOOLS_ARID_HPP__
 
 /**
  * \file
@@ -7,10 +7,12 @@
  * \brief Formatter for ARId objects.
  */
 
-#include <array>
+#include <cstdint>      // for uint32_t
+#include <array>        // for array
 #include <memory>       // for unique_ptr
 #include <ostream>      // for ostream
 #include <string>       // for string
+#include <type_traits>  // for underlying_type_t
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>  // for ARId
@@ -31,8 +33,8 @@ inline namespace v_1_0_0
 namespace arid
 {
 
-using ARId = arcstk::ARId;
-using TOC  = arcstk::TOC;
+using arcstk::ARId;
+using arcstk::TOC;
 
 
 /**

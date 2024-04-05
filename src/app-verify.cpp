@@ -12,8 +12,8 @@
 #include <exception>       // for exception
 #include <iterator>        // for begin, end
 #include <memory>          // for unique_ptr, make_unique
-#include <stdexcept>       // for invalid_argument, runtime_error
 #include <sstream>         // for istringstream, ostringstream
+#include <stdexcept>       // for invalid_argument, runtime_error
 #include <string>          // for stoul, string, to_string
 #include <tuple>           // for get, make_tuple, tuple
 #include <utility>         // for move, pair
@@ -32,10 +32,7 @@
 #include "appregistry.hpp"          // for RegisterApplicationType
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
-#include "config.hpp"               // for Configurator
-#endif
-#ifndef __ARCSTOOLS_ANSI_HPP__
-#include "ansi.hpp"                 // for Colorize
+#include "config.hpp"               // for Configurator, OptionCode
 #endif
 #ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
 #include "tools-arid.hpp"           // for ARIdLayout

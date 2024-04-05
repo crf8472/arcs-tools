@@ -8,9 +8,16 @@
  * \brief Implements symbols from tools-arid.hpp.
  */
 
+#include <cstddef>      // for size_t
 #include <iomanip>      // for setw, setfill
 #include <memory>       // for unique_ptr
+#include <sstream>      // for ostringstream
+#include <tuple>        // for get
 #include <utility>      // for move
+
+#ifndef __LIBARCSTK_IDENTIFIER_HPP__
+#include <arcstk/identifier.hpp>  // for ARId
+#endif
 
 namespace arcsapp
 {

@@ -9,19 +9,18 @@
 
 #endif
 
+#include <cerrno>            // for errno
 #include <cstddef>           // for size_t
 #include <cstdint>           // for uint32_t, uint8_t
 #include <cstdio>            // for feof, ferror, fread, freopen
 #include <cstring>           // for strerror
-#include <exception>         // for exception
-#include <fstream>           // for ifstream
-#include <ios>               // for dec
-#include <iostream>          // for cin
+#include <iomanip>           // for setw, setfill
 #include <istream>           // for istream
 #include <memory>            // for unique_ptr, make_unique
 #include <sstream>           // for ostringstream
 #include <stdexcept>         // for domain_error, runtime_error
 #include <string>            // for string
+#include <tuple>             // for get
 #include <utility>           // for move, swap
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
@@ -33,21 +32,15 @@
 #ifndef __LIBARCSTK_DBAR_HPP__
 #include <arcstk/dbar.hpp>
 #endif
-#ifndef __LIBARCSTK_LOGGING_HPP__
-#include <arcstk/logging.hpp>
-#endif
 
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"            // for DBARTripletLayout
-#endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
-#include "tools-calc.hpp"         // for HexLayout
+#include "tools-calc.hpp"            // for HexLayout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_ARID_HPP__ // for ARIdLayout
 #include "tools-arid.hpp"
 #endif
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
-#include "application.hpp"        // for Output
+#include "application.hpp"           // for Output
 #endif
 
 

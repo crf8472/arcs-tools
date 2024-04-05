@@ -16,18 +16,18 @@
 #include <vector>      // for vector
 
 #ifndef __LIBARCSTK_CALCULATE_HPP__
-#include <arcstk/calculate.hpp>   // for Checksums, ARId, TOC
+#include <arcstk/calculate.hpp>    // for Checksums, ARId, TOC
 #endif
 
 #ifndef __LIBARCSDEC_SELECTION_HPP__
-#include <arcsdec/selection.hpp>  // for FileReaderSelection
+#include <arcsdec/selection.hpp>   // for FileReaderSelection
 #endif
 
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"         // for Application
 #endif
 #ifndef __ARCSTOOLS_CONFIG_HPP__
-#include "config.hpp"              // for Configurator
+#include "config.hpp"              // for OptionCode, Configurator
 #endif
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"             // for Layout

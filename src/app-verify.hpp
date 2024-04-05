@@ -9,12 +9,13 @@
  * Options, Configurator and Application for verify.
  */
 
-#include <cstdint>    // for uint16_t, uint32_t
-#include <memory>     // for unique_ptr
-#include <string>     // for string
-#include <tuple>      // for tuple
-#include <utility>    // for pair
-#include <vector>     // for vector
+#include <cstddef>       // for size_t
+#include <cstdint>       // for uint16_t, uint32_t
+#include <memory>        // for unique_ptr
+#include <string>        // for string
+#include <unordered_map> // for unordered_map
+#include <utility>       // for pair
+#include <vector>        // for vector
 
 #ifndef __LIBARCSTK_VERIFY_HPP__
 #include <arcstk/verify.hpp>
@@ -36,7 +37,7 @@
 #include "layouts.hpp"           // for Layout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
-#include "tools-table.hpp"
+#include "tools-table.hpp"       // for CellDecorator
 #endif
 
 

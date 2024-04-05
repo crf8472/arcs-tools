@@ -14,6 +14,7 @@
 
 #include <cstdint>                // for uint32_t
 #include <tuple>                  // for tuple, make_tuple
+#include <type_traits>            // for underlying_type_t
 
 namespace arcsapp
 {
