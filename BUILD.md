@@ -33,7 +33,6 @@ whether arcs-tools builds out-of-the-box on BSDs but don't expect major issues.
   in HTML styled with [m.css][3]
 - LaTeX (TeXLive for instance) - for documentation: to build the documentation
   in LaTeX
-- [include-what-you-use][1] - for development: easily find unused ``include``s
 
 
 ## Building the executable as a demo
@@ -76,13 +75,13 @@ environment variables ``CC`` and ``CXX``.
 
 If your actual compiler is not clang and you want to use your installed clang:
 
-	$ export CC=$(which clang)
-	$ export CXX=$(which clang++)
+	$ export CC=$(type -p clang)
+	$ export CXX=$(type -p clang++)
 
 If your actual compiler is not g++ and you want to use your installed g++:
 
-	$ export CC=$(which gcc)
-	$ export CXX=$(which g++)
+	$ export CC=$(type -p gcc)
+	$ export CXX=$(type -p g++)
 
 Then, delete your directory ``build`` (which contains metadata from
 the previous compiler) to start off cleanly.
@@ -164,12 +163,12 @@ pattern is ``report.<testcase>.xml`` where ``<testcase>`` corresponds to a
 #### Find unused header includes
 
 From time to time, I tend to mess up the includes. So for mere personal use, I
-configured a workflow for identifying unused includes that can be removed.
+use IWYU for identifying unused includes that can be removed.
 
 CMake brings some support for Google's tool [include-what-you-use][1]. If you
-have installed this tool, you can just use CMake to call it on the project:
+have installed IWYU, you can just use CMake to call it on the project:
 
-	$ cmake -DCMAKE_BUILD_TYPE=Debug -DIWYU=ON ..
+	$ cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE=$(type -p include-what-you-use) ..
 	$ cmake --build . 2>iwuy.txt
 
 This runs every source file through inlcude-what-you-use instead of the actual
@@ -181,7 +180,10 @@ selected g++ as your actual compiler. This is just because there are some
 switches configured for your actual compiler that are unknown to the tool. The
 warnings can be ignored. To avoid them
 [switch to clang++](#using-a-different-compiler), then configure the project
-with ``-DIWYU=ON`` and run the build again.
+with ``-DCMAKE_CXX_INCLUDE_WHAT_YOU_USE=...`` pointing to the IWYU-binary and
+run the build again. (Note that if you have the binary in the path, you do not
+need to specify a path. Otherwise, it is recommended to specify an absolute
+path.)
 
 
 ### Package maintainers
@@ -223,7 +225,6 @@ to your requirements.
 |CMAKE_BUILD_TYPE    |Build type for release or debug             |``Release``|
 |CMAKE_INSTALL_PREFIX|Top-level install location prefix     |plattform defined|
 |CMAKE_EXPORT_COMPILE_COMMANDS|Rebuilds a [compilation database](#deep-language-support-in-your-editor) when configuring |OFF    |
-|IWYU                |Use [include-what-you-use](#find-unused-header-includes) on compiling              |OFF    |
 |WITH_DOCS           |Configure for [documentation](#building-the-api-documentation)                     |OFF    |
 |WITH_NATIVE         |Use platform [specific optimization](#turn-optimizing-on-off) on compiling         |       |
 |WITH_TESTS          |Compile [tests](#run-unit-tests) (but don't run them)                              |OFF    |

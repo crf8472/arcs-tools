@@ -459,29 +459,3 @@ if (UNIX )
 
 endif (UNIX )
 
-
-
-## --- Optional: Add include-what-you-use support (default: OFF)
-## TODO CXX_INCLUDE_WHAT_YOU_USE has to be set to TRUE when the target is
-## created
-
-option (IWYU "Don't compile, check headers with include-what-you-use" OFF )
-if (IWYU )
-
-	message (STATUS "Program include-what-you-use requested" )
-	find_program (IWYU_BINARY NAMES include-what-you-use iwyu )
-
-	if (IWYU_BINARY )
-
-		## Set for all subsequent targets
-		set (CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${IWYU_BINARY} )
-
-		message (STATUS "Program include-what-you-use found: ${IWYU_BINARY}" )
-
-	else (IWYU_BINARY )
-
-		message (FATAL_ERROR "Program include-what-you-use not found" )
-
-	endif (IWYU_BINARY )
-endif (IWYU )
-
