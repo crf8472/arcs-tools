@@ -1,10 +1,10 @@
 [submodule "libs/libarcstk"]
 	path = libs/libarcstk
-	url = https://github.com/crf8472/libarcstk.git
-	branch = main
+	url = https://tristero:8418/hohenadel/libarcstk.git
+	branch = calc2
 [submodule "libs/libarcsdec"]
 	path = libs/libarcsdec
-	url = https://github.com/crf8472/libarcsdec.git
-	branch = main
+	url = https://tristero:8418/hohenadel/libarcsdec.git
+	branch = calc2
 
 
