@@ -71,7 +71,6 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile-man.in ${DOXYFILE} @ONLY )
 
 add_custom_command (
 	OUTPUT  ${MAN_DOXYGEN_OUT_DIR}
-	PRE_BUILD
 	COMMAND ${CMAKE_COMMAND}
 	ARGS    -E make_directory ${MAN_DOXYGEN_OUT_DIR} )
 
@@ -84,7 +83,6 @@ add_custom_target (create_man_dox_out_dir DEPENDS ${MAN_DOXYGEN_OUT_DIR} )
 
 add_custom_command (
 	OUTPUT  ${MAN_BUILD_DIR}
-	PRE_BUILD
 	COMMAND ${CMAKE_COMMAND}
 	ARGS    -E make_directory ${MAN_BUILD_DIR} )
 

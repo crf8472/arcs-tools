@@ -54,7 +54,6 @@ set (DOC_SOURCES          ${INTERFACE_HEADERS} ${PRIVATE_HEADERS}
 
 add_custom_command (
 	OUTPUT  ${DOC_GEN_DIR}
-	PRE_BUILD
 	COMMAND ${CMAKE_COMMAND}
 	ARGS    -E make_directory ${DOC_GEN_DIR} )
 

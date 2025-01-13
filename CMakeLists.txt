@@ -114,7 +114,6 @@ set (PRIVATE_HEADERS
 
 add_custom_command (
 	OUTPUT  ${PROJECT_LOG_DIR}
-	PRE_BUILD
 	COMMAND ${CMAKE_COMMAND}
 	ARGS    -E make_directory ${PROJECT_LOG_DIR} )
 
