@@ -1,6 +1,6 @@
 ## CMakeLists.txt for configuring and running tests
 
-cmake_minimum_required (VERSION 3.7 )
+cmake_minimum_required (VERSION 3.10 )
 
 ## Always link library files by full path when a full path is given to the
 ## target_link_libraries() command.

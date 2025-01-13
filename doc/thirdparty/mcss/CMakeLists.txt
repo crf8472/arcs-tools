@@ -17,7 +17,7 @@ if (WIN32 )
 endif()
 
 
-cmake_minimum_required (VERSION 3.6 )
+cmake_minimum_required (VERSION 3.10 )
 
 message (STATUS "Will build documentation with m.css" )
 
