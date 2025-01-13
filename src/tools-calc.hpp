@@ -44,6 +44,9 @@ using arcstk::Checksums;
 
 using arcsdec::FileReaderSelection;
 
+// FIXME This has to be made available from arcsdec/calculators.hpp
+using ChecksumTypeset = std::unordered_set<arcstk::checksum::type>;
+
 /**
  * \brief Returns the audiofile layout of a TOC.
  *
@@ -99,7 +102,7 @@ public:
 	 *
 	 * \param[in] type The default type to request
 	 */
-	ARCSMultifileAlbumCalculator(const arcstk::checksum::type type);
+	ARCSMultifileAlbumCalculator(const ChecksumTypeset& types);
 
 	/**
 	 * \brief Constructor.
@@ -107,7 +110,7 @@ public:
 	 * Uses ARCS2 as the default type to request.
 	 */
 	ARCSMultifileAlbumCalculator() : ARCSMultifileAlbumCalculator(
-			arcstk::checksum::type::ARCS2) { /* empty */ };
+			{ arcstk::checksum::type::ARCS2 }) { /* empty */ };
 
 	/**
 	 * \brief Virtual default destructor.
@@ -162,14 +165,14 @@ public:
 	 *
 	 * \param[in] type Checksum type to be calculated
 	 */
-	void set_type(const arcstk::checksum::type &type);
+	void set_types(const ChecksumTypeset& type);
 
 	/**
 	 * \brief The checksum type to be calculated.
 	 *
 	 * \return Checksum type to be calculated by this instance
 	 */
-	arcstk::checksum::type type() const;
+	ChecksumTypeset types() const;
 
 	/**
 	 * \brief Set the FileReaderSelection for this instance.

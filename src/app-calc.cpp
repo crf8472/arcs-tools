@@ -582,7 +582,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 	// type-to-calculate ARCS2 hence represents both the type-requested ARCS1
 	// as well as the type-requested ARCS2).
 
-	calc::ARCSMultifileAlbumCalculator c { types_to_calculate };
+	calc::ARCSMultifileAlbumCalculator c { { types_to_calculate } };
 
 	if (toc_selection)   { c.set_toc_selection(toc_selection); }
 	if (audio_selection) { c.set_audio_selection(audio_selection); }

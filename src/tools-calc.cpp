@@ -121,14 +121,14 @@ public:
 	 *
 	 * \param[in] type Checksum type to be calculated
 	 */
-	void set_type(const arcstk::checksum::type &type);
+	void set_types(const ChecksumTypeset& type);
 
 	/**
 	 * \brief The checksum type to be calculated.
 	 *
 	 * \return Checksum type to be calculated by this instance
 	 */
-	arcstk::checksum::type type() const;
+	ChecksumTypeset types() const;
 
 	/**
 	 * \brief Set the FileReaderSelection for this instance.
@@ -177,7 +177,7 @@ private:
 	/**
 	 * \brief Checksum type to request
 	 */
-	arcstk::checksum::type type_ = arcstk::checksum::type::ARCS2;
+	ChecksumTypeset types_ = { arcstk::checksum::type::ARCS2 };
 
 	/**
 	 * \brief Internal TOC parser selection.
@@ -234,7 +234,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 	ARCS_LOG_INFO << "Specified audio filenames override TOC filenames."
 			" Audiofiles from TOC are ignored.";
 
-	ARCSCalculator c { type() };
+	ARCSCalculator c { types() };
 	if (audio_selection()) { c.set_selection(audio_selection()); }
 
 	// case: single-file album w TOC
@@ -290,7 +290,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 
 	// Calculate ARCSs
 
-	ARCSCalculator calculator { type() };
+	ARCSCalculator calculator { types() };
 	if (audio_selection()) { calculator.set_selection(audio_selection()); }
 
 	if (single_audio_file)
@@ -331,23 +331,23 @@ Checksums ARCSMultifileAlbumCalculator::Impl::calculate(
 		const std::vector<std::string> &audiofilenames,
 		const bool &skip_front, const bool &skip_back) const
 {
-	ARCSCalculator calculator { type() };
+	ARCSCalculator calculator { types() };
 	if (audio_selection()) { calculator.set_selection(audio_selection()); }
 
 	return calculator.calculate(audiofilenames, skip_front, skip_back);
 }
 
 
-void ARCSMultifileAlbumCalculator::Impl::set_type(
-		const arcstk::checksum::type &type)
+void ARCSMultifileAlbumCalculator::Impl::set_types(
+		const ChecksumTypeset& types)
 {
-	type_ = type;
+	types_ = types;
 }
 
 
-arcstk::checksum::type ARCSMultifileAlbumCalculator::Impl::type() const
+ChecksumTypeset ARCSMultifileAlbumCalculator::Impl::types() const
 {
-	return type_;
+	return types_;
 }
 
 
@@ -381,10 +381,10 @@ FileReaderSelection* ARCSMultifileAlbumCalculator::Impl::audio_selection() const
 
 
 ARCSMultifileAlbumCalculator::ARCSMultifileAlbumCalculator(
-		const arcstk::checksum::type type)
+		const ChecksumTypeset& types)
 	: impl_(std::make_unique<ARCSMultifileAlbumCalculator::Impl>())
 {
-	impl_->set_type(type);
+	impl_->set_types(types);
 }
 
 
@@ -417,15 +417,15 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 }
 
 
-void ARCSMultifileAlbumCalculator::set_type(const arcstk::checksum::type &type)
+void ARCSMultifileAlbumCalculator::set_types(const ChecksumTypeset& types)
 {
-	impl_->set_type(type);
+	impl_->set_types(types);
 }
 
 
-arcstk::checksum::type ARCSMultifileAlbumCalculator::type() const
+ChecksumTypeset ARCSMultifileAlbumCalculator::types() const
 {
-	return impl_->type();
+	return impl_->types();
 }
 
 
