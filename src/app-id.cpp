@@ -57,6 +57,8 @@ using arcstk::ARId;
 
 // libarcsdec
 using arcsdec::ARIdCalculator;
+using arcsdec::AudioInfo;
+using arcsdec::FileReaderSelection;
 
 // arcsapp
 using arid::ARIdTableLayout;
@@ -159,9 +161,35 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 
 		const calc::IdSelection id_selection;
 
+		auto selection_for = [&config,&id_selection]
+			(const OptionCode& code, const std::string& success_msg)
+			-> std::unique_ptr<FileReaderSelection>
+				{
+					auto selection = config.is_set(code)
+						? id_selection(config.value(code))
+						: nullptr;
+
+					if (!selection)
+					{
+						ARCS_LOG_WARNING << "Could not select requested id: "
+							<< config.value(code);
+					}
+
+					ARCS_LOG_INFO << success_msg << config.value(code);
+
+					return selection;
+				};
+
+		/*
 		auto audio_selection = config.is_set(ARIdOptions::READERID)
 			? id_selection(config.value(ARIdOptions::READERID))
 			: nullptr;
+
+		if (audio_selection)
+		{
+			ARCS_LOG_INFO << "Select reader " <<
+				config.value(ARIdOptions::READERID);
+		}
 
 		auto toc_selection = config.is_set(ARIdOptions::PARSERID)
 			? id_selection(config.value(ARIdOptions::PARSERID))
@@ -172,14 +200,27 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 			ARCS_LOG_INFO << "Select parser " <<
 				config.value(ARIdOptions::PARSERID);
 		}
+		*/
 
 		// If no selections are assigned, the libarcsdec default selections
 		// will be used.
 
-		ARIdCalculator c;
+		AudioInfo a;
+		auto audio_selection = selection_for(ARIdOptions::READERID,
+				"Select reader ");
+		if (audio_selection)
+		{
+			a.set_selection(audio_selection.get());
+		}
 
-		if (audio_selection) { c.set_audio_selection(audio_selection.get()); }
-		if (toc_selection)   { c.set_toc_selection(toc_selection.get()); }
+		ARIdCalculator c;
+		auto toc_selection = selection_for(ARIdOptions::PARSERID,
+				"Select parser ");
+		if (toc_selection)
+		{
+			c.set_selection(toc_selection.get());
+		}
+		c.set_audio(a);
 
 		arid = c.calculate(metafilename, audiofilename);
 	}
