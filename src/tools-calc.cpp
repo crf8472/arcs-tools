@@ -16,6 +16,7 @@
 #include <unordered_set>            // for unordered_set
 #include <utility>                  // for move
 #include <vector>                   // for vector
+#include <iostream>
 
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>     // for Checksums, type
@@ -177,7 +178,8 @@ private:
 	/**
 	 * \brief Checksum type to request
 	 */
-	ChecksumTypeset types_ = { arcstk::checksum::type::ARCS2 };
+	ChecksumTypeset types_ = {  arcstk::checksum::type::ARCS1,
+								arcstk::checksum::type::ARCS2   };
 
 	/**
 	 * \brief Internal TOC parser selection.
@@ -196,8 +198,8 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>>
 			const std::vector<std::string> &audiofilenames,
 			const std::string &metafilename) const
 {
-	ARCS_LOG_DEBUG << "Calculate result from at least one audiofile and a"
-		" metafile";
+	ARCS_LOG_DEBUG << "Calculate result from metafilename"
+			" and one or more audiofiles";
 
 	if (audiofilenames.empty())
 	{
