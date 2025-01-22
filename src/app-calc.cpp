@@ -566,23 +566,32 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 	arcsdec::FileReaderSelection *audio_selection,
 	arcsdec::FileReaderSelection *toc_selection)
 {
-	using ChecksumType = arcstk::checksum::type;
+	//using ChecksumType = arcstk::checksum::type;
 
 	// XXX Determine whether to request ARCS2+1 or ARCS1-only
-	using std::begin;
-	using std::end;
-	using std::find;
+	//using std::begin;
+	//using std::end;
+	//using std::find;
+	/*
 	ChecksumType types_to_calculate =
 		find(begin(types_requested), end(types_requested), ChecksumType::ARCS2)
 			!= types_requested.end()
 		? ChecksumType::ARCS2
 		: ChecksumType::ARCS1;
+	*/
 	// The types to calculate are allowed to differ from the explicitly
 	// requested types (since e.g. ARCS1 is a byproduct of ARCS2 and the
 	// type-to-calculate ARCS2 hence represents both the type-requested ARCS1
 	// as well as the type-requested ARCS2).
 
-	calc::ARCSMultifileAlbumCalculator c { { types_to_calculate } };
+	//calc::ARCSMultifileAlbumCalculator c { { types_to_calculate } };
+
+	auto types_to_calculate = calc::ChecksumTypeset{};
+	for (auto& t : types_requested)
+	{
+		types_to_calculate.insert(t);
+	}
+	calc::ARCSMultifileAlbumCalculator c { types_to_calculate };
 
 	if (toc_selection)   { c.set_toc_selection(toc_selection); }
 	if (audio_selection) { c.set_audio_selection(audio_selection); }
