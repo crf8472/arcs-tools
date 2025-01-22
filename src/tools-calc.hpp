@@ -110,7 +110,8 @@ public:
 	 * Uses ARCS2 as the default type to request.
 	 */
 	ARCSMultifileAlbumCalculator() : ARCSMultifileAlbumCalculator(
-			{ arcstk::checksum::type::ARCS2 }) { /* empty */ };
+			{ arcstk::checksum::type::ARCS1, arcstk::checksum::type::ARCS2 })
+	{ /* empty */ };
 
 	/**
 	 * \brief Virtual default destructor.
