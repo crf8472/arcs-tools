@@ -15,11 +15,14 @@
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
 #endif
+#ifndef __LIBARCSTK_METADATA_HPP__
+#include <arcstk/metadata.hpp>      // for ToC, AudioSize
+#endif
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
-#include <arcstk/identifier.hpp>    // for ARId, TOC
+#include <arcstk/identifier.hpp>    // for ARId
 #endif
 #ifndef __LIBARCSTK_CALCULATE_HPP__
-#include <arcstk/calculate.hpp>     // for type, Checksum, Checksums, TOC ...
+#include <arcstk/calculate.hpp>     // for type, Checksum, Checksums,...
 #endif
 
 #ifndef __LIBARCSDEC_SELECTION_HPP__
@@ -63,7 +66,7 @@ const auto calc = RegisterApplicationType<ARCalcApplication>("calc");
 // libarcstk
 using arcstk::ARId;
 using arcstk::Checksums;
-using arcstk::TOC;
+using arcstk::ToC;
 
 // arcsapp
 using arid::ARIdLayout;
@@ -557,7 +560,7 @@ std::unique_ptr<arcsdec::FileReaderSelection>
 // ARCalcApplication
 
 
-std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
+std::tuple<Checksums, ARId, std::unique_ptr<ToC>> ARCalcApplication::calculate(
 	const std::string &metafilename,
 	const std::vector<std::string> &audiofilenames,
 	const bool as_first,
@@ -597,8 +600,8 @@ std::tuple<Checksums, ARId, std::unique_ptr<TOC>> ARCalcApplication::calculate(
 	if (audio_selection) { c.set_audio_selection(audio_selection); }
 
 	auto [ checksums, arid, toc ] = metafilename.empty()
-		? c.calculate(audiofilenames, as_first, as_last) //Tracks/Album w/o TOC
-		: c.calculate(audiofilenames, metafilename);     //Album: with TOC
+		? c.calculate(audiofilenames, as_first, as_last) //Tracks/Album w/o ToC
+		: c.calculate(audiofilenames, metafilename);     //Album: with ToC
 
 	return std::forward_as_tuple(checksums, arid, std::move(toc));
 }
@@ -638,21 +641,21 @@ std::unique_ptr<CalcTableCreator> ARCalcApplication::create_formatter(
 	// Print labels or not
 	fmt->set_format_labels(!config.is_set(CALC::NOLABELS));
 
-	// TOC present? Helper for determining other properties
+	// ToC present? Helper for determining other properties
 	const bool has_toc = !config.value(CALC::METAFILE).empty();
 
-	// Print track numbers if they are not forbidden and a TOC is present
+	// Print track numbers if they are not forbidden and a ToC is present
 	fmt->set_format_field(ATTR::TRACK,
 			config.is_set(CALC::NOTRACKS) ? false : has_toc);
 
-	// Print offsets if they are not forbidden and a TOC is present
+	// Print offsets if they are not forbidden and a ToC is present
 	fmt->set_format_field(ATTR::OFFSET,
 			config.is_set(CALC::NOOFFSETS) ? false : has_toc);
 
 	// Print lengths if they are not forbidden
 	fmt->set_format_field(ATTR::LENGTH, !config.is_set(CALC::NOLENGTHS));
 
-	// Print filenames if they are not forbidden and a TOC is _not_ present
+	// Print filenames if they are not forbidden and a ToC is _not_ present
 	fmt->set_format_field(ATTR::FILENAME,
 			config.is_set(CALC::NOFILENAMES) ? false : !has_toc);
 
@@ -741,8 +744,8 @@ auto ARCalcApplication::do_run_calculation(const Configuration &config) const
 	/* types  */  types_to_print,
 	/* ARCSs  */  checksums,
 	/* ARId   */  arid,
-	/* TOC    */  toc ? toc.get() : nullptr,
-	/* files  */  toc ? arcstk::toc::get_filenames(toc) : *config.arguments(),
+	/* ToC    */  toc ? toc.get() : nullptr,
+	/* files  */  toc ? toc->filenames() : *config.arguments(),
 	/* Prefix */  std::string { /* TODO Implement Alt-Prefix */ }
 	)};
 

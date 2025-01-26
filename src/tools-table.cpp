@@ -16,6 +16,7 @@
 #include <type_traits>  // for underlying_type_t
 #include <utility>      // for move
 #include <vector>       // for vector
+#include <iostream>
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>  // for ARId
@@ -625,10 +626,10 @@ void AddRecords::add_record(
 			const std::vector<std::unique_ptr<FieldCreator>>& fields)
 			const
 {
-	using std::begin;
-	using std::end;
+	using std::cbegin;
+	using std::cend;
 
-	std::for_each(begin(fields), end(fields),
+	std::for_each(cbegin(fields), cend(fields),
 			[this](const std::unique_ptr<FieldCreator>& f){
 				this->add_field(*f);
 			});
@@ -690,12 +691,18 @@ void AddField<ATTR::TRACK>::do_create(TableComposer* c, const int record_idx)
 void AddField<ATTR::OFFSET>::do_create(TableComposer* c, const int record_idx)
 	const
 {
+	// TODO Fix this mess
+	const auto offsets { toc_->offsets() };
+	const auto t {
+		static_cast<decltype( offsets )::size_type>(record_idx) };
+
 	using std::to_string;
 	add_field(c, record_idx, ATTR::OFFSET,
-			to_string(toc_->offset(track(record_idx))));
+			to_string(toc_->offsets().at(t).total_frames()));
 }
 
-AddField<ATTR::OFFSET>::AddField(const TOC* toc)
+
+AddField<ATTR::OFFSET>::AddField(const ToC* toc)
 	: toc_ { toc }
 {
 	/* empty */
@@ -711,6 +718,7 @@ void AddField<ATTR::LENGTH>::do_create(TableComposer* c, const int record_idx)
 	add_field(c, record_idx, ATTR::LENGTH, to_string(
 			(*checksums_).at(static_cast<index_type>(record_idx)).length()));
 }
+
 
 AddField<ATTR::LENGTH>::AddField(const Checksums* checksums)
 	: checksums_ { checksums }
@@ -907,7 +915,7 @@ std::vector<ATTR> TableCreator::create_field_types(
 
 void TableCreator::populate_creators_list(
 			std::vector<std::unique_ptr<FieldCreator>>& creators,
-			const std::vector<ATTR>& field_types, const TOC& toc,
+			const std::vector<ATTR>& field_types, const ToC& toc,
 			const Checksums& checksums,
 			const std::vector<std::string>& filenames) const
 {
@@ -917,10 +925,10 @@ void TableCreator::populate_creators_list(
 	// do not repeat the find mechanism
 	const auto required = [](const std::vector<ATTR>& fields, const ATTR f)
 			{
-				using std::begin;
-				using std::end;
+				using std::cbegin;
+				using std::cend;
 				using std::find;
-				return find(begin(fields), end(fields), f) != end(fields);
+				return find(cbegin(fields), cend(fields), f) != cend(fields);
 			};
 
 	if (required(field_types, ATTR::TRACK))
@@ -970,7 +978,7 @@ bool TableCreator::is_requested(const ATTR a) const
 
 
 TableCreator::print_flag_t TableCreator::create_field_requests(
-		const TOC* toc, const std::vector<std::string>& filenames) const
+		const ToC* toc, const std::vector<std::string>& filenames) const
 {
 	const bool has_toc       { toc != nullptr };
 	const bool has_filenames { !filenames.empty() };
@@ -985,10 +993,10 @@ TableCreator::print_flag_t TableCreator::create_field_requests(
 	flags.set(ATTR::FILENAME,   has_filenames && is_requested(ATTR::FILENAME));
 
 	ARCS_LOG(DEBUG1) << "Request flags for printing:";
-	ARCS_LOG(DEBUG1) << " tracks=      " << flags(ATTR::TRACK);
-	ARCS_LOG(DEBUG1) << " offsets=     " << flags(ATTR::OFFSET);
-	ARCS_LOG(DEBUG1) << " lengths=     " << flags(ATTR::LENGTH);
-	ARCS_LOG(DEBUG1) << " filenames=   " << flags(ATTR::FILENAME);
+	ARCS_LOG(DEBUG1) << " tracks    = " << flags(ATTR::TRACK);
+	ARCS_LOG(DEBUG1) << " offsets   = " << flags(ATTR::OFFSET);
+	ARCS_LOG(DEBUG1) << " lengths   = " << flags(ATTR::LENGTH);
+	ARCS_LOG(DEBUG1) << " filenames = " << flags(ATTR::FILENAME);
 
 	return flags;
 }

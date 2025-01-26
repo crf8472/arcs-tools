@@ -8,29 +8,26 @@
 TEST_CASE ( "audiofile_layout()", "" )
 {
 	using arcsapp::calc::audiofile_layout;
-
-	using arcstk::lba_count_t;
 	using arcstk::make_toc;
 
 	SECTION ( "Audiolayout with no filenames" )
 	{
 		// "Bach: Organ Concertos", Simon Preston, DGG
-		auto toc0 = make_toc(
-			// track count
-			15,
-			// offsets
-			std::vector<lba_count_t>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
-			87733, 106333, 139495, 157863, 198495, 213368, 225320, 234103 },
+		const auto toc0 = make_toc(
 			// leadout
-			253038
+			253038,
+			// offsets
+			std::vector<int32_t>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
+			87733, 106333, 139495, 157863, 198495, 213368, 225320, 234103 }
 		);
 
-		auto tuple = audiofile_layout(*toc0);
+		const auto tuple = audiofile_layout(*toc0);
 
 		CHECK ( std::get<0>(tuple) == true  );
 		CHECK ( std::get<1>(tuple) == false );
 
-		auto filenames = std::get<2>(tuple);
+		const auto filenames = std::get<2>(tuple);
+
 		CHECK ( filenames.empty() );
 	}
 
@@ -38,13 +35,11 @@ TEST_CASE ( "audiofile_layout()", "" )
 	{
 		// "Bach: Organ Concertos", Simon Preston, DGG
 		auto toc0 = make_toc(
-			// track count
-			15,
-			// offsets
-			std::vector<lba_count_t>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
-			87733, 106333, 139495, 157863, 198495, 213368, 225320, 234103 },
 			// leadout
 			253038,
+			// offsets
+			std::vector<int32_t>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
+			87733, 106333, 139495, 157863, 198495, 213368, 225320, 234103 },
 			// filenames
 			std::vector<std::string>{ "file", "file", "file", "file",
 			"file", "file", "file", "file", "file", "file",
@@ -64,13 +59,11 @@ TEST_CASE ( "audiofile_layout()", "" )
 	{
 		// "Bach: Organ Concertos", Simon Preston, DGG
 		auto toc0 = make_toc(
-			// track count
-			15,
-			// offsets
-			std::vector<lba_count_t>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
-			87733, 106333, 139495, 157863, 198495, 213368, 225320, 234103 },
 			// leadout
 			253038,
+			// offsets
+			std::vector<int32_t>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
+			87733, 106333, 139495, 157863, 198495, 213368, 225320, 234103 },
 			// filenames
 			std::vector<std::string>{ "file1", "file2", "file3", "file4",
 			"file5", "file6", "file7", "file8", "file9", "file10",
@@ -90,13 +83,11 @@ TEST_CASE ( "audiofile_layout()", "" )
 	{
 		// "Bach: Organ Concertos", Simon Preston, DGG
 		auto toc0 = make_toc(
-			// track count
-			15,
-			// offsets
-			std::vector<lba_count_t>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
-			87733, 106333, 139495, 157863, 198495, 213368, 225320, 234103 },
 			// leadout
 			253038,
+			// offsets
+			std::vector<int32_t>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
+			87733, 106333, 139495, 157863, 198495, 213368, 225320, 234103 },
 			// filenames
 			std::vector<std::string>{ "file1", "file1", "file2", "file2",
 			"file2", "file3", "file3", "file4", "file4", "file4",

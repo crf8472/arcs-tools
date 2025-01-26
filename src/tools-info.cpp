@@ -12,7 +12,7 @@
 #include <arcsdec/descriptor.hpp>   // for FileReaderDescriptor
 #endif
 #ifndef __LIBARCSDEC_CALCULATORS_HPP__
-#include <arcsdec/calculators.hpp>  // for ARCSCalculator, TOCParser
+#include <arcsdec/calculators.hpp>  // for ARCSCalculator, ToCParser
 #endif
 
 #ifndef __ARCSTOOLS_TABLE_HPP__
@@ -178,7 +178,7 @@ const StringTable& AvailableFileReaders::toc()
 	using arcsdec::FileReaderDescriptor;
 	using arcsdec::InputType;
 
-	static StringTable table { DefaultReaders<arcsdec::TOCParser>(
+	static StringTable table { DefaultReaders<arcsdec::ToCParser>(
 			[](const FileReaderDescriptor& d) -> bool
 			{
 				return InputType::TOC == d.input_type();

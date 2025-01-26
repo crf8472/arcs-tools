@@ -39,7 +39,7 @@ namespace calc
 {
 
 using arcstk::ARId;
-using arcstk::TOC;
+using arcstk::ToC;
 using arcstk::Checksums;
 
 using arcsdec::FileReaderSelection;
@@ -48,7 +48,7 @@ using arcsdec::FileReaderSelection;
 using ChecksumTypeset = std::unordered_set<arcstk::checksum::type>;
 
 /**
- * \brief Returns the audiofile layout of a TOC.
+ * \brief Returns the audiofile layout of a ToC.
  *
  * The first value of the returned tuple is TRUE iff \c toc references either
  * a single audio file or no audio files at all, otherwise FALSE.
@@ -67,15 +67,15 @@ using ChecksumTypeset = std::unordered_set<arcstk::checksum::type>;
  *       <td>no audio files at all</td></tr>
  * </table>
  *
- * The third value is the list of filenames itself. If the TOC contains no
- * filenames, the list is empty. If the TOC contains multiple occurrences of
+ * The third value is the list of filenames itself. If the ToC contains no
+ * filenames, the list is empty. If the ToC contains multiple occurrences of
  * exactly one filename, the list will only contain one entry.
  *
- * \param[in] toc The TOC to analyze
+ * \param[in] toc The ToC to analyze
  *
  * \return Flags for audiolayout, list of audio files
  */
-std::tuple<bool,bool,std::vector<std::string>> audiofile_layout(const TOC &toc);
+std::tuple<bool,bool,std::vector<std::string>> audiofile_layout(const ToC& toc);
 
 /**
  * \brief Create a selection for a specific FileReader Id.
@@ -130,9 +130,9 @@ public:
 	 * \param[in] audiofilenames Name of the audio files
 	 * \param[in] metafilename   Name of the metadata file
 	 *
-	 * \return Checksums, Id and TOC of the image represented by the input files
+	 * \return Checksums, Id and ToC of the image represented by the input files
 	 */
-	std::tuple<Checksums, ARId, std::unique_ptr<TOC>> calculate(
+	std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
 			const std::vector<std::string> &audiofilenames,
 			const std::string &metafilename) const;
 
@@ -149,7 +149,7 @@ public:
 	 *
 	 * Note that in this use case, it is not offered to compute the ARId of the
 	 * album since the exact offsets are missing. The ARId returned will be
-	 * therefore be empty, the TOC pointer will be nullptr.
+	 * therefore be empty, the ToC pointer will be nullptr.
 	 *
 	 * \param[in] audiofilenames Names of the audiofiles
 	 * \param[in] skip_front     Skip front samples of first track
@@ -157,7 +157,7 @@ public:
 	 *
 	 * \return The AccurateRip checksum of this track
 	 */
-	std::tuple<Checksums, ARId, std::unique_ptr<TOC>> calculate(
+	std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
 			const std::vector<std::string> &audiofilenames,
 			const bool &skip_front, const bool &skip_back) const;
 
@@ -274,13 +274,13 @@ private:
  * Throws if validation fails.
  *
  * \param[in] checksums  Checksums as resulted
- * \param[in] toc        TOC as resulted
+ * \param[in] toc        ToC as resulted
  * \param[in] arid       ARId as resulted
  * \param[in] filenames  Filenames as resulted
  *
  * \throws invalid_argument If validation fails
  */
-void validate(const Checksums& checksums, const TOC* toc,
+void validate(const Checksums& checksums, const ToC* toc,
 	const ARId& arid, const std::vector<std::string>& filenames);
 
 

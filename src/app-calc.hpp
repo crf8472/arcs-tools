@@ -16,7 +16,7 @@
 #include <vector>      // for vector
 
 #ifndef __LIBARCSTK_CALCULATE_HPP__
-#include <arcstk/calculate.hpp>    // for Checksums, ARId, TOC
+#include <arcstk/calculate.hpp>    // for Checksums, ARId
 #endif
 
 #ifndef __LIBARCSDEC_SELECTION_HPP__
@@ -47,7 +47,7 @@ class Result;
 // libarcstk
 using arcstk::ARId;
 using arcstk::Checksums;
-using arcstk::TOC;
+using arcstk::ToC;
 
 // arcsapp
 using table::ATTR;
@@ -177,7 +177,7 @@ using Calc6Layout = Layout<std::unique_ptr<Result>
 	,const std::vector<arcstk::checksum::type>& /* mandatory: types to print */
 	,const Checksums&                /* mandatory: locally computed checksums */
 	,const ARId&                     /* optional: ARId */
-	,const TOC*                      /* optional: TOC */
+	,const ToC*                      /* optional: ToC */
 	,const std::vector<std::string>& /* optional: input audio filenames */
 	,const std::string&              /* optional: AccurateRip URL prefix */
 >;
@@ -306,17 +306,17 @@ public:
 	/**
 	 * \brief Do calculation based on the options passed.
 	 *
-	 * \param[in] metafilename    Filename of the TOC file
+	 * \param[in] metafilename    Filename of the ToC file
 	 * \param[in] audiofilenames  Filenames of the audio files
 	 * \param[in] as_first        Flag to indicate album first track
 	 * \param[in] as_last         Flag to indicate album last track
 	 * \param[in] types           The checksum types requested
 	 * \param[in] audio_selection The selection for audio readers
-	 * \param[in] toc_selection   The selection for TOC parsers
+	 * \param[in] toc_selection   The selection for ToC parsers
 	 *
 	 * \return Calculation result
 	 */
-	static std::tuple<Checksums, ARId, std::unique_ptr<TOC>> calculate(
+	static std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
 		const std::string &metafilename,
 		const std::vector<std::string> &audiofilenames,
 		const bool as_first,

@@ -405,7 +405,7 @@ void ARVerifyConfigurator::do_flush_local_options(OptionRegistry &r) const
 
 		{ VERIFY::LIST_TOC_FORMATS ,
 		{  "list-toc-formats", false, OP_VALUE::FALSE,
-			"List all supported file formats for TOC metadata" }},
+			"List all supported file formats for ToC metadata" }},
 
 		{ VERIFY::LIST_AUDIO_FORMATS ,
 		{  "list-audio-formats", false, OP_VALUE::FALSE,
@@ -415,7 +415,7 @@ void ARVerifyConfigurator::do_flush_local_options(OptionRegistry &r) const
 
 		{ VERIFY::METAFILE ,
 		{  'm', "metafile", true, OP_VALUE::NONE,
-			"Specify metadata file (TOC) to use" }},
+			"Specify metadata file (ToC) to use" }},
 
 		{ VERIFY::NOTRACKS ,
 		{  "no-track-nos", false, OP_VALUE::FALSE,
@@ -533,13 +533,13 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 		}
 	}
 
-	// Album requested but no TOC info provided?
+	// Album requested but no ToC info provided?
 
 	if (not voptions->is_set(VERIFY::NOALBUM)
 		and voptions->value(VERIFY::METAFILE).empty())
 	{
 		// Album requires dedicated first + last track.
-		// If no TOC is passed, an album can only be verified when passed a
+		// If no ToC is passed, an album can only be verified when passed a
 		// single file for each track.
 
 		// This means we must ensure
@@ -552,7 +552,7 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 	{
 		if (voptions->is_set(VERIFY::METAFILE))
 		{
-			ARCS_LOG(WARNING) << "Passing TOC file "
+			ARCS_LOG(WARNING) << "Passing ToC file "
 				<< voptions->value(VERIFY::METAFILE)
 				<< " requests album calculation, but adding "
 				<< no_album_options
@@ -1339,7 +1339,7 @@ AddField<ATTR::THEIRS>::AddField(
 // validate
 
 
-void validate(const Checksums& checksums, const TOC* toc,
+void validate(const Checksums& checksums, const ToC* toc,
 	const ARId& arid, const std::vector<std::string>& filenames,
 	const ChecksumSource& reference,
 	const VerificationResult* vresult, const int block)
@@ -1433,21 +1433,21 @@ std::unique_ptr<VerifyTableCreator> ARVerifyApplication::create_formatter(
 	// Print labels or not
 	fmt->set_format_labels(!config.is_set(VERIFY::NOLABELS));
 
-	// TOC present? Helper for determining other properties
+	// ToC present? Helper for determining other properties
 	const bool has_toc = !config.value(VERIFY::METAFILE).empty();
 
-	// Print track numbers if they are not forbidden and a TOC is present
+	// Print track numbers if they are not forbidden and a ToC is present
 	fmt->set_format_field(ATTR::TRACK,
 			config.is_set(VERIFY::NOTRACKS) ? false : has_toc);
 
-	// Print offsets if they are not forbidden and a TOC is present
+	// Print offsets if they are not forbidden and a ToC is present
 	fmt->set_format_field(ATTR::OFFSET,
 			config.is_set(VERIFY::NOOFFSETS) ? false : has_toc);
 
 	// Print lengths if they are not forbidden
 	fmt->set_format_field(ATTR::LENGTH, !config.is_set(VERIFY::NOLENGTHS));
 
-	// Print filenames if they are not forbidden and a TOC is _not_ present
+	// Print filenames if they are not forbidden and a ToC is _not_ present
 	fmt->set_format_field(ATTR::FILENAME,
 			!config.is_set(VERIFY::NOFILENAMES) || !has_toc);
 
@@ -1534,7 +1534,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	if (not config.is_set(VERIFY::NOALBUM)
 		and config.value(VERIFY::METAFILE).empty())
 	{
-		// If no TOC is available, an album can only be verified when passed
+		// If no ToC is available, an album can only be verified when passed
 		// its audio input as a single file for each track. Only in this case,
 		// we do not need the offsets. (Also a single track album needs an
 		// offset for its track.)
@@ -1593,12 +1593,12 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	if (/* Album requested? */not config.is_set(VERIFY::NOALBUM))
 	{
-		// Do verification for Offsets, ARId and TOC
+		// Do verification for Offsets, ARId and ToC
 
 		if (!toc)
 		{
 			this->fatal_error(
-					"Album requested, but calculation returned no TOC.");
+					"Album requested, but calculation returned no ToC.");
 		}
 
 		if (mine_arid.empty())
@@ -1635,7 +1635,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		print_filenames = !single_audio_file;
 	} else
 	{
-		// No Offsets => No TOC => No ARId
+		// No Offsets => No ToC => No ARId
 
 		if (!vresult) // No result from refvals?
 		{
@@ -1690,7 +1690,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		{
 			if (toc)
 			{
-				filenames = arcstk::toc::get_filenames(*toc);
+				filenames = toc->filenames();
 			}
 		} else
 		{
@@ -1726,7 +1726,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		/* optional best match */      best_block,
 		/* mine ARCSs */               checksums,
 		/* optional mine ARId */       mine_arid,
-		/* optional TOC */             toc.get(),
+		/* optional ToC */             toc.get(),
 		/* reference checksum source */ref_source.get(),
 		/* input audio filenames */    filenames,
 		/* optional URL prefix */      alt_prefix

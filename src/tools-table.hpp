@@ -760,7 +760,7 @@ using arcstk::Checksums;
 using arcstk::ChecksumSource;
 using arcstk::ChecksumSourceOf;
 using arcstk::VerificationResult;
-using arcstk::TOC;
+using arcstk::ToC;
 
 
 /**
@@ -1041,12 +1041,12 @@ protected:
 	 * Creates the print flags for non-result fields, i.e. TRACK, OFFSET,
 	 * LENGTH and FILENAME.
 	 *
-	 * \param[in] toc       TOC available
+	 * \param[in] toc       ToC available
 	 * \param[in] filenames Filenames available
 	 *
 	 * \return Print flags for all printable attributes
 	 */
-	print_flag_t create_field_requests(const TOC* toc,
+	print_flag_t create_field_requests(const ToC* toc,
 			const std::vector<std::string>& filenames) const;
 
 	/**
@@ -1069,13 +1069,13 @@ protected:
 	 *
 	 * \param[in] field_creators List of field creators
 	 * \param[in] field_types    List of fields to format for print
-	 * \param[in] toc            TOC for calculated checksums
+	 * \param[in] toc            ToC for calculated checksums
 	 * \param[in] checksums      Calculated checksums
 	 * \param[in] filenames      List of input filenames
 	 */
 	void populate_creators_list(
 			std::vector<std::unique_ptr<FieldCreator>>& field_creators,
-			const std::vector<ATTR>& field_types, const TOC& toc,
+			const std::vector<ATTR>& field_types, const ToC& toc,
 			const Checksums& checksums,
 			const std::vector<std::string>& filenames) const;
 
@@ -1207,13 +1207,13 @@ class AddField<ATTR::TRACK> final : public FieldCreator
 template <>
 class AddField<ATTR::OFFSET> final : public FieldCreator
 {
-	const TOC* toc_;
+	const ToC* toc_;
 
 	void do_create(TableComposer* c, const int record_idx) const final;
 
 public:
 
-	AddField(const TOC* toc);
+	AddField(const ToC* toc);
 };
 
 

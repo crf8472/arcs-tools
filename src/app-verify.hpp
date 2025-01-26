@@ -56,6 +56,7 @@ using arcstk::Checksums;
 using arcstk::ChecksumSource;
 using arcstk::ChecksumSourceOf;
 using arcstk::DBAR;
+using arcstk::ToC;
 using arcstk::VerificationResult;
 using arcstk::Verifier;
 
@@ -237,7 +238,7 @@ using Verify9Layout = Layout<std::unique_ptr<Result>
 	,const int                        /* optional:  best block             */
 	,const Checksums&                 /* mandatory: "mine" checksums       */
 	,const ARId&                      /* optional:  "mine" ARId            */
-	,const TOC*                       /* optional:  "mine" TOC             */
+	,const ToC*                       /* optional:  "mine" ToC             */
 	,const ChecksumSource*            /* mandatory: reference sums         */
 	,const std::vector<std::string>&  /* optional:  input audio filenames  */
 	,const std::string&               /* optional:  AccurateRip URL prefix */
@@ -814,7 +815,7 @@ public:
  * Throws if validation fails.
  *
  * \param[in] checksums  Checksums as resulted
- * \param[in] toc        TOC as resulted
+ * \param[in] toc        ToC as resulted
  * \param[in] arid       ARId as resulted
  * \param[in] filenames  Filenames as resulted
  * \param[in] reference  Reference checksums
@@ -823,7 +824,7 @@ public:
  *
  * \throws invalid_argument If validation fails
  */
-void validate(const Checksums& checksums, const TOC* toc,
+void validate(const Checksums& checksums, const ToC* toc,
 	const ARId& arid, const std::vector<std::string>& filenames,
 	const ChecksumSource& reference,
 	const VerificationResult* vresult, const int block);

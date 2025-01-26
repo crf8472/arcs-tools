@@ -328,7 +328,7 @@ uint32_t ARIdLayout::flag_operand(const ARID_FLAG type, const bool value) const
 // build_id
 
 
-RichARId build_id(const TOC* /*toc*/, const ARId& arid,
+RichARId build_id(const ToC* /*toc*/, const ARId& arid,
 		const std::string& alt_prefix, const ARIdLayout& layout)
 {
 	return RichARId { arid, layout.clone(), alt_prefix };
