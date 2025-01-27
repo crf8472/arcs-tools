@@ -1620,10 +1620,12 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 		if (!vresult) // No previous result from refvals?
 		{
+			using std::to_string;
+
 			ARCS_LOG_DEBUG <<
 				"Process reference input as AccurateRip response for album";
 			ARCS_LOG_DEBUG <<
-				"Computed AccurateRip ID: "  << mine_arid.to_string();
+				"Computed AccurateRip ID: "  << to_string(mine_arid);
 			ARCS_LOG_DEBUG <<
 				"Computed AccurateRip URL: " << mine_arid.url();
 

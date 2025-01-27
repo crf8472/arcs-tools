@@ -245,7 +245,8 @@ std::string ARIdTableLayout::do_format(InputTuple t) const
 
 	if (flags().no_flags()) // return ARId as default
 	{
-		return arid.to_string();
+		using std::to_string;
+		return to_string(arid);
 	}
 
 	auto stream = std::ostringstream {};
@@ -275,7 +276,8 @@ std::string ARIdTableLayout::do_format(InputTuple t) const
 		switch (sflag)
 		{
 			case ARID_FLAG::ID:
-				value = arid.to_string();
+				using std::to_string;
+				value = to_string(arid);
 				break;
 			case ARID_FLAG::URL:
 				value = arid.url();
