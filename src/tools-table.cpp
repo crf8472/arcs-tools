@@ -698,7 +698,7 @@ void AddField<ATTR::OFFSET>::do_create(TableComposer* c, const int record_idx)
 
 	using std::to_string;
 	add_field(c, record_idx, ATTR::OFFSET,
-			to_string(toc_->offsets().at(t).total_frames()));
+			to_string(toc_->offsets().at(t).frames()));
 }
 
 
