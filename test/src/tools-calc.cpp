@@ -1,5 +1,9 @@
 #include "catch2/catch_test_macros.hpp"
 
+#ifndef __LIBARCSTK_METADATA_HPP__
+#include <arcstk/metadata.hpp>      // for ToC
+#endif
+
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"
 #endif

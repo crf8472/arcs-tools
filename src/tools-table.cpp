@@ -24,6 +24,9 @@
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>   // for Checksum, Checksums
 #endif
+#ifndef __LIBARCSTK_METADATA_HPP__
+#include <arcstk/metadata.hpp>    // for ToC
+#endif
 #ifndef __LIBARCSTK_VERIFY_HPP__
 #include <arcstk/verify.hpp>      // for VerificationResult
 #endif

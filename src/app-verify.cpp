@@ -18,6 +18,9 @@
 #include <tuple>           // for get, make_tuple, tuple
 #include <utility>         // for move, pair
 
+#ifndef __LIBARCSTK_METADATA_HPP__
+#include <arcstk/metadata.hpp>      // for ToC
+#endif
 #ifndef __LIBARCSTK_VERIFY_HPP__
 #include <arcstk/verify.hpp>
 #endif
