@@ -1,9 +1,9 @@
 [submodule "libs/libarcstk"]
 	path = libs/libarcstk
-	url = https://tristero:8418/hohenadel/libarcstk.git
+	url = https://github.com/crf8472/libarcstk.git
 	branch = 0.3-dev
 [submodule "libs/libarcsdec"]
 	path = libs/libarcsdec
-	url = https://tristero:8418/hohenadel/libarcsdec.git
+	url = https://github.com/crf8472/libarcsdec.git
 	branch = libarcstk-0.3
 
