@@ -698,8 +698,10 @@ void AddField<ATTR::OFFSET>::do_create(TableComposer* c, const int record_idx)
 
 	using index_type = SizeType<decltype( offsets_ )>;
 
+	const auto track { static_cast<index_type>(record_idx) };
+
 	add_field(c, record_idx, ATTR::OFFSET,
-		to_string(offsets_.at(static_cast<index_type>(record_idx)).frames()));
+			to_string(offsets_.at(track).frames()));
 }
 
 
@@ -717,8 +719,10 @@ void AddField<ATTR::LENGTH>::do_create(TableComposer* c, const int record_idx)
 
 	using index_type = SizeType<decltype( checksums_ )>;
 
-	add_field(c, record_idx, ATTR::LENGTH, to_string(
-			(*checksums_).at(static_cast<index_type>(record_idx)).length()));
+	const auto track { static_cast<index_type>(record_idx) };
+
+	add_field(c, record_idx, ATTR::LENGTH,
+			to_string(checksums_->at(track).length()));
 }
 
 
@@ -739,12 +743,12 @@ void AddField<ATTR::FILENAME>::do_create(TableComposer* c,
 
 	using index_type = SizeType<decltype( filenames_ )>;
 
-	const auto r { static_cast<index_type>(record_idx) };
+	const auto track { static_cast<index_type>(record_idx) };
 
 	using std::cbegin;
 
-	const auto element { filenames_->size() > r
-		? filenames_->at(r)      /*by index: get element*/
+	const auto element { filenames_->size() > track
+		? filenames_->at(track)  /*by index: get element*/
 		: *(cbegin(*filenames_)) /*no index: get first*/
 	};
 
@@ -766,9 +770,10 @@ void AddField<ATTR::CHECKSUM_ARCS1>::do_create(TableComposer* c,
 
 	using index_type = SizeType<decltype( checksums_ )>;
 
-	add_field(c, record_idx, ATTR::CHECKSUM_ARCS1, formatted(
-		checksums_->at(static_cast<index_type>(record_idx)).get(type::ARCS1),
-		*layout_));
+	const auto track { static_cast<index_type>(record_idx) };
+
+	add_field(c, record_idx, ATTR::CHECKSUM_ARCS1,
+			formatted(checksums_->at(track).get(type::ARCS1), *layout_));
 }
 
 
@@ -788,9 +793,10 @@ void AddField<ATTR::CHECKSUM_ARCS2>::do_create(TableComposer* c,
 
 	using index_type = SizeType<decltype( checksums_ )>;
 
-	add_field(c, record_idx, ATTR::CHECKSUM_ARCS2, formatted(
-		checksums_->at(static_cast<index_type>(record_idx)).get(type::ARCS2),
-		*layout_));
+	const auto track { static_cast<index_type>(record_idx) };
+
+	add_field(c, record_idx, ATTR::CHECKSUM_ARCS2,
+			formatted(checksums_->at(track).get(type::ARCS2), *layout_));
 }
 
 
