@@ -694,13 +694,12 @@ void AddField<ATTR::TRACK>::do_create(TableComposer* c, const int record_idx)
 void AddField<ATTR::OFFSET>::do_create(TableComposer* c, const int record_idx)
 	const
 {
-	using offsets_size_type = decltype( offsets_ )::size_type;
-
-	const auto t { static_cast<offsets_size_type>(record_idx) };
-
 	using std::to_string;
 
-	add_field(c, record_idx, ATTR::OFFSET, to_string(offsets_.at(t).frames()));
+	using index_type = SizeType<decltype( offsets_ )>;
+
+	add_field(c, record_idx, ATTR::OFFSET,
+		to_string(offsets_.at(static_cast<index_type>(record_idx)).frames()));
 }
 
 
@@ -715,7 +714,8 @@ void AddField<ATTR::LENGTH>::do_create(TableComposer* c, const int record_idx)
 	const
 {
 	using std::to_string;
-	using index_type = arcstk::Checksums::size_type;
+
+	using index_type = SizeType<decltype( checksums_ )>;
 
 	add_field(c, record_idx, ATTR::LENGTH, to_string(
 			(*checksums_).at(static_cast<index_type>(record_idx)).length()));
@@ -737,8 +737,8 @@ void AddField<ATTR::FILENAME>::do_create(TableComposer* c,
 		return;
 	}
 
-	// XXX decltype(filenames_)::size_type
-	using index_type = std::vector<std::string>::size_type;
+	using index_type = SizeType<decltype( filenames_ )>;
+
 	const auto r { static_cast<index_type>(record_idx) };
 
 	using std::cbegin;
@@ -763,7 +763,8 @@ void AddField<ATTR::CHECKSUM_ARCS1>::do_create(TableComposer* c,
 		const int record_idx) const
 {
 	using arcstk::checksum::type;
-	using index_type = arcstk::Checksums::size_type;
+
+	using index_type = SizeType<decltype( checksums_ )>;
 
 	add_field(c, record_idx, ATTR::CHECKSUM_ARCS1, formatted(
 		checksums_->at(static_cast<index_type>(record_idx)).get(type::ARCS1),
@@ -785,7 +786,7 @@ void AddField<ATTR::CHECKSUM_ARCS2>::do_create(TableComposer* c,
 {
 	using arcstk::checksum::type;
 
-	using index_type = arcstk::Checksums::size_type;
+	using index_type = SizeType<decltype( checksums_ )>;
 
 	add_field(c, record_idx, ATTR::CHECKSUM_ARCS2, formatted(
 		checksums_->at(static_cast<index_type>(record_idx)).get(type::ARCS2),

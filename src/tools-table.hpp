@@ -1204,6 +1204,25 @@ void add_field(TableComposer* c, const int record_idx, const int field_idx,
 		const std::string& s);
 
 /**
+ * \brief Remove reference and pointer from type \c T.
+ *
+ * \tparam T Type to remove reference and pointer from
+ */
+template <typename T>
+using Unqualified = typename
+		std::remove_pointer<
+			std::remove_cv_t<
+				std::remove_reference_t<T>>>::type;
+
+/**
+ * \brief Get \c size_type from type \c T.
+ *
+ * \tparam T Type to get size_type from
+ */
+template <typename T>
+using SizeType = typename Unqualified<T>::size_type;
+
+/**
  * \brief Functor for adding fields for the specified attribute in a table.
  *
  * Specializations of AddField are FieldCreators that specify the field they
