@@ -828,23 +828,29 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 
 	const auto print_flags { create_field_requests(toc, filenames) };
 
+	// Create ordered list of table columns
+
 	auto field_list { create_field_types(print_flags) };
 
 	// Determine total number of 'theirs' field_types per reference block
 	// (Maybe 0 for empty response and empty refvalues)
-	const auto best_block_declared = bool { block > -1 };
 	const auto total_theirs_per_block {
-		best_block_declared ? 1 : ref_source->size()
+		block > -1/* best block declared */ ? 1 : ref_source->size()
 	};
 
 	add_result_fields(field_list, print_flags, types_to_print,
 			total_theirs_per_block);
 
-	std::vector<std::unique_ptr<FieldCreator>> creators;
+	// Populate table with data creators
 
-	populate_creators_list(creators, field_list, *toc, checksums, filenames);
+	auto creators { std::vector<std::unique_ptr<FieldCreator>>{} };
+
+	populate_creators_list(creators, field_list, filenames, *toc, checksums);
+
 	populate_result_creators(creators, print_flags, field_list, types_to_print,
 			*vresult, block, checksums, *ref_source, total_theirs_per_block);
+
+	// Add table to result
 
 	buf.append(format_table(
 				field_list, checksums.size(), formats_labels(), creators));

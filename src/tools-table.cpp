@@ -60,6 +60,9 @@ using arcsapp::arid::ARIdTableLayout;
 
 
 template<>
+std::string DefaultLabel<ATTR::FILENAME>() { return "Filename"; };
+
+template<>
 std::string DefaultLabel<ATTR::TRACK>() { return "Track"; };
 
 template<>
@@ -67,9 +70,6 @@ std::string DefaultLabel<ATTR::OFFSET>() { return "Offset"; };
 
 template<>
 std::string DefaultLabel<ATTR::LENGTH>() { return "Length"; };
-
-template<>
-std::string DefaultLabel<ATTR::FILENAME>() { return "Filename"; };
 
 template<>
 std::string DefaultLabel<ATTR::CHECKSUM_ARCS1>()
@@ -245,21 +245,21 @@ std::string TableComposer::do_label_by_type(const ATTR& field_type) const
 
 int TableComposer::do_field_idx(const ATTR& field_type, const int i) const
 {
-	using std::begin;
-	using std::end;
+	using std::cbegin;
+	using std::cend;
 	using std::find;
 
-	auto o { begin(fields_) };
+	auto o { cbegin(fields_) };
 	for (auto k = int { 0 }; k < i; ++k)
 	{
-		o = find(o, end(fields_), field_type);
-		if (end(fields_) == o)
+		o = find(o, cend(fields_), field_type);
+		if (cend(fields_) == o)
 		{
 			return -1;
 		}
 		++o;
 	}
-	return o - begin(fields_) - 1;
+	return o - cbegin(fields_) - 1;
 }
 
 
@@ -469,10 +469,10 @@ const CellDecorator* ColTableComposer::do_on_field(const int field_idx) const
 
 TableComposerBuilder::TableComposerBuilder()
 	: labels_ {
+		{ ATTR::FILENAME,       DefaultLabel<ATTR::FILENAME>()       },
 		{ ATTR::TRACK,          DefaultLabel<ATTR::TRACK>()          },
 		{ ATTR::OFFSET,         DefaultLabel<ATTR::OFFSET>()         },
 		{ ATTR::LENGTH,         DefaultLabel<ATTR::LENGTH>()         },
-		{ ATTR::FILENAME,       DefaultLabel<ATTR::FILENAME>()       },
 		{ ATTR::CHECKSUM_ARCS2, DefaultLabel<ATTR::CHECKSUM_ARCS2>() },
 		{ ATTR::CHECKSUM_ARCS1, DefaultLabel<ATTR::CHECKSUM_ARCS1>() },
 		{ ATTR::THEIRS,         DefaultLabel<ATTR::THEIRS>()         },
@@ -516,8 +516,8 @@ std::string TableComposerBuilder::label(ATTR type)
 void TableComposerBuilder::assign_default_labels(TableComposer& c,
 		const std::vector<ATTR>& field_types) const
 {
-	using std::begin;
-	using std::end;
+	using std::cbegin;
+	using std::cend;
 
 	auto p { end(labels_) };
 
@@ -525,7 +525,7 @@ void TableComposerBuilder::assign_default_labels(TableComposer& c,
 	{
 		p = labels_.find(field_types.at(i));
 
-		if (end(labels_) == p)
+		if (cend(labels_) == p)
 		{
 			c.set_label(i, "?"); // Could not find label
 		} else
@@ -686,27 +686,26 @@ void AddField<ATTR::TRACK>::do_create(TableComposer* c, const int record_idx)
 	const
 {
 	using std::to_string;
-	add_field(c, record_idx, ATTR::TRACK,
-			to_string(this->track(record_idx)));
+
+	add_field(c, record_idx, ATTR::TRACK, to_string(this->track(record_idx)));
 }
 
 
 void AddField<ATTR::OFFSET>::do_create(TableComposer* c, const int record_idx)
 	const
 {
-	// TODO Fix this mess
-	const auto offsets { toc_->offsets() };
-	const auto t {
-		static_cast<decltype( offsets )::size_type>(record_idx) };
+	using offsets_size_type = decltype( offsets_ )::size_type;
+
+	const auto t { static_cast<offsets_size_type>(record_idx) };
 
 	using std::to_string;
-	add_field(c, record_idx, ATTR::OFFSET,
-			to_string(toc_->offsets().at(t).frames()));
+
+	add_field(c, record_idx, ATTR::OFFSET, to_string(offsets_.at(t).frames()));
 }
 
 
-AddField<ATTR::OFFSET>::AddField(const ToC* toc)
-	: toc_ { toc }
+AddField<ATTR::OFFSET>::AddField(const std::vector<AudioSize>& offsets)
+	: offsets_ { offsets }
 {
 	/* empty */
 }
@@ -742,9 +741,11 @@ void AddField<ATTR::FILENAME>::do_create(TableComposer* c,
 	using index_type = std::vector<std::string>::size_type;
 	const auto r { static_cast<index_type>(record_idx) };
 
+	using std::cbegin;
+
 	const auto element { filenames_->size() > r
 		? filenames_->at(r)      /*by index: get element*/
-		: *(filenames_->begin()) /*no index: get first*/
+		: *(cbegin(*filenames_)) /*no index: get first*/
 	};
 
 	add_field(c, record_idx, ATTR::FILENAME, element);
@@ -783,6 +784,7 @@ void AddField<ATTR::CHECKSUM_ARCS2>::do_create(TableComposer* c,
 		const int record_idx) const
 {
 	using arcstk::checksum::type;
+
 	using index_type = arcstk::Checksums::size_type;
 
 	add_field(c, record_idx, ATTR::CHECKSUM_ARCS2, formatted(
@@ -899,28 +901,47 @@ void TableCreator::set_format_field(const ATTR a, const bool value)
 
 
 std::vector<ATTR> TableCreator::create_field_types(
-		const print_flag_t print_flags) const
+		const print_flag_t print_flags, const field_order_t& ordering) const
 {
-	std::vector<ATTR> fields;
+	// Optional fields:
+	// - presence is defined by request via print_flag
+	// - order is defined here
 
-	for (const auto& f : {
-			// Optional fields: presence is defined by request via print_flag
-			// TODO: generate list in dedicated member function
-			ATTR::TRACK, ATTR::OFFSET, ATTR::LENGTH, ATTR::FILENAME } )
-	{
-		if (print_flags(f)) { fields.emplace_back(f); }
-	}
+	using std::cbegin;
+	using std::cend;
+
+	std::vector<ATTR> fields;
+	std::for_each(cbegin(ordering), cend(ordering),
+			[&print_flags,&fields](const ATTR& a)
+			{
+				if (print_flags(a))
+				{
+					fields.emplace_back(a);
+				}
+			}
+	);
 
 	return fields;
 }
 
 
+std::vector<ATTR> TableCreator::create_field_types(
+		const print_flag_t print_flags) const
+{
+	// Default order of the optional fields from left to right
+	static const auto default_order { field_order_t
+		{ ATTR::FILENAME, ATTR::TRACK, ATTR::OFFSET, ATTR::LENGTH }
+	};
+
+	return create_field_types(print_flags, default_order);
+}
+
 
 void TableCreator::populate_creators_list(
 			std::vector<std::unique_ptr<FieldCreator>>& creators,
-			const std::vector<ATTR>& field_types, const ToC& toc,
-			const Checksums& checksums,
-			const std::vector<std::string>& filenames) const
+			const std::vector<ATTR>& field_types,
+			const std::vector<std::string>& filenames, const ToC& toc,
+			const Checksums& checksums) const
 {
 
 	creators.reserve(field_types.size());
@@ -934,6 +955,12 @@ void TableCreator::populate_creators_list(
 				return find(cbegin(fields), cend(fields), f) != cend(fields);
 			};
 
+	if (required(field_types, ATTR::FILENAME))
+	{
+		creators.emplace_back(
+				std::make_unique<AddField<ATTR::FILENAME>>(&filenames));
+	}
+
 	if (required(field_types, ATTR::TRACK))
 	{
 		creators.emplace_back(
@@ -943,19 +970,13 @@ void TableCreator::populate_creators_list(
 	if (required(field_types, ATTR::OFFSET))
 	{
 		creators.emplace_back(
-				std::make_unique<AddField<ATTR::OFFSET>>(&toc));
+				std::make_unique<AddField<ATTR::OFFSET>>(toc.offsets()));
 	}
 
 	if (required(field_types, ATTR::LENGTH))
 	{
 		creators.emplace_back(
 				std::make_unique<AddField<ATTR::LENGTH>>(&checksums));
-	}
-
-	if (required(field_types, ATTR::FILENAME))
-	{
-		creators.emplace_back(
-				std::make_unique<AddField<ATTR::FILENAME>>(&filenames));
 	}
 }
 
@@ -990,16 +1011,16 @@ TableCreator::print_flag_t TableCreator::create_field_requests(
 
 	// Optional default flags
 
-	flags.set(ATTR::TRACK,      has_toc && is_requested(ATTR::TRACK));
-	flags.set(ATTR::OFFSET,     has_toc && is_requested(ATTR::OFFSET));
-	flags.set(ATTR::LENGTH,     has_toc && is_requested(ATTR::LENGTH));
 	flags.set(ATTR::FILENAME,   has_filenames && is_requested(ATTR::FILENAME));
+	flags.set(ATTR::TRACK,      is_requested(ATTR::TRACK));
+	flags.set(ATTR::OFFSET,     has_toc && is_requested(ATTR::OFFSET));
+	flags.set(ATTR::LENGTH,     is_requested(ATTR::LENGTH));
 
-	ARCS_LOG(DEBUG1) << "Request flags for printing:";
+	ARCS_LOG(DEBUG1) << "Activate flags for printing:";
+	ARCS_LOG(DEBUG1) << " filenames = " << flags(ATTR::FILENAME);
 	ARCS_LOG(DEBUG1) << " tracks    = " << flags(ATTR::TRACK);
 	ARCS_LOG(DEBUG1) << " offsets   = " << flags(ATTR::OFFSET);
 	ARCS_LOG(DEBUG1) << " lengths   = " << flags(ATTR::LENGTH);
-	ARCS_LOG(DEBUG1) << " filenames = " << flags(ATTR::FILENAME);
 
 	return flags;
 }

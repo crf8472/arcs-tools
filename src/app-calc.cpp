@@ -366,10 +366,10 @@ void CalcTableCreator::populate_result_creators(
 	// do not repeat the find mechanism
 	const auto required = [](const std::vector<ATTR>& fields, const ATTR f)
 			{
-				using std::begin;
-				using std::end;
+				using std::cbegin;
+				using std::cend;
 				using std::find;
-				return find(begin(fields), end(fields), f) != end(fields);
+				return find(cbegin(fields), cend(fields), f) != cend(fields);
 			};
 
 	if (required(field_list, ATTR::CHECKSUM_ARCS1))
@@ -431,15 +431,22 @@ std::unique_ptr<Result> CalcTableCreator::do_format(InputTuple t) const
 
 	const auto print_flags { create_field_requests(toc, filenames) };
 
+	// Create ordered list of table columns
+
 	auto field_list { create_field_types(print_flags) };
 
 	add_result_fields(field_list, print_flags, types_to_print);
 
-	std::vector<std::unique_ptr<FieldCreator>> creators;
+	// Populate table with data
 
-	populate_creators_list(creators, field_list, *toc, checksums, filenames);
+	auto creators { std::vector<std::unique_ptr<FieldCreator>>{} };
+
+	populate_creators_list(creators, field_list, filenames, *toc, checksums);
+
 	populate_result_creators(creators, print_flags, field_list, types_to_print,
 			checksums);
+
+	// Add table to result
 
 	buf.append(format_table(
 				field_list, checksums.size(), formats_labels(), creators));
@@ -610,6 +617,8 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>> ARCalcApplication::calculate(
 std::unique_ptr<CalcTableCreator> ARCalcApplication::create_formatter(
 		const Configuration& config) const
 {
+	ARCS_LOG(DEBUG3) << "Define output attributes:";
+
 	auto fmt = std::unique_ptr<CalcTableCreator>
 	{
 		std::make_unique<CalcTableCreator>()
@@ -638,26 +647,41 @@ std::unique_ptr<CalcTableCreator> ARCalcApplication::create_formatter(
 		fmt->set_arid_layout(std::move(id_layout));
 	}
 
-	// Print labels or not
-	fmt->set_format_labels(!config.is_set(CALC::NOLABELS));
-
 	// ToC present? Helper for determining other properties
 	const bool has_toc = !config.value(CALC::METAFILE).empty();
 
+	// Tracks in order?
+	const bool tracks_numbered = config.is_set(CALC::FIRST)
+		|| config.is_set(CALC::LAST) || has_toc;
+
+
+	// Print labels or not
+	fmt->set_format_labels(!config.is_set(CALC::NOLABELS));
+
+	ARCS_LOG(DEBUG3) << "Print LABEL :   " << fmt->formats_labels();
+
 	// Print track numbers if they are not forbidden and a ToC is present
 	fmt->set_format_field(ATTR::TRACK,
-			config.is_set(CALC::NOTRACKS) ? false : has_toc);
+			config.is_set(CALC::NOTRACKS) ? false : tracks_numbered);
+
+	ARCS_LOG(DEBUG3) << "Print TRACK :   " << fmt->formats_field(ATTR::TRACK);
 
 	// Print offsets if they are not forbidden and a ToC is present
 	fmt->set_format_field(ATTR::OFFSET,
 			config.is_set(CALC::NOOFFSETS) ? false : has_toc);
 
+	ARCS_LOG(DEBUG3) << "Print OFFSET:   " << fmt->formats_field(ATTR::OFFSET);
+
 	// Print lengths if they are not forbidden
 	fmt->set_format_field(ATTR::LENGTH, !config.is_set(CALC::NOLENGTHS));
+
+	ARCS_LOG(DEBUG3) << "Print LENGTH:   " << fmt->formats_field(ATTR::LENGTH);
 
 	// Print filenames if they are not forbidden and a ToC is _not_ present
 	fmt->set_format_field(ATTR::FILENAME,
 			config.is_set(CALC::NOFILENAMES) ? false : !has_toc);
+
+	ARCS_LOG(DEBUG3) << "Print FILENAME: " << fmt->formats_field(ATTR::FILENAME);
 
 	auto layout { std::make_unique<StringTableLayout>() };
 

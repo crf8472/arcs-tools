@@ -411,7 +411,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 			const bool &skip_front, const bool &skip_back) const
 {
 	ARCS_LOG_DEBUG << "Calculate result from audiofilenames "
-			" and flags for first and last track";
+			"and flags for first and last track";
 
 	auto checksums { impl_->calculate(audiofilenames, skip_front, skip_back) };
 

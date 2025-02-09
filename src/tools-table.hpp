@@ -21,6 +21,9 @@
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>   // for Checksum, Checksums
 #endif
+#ifndef __LIBARCSTK_METADATA_HPP__
+#include <arcstk/metadata.hpp>    // for AudioSize
+#endif
 #ifndef __LIBARCSTK_VERIFY_HPP__
 #include <arcstk/verify.hpp>      // for VerificationResult
 #endif
@@ -48,6 +51,8 @@ namespace arid {
 	class ARIdLayout;
 	class RichARId;
 }
+
+using arcstk::AudioSize;
 
 // arcsapp
 using arid::ARIdLayout;
@@ -272,12 +277,12 @@ private:
  * TableComposer will know whether the field_types are rows or columns in the
  * result table to build.
  */
-enum class ATTR: int
+enum class ATTR : int
 {
+	FILENAME,
 	TRACK,
 	OFFSET,
 	LENGTH,
-	FILENAME,
 	CHECKSUM_ARCS1,
 	CHECKSUM_ARCS2,
 	THEIRS,
@@ -1027,6 +1032,15 @@ protected:
 	using print_flag_t = Flags<ATTR, uint8_t>;
 
 	/**
+	 * \brief Type for the ordering of the optional default fields.
+	 *
+	 * The 4 optional default fields are FILENAME, TRACK, OFFSET, LENGTH.
+	 *
+	 * If other ATTR values occur in the instance, the behaviour is undefined.
+	 */
+	using field_order_t = std::array<ATTR,4>;
+
+	/**
 	 * \brief Worker: TRUE iff field \c f is requested for output.
 	 *
 	 * \param[in] f Field to check
@@ -1038,8 +1052,8 @@ protected:
 	/**
 	 * \brief Worker: produce print flags for optional printable fields.
 	 *
-	 * Creates the print flags for non-result fields, i.e. TRACK, OFFSET,
-	 * LENGTH and FILENAME.
+	 * Creates the print flags for non-result fields, i.e. FILENAME, TRACK,
+	 * OFFSET, and LENGTH.
 	 *
 	 * \param[in] toc       ToC available
 	 * \param[in] filenames Filenames available
@@ -1052,32 +1066,47 @@ protected:
 	/**
 	 * \brief Respect flags to create or skip the optional fields.
 	 *
-	 * This creates TRACK, OFFSET, LENGTH and FILENAME fields in accordance to
-	 * the print flags passed.
+	 * This creates FILENAME, TRACK, OFFSET, and LENGTH fields in accordance to
+	 * the print flags passed. The order of this fields from left to right can
+	 * be specified by \c ordering.
+	 *
+	 * \param[in] print_flags Print flags to respect
+	 * \param[in] ordering    The left-to-right ordering of the fields
+	 *
+	 * \return List of field types
+	 */
+	std::vector<ATTR> create_field_types(
+		const print_flag_t print_flags, const field_order_t& ordering) const;
+
+	/**
+	 * \brief Respect flags to create or skip the optional fields.
+	 *
+	 * This creates FILENAME, TRACK, OFFSET, and LENGTH fields in accordance to
+	 * the print flags passed. The fields are respected from left to right in
+	 * this order.
 	 *
 	 * \param[in] print_flags Print flags to respect
 	 *
 	 * \return List of field types
 	 */
-	std::vector<ATTR> create_field_types(const print_flag_t print_flags)
-		const;
+	std::vector<ATTR> create_field_types(const print_flag_t print_flags) const;
 
 	/**
 	 * \brief Populate the list of FieldCreators for optional fields.
 	 *
-	 * These are the TRACK, OFFSET, LENGTH and FILENAME fields.
+	 * These are the FILENAME, TRACK, OFFSET, and LENGTH fields.
 	 *
 	 * \param[in] field_creators List of field creators
 	 * \param[in] field_types    List of fields to format for print
+	 * \param[in] filenames      List of input filenames
 	 * \param[in] toc            ToC for calculated checksums
 	 * \param[in] checksums      Calculated checksums
-	 * \param[in] filenames      List of input filenames
 	 */
 	void populate_creators_list(
 			std::vector<std::unique_ptr<FieldCreator>>& field_creators,
-			const std::vector<ATTR>& field_types, const ToC& toc,
-			const Checksums& checksums,
-			const std::vector<std::string>& filenames) const;
+			const std::vector<ATTR>& field_types,
+			const std::vector<std::string>& filenames, const ToC& toc,
+			const Checksums& checksums) const;
 
 	/**
 	 * \brief Create the internal TableComposer to compose the result data.
@@ -1174,7 +1203,6 @@ void add_field(TableComposer* c, const int record_idx, const ATTR f,
 void add_field(TableComposer* c, const int record_idx, const int field_idx,
 		const std::string& s);
 
-
 /**
  * \brief Functor for adding fields for the specified attribute in a table.
  *
@@ -1207,13 +1235,13 @@ class AddField<ATTR::TRACK> final : public FieldCreator
 template <>
 class AddField<ATTR::OFFSET> final : public FieldCreator
 {
-	const ToC* toc_;
+	const std::vector<AudioSize> offsets_;
 
 	void do_create(TableComposer* c, const int record_idx) const final;
 
 public:
 
-	AddField(const ToC* toc);
+	AddField(const std::vector<AudioSize>& toc);
 };
 
 
