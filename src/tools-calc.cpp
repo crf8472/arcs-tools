@@ -222,7 +222,7 @@ private:
 	std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
 			std::unique_ptr<ToC> toc, const std::string& searchpath) const;
 
-	ARCSCalculator setup(const arcstk::ChecksumtypeSet& types) const;
+	ARCSCalculator setup_calculator(const arcstk::ChecksumtypeSet& types) const;
 
 	/**
 	 * \brief Checksum type to request
@@ -255,20 +255,26 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 		throw std::invalid_argument("No ToC file specified.");
 	}
 
-	ToCParser parser;
-	if (toc_selection()) { parser.set_selection(toc_selection()); }
-	auto toc { parser.parse(metafilename) };
+	auto toc = std::unique_ptr<ToC>{};
+	{
+		auto parser = ToCParser{};
+		if (toc_selection())
+		{
+			parser.set_selection(toc_selection());
+		}
+		toc = parser.parse(metafilename);
+	}
 
 	if (audiofilenames.empty())
 	{
-		return this->calculate(std::move(toc), file::path(metafilename));
+		return calculate(std::move(toc), file::path(metafilename));
 	}
 
 	// Validate track number
 
 	const int filecount = audiofilenames.size();
 
-	if (toc->total_tracks() != filecount && filecount != 1) // case: illegal
+	if (filecount != toc->total_tracks() && filecount != 1) // case: illegal
 	{
 		std::ostringstream msg;
 		msg << "Inconsistent input: Metafile " << metafilename
@@ -283,12 +289,13 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 
 	// Run
 
-	auto c { setup(types()) };
+	auto calculator { setup_calculator(types()) };
 
 	// case: single-file album w ToC
 	if (1 == filecount)
 	{
-		const auto [ checksums, arid ] = c.calculate(audiofilenames[0], *toc);
+		const auto [ checksums, arid ] =
+			calculator.calculate(audiofilenames.front(), *toc);
 
 		return std::make_tuple(checksums, arid, std::move(toc));
 	}
@@ -296,10 +303,10 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 	// case: multi-file album w ToC
 	if (toc->total_tracks() == filecount)
 	{
-		const auto checksums { c.calculate(audiofilenames, true, true) };
-		const auto arid      { make_arid(*toc) };
+		const auto chksums { calculator.calculate(audiofilenames, true, true) };
+		const auto arid    { make_arid(*toc) };
 
-		return std::make_tuple(checksums, *arid, std::move(toc));
+		return std::make_tuple(chksums, *arid, std::move(toc));
 	}
 
 	return std::make_tuple(Checksums{ 0 }, arcstk::EmptyARId, nullptr);
@@ -308,17 +315,17 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 
 std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 	ARCSMultifileAlbumCalculator::Impl::calculate(
-		std::unique_ptr<ToC> toc, const std::string& audiosearchpath) const
+		std::unique_ptr<ToC> toc, const std::string& filepath) const
 {
 	ARCS_LOG_DEBUG << "Calculate result from ToC"
 			" and searchpath for audiofiles";
 
 	// Validate ToC information
 
-	auto [ single_audio_file, pairwise_distinct, audiofiles ] =
+	auto [ is_single_file, pairwise_distinct, audiofiles ] =
 		ToCFiles::get(*toc);
 
-	if (not single_audio_file and not pairwise_distinct)
+	if (!is_single_file && !pairwise_distinct)
 	{
 		throw std::invalid_argument(
 			"ToC references a set of multiple audio files, but they are not "
@@ -328,17 +335,12 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 
 	// Calculate ARCSs
 
-	auto calculator { setup(types()) };
+	auto calculator { setup_calculator(types()) };
 
-	if (single_audio_file)
+	if (is_single_file)
 	{
-		auto audiofile { audiofiles.front() };
-
-		if (not audiosearchpath.empty())
-		{
-			// XXX This assumes that the metafile does not specify any paths
-			file::prepend_path(audiosearchpath, audiofile);
-		}
+		const auto audiofile =
+			ToCFiles::expand_path(filepath, audiofiles.front());
 
 		// case: single-file album w ToC
 		auto [ checksums, arid ] = calculator.calculate(audiofile, *toc);
@@ -346,13 +348,9 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 		return std::make_tuple(checksums, arid, std::move(toc));
 	} else
 	{
-		if (not audiosearchpath.empty())
+		for (auto& audiofile : audiofiles)
 		{
-			for (auto& audiofile : audiofiles)
-			{
-				// XXX This assumes that the metafile does not specify any paths
-				file::prepend_path(audiosearchpath, audiofile);
-			}
+			audiofile = ToCFiles::expand_path(filepath, audiofile);
 		}
 
 		// case: multi-file album w toc
@@ -365,19 +363,20 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 
 
 Checksums ARCSMultifileAlbumCalculator::Impl::calculate(
-		const std::vector<std::string> &audiofilenames,
-		const bool &skip_front, const bool &skip_back) const
+		const std::vector<std::string>& audiofilenames,
+		const bool& first_is_first_track, const bool& last_is_last_track) const
 {
-	auto calculator { setup(types()) };
+	auto calculator { setup_calculator(types()) };
 
-	return calculator.calculate(audiofilenames, skip_front, skip_back);
+	return calculator.calculate(audiofilenames,
+			first_is_first_track, last_is_last_track);
 }
 
 
-ARCSCalculator ARCSMultifileAlbumCalculator::Impl::setup(
+ARCSCalculator ARCSMultifileAlbumCalculator::Impl::setup_calculator(
 		const arcstk::ChecksumtypeSet& types) const
 {
-	ARCSCalculator calculator { types };
+	auto calculator = ARCSCalculator { types };
 
 	if (audio_selection())
 	{

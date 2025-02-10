@@ -246,16 +246,16 @@ std::string ARIdTableLayout::do_format(InputTuple t) const
 	if (flags().no_flags()) // return ARId as default
 	{
 		using std::to_string;
-		return to_string(arid);
+		return to_string(arid) + '\n';
 	}
 
 	auto stream = std::ostringstream {};
-	auto value = std::string {};
+	auto value  = std::string {};
 
 	// TODO Use optimal_label_width?
 	//auto label_width = fieldlabels() ? optimal_width(labels()) : 0;
 	auto label_width = fieldlabels() ? 8 : 0;
-	auto label_idx = std::size_t { 0 };
+	auto label_idx   = std::size_t { 0 };
 
 	for (const auto& sflag : show_flags())
 	{

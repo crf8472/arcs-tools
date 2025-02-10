@@ -537,22 +537,25 @@ std::unique_ptr<arcsdec::FileReaderSelection>
 	ARCalcApplicationBase::create_selection(const OptionCode& request,
 		const Configuration& config) const
 {
-	auto selection =
-		std::unique_ptr<arcsdec::FileReaderSelection>{ nullptr };
-
 	if (config.is_set(request))
 	{
 		using arcsdec::InputFormatException;
 
+		auto selection =
+			std::unique_ptr<arcsdec::FileReaderSelection>{ nullptr };
+
 		const calc::IdSelection id_selection;
+
 		try
 		{
 			selection = id_selection(config.value(request));
+			return selection;
+
 		} catch (const InputFormatException& e)
 		{
 			Output::instance().output(std::string
 				{ "Failed to acquire file reader '" }
-				+ config.value(CALC::READERID)
+				+ config.value(request)
 				+ "'"
 			);
 
@@ -560,7 +563,7 @@ std::unique_ptr<arcsdec::FileReaderSelection>
 		}
 	}
 
-	return selection;
+	return std::unique_ptr<arcsdec::FileReaderSelection>{ nullptr };
 }
 
 
@@ -576,25 +579,10 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>> ARCalcApplication::calculate(
 	arcsdec::FileReaderSelection *audio_selection,
 	arcsdec::FileReaderSelection *toc_selection)
 {
-	//using ChecksumType = arcstk::checksum::type;
-
-	// XXX Determine whether to request ARCS2+1 or ARCS1-only
-	//using std::begin;
-	//using std::end;
-	//using std::find;
-	/*
-	ChecksumType types_to_calculate =
-		find(begin(types_requested), end(types_requested), ChecksumType::ARCS2)
-			!= types_requested.end()
-		? ChecksumType::ARCS2
-		: ChecksumType::ARCS1;
-	*/
 	// The types to calculate are allowed to differ from the explicitly
 	// requested types (since e.g. ARCS1 is a byproduct of ARCS2 and the
 	// type-to-calculate ARCS2 hence represents both the type-requested ARCS1
 	// as well as the type-requested ARCS2).
-
-	//calc::ARCSMultifileAlbumCalculator c { { types_to_calculate } };
 
 	auto types_to_calculate = calc::ChecksumTypeset{};
 	for (auto& t : types_requested)
@@ -603,14 +591,14 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>> ARCalcApplication::calculate(
 	}
 	calc::ARCSMultifileAlbumCalculator c { types_to_calculate };
 
-	if (toc_selection)   { c.set_toc_selection(toc_selection); }
+	if (toc_selection)   { c.set_toc_selection  (toc_selection);   }
 	if (audio_selection) { c.set_audio_selection(audio_selection); }
 
 	auto [ checksums, arid, toc ] = metafilename.empty()
 		? c.calculate(audiofilenames, as_first, as_last) //Tracks/Album w/o ToC
 		: c.calculate(audiofilenames, metafilename);     //Album: with ToC
 
-	return std::forward_as_tuple(checksums, arid, std::move(toc));
+	return std::make_tuple(checksums, arid, std::move(toc));
 }
 
 
@@ -681,7 +669,8 @@ std::unique_ptr<CalcTableCreator> ARCalcApplication::create_formatter(
 	fmt->set_format_field(ATTR::FILENAME,
 			config.is_set(CALC::NOFILENAMES) ? false : !has_toc);
 
-	ARCS_LOG(DEBUG3) << "Print FILENAME: " << fmt->formats_field(ATTR::FILENAME);
+	ARCS_LOG(DEBUG3) << "Print FILENAME: " <<
+			fmt->formats_field(ATTR::FILENAME);
 
 	auto layout { std::make_unique<StringTableLayout>() };
 
@@ -749,19 +738,22 @@ auto ARCalcApplication::do_run_calculation(const Configuration &config) const
 
 	if (checksums.size() == 0)
 	{
-		this->fatal_error("Calculation returned no checksums");
+		fatal_error("Calculation returned no checksums");
 	}
 
 	// Types to print = all types requested AND computed
 
 	std::vector<arcstk::checksum::type> types_to_print;
 	{
-		using std::begin;
-		using std::end;
-		auto computed_types { begin(checksums)->types() };
-		std::set_intersection(begin(computed_types),  end(computed_types),
-							  begin(requested_types), end(requested_types),
-							  std::back_inserter(types_to_print));
+		using std::cbegin;
+		using std::cend;
+
+		auto calculated_types { cbegin(checksums)->types() };
+
+		std::set_intersection(
+				cbegin(calculated_types), cend(calculated_types),
+				cbegin(requested_types),  cend(requested_types),
+				std::back_inserter(types_to_print));
 	}
 
 	auto result { create_formatter(config)->format(

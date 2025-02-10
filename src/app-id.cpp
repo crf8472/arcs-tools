@@ -37,9 +37,6 @@
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"             // for IdSelection
 #endif
-#ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
-#include "tools-info.hpp"             // for AvailableFileReaders
-#endif
 
 namespace arcsapp
 {
@@ -57,9 +54,7 @@ using arcstk::ARId;
 using arcstk::make_arid;
 
 // libarcsdec
-using arcsdec::ARIdCalculator;
 using arcsdec::AudioInfo;
-using arcsdec::FileReaderSelection;
 using arcsdec::ToCParser;
 
 // arcsapp
@@ -159,38 +154,18 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 
 	// Step 1: update selection and parse metafile
 
-	// TODO Move selection creation to a function as in app-calc
-	const calc::IdSelection id_selection;
+	auto toc = std::unique_ptr<ToC>{};
 
-	auto selection_for = [&config,&id_selection]
-		(const OptionCode& code, const std::string& success_msg)
-		-> std::unique_ptr<FileReaderSelection>
-			{
-				auto selection = config.is_set(code)
-					? id_selection(config.value(code))
-					: nullptr;
-
-				if (selection)
-				{
-					ARCS_LOG_INFO << success_msg << config.value(code);
-				}
-
-				return selection;
-			};
-
-	ToCParser parser; // TODO Update selection
-
-	if (config.is_set(ARIdOptions::PARSERID))
 	{
-		auto toc_selection = selection_for(ARIdOptions::PARSERID,
-				"Select requested parser ");
+		auto parser = ToCParser{};
+		auto toc_selection { create_selection(ARIdOptions::PARSERID, config) };
 		if (toc_selection)
 		{
 			parser.set_selection(toc_selection.get());
 		}
-	}
 
-	auto toc { parser.parse(metafilename) };
+		toc = parser.parse(metafilename);
+	}
 
 	// Step 2: Optionally use audiofile and calculate ARId
 
@@ -204,6 +179,8 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 
 	} else
 	{
+		// Audio file is required
+
 		if (audiofilename.empty())
 		{
 			ARCS_LOG_DEBUG << "No audio file specified, try to derive from ToC";
@@ -211,10 +188,10 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 			using calc::ToCFiles;
 
 			const auto& [ single, pw_dist, files ] = ToCFiles::get(*toc);
-
 			if (!single)
 			{
-				// TODO no file or more than 1 files => throw
+				throw std::runtime_error("Could not calculate ARId from "
+						"audio input spanning more than 1 file.");
 			}
 
 			audiofilename = ToCFiles::expand_path(metafilename, files.front());
@@ -222,21 +199,18 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 			ARCS_LOG_DEBUG << "Try to get size from file: " << audiofilename;
 		}
 
-		// Audio file is required
+		auto audio_size = std::unique_ptr<AudioSize>{};
 
-		AudioInfo a;
-
-		if (config.is_set(ARIdOptions::READERID))
 		{
-			auto audio_selection = selection_for(ARIdOptions::READERID,
-					"Select requested reader ");
-			if (audio_selection)
+			AudioInfo a;
+			auto audio_sel { create_selection(ARIdOptions::READERID, config) };
+			if (audio_sel)
 			{
-				a.set_selection(audio_selection.get());
+				a.set_selection(audio_sel.get());
 			}
-		}
 
-		const auto audio_size { a.size(audiofilename) };
+			audio_size = a.size(audiofilename);
+		}
 
 		arid = make_arid(*toc, *audio_size);
 	}

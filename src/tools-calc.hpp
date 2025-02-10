@@ -54,7 +54,7 @@ using ChecksumTypeset = std::unordered_set<arcstk::checksum::type>;
 struct ToCFiles
 {
 	/**
-	 * \brief Returns the audiofile layout of a ToC.
+	 * \brief Returns whether the list of names represent the same file.
 	 *
 	 * The first value of the returned tuple is TRUE iff \c toc references
 	 * either a single audio file or no audio files at all, otherwise FALSE.
@@ -74,6 +74,17 @@ struct ToCFiles
 	 *       <td>no audio files at all</td></tr>
 	 * </table>
 	 *
+	 * \param[in] names List of filenames
+	 *
+	 * \return Flags for audiolayout
+	 */
+	static std::tuple<bool,bool> flags(const std::vector<std::string>& names);
+
+	/**
+	 * \brief Returns the audiofile layout of a ToC.
+	 *
+	 * The first and second value are identical to flags().
+	 *
 	 * The third value is the list of filenames itself. If the ToC contains no
 	 * filenames, the list is empty. If the ToC contains multiple occurrences of
 	 * exactly one filename, the list will only contain one entry. In all other
@@ -85,8 +96,14 @@ struct ToCFiles
 	 */
 	static std::tuple<bool,bool,std::vector<std::string>> get(const ToC& toc);
 
-	static std::tuple<bool,bool> flags(const std::vector<std::string>& names);
-
+	/**
+	 * \brief Prepends path of argument 2 with path of argument 1.
+	 *
+	 * \param[in] metafilename  Name of the metadata file
+	 * \param[in] audiofilename Name of the audio file
+	 *
+	 * \return Expanded file path
+	 */
 	static std::string expand_path(const std::string& metafilename,
 		const std::string& audiofile);
 };
@@ -117,7 +134,7 @@ public:
 	 *
 	 * \param[in] type The default type to request
 	 */
-	ARCSMultifileAlbumCalculator(const ChecksumTypeset& types);
+	explicit ARCSMultifileAlbumCalculator(const ChecksumTypeset& types);
 
 	/**
 	 * \brief Constructor.
