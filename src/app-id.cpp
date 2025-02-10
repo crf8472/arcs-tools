@@ -54,11 +54,13 @@ const auto id = RegisterApplicationType<ARIdApplication>("id");
 
 // libarcstk
 using arcstk::ARId;
+using arcstk::make_arid;
 
 // libarcsdec
 using arcsdec::ARIdCalculator;
 using arcsdec::AudioInfo;
 using arcsdec::FileReaderSelection;
+using arcsdec::ToCParser;
 
 // arcsapp
 using arid::ARIdTableLayout;
@@ -152,78 +154,91 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 {
 	// Compute requested values
 
-	const auto metafilename  = config.argument(0);
-	const auto audiofilename = config.value(ARIdOptions::AUDIOFILE);
+	const auto metafilename = config.argument(0);
+	auto audiofilename      = config.value(ARIdOptions::AUDIOFILE);
+
+	// Step 1: update selection and parse metafile
+
+	// TODO Move selection creation to a function as in app-calc
+	const calc::IdSelection id_selection;
+
+	auto selection_for = [&config,&id_selection]
+		(const OptionCode& code, const std::string& success_msg)
+		-> std::unique_ptr<FileReaderSelection>
+			{
+				auto selection = config.is_set(code)
+					? id_selection(config.value(code))
+					: nullptr;
+
+				if (selection)
+				{
+					ARCS_LOG_INFO << success_msg << config.value(code);
+				}
+
+				return selection;
+			};
+
+	ToCParser parser; // TODO Update selection
+
+	if (config.is_set(ARIdOptions::PARSERID))
+	{
+		auto toc_selection = selection_for(ARIdOptions::PARSERID,
+				"Select requested parser ");
+		if (toc_selection)
+		{
+			parser.set_selection(toc_selection.get());
+		}
+	}
+
+	auto toc { parser.parse(metafilename) };
+
+	// Step 2: Optionally use audiofile and calculate ARId
 
 	std::unique_ptr<ARId> arid = nullptr;
 
+	if (toc->complete())
 	{
-		// Configure selections (e.g. --reader and --parser)
+		// Audio file is not required
 
-		const calc::IdSelection id_selection;
+		arid = make_arid(*toc);
 
-		auto selection_for = [&config,&id_selection]
-			(const OptionCode& code, const std::string& success_msg)
-			-> std::unique_ptr<FileReaderSelection>
-				{
-					auto selection = config.is_set(code)
-						? id_selection(config.value(code))
-						: nullptr;
-
-					if (!selection)
-					{
-						ARCS_LOG_WARNING << "Could not select requested id: "
-							<< config.value(code);
-					}
-
-					ARCS_LOG_INFO << success_msg << config.value(code);
-
-					return selection;
-				};
-
-		/*
-		auto audio_selection = config.is_set(ARIdOptions::READERID)
-			? id_selection(config.value(ARIdOptions::READERID))
-			: nullptr;
-
-		if (audio_selection)
+	} else
+	{
+		if (audiofilename.empty())
 		{
-			ARCS_LOG_INFO << "Select reader " <<
-				config.value(ARIdOptions::READERID);
+			ARCS_LOG_DEBUG << "No audio file specified, try to derive from ToC";
+
+			using calc::ToCFiles;
+
+			const auto& [ single, pw_dist, files ] = ToCFiles::get(*toc);
+
+			if (!single)
+			{
+				// TODO no file or more than 1 files => throw
+			}
+
+			audiofilename = ToCFiles::expand_path(metafilename, files.front());
+
+			ARCS_LOG_DEBUG << "Try to get size from file: " << audiofilename;
 		}
 
-		auto toc_selection = config.is_set(ARIdOptions::PARSERID)
-			? id_selection(config.value(ARIdOptions::PARSERID))
-			: nullptr;
-
-		if (toc_selection)
-		{
-			ARCS_LOG_INFO << "Select parser " <<
-				config.value(ARIdOptions::PARSERID);
-		}
-		*/
-
-		// If no selections are assigned, the libarcsdec default selections
-		// will be used.
+		// Audio file is required
 
 		AudioInfo a;
-		auto audio_selection = selection_for(ARIdOptions::READERID,
-				"Select reader ");
-		if (audio_selection)
+
+		if (config.is_set(ARIdOptions::READERID))
 		{
-			a.set_selection(audio_selection.get());
+			auto audio_selection = selection_for(ARIdOptions::READERID,
+					"Select requested reader ");
+			if (audio_selection)
+			{
+				a.set_selection(audio_selection.get());
+			}
 		}
 
-		ARIdCalculator c;
-		auto toc_selection = selection_for(ARIdOptions::PARSERID,
-				"Select parser ");
-		if (toc_selection)
-		{
-			c.set_selection(toc_selection.get());
-		}
-		c.set_audio(a);
+		const auto audio_size { a.size(audiofilename) };
 
-		arid = c.calculate(metafilename, audiofilename);
+		arid = make_arid(*toc, *audio_size);
 	}
 
 	if (!arid) { this->fatal_error("Could not compute AccurateRip id."); }
@@ -261,12 +276,6 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 	auto id = RichARId{*arid, std::move(layout),
 		config.value(ARIdOptions::URLPREFIX)};
 
-	//if (not result_str.empty() and result_str.back() != '\n')
-	//{
-	//	result_str += '\n';
-	//}
-
-	//return { EXIT_SUCCESS, std::move(r) };
 	return std::make_pair(EXIT_SUCCESS,
 			std::make_unique<ResultObject<RichARId>>(std::move(id)));
 }
