@@ -35,17 +35,27 @@ whether arcs-tools builds out-of-the-box on BSDs but don't expect major issues.
   in LaTeX
 
 
-## Building the executable as a demo
+## Building the executable without system-wide installation
 
 We presuppose you have downloaded and unpacked or git-cloned arcs-tools to a
 folder named ``arcs-tools``. Then, for just testing arcs-tools, do:
 
 	$ cd arcs-tools      # your arcs-tools root folder where README.md resides
-	$ mkdir build && cd build  # create build folder for out-of-source-build
-	$ cmake -DWITH_SUBMODULES=ON ..   # pull libarcstk+libarcsdec in build-tree
-	$ cmake --build .    # perform the actual build
 
-This will create the binary ``arcstk`` linked to the locally compiled
+If you are interested in a particular branch, check this branch out now:
+
+	$ git checkout $BRANCHNAME
+
+If you want to build from ``main`` you do not need to checkout any branch.
+
+	$ git submodule init
+	$ git submodule update     # pull libarcstk+libarcsdec in build-tree
+	$ mkdir build && cd build  # create build folder for out-of-source-build
+	$ cmake -DWITH_SUBMODULES=ON ..
+	$ cmake --build .          # perform the actual build
+
+This will checkout libarcstk and libarcsdec into the local build-tree. When
+building, the binary ``arcstk`` is created linked to those locally compiled
 dependencies with all optimizations and without debug-symbols and tests. Note
 that this process will only succeed if all default dependencies of libarcsdec
 are available! You can create ``./libs/libarcsdec/build`` and configure
