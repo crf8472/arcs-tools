@@ -140,7 +140,8 @@ std::unique_ptr<Options> ARIdConfigurator::do_configure_options(
 // ARIdApplication
 
 
-bool ARIdApplication::do_calculation_requested(const Configuration& config) const
+bool ARIdApplication::do_calculation_requested(const Configuration& config)
+	const
 {
 	return config.is_set(ARIdOptions::AUDIOFILE) || not config.no_arguments();
 }
@@ -241,9 +242,9 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 		const bool print_labels = !config.is_set(ARIdOptions::NOLABELS)
 			and (
 			1 < config.is_set(ARIdOptions::ID)
-			+ config.is_set(ARIdOptions::URL)
-			+ config.is_set(ARIdOptions::DBID)
-			+ config.is_set(ARIdOptions::CDDBID));
+			+   config.is_set(ARIdOptions::URL)
+			+   config.is_set(ARIdOptions::DBID)
+			+   config.is_set(ARIdOptions::CDDBID));
 
 		layout = std::make_unique<ARIdTableLayout>(
 			print_labels,
