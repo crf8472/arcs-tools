@@ -9,10 +9,28 @@
 #endif
 
 
-TEST_CASE ( "audiofile_layout()", "" )
+TEST_CASE ( "ToCFiles", "" )
 {
-	using arcsapp::calc::audiofile_layout;
+	using arcsapp::calc::ToCFiles;
 	using arcstk::make_toc;
+
+	SECTION ( "expand_path() with absolute parent and relative audio" )
+	{
+		const auto metafile   = "/home/user/dir1/dir2/mymetafile.cue";
+
+		const auto audiofile1 = "./tracks/mytrack01.flac";
+		const auto audiofile2 = "tracks/mytrack01.flac";
+
+		const auto p1 = ToCFiles::expand_path(metafile, audiofile1);
+
+		CHECK ( p1 == "/home/user/dir1/dir2/tracks/mytrack01.flac" );
+
+		const auto p2 = ToCFiles::expand_path(metafile, audiofile1);
+
+		CHECK ( p2 == "/home/user/dir1/dir2/tracks/mytrack01.flac" );
+
+		CHECK ( p1 == p2 );
+	}
 
 	SECTION ( "Audiolayout with no filenames" )
 	{
@@ -21,11 +39,12 @@ TEST_CASE ( "audiofile_layout()", "" )
 			// leadout
 			253038,
 			// offsets
-			std::vector<int32_t>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
+			{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
 			87733, 106333, 139495, 157863, 198495, 213368, 225320, 234103 }
+			// no filenames => special case true/false
 		);
 
-		const auto tuple = audiofile_layout(*toc0);
+		const auto tuple = ToCFiles::get(*toc0);
 
 		CHECK ( std::get<0>(tuple) == true  );
 		CHECK ( std::get<1>(tuple) == false );
@@ -50,12 +69,13 @@ TEST_CASE ( "audiofile_layout()", "" )
 			"file", "file", "file", "file", "file" }
 		);
 
-		auto tuple = audiofile_layout(*toc0);
+		const auto tuple = ToCFiles::get(*toc0);
 
 		CHECK ( std::get<0>(tuple) == true );
 		CHECK ( std::get<1>(tuple) == true );
 
-		auto filenames = std::get<2>(tuple);
+		const auto filenames = std::get<2>(tuple);
+
 		CHECK ( filenames.size() == 1 );
 	}
 
@@ -74,12 +94,13 @@ TEST_CASE ( "audiofile_layout()", "" )
 			"file11", "file12", "file13", "file14", "file15" }
 		);
 
-		auto tuple = audiofile_layout(*toc0);
+		const auto tuple = ToCFiles::get(*toc0);
 
 		CHECK ( std::get<0>(tuple) == false );
 		CHECK ( std::get<1>(tuple) == true  );
 
-		auto filenames = std::get<2>(tuple);
+		const auto filenames = std::get<2>(tuple);
+
 		CHECK ( filenames.size() == 15 );
 	}
 
@@ -93,28 +114,20 @@ TEST_CASE ( "audiofile_layout()", "" )
 			std::vector<int32_t>{ 33, 5225, 7390, 23380, 35608, 49820, 69508,
 			87733, 106333, 139495, 157863, 198495, 213368, 225320, 234103 },
 			// filenames
-			std::vector<std::string>{ "file1", "file1", "file2", "file2",
-			"file2", "file3", "file3", "file4", "file4", "file4",
-			"file4", "file5", "file5", "file5", "file5" }
+			std::vector<std::string>{ "file", "file", "file", "file", "file",
+					"file", "file",   "file", "file", "file", "file", "file",
+					"file", "file",   "file_with_completely_different_name" }
 		);
 
-		auto tuple = audiofile_layout(*toc0);
+		const auto tuple = ToCFiles::get(*toc0);
 
 		CHECK ( std::get<0>(tuple) == false );
 		CHECK ( std::get<1>(tuple) == false );
 
-		auto filenames = std::get<2>(tuple);
-		CHECK ( filenames.size() == 15 );
+		const auto filenames = std::get<2>(tuple);
+
+		CHECK ( filenames.empty() );
 	}
-
-}
-
-
-TEST_CASE ( "ARCSMultifileAlbumCalculator", "[arcsmultifilealbumcalculator]" )
-{
-	using arcsapp::calc::ARCSMultifileAlbumCalculator;
-
-	// TODO This needs mocking
 }
 
 
@@ -130,6 +143,14 @@ TEST_CASE ( "HexLayout", "[hexlayout]" )
 	CHECK ( hex_layout->format(Checksum { 1023 }, 4) == "03FF" );
 	CHECK ( hex_layout->format(Checksum { 1023 }, 6) == "0003FF" );
 }
+
+
+// TEST_CASE ( "ARCSMultifileAlbumCalculator", "[arcsmultifilealbumcalculator]" )
+// {
+// 	using arcsapp::calc::ARCSMultifileAlbumCalculator;
+//
+// 	// TODO This needs mocking
+// }
 
 
 //TEST_CASE ( "CalcResultFormatter", "[calcresultformatter]" )

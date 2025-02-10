@@ -1618,10 +1618,10 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 		// Verify pairwise distinct audio files
 
-		const auto& [ single_audio_file, pairwse_distinct_files, audiofiles ] =
-			calc::audiofile_layout(*toc);
+		const auto& [ single_audio_file, pairwise_distinct_files ] =
+			calc::ToCFiles::flags(toc->filenames());
 
-		if (!single_audio_file && !pairwse_distinct_files)
+		if (!single_audio_file && !pairwise_distinct_files)
 		{
 			throw std::runtime_error("Images with audio files that contain"
 				" some but not all tracks are currently unsupported");

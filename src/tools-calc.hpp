@@ -47,35 +47,50 @@ using arcsdec::FileReaderSelection;
 // FIXME This has to be made available from arcsdec/calculators.hpp
 using ChecksumTypeset = std::unordered_set<arcstk::checksum::type>;
 
+
 /**
- * \brief Returns the audiofile layout of a ToC.
- *
- * The first value of the returned tuple is TRUE iff \c toc references either
- * a single audio file or no audio files at all, otherwise FALSE.
- *
- * The second value of the returned tuple is TRUE iff \c toc references a
- * non-empty, pairwise distinct list of audio files, otherwise FALSE.
- *
- * <table>
- *   <tr><td><tt><TRUE, TRUE></tt></td>
- *        <td>only one file</td></tr>
- *   <tr><td><tt><FALSE, TRUE></tt></td>
- *       <td>multiple files, one per track</td></tr>
- *   <tr><td><tt><FALSE, FALSE></tt></td>
- *       <td>multiple files, but some files contain more than 1 track</td></tr>
- *    <tr><td><tt><TRUE, FALSE></tt></td>
- *       <td>no audio files at all</td></tr>
- * </table>
- *
- * The third value is the list of filenames itself. If the ToC contains no
- * filenames, the list is empty. If the ToC contains multiple occurrences of
- * exactly one filename, the list will only contain one entry.
- *
- * \param[in] toc The ToC to analyze
- *
- * \return Flags for audiolayout, list of audio files
+ * \brief Analyze ToC for filenames and adjust file paths.
  */
-std::tuple<bool,bool,std::vector<std::string>> audiofile_layout(const ToC& toc);
+struct ToCFiles
+{
+	/**
+	 * \brief Returns the audiofile layout of a ToC.
+	 *
+	 * The first value of the returned tuple is TRUE iff \c toc references
+	 * either a single audio file or no audio files at all, otherwise FALSE.
+	 *
+	 * The second value of the returned tuple is TRUE iff \c toc references a
+	 * non-empty, pairwise distinct list of audio files, otherwise FALSE.
+	 *
+	 * <table>
+	 *   <tr><td><tt><TRUE, TRUE></tt></td>
+	 *        <td>only one file</td></tr>
+	 *   <tr><td><tt><FALSE, TRUE></tt></td>
+	 *       <td>multiple files, one per track</td></tr>
+	 *   <tr><td><tt><FALSE, FALSE></tt></td>
+	 *       <td>multiple files, but some files contain more than 1 track</td>
+	 *       </tr>
+	 *    <tr><td><tt><TRUE, FALSE></tt></td>
+	 *       <td>no audio files at all</td></tr>
+	 * </table>
+	 *
+	 * The third value is the list of filenames itself. If the ToC contains no
+	 * filenames, the list is empty. If the ToC contains multiple occurrences of
+	 * exactly one filename, the list will only contain one entry. In all other
+	 * cases, the original list will be returned.
+	 *
+	 * \param[in] toc The ToC to analyze
+	 *
+	 * \return Flags for audiolayout, list of audio files
+	 */
+	static std::tuple<bool,bool,std::vector<std::string>> get(const ToC& toc);
+
+	static std::tuple<bool,bool> flags(const std::vector<std::string>& names);
+
+	static std::string expand_path(const std::string& metafilename,
+		const std::string& audiofile);
+};
+
 
 /**
  * \brief Create a selection for a specific FileReader Id.
