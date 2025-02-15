@@ -50,32 +50,31 @@ namespace calc
 {
 
 using arcsdec::ARCSCalculator;
-using arcsdec::ToCParser;
 using arcsdec::FileReaderSelection;
+using arcsdec::ToCParser;
 
 
 std::tuple<bool,bool,std::vector<std::string>> ToCFiles::get(const ToC& toc)
 {
-	const auto list { toc.filenames() };
+	const auto toc_list { toc.filenames() };
 
-	const auto& [ is_single, pairwise_distinct ] = ToCFiles::flags(list);
+	const auto& [ is_single, pairwise_distinct ] = ToCFiles::flags(toc_list);
 
-	auto single_name = std::vector<std::string>{};
-
-	if (!list.empty())
+	if (!pairwise_distinct)
 	{
-		if (is_single)
-		{
-			single_name.emplace_back(list.front());
-		}
-
-		// not empty, not single and not pairwise_distinct: error
+		return { is_single, pairwise_distinct, {/* no filenames */} };
 	}
 
-	return std::make_tuple(is_single, pairwise_distinct,
-		pairwise_distinct
-			? (is_single ? single_name : list)
-			: (is_single ? single_name : std::vector<std::string>{}));
+	// Since the filenames are pairwise distinct,
+	// return either only the first (if single) or the entire list
+
+	if (is_single && !toc_list.empty())
+	{
+		return { is_single, pairwise_distinct,
+			std::vector<std::string>{ toc_list.front() } };
+	}
+
+	return { is_single, pairwise_distinct, toc_list };
 }
 
 
@@ -83,7 +82,7 @@ std::tuple<bool,bool> ToCFiles::flags(const std::vector<std::string>& filenames)
 {
 	if (filenames.empty())
 	{
-		return std::make_tuple(true, false);
+		return { true, false };
 	}
 
 	using std::cbegin;
@@ -94,10 +93,10 @@ std::tuple<bool,bool> ToCFiles::flags(const std::vector<std::string>& filenames)
 
 	const bool is_single { set.size() == 1 };
 
-	return std::make_tuple(
-			is_single,  /*single file?*/
-			is_single or set.size() == filenames.size() /*pairwise distinct ?*/
-	);
+	return {
+		is_single, /*single file ?*/
+		is_single or set.size() == filenames.size() /*pairwise distinct ?*/
+	};
 }
 
 
@@ -128,18 +127,18 @@ std::unique_ptr<arcsdec::FileReaderSelection> IdSelection::operator()(
 }
 
 
-// ARCSMultifileAlbumCalculator
+// ChecksumCalculator
 
 
-ARCSMultifileAlbumCalculator::ARCSMultifileAlbumCalculator()
-	: ARCSMultifileAlbumCalculator(
+ChecksumCalculator::ChecksumCalculator()
+	: ChecksumCalculator(
 			{ arcstk::checksum::type::ARCS1, arcstk::checksum::type::ARCS2 })
 {
 	// empty
 };
 
 
-ARCSMultifileAlbumCalculator::ARCSMultifileAlbumCalculator(
+ChecksumCalculator::ChecksumCalculator(
 		const ChecksumTypeset& types)
 	: types_           { types }
 	, audio_selection_ { nullptr }
@@ -149,12 +148,12 @@ ARCSMultifileAlbumCalculator::ARCSMultifileAlbumCalculator(
 }
 
 
-ARCSMultifileAlbumCalculator::~ARCSMultifileAlbumCalculator() noexcept
+ChecksumCalculator::~ChecksumCalculator() noexcept
 = default;
 
 
 std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
-	ARCSMultifileAlbumCalculator::calculate(
+	ChecksumCalculator::calculate(
 			const std::vector<std::string> &audiofilenames,
 			const std::string &metafilename) const
 {
@@ -170,6 +169,8 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 
 	if (audiofilenames.empty())
 	{
+		// No audio files passed? => Use from ToC
+
 		return calculate(std::move(toc), file::path(metafilename));
 	}
 
@@ -200,7 +201,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 		const auto [ checksums, arid ] =
 			calculator.calculate(audiofilenames.front(), *toc);
 
-		return std::make_tuple(checksums, arid, std::move(toc));
+		return { checksums, arid, std::move(toc) };
 	}
 
 	// case: multi-file album w ToC (== "EAC-styled layout")
@@ -209,15 +210,15 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 		const auto chksums { calculator.calculate(audiofilenames, true, true) };
 		const auto arid    { make_arid(*toc) };
 
-		return std::make_tuple(chksums, *arid, std::move(toc));
+		return { chksums, *arid, std::move(toc) };
 	}
 
-	return std::make_tuple(Checksums{ 0 }, arcstk::EmptyARId, nullptr);
+	return { Checksums{ 0 }, arcstk::EmptyARId, nullptr };
 }
 
 
 std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
-	ARCSMultifileAlbumCalculator::calculate(
+	ChecksumCalculator::calculate(
 		const std::vector<std::string>& audiofilenames,
 		const bool first_is_first_track, const bool last_is_last_track) const
 {
@@ -226,50 +227,50 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 	const auto checksums { calculator.calculate(audiofilenames,
 			first_is_first_track, last_is_last_track) };
 
-	return std::make_tuple(checksums, arcstk::EmptyARId, nullptr);
+	return { checksums, arcstk::EmptyARId, nullptr };
 }
 
 
-void ARCSMultifileAlbumCalculator::set_types(const ChecksumTypeset& types)
+void ChecksumCalculator::set_types(const ChecksumTypeset& types)
 {
 	types_ = types;
 }
 
 
-ChecksumTypeset ARCSMultifileAlbumCalculator::types() const
+ChecksumTypeset ChecksumCalculator::types() const
 {
 	return types_;
 }
 
 
-void ARCSMultifileAlbumCalculator::set_toc_selection(
+void ChecksumCalculator::set_toc_selection(
 		FileReaderSelection *selection)
 {
 	toc_selection_ = selection;
 }
 
 
-FileReaderSelection* ARCSMultifileAlbumCalculator::toc_selection() const
+FileReaderSelection* ChecksumCalculator::toc_selection() const
 {
 	return toc_selection_;
 }
 
 
-void ARCSMultifileAlbumCalculator::set_audio_selection(
+void ChecksumCalculator::set_audio_selection(
 		FileReaderSelection *selection)
 {
 	audio_selection_ = selection;
 }
 
 
-FileReaderSelection* ARCSMultifileAlbumCalculator::audio_selection() const
+FileReaderSelection* ChecksumCalculator::audio_selection() const
 {
 	return audio_selection_;
 }
 
 
 std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
-	ARCSMultifileAlbumCalculator::calculate(
+	ChecksumCalculator::calculate(
 		std::unique_ptr<ToC> toc, const std::string& filepath) const
 {
 	ARCS_LOG_DEBUG << "Calculate result from ToC"
@@ -299,7 +300,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 		// case: single-file album w ToC
 		const auto [ checksums, arid ] = calculator.calculate(audiofile, *toc);
 
-		return std::make_tuple(checksums, arid, std::move(toc));
+		return { checksums, arid, std::move(toc) };
 	} else
 	{
 		for (auto& audiofile : audiofiles)
@@ -311,12 +312,12 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 		const auto checksums { calculator.calculate(audiofiles, true, true) };
 		const auto arid      { make_arid(*toc) };
 
-		return std::make_tuple(checksums, *arid, std::move(toc));
+		return { checksums, *arid, std::move(toc) };
 	}
 }
 
 
-ARCSCalculator ARCSMultifileAlbumCalculator::setup_calculator() const
+ARCSCalculator ChecksumCalculator::setup_calculator() const
 {
 	auto calculator { ARCSCalculator { types() } };
 
@@ -329,7 +330,7 @@ ARCSCalculator ARCSMultifileAlbumCalculator::setup_calculator() const
 }
 
 
-ToCParser ARCSMultifileAlbumCalculator::setup_parser() const
+ToCParser ChecksumCalculator::setup_parser() const
 {
 	auto parser { ToCParser{} };
 

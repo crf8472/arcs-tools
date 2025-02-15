@@ -139,7 +139,7 @@ struct IdSelection final
 /**
  * \brief Wrapper for ARCSCalculator to handle input with multiple audio files.
  */
-class ARCSMultifileAlbumCalculator final
+class ChecksumCalculator final
 {
 public:
 
@@ -148,19 +148,19 @@ public:
 	 *
 	 * Uses ARCS2 as the default type to request.
 	 */
-	ARCSMultifileAlbumCalculator();
+	ChecksumCalculator();
 
 	/**
 	 * \brief Default Constructor
 	 *
 	 * \param[in] type The default type to request
 	 */
-	explicit ARCSMultifileAlbumCalculator(const ChecksumTypeset& types);
+	explicit ChecksumCalculator(const ChecksumTypeset& types);
 
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	~ARCSMultifileAlbumCalculator() noexcept;
+	~ChecksumCalculator() noexcept;
 
 	/**
 	 * \brief Calculate ARCS values of the CD image represented by the specified

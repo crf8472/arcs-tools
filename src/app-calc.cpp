@@ -39,7 +39,7 @@
 #include "tools-arid.hpp"           // for ARIdLayout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
-#include "tools-calc.hpp"           // for ARCSMultifileAlbumCalculator
+#include "tools-calc.hpp"           // for ChecksumCalculator
 #endif
 #ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
 #include "tools-info.hpp"           // for AvailableFileReaders
@@ -571,10 +571,10 @@ std::unique_ptr<arcsdec::FileReaderSelection>
 
 
 std::tuple<Checksums, ARId, std::unique_ptr<ToC>> ARCalcApplication::calculate(
-	const std::string &metafilename,
 	const std::vector<std::string> &audiofilenames,
-	const bool as_first,
-	const bool as_last,
+	const std::string &metafilename,
+	const bool first_file_is_first_track,
+	const bool last_file_is_last_track,
 	const std::vector<arcstk::checksum::type> &types_requested,
 	arcsdec::FileReaderSelection* audio_selection,
 	arcsdec::FileReaderSelection* toc_selection)
@@ -589,14 +589,15 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>> ARCalcApplication::calculate(
 	{
 		types_to_calculate.insert(t);
 	}
-	calc::ARCSMultifileAlbumCalculator c { types_to_calculate };
 
+	calc::ChecksumCalculator c { types_to_calculate };
 	if (toc_selection)   { c.set_toc_selection  (toc_selection);   }
 	if (audio_selection) { c.set_audio_selection(audio_selection); }
 
 	auto [ checksums, arid, toc ] = metafilename.empty()
-		? c.calculate(audiofilenames, as_first, as_last) //Tracks/Album w/o ToC
-		: c.calculate(audiofilenames, metafilename);     //Album: with ToC
+		? c.calculate(audiofilenames,                    //Tracks/Album w/o ToC
+				first_file_is_first_track, last_file_is_last_track)
+		: c.calculate(audiofilenames, metafilename);     //Album: w ToC
 
 	return std::make_tuple(checksums, arid, std::move(toc));
 }
@@ -727,8 +728,8 @@ auto ARCalcApplication::do_run_calculation(const Configuration &config) const
 	// Perform the actual calculation
 
 	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(
-			config.value(CALC::METAFILE),
 			*config.arguments(),
+			config.value(CALC::METAFILE),
 			config.is_set(CALC::FIRST),
 			config.is_set(CALC::LAST),
 			requested_types,

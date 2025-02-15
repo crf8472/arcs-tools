@@ -1570,8 +1570,8 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	// Calculate the actual ARCSs from input files
 
 	auto [ checksums, mine_arid, toc ] = ARCalcApplication::calculate(
-			config.value(VERIFY::METAFILE),
 			*config.arguments(),
+			config.value(VERIFY::METAFILE),
 			!config.is_set(VERIFY::NOFIRST),
 			!config.is_set(VERIFY::NOLAST),
 			{ arcstk::checksum::type::ARCS2 }, /* force ARCSv1 + ARCSv2 */

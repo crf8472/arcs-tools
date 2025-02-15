@@ -308,8 +308,8 @@ public:
 	 *
 	 * \param[in] metafilename    Filename of the ToC file
 	 * \param[in] audiofilenames  Filenames of the audio files
-	 * \param[in] as_first        Flag to indicate album first track
-	 * \param[in] as_last         Flag to indicate album last track
+	 * \param[in] first_file_is_first_track   Flag to indicate album first track
+	 * \param[in] last_file_is_last_track     Flag to indicate album last track
 	 * \param[in] types           The checksum types requested
 	 * \param[in] audio_selection The selection for audio readers
 	 * \param[in] toc_selection   The selection for ToC parsers
@@ -317,13 +317,13 @@ public:
 	 * \return Calculation result
 	 */
 	static std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
-		const std::string &metafilename,
 		const std::vector<std::string> &audiofilenames,
-		const bool as_first,
-		const bool as_last,
+		const std::string &metafilename,
+		const bool first_file_is_first_track,
+		const bool last_file_is_last_track,
 		const std::vector<arcstk::checksum::type> &types,
-		arcsdec::FileReaderSelection *audio_selection,
-		arcsdec::FileReaderSelection *toc_selection);
+		arcsdec::FileReaderSelection* audio_selection,
+		arcsdec::FileReaderSelection* toc_selection);
 
 private:
 
