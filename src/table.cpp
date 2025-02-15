@@ -620,7 +620,7 @@ std::vector<std::string> DefaultSplitter::do_split(
 	// Split into substrings separated by a single space
 	const auto delimited { details::split(str, separator) };
 
-	auto parts = std::vector<std::string> { };
+	auto parts = std::vector<std::string>{};
 
 	using std::begin;
 	using std::end;
@@ -1364,7 +1364,7 @@ bool operator==(const DecoratedStringTable& lhs,
 // TablePrinter::Impl
 
 
-class TablePrinter::Impl
+class TablePrinter::Impl final
 {
 public:
 
@@ -1402,7 +1402,8 @@ protected:
 	 * Calls empty_cell(), col_label(), and row_worker().
 	 */
 	void col_labels(std::ostream& o, const PrintableTable& t,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l) const;
+		const std::vector<std::size_t>& col_widths, const StringTableLayout& l)
+		const;
 
 	/**
 	 * \brief Print row of cells.
@@ -1410,7 +1411,8 @@ protected:
 	 * Calls row_worker().
 	 */
 	void row(std::ostream& o, const PrintableTable& t, const int row,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l) const;
+		const std::vector<std::size_t>& col_widths, const StringTableLayout& l)
+		const;
 
 	/**
 	 * \brief Print all rows.
@@ -1418,7 +1420,8 @@ protected:
 	 * Calls row().
 	 */
 	void rows(std::ostream& o, const PrintableTable& t,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l) const;
+		const std::vector<std::size_t>& col_widths, const StringTableLayout& l)
+		const;
 
 	using print_label_func = std::function<void(std::ostream& o,
 			const PrintableTable& t, const int row, const std::size_t width)>;
@@ -1434,22 +1437,22 @@ protected:
 	 * delimiter printing functions.
 	 */
 	void row_worker(std::ostream& o, const PrintableTable& t,
-		const int row, std::vector<std::size_t> col_widths,
+		const int row, const std::vector<std::size_t>& col_widths,
 		const StringTableLayout& l, const print_label_func& label_f,
 		const print_cell_func& cell_f) const;
 
 	/**
 	 * \brief Worker to print single row label.
 	 */
-	void row_label_worker(std::ostream& o, const PrintableTable& t, const int row,
-		const print_label_func& f) const;
+	void row_label_worker(std::ostream& o, const PrintableTable& t,
+		const int row, const print_label_func& f) const;
 
 	/**
 	 * \brief Worker to print all cells of a row.
 	 */
-	void row_cells_worker(std::ostream& o, const PrintableTable& t, const int row,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l,
-		const print_cell_func& f) const;
+	void row_cells_worker(std::ostream& o, const PrintableTable& t,
+		const int row, const std::vector<std::size_t>& col_widths,
+		const StringTableLayout& l, const print_cell_func& f) const;
 
 	/**
 	 * \brief Print single cell.
@@ -1483,7 +1486,8 @@ protected:
 	void row_delim(std::ostream& o, const PrintableTable& t,
 		const StringTableLayout& l, const std::size_t width) const;
 	void row_delimiters(std::ostream& o, const PrintableTable& t,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l) const;
+		const std::vector<std::size_t>& col_widths, const StringTableLayout& l)
+		const;
 
 	std::vector<std::size_t> printed_widths(const PrintableTable& t,
 		const StringTableLayout& l) const;
@@ -1519,7 +1523,8 @@ void TablePrinter::Impl::col_label(std::ostream& o, const PrintableTable& t,
 
 
 void TablePrinter::Impl::col_labels(std::ostream& o, const PrintableTable& t,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l) const
+		const std::vector<std::size_t>& col_widths, const StringTableLayout& l)
+		const
 {
 	// Wrapper for row_label()
 	const auto row_label_f = [&](std::ostream& out,
@@ -1546,7 +1551,7 @@ void TablePrinter::Impl::col_labels(std::ostream& o, const PrintableTable& t,
 
 
 void TablePrinter::Impl::row(std::ostream& o, const PrintableTable& t,
-		const int row, std::vector<std::size_t> col_widths,
+		const int row, const std::vector<std::size_t>& col_widths,
 		const StringTableLayout& l) const
 {
 	// Wrapper for row_label()
@@ -1566,7 +1571,8 @@ void TablePrinter::Impl::row(std::ostream& o, const PrintableTable& t,
 
 
 void TablePrinter::Impl::rows(std::ostream& o, const PrintableTable& t,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l) const
+		const std::vector<std::size_t>& col_widths,
+		const StringTableLayout& l) const
 {
 	// Table rows
 	for (auto r = std::size_t { 0 }; r < t.rows(); ++r)
@@ -1579,7 +1585,7 @@ void TablePrinter::Impl::rows(std::ostream& o, const PrintableTable& t,
 
 
 void TablePrinter::Impl::row_worker(std::ostream& o, const PrintableTable& t,
-		const int row, std::vector<std::size_t> col_widths,
+		const int row, const std::vector<std::size_t>& col_widths,
 		const StringTableLayout& l, const print_label_func& row_label_f,
 		const print_cell_func& cell_f) const
 {
@@ -1618,7 +1624,7 @@ void TablePrinter::Impl::row_label_worker(std::ostream& o,
 
 void TablePrinter::Impl::row_cells_worker(std::ostream& o,
 		const PrintableTable& t, const int row,
-		std::vector<std::size_t> col_widths, const StringTableLayout& l,
+		const std::vector<std::size_t>& col_widths, const StringTableLayout& l,
 		const print_cell_func& cell_f) const
 {
 	const auto rightmost_col = t.cols() > 0 ? t.cols() - 1 : 0;
@@ -1831,7 +1837,7 @@ void TablePrinter::Impl::row_delim(std::ostream& o, const PrintableTable& /*t\*/
 
 
 void TablePrinter::Impl::row_delimiters(std::ostream& o,
-		const PrintableTable& t, std::vector<std::size_t> col_widths,
+		const PrintableTable& t, const std::vector<std::size_t>& col_widths,
 		const StringTableLayout& l) const
 {
 	// Header row for row labels column
