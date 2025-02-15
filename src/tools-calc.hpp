@@ -7,25 +7,34 @@
  * \brief Helper tools for ARCS calculation.
  */
 
-#include <memory>      // for unique_ptr
-#include <string>      // for string
-#include <tuple>       // for tuple
-#include <vector>      // for vector
-
-#ifndef __LIBARCSTK_IDENTIFIER_HPP__
-#include <arcstk/identifier.hpp>       // for ARId
-#endif
-#ifndef __LIBARCSTK_CALCULATE_HPP__
-#include <arcstk/calculate.hpp>        // for Checksums, type
+#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"                 // for Layout
 #endif
 
 #ifndef __LIBARCSDEC_SELECTION_HPP__
 #include <arcsdec/selection.hpp>       // FileReaderSelection
 #endif
 
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"                 // for Layout
+#ifndef __LIBARCSTK_IDENTIFIER_HPP__
+#include <arcstk/identifier.hpp>       // for ARId
 #endif
+#ifndef __LIBARCSTK_CALCULATE_HPP__
+#include <arcstk/calculate.hpp>        // for Checksums, checksum::type
+#endif
+
+#include <memory>      // for unique_ptr
+#include <string>      // for string
+#include <tuple>       // for tuple
+#include <vector>      // for vector
+
+
+// forward declarations
+namespace arcsdec::v_1_0_0
+{
+class ARCSCalculator;
+class ToCParser;
+} // namespace arcsdec::v_1_0_0
+
 
 namespace arcsapp
 {
@@ -42,7 +51,9 @@ using arcstk::ARId;
 using arcstk::ToC;
 using arcstk::Checksums;
 
+using arcsdec::ARCSCalculator;
 using arcsdec::FileReaderSelection;
+using arcsdec::ToCParser;
 
 // FIXME This has to be made available from arcsdec/calculators.hpp
 using ChecksumTypeset = std::unordered_set<arcstk::checksum::type>;
@@ -51,7 +62,7 @@ using ChecksumTypeset = std::unordered_set<arcstk::checksum::type>;
 /**
  * \brief Analyze ToC for filenames and adjust file paths.
  */
-struct ToCFiles
+struct ToCFiles final
 {
 	/**
 	 * \brief Returns whether the list of names represent the same file.
@@ -112,7 +123,7 @@ struct ToCFiles
 /**
  * \brief Create a selection for a specific FileReader Id.
  */
-struct IdSelection
+struct IdSelection final
 {
 	/**
 	 * \brief Create a selection for the specific FileReader id.
@@ -122,12 +133,22 @@ struct IdSelection
 };
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+
 /**
  * \brief Wrapper for ARCSCalculator to handle input with multiple audio files.
  */
 class ARCSMultifileAlbumCalculator final
 {
 public:
+
+	/**
+	 * \brief Constructor.
+	 *
+	 * Uses ARCS2 as the default type to request.
+	 */
+	ARCSMultifileAlbumCalculator();
 
 	/**
 	 * \brief Default Constructor
@@ -137,18 +158,9 @@ public:
 	explicit ARCSMultifileAlbumCalculator(const ChecksumTypeset& types);
 
 	/**
-	 * \brief Constructor.
-	 *
-	 * Uses ARCS2 as the default type to request.
-	 */
-	ARCSMultifileAlbumCalculator() : ARCSMultifileAlbumCalculator(
-			{ arcstk::checksum::type::ARCS1, arcstk::checksum::type::ARCS2 })
-	{ /* empty */ };
-
-	/**
 	 * \brief Virtual default destructor.
 	 */
-	virtual ~ARCSMultifileAlbumCalculator() noexcept;
+	~ARCSMultifileAlbumCalculator() noexcept;
 
 	/**
 	 * \brief Calculate ARCS values of the CD image represented by the specified
@@ -180,18 +192,19 @@ public:
 	 * audiofilenames.
 	 *
 	 * Note that in this use case, it is not offered to compute the ARId of the
-	 * album since the exact offsets are missing. The ARId returned will be
+	 * album since the exact offsets are missing. The ARId returned will
 	 * therefore be empty, the ToC pointer will be nullptr.
 	 *
-	 * \param[in] audiofilenames Names of the audiofiles
-	 * \param[in] skip_front     Skip front samples of first track
-	 * \param[in] skip_back      Skip back samples of last track
+	 * \param[in] audiofilenames       Names of the audiofiles
+	 * \param[in] first_is_first_track Declare first file as first track
+	 * \param[in] last_is_last_track   Declare last file as last track
 	 *
-	 * \return The AccurateRip checksum of this track
+	 * \return The AccurateRip checksums of these tracks
 	 */
 	std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
 			const std::vector<std::string> &audiofilenames,
-			const bool &skip_front, const bool &skip_back) const;
+			const bool first_is_first_track, const bool last_is_last_track)
+		const;
 
 	/**
 	 * \brief Set the checksum type to be calculated.
@@ -208,11 +221,18 @@ public:
 	ChecksumTypeset types() const;
 
 	/**
+	 * \brief Get the FileReaderSelection used by this instance.
+	 *
+	 * \return The selection used by this instance
+	 */
+	FileReaderSelection* audio_selection() const;
+
+	/**
 	 * \brief Set the FileReaderSelection for this instance.
 	 *
 	 * \param[in] selection The selection to use
 	 */
-	void set_toc_selection(FileReaderSelection *selection);
+	void set_audio_selection(FileReaderSelection* selection);
 
 	/**
 	 * \brief Get the FileReaderSelection used by this instance.
@@ -226,25 +246,54 @@ public:
 	 *
 	 * \param[in] selection The selection to use
 	 */
-	void set_audio_selection(FileReaderSelection *selection);
-
-	/**
-	 * \brief Get the FileReaderSelection used by this instance.
-	 *
-	 * \return The selection used by this instance
-	 */
-	FileReaderSelection* audio_selection() const;
+	void set_toc_selection(FileReaderSelection* selection);
 
 private:
 
-	// Forward declaration for private implementation.
-	class Impl;
+	/**
+	 * \brief Calculate ARCS values for album with audiofilenames from metafile.
+	 *
+	 * If metafile does not specify any audiofilenames, result will be empty.
+	 *
+	 * \param[in] metafilename Metadata file
+	 * \param[in] searchpath   Searchpath for audiofiles
+	 *
+	 * \return Checksums, ARId and ToC for the input
+	 */
+	std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
+			std::unique_ptr<ToC> toc, const std::string& searchpath) const;
 
 	/**
-	 * \brief Internal implementation instance
+	 * \brief Setup internal ARCSCalculator instance.
+	 *
+	 * \return ARCSCalculator to perform the calculations
 	 */
-	std::unique_ptr<Impl> impl_;
+	ARCSCalculator setup_calculator() const;
+
+	/**
+	 * \brief Setup internal ToCParser instance.
+	 *
+	 * \return ToCParser to perform the metadata parsing
+	 */
+	ToCParser setup_parser() const;
+
+	/**
+	 * \brief Checksum type to request
+	 */
+	ChecksumTypeset types_;
+
+	/**
+	 * \brief Internal Audio reader selection.
+	 */
+	FileReaderSelection* audio_selection_;
+
+	/**
+	 * \brief Internal ToC parser selection.
+	 */
+	FileReaderSelection* toc_selection_;
 };
+
+#pragma GCC diagnostic pop
 
 
 /**
@@ -256,8 +305,8 @@ using ChecksumLayout = Layout<std::string, arcstk::Checksum, int>;
 /**
  * \brief Format Checksums in hexadecimal representation.
  */
-class HexLayout : protected WithInternalFlags
-				, public ChecksumLayout
+class HexLayout final : protected WithInternalFlags
+					  , public    ChecksumLayout
 {
 public:
 
@@ -321,5 +370,4 @@ void validate(const Checksums& checksums, const ToC* toc,
 } // namespace arcsapp
 
 #endif
-
 

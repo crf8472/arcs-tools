@@ -128,122 +128,33 @@ std::unique_ptr<arcsdec::FileReaderSelection> IdSelection::operator()(
 }
 
 
-/**
- * \brief Private implementation of a ARCSMultifileAlbumCalculator
- */
-class ARCSMultifileAlbumCalculator::Impl final
+// ARCSMultifileAlbumCalculator
+
+
+ARCSMultifileAlbumCalculator::ARCSMultifileAlbumCalculator()
+	: ARCSMultifileAlbumCalculator(
+			{ arcstk::checksum::type::ARCS1, arcstk::checksum::type::ARCS2 })
 {
-public:
-
-	/**
-	 * \brief Calculate ARCS values for album with optional audiofile names.
-	 *
-	 * If \c audiofilenames are non-empty, they override the audiofilenames in
-	 * the metafile. If \c audiofilenames are empty, the audiofilenames from the
-	 * metafile will be searched for in the path of the metafile.
-	 *
-	 * \param[in] audiofilenames List of audiofile names
-	 * \param[in] metafilename   Metadata file
-	 *
-	 * \return Checksums, ARId and ToC for the input
-	 */
-	std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
-			const std::vector<std::string> &audiofilenames,
-			const std::string &metafilename) const;
-
-	/**
-	 * \brief Calculate ARCS values for audiofilenams without ToC.
-	 *
-	 * Mere wrapper for arcsdec::ARCSCalculator.
-	 *
-	 * \param[in] audiofilenames Names of the audiofile
-	 * \param[in] skip_front     Skip front samples of first track
-	 * \param[in] skip_back      Skip back samples of last track
-	 *
-	 * \return The AccurateRip checksum of this track
-	 */
-	Checksums calculate(const std::vector<std::string> &audiofilenames,
-			const bool &skip_front, const bool &skip_back) const;
-
-	/**
-	 * \brief Set the checksum type to be calculated.
-	 *
-	 * \param[in] type Checksum type to be calculated
-	 */
-	void set_types(const ChecksumTypeset& type);
-
-	/**
-	 * \brief The checksum type to be calculated.
-	 *
-	 * \return Checksum type to be calculated by this instance
-	 */
-	ChecksumTypeset types() const;
-
-	/**
-	 * \brief Set the FileReaderSelection for this instance.
-	 *
-	 * \param[in] selection The selection to use
-	 */
-	void set_toc_selection(FileReaderSelection *selection);
-
-	/**
-	 * \brief Get the FileReaderSelection used by this instance.
-	 *
-	 * \return The selection used by this instance
-	 */
-	FileReaderSelection* toc_selection() const;
-
-	/**
-	 * \brief Set the FileReaderSelection for this instance.
-	 *
-	 * \param[in] selection The selection to use
-	 */
-	void set_audio_selection(FileReaderSelection *selection);
-
-	/**
-	 * \brief Get the FileReaderSelection used by this instance.
-	 *
-	 * \return The selection used by this instance
-	 */
-	FileReaderSelection* audio_selection() const;
-
-private:
-
-	/**
-	 * \brief Calculate ARCS values for album with audiofilenames from metafile.
-	 *
-	 * If metafile does not specify any audiofilenames, result will be empty.
-	 *
-	 * \param[in] metafilename Metadata file
-	 * \param[in] searchpath   Searchpath for audiofiles
-	 *
-	 * \return Checksums, ARId and ToC for the input
-	 */
-	std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
-			std::unique_ptr<ToC> toc, const std::string& searchpath) const;
-
-	ARCSCalculator setup_calculator(const arcstk::ChecksumtypeSet& types) const;
-
-	/**
-	 * \brief Checksum type to request
-	 */
-	ChecksumTypeset types_ = {  arcstk::checksum::type::ARCS1,
-								arcstk::checksum::type::ARCS2   };
-
-	/**
-	 * \brief Internal ToC parser selection.
-	 */
-	FileReaderSelection* toc_selection_ = nullptr;
-
-	/**
-	 * \brief Internal Audio reader selection.
-	 */
-	FileReaderSelection* audio_selection_ = nullptr;
+	// empty
 };
 
 
+ARCSMultifileAlbumCalculator::ARCSMultifileAlbumCalculator(
+		const ChecksumTypeset& types)
+	: types_           { types }
+	, audio_selection_ { nullptr }
+	, toc_selection_   { nullptr }
+{
+	// empty
+}
+
+
+ARCSMultifileAlbumCalculator::~ARCSMultifileAlbumCalculator() noexcept
+= default;
+
+
 std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
-	ARCSMultifileAlbumCalculator::Impl::calculate(
+	ARCSMultifileAlbumCalculator::calculate(
 			const std::vector<std::string> &audiofilenames,
 			const std::string &metafilename) const
 {
@@ -255,15 +166,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 		throw std::invalid_argument("No ToC file specified.");
 	}
 
-	auto toc = std::unique_ptr<ToC>{};
-	{
-		auto parser = ToCParser{};
-		if (toc_selection())
-		{
-			parser.set_selection(toc_selection());
-		}
-		toc = parser.parse(metafilename);
-	}
+	auto toc { setup_parser().parse(metafilename) };
 
 	if (audiofilenames.empty())
 	{
@@ -289,7 +192,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 
 	// Run
 
-	auto calculator { setup_calculator(types()) };
+	auto calculator { setup_calculator() };
 
 	// case: single-file album w ToC
 	if (1 == filecount)
@@ -300,7 +203,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 		return std::make_tuple(checksums, arid, std::move(toc));
 	}
 
-	// case: multi-file album w ToC
+	// case: multi-file album w ToC (== "EAC-styled layout")
 	if (toc->total_tracks() == filecount)
 	{
 		const auto chksums { calculator.calculate(audiofilenames, true, true) };
@@ -314,18 +217,69 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 
 
 std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
-	ARCSMultifileAlbumCalculator::Impl::calculate(
+	ARCSMultifileAlbumCalculator::calculate(
+		const std::vector<std::string>& audiofilenames,
+		const bool first_is_first_track, const bool last_is_last_track) const
+{
+	auto calculator { setup_calculator() };
+
+	const auto checksums { calculator.calculate(audiofilenames,
+			first_is_first_track, last_is_last_track) };
+
+	return std::make_tuple(checksums, arcstk::EmptyARId, nullptr);
+}
+
+
+void ARCSMultifileAlbumCalculator::set_types(const ChecksumTypeset& types)
+{
+	types_ = types;
+}
+
+
+ChecksumTypeset ARCSMultifileAlbumCalculator::types() const
+{
+	return types_;
+}
+
+
+void ARCSMultifileAlbumCalculator::set_toc_selection(
+		FileReaderSelection *selection)
+{
+	toc_selection_ = selection;
+}
+
+
+FileReaderSelection* ARCSMultifileAlbumCalculator::toc_selection() const
+{
+	return toc_selection_;
+}
+
+
+void ARCSMultifileAlbumCalculator::set_audio_selection(
+		FileReaderSelection *selection)
+{
+	audio_selection_ = selection;
+}
+
+
+FileReaderSelection* ARCSMultifileAlbumCalculator::audio_selection() const
+{
+	return audio_selection_;
+}
+
+
+std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
+	ARCSMultifileAlbumCalculator::calculate(
 		std::unique_ptr<ToC> toc, const std::string& filepath) const
 {
 	ARCS_LOG_DEBUG << "Calculate result from ToC"
 			" and searchpath for audiofiles";
 
-	// Validate ToC information
+	// Validate audio file set in ToC
 
-	auto [ is_single_file, pairwise_distinct, audiofiles ] =
-		ToCFiles::get(*toc);
+	auto [ is_single_file, pairwise_dist, audiofiles ] = ToCFiles::get(*toc);
 
-	if (!is_single_file && !pairwise_distinct)
+	if (!is_single_file && !pairwise_dist)
 	{
 		throw std::invalid_argument(
 			"ToC references a set of multiple audio files, but they are not "
@@ -335,7 +289,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 
 	// Calculate ARCSs
 
-	auto calculator { setup_calculator(types()) };
+	auto calculator { setup_calculator() };
 
 	if (is_single_file)
 	{
@@ -343,7 +297,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 			ToCFiles::expand_path(filepath, audiofiles.front());
 
 		// case: single-file album w ToC
-		auto [ checksums, arid ] = calculator.calculate(audiofile, *toc);
+		const auto [ checksums, arid ] = calculator.calculate(audiofile, *toc);
 
 		return std::make_tuple(checksums, arid, std::move(toc));
 	} else
@@ -353,30 +307,18 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 			audiofile = ToCFiles::expand_path(filepath, audiofile);
 		}
 
-		// case: multi-file album w toc
-		auto checksums { calculator.calculate(audiofiles, true, true) };
-		auto arid      { make_arid(*toc) };
+		// case: multi-file album w toc (== "EAC-styled layout")
+		const auto checksums { calculator.calculate(audiofiles, true, true) };
+		const auto arid      { make_arid(*toc) };
 
 		return std::make_tuple(checksums, *arid, std::move(toc));
 	}
 }
 
 
-Checksums ARCSMultifileAlbumCalculator::Impl::calculate(
-		const std::vector<std::string>& audiofilenames,
-		const bool& first_is_first_track, const bool& last_is_last_track) const
+ARCSCalculator ARCSMultifileAlbumCalculator::setup_calculator() const
 {
-	auto calculator { setup_calculator(types()) };
-
-	return calculator.calculate(audiofilenames,
-			first_is_first_track, last_is_last_track);
-}
-
-
-ARCSCalculator ARCSMultifileAlbumCalculator::Impl::setup_calculator(
-		const arcstk::ChecksumtypeSet& types) const
-{
-	auto calculator = ARCSCalculator { types };
+	auto calculator { ARCSCalculator { types() } };
 
 	if (audio_selection())
 	{
@@ -387,120 +329,16 @@ ARCSCalculator ARCSMultifileAlbumCalculator::Impl::setup_calculator(
 }
 
 
-void ARCSMultifileAlbumCalculator::Impl::set_types(
-		const ChecksumTypeset& types)
+ToCParser ARCSMultifileAlbumCalculator::setup_parser() const
 {
-	types_ = types;
-}
+	auto parser { ToCParser{} };
 
+	if (toc_selection())
+	{
+		parser.set_selection(toc_selection());
+	}
 
-ChecksumTypeset ARCSMultifileAlbumCalculator::Impl::types() const
-{
-	return types_;
-}
-
-
-void ARCSMultifileAlbumCalculator::Impl::set_toc_selection(
-		FileReaderSelection *selection)
-{
-	toc_selection_ = selection;
-}
-
-
-FileReaderSelection* ARCSMultifileAlbumCalculator::Impl::toc_selection() const
-{
-	return toc_selection_;
-}
-
-
-void ARCSMultifileAlbumCalculator::Impl::set_audio_selection(
-		FileReaderSelection *selection)
-{
-	audio_selection_ = selection;
-}
-
-
-FileReaderSelection* ARCSMultifileAlbumCalculator::Impl::audio_selection() const
-{
-	return audio_selection_;
-}
-
-
-// ARCSMultifileAlbumCalculator
-
-
-ARCSMultifileAlbumCalculator::ARCSMultifileAlbumCalculator(
-		const ChecksumTypeset& types)
-	: impl_(std::make_unique<ARCSMultifileAlbumCalculator::Impl>())
-{
-	impl_->set_types(types);
-}
-
-
-ARCSMultifileAlbumCalculator::~ARCSMultifileAlbumCalculator() noexcept
-= default;
-
-
-std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
-	ARCSMultifileAlbumCalculator::calculate(
-		const std::vector<std::string> &audiofilenames,
-		const std::string &metafilename) const
-{
-	ARCS_LOG_DEBUG << "Calculate result from audiofilenames and metafilename";
-
-	return impl_->calculate(audiofilenames, metafilename);
-}
-
-
-std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
-	ARCSMultifileAlbumCalculator::calculate(
-			const std::vector<std::string> &audiofilenames,
-			const bool &skip_front, const bool &skip_back) const
-{
-	ARCS_LOG_DEBUG << "Calculate result from audiofilenames "
-			"and flags for first and last track";
-
-	auto checksums { impl_->calculate(audiofilenames, skip_front, skip_back) };
-
-	return std::make_tuple(checksums, arcstk::EmptyARId, nullptr);
-}
-
-
-void ARCSMultifileAlbumCalculator::set_types(const ChecksumTypeset& types)
-{
-	impl_->set_types(types);
-}
-
-
-ChecksumTypeset ARCSMultifileAlbumCalculator::types() const
-{
-	return impl_->types();
-}
-
-
-void ARCSMultifileAlbumCalculator::set_toc_selection(
-		FileReaderSelection *selection)
-{
-	impl_->set_toc_selection(selection);
-}
-
-
-FileReaderSelection* ARCSMultifileAlbumCalculator::toc_selection() const
-{
-	return impl_->toc_selection();
-}
-
-
-void ARCSMultifileAlbumCalculator::set_audio_selection(
-		FileReaderSelection *selection)
-{
-	impl_->set_audio_selection(selection);
-}
-
-
-FileReaderSelection* ARCSMultifileAlbumCalculator::audio_selection() const
-{
-	return impl_->audio_selection();
+	return parser;
 }
 
 
