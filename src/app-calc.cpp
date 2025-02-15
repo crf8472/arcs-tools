@@ -576,15 +576,15 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>> ARCalcApplication::calculate(
 	const bool as_first,
 	const bool as_last,
 	const std::vector<arcstk::checksum::type> &types_requested,
-	arcsdec::FileReaderSelection *audio_selection,
-	arcsdec::FileReaderSelection *toc_selection)
+	arcsdec::FileReaderSelection* audio_selection,
+	arcsdec::FileReaderSelection* toc_selection)
 {
 	// The types to calculate are allowed to differ from the explicitly
 	// requested types (since e.g. ARCS1 is a byproduct of ARCS2 and the
 	// type-to-calculate ARCS2 hence represents both the type-requested ARCS1
 	// as well as the type-requested ARCS2).
 
-	auto types_to_calculate = calc::ChecksumTypeset{};
+	auto types_to_calculate { calc::ChecksumTypeset{} };
 	for (auto& t : types_requested)
 	{
 		types_to_calculate.insert(t);
