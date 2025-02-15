@@ -988,7 +988,7 @@ public:
 	 *
 	 * \param[in] label Flag to set for printing the labels
 	 */
-	void set_format_labels(const bool &label);
+	void set_format_labels(const bool& label);
 
 	/**
 	 * \brief TRUE iff data attribute \c a is to be formatted by this instance.

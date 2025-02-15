@@ -389,7 +389,7 @@ constexpr OptionCode VERIFY::NOOUTPUT;
 // ARVerifyConfigurator
 
 
-void ARVerifyConfigurator::do_flush_local_options(OptionRegistry &r) const
+void ARVerifyConfigurator::do_flush_local_options(OptionRegistry& r) const
 {
 	using input::OP_VALUE;
 	using std::end;
@@ -656,7 +656,7 @@ VerifyTableCreator::VerifyTableCreator()
 }
 
 
-void VerifyTableCreator::set_match_symbol(const std::string &match_symbol)
+void VerifyTableCreator::set_match_symbol(const std::string& match_symbol)
 {
 	match_symbol_ = match_symbol;
 }
@@ -1482,7 +1482,7 @@ std::unique_ptr<VerifyTableCreator> ARVerifyApplication::create_formatter(
 }
 
 
-void ARVerifyApplication::log_matching_files(const Checksums &checksums,
+void ARVerifyApplication::log_matching_files(const Checksums& checksums,
 		const VerificationResult& vresult, const int block,
 		const bool version) const
 {

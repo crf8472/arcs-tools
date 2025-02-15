@@ -49,7 +49,7 @@ public:
 	 *
 	 * \param[in] descriptor Add the info from this descriptor
 	 */
-	virtual void add(const FileReaderDescriptor &descriptor)
+	virtual void add(const FileReaderDescriptor& descriptor)
 	= 0;
 
 	/**
@@ -74,7 +74,7 @@ protected:
 	/**
 	 * \brief Format library filenames as separated list.
 	 */
-	std::string libs_to_sep_list(const FileReaderDescriptor &descriptor,
+	std::string libs_to_sep_list(const FileReaderDescriptor& descriptor,
 			const std::string& sep);
 
 	/**
@@ -99,7 +99,7 @@ struct AudioFormatComposer final : public InfoResultComposer
 {
 	AudioFormatComposer();
 
-	void add(const FileReaderDescriptor &descriptor) final;
+	void add(const FileReaderDescriptor& descriptor) final;
 };
 
 /**
@@ -109,7 +109,7 @@ struct ToCFormatComposer final : public InfoResultComposer
 {
 	ToCFormatComposer();
 
-	void add(const FileReaderDescriptor &descriptor) final;
+	void add(const FileReaderDescriptor& descriptor) final;
 };
 
 /**

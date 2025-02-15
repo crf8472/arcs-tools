@@ -159,7 +159,7 @@ std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 // ARCalcConfigurator
 
 
-void ARCalcConfigurator::do_flush_local_options(OptionRegistry &r) const
+void ARCalcConfigurator::do_flush_local_options(OptionRegistry& r) const
 {
 	using std::end;
 	r.insert(end(r),
@@ -459,14 +459,14 @@ std::unique_ptr<Result> CalcTableCreator::do_format(InputTuple t) const
 
 
 bool ARCalcApplicationBase::do_calculation_requested(
-		const Configuration &config) const
+		const Configuration& config) const
 {
 	return config.is_set(CALCBASE::METAFILE) || not config.no_arguments();
 }
 
 
 std::vector<arcstk::checksum::type> ARCalcApplicationBase::do_requested_types(
-		const Configuration &config) const
+		const Configuration& config) const
 {
 	// Select the checksum::type(s) to print
 
@@ -485,7 +485,7 @@ std::vector<arcstk::checksum::type> ARCalcApplicationBase::do_requested_types(
 }
 
 
-int ARCalcApplicationBase::do_run(const Configuration &config)
+int ARCalcApplicationBase::do_run(const Configuration& config)
 {
 	// Is an actual calculation requested?
 	if (this->calculation_requested(config))
@@ -512,7 +512,7 @@ int ARCalcApplicationBase::do_run(const Configuration &config)
 }
 
 
-bool ARCalcApplicationBase::calculation_requested(const Configuration &config)
+bool ARCalcApplicationBase::calculation_requested(const Configuration& config)
 	const
 {
 	return do_calculation_requested(config);
@@ -520,14 +520,14 @@ bool ARCalcApplicationBase::calculation_requested(const Configuration &config)
 
 
 std::vector<arcstk::checksum::type> ARCalcApplicationBase::requested_types(
-			const Configuration &config) const
+			const Configuration& config) const
 {
 	return do_requested_types(config);
 }
 
 
 std::pair<int, std::unique_ptr<Result>> ARCalcApplicationBase::run_calculation(
-			const Configuration &config) const
+			const Configuration& config) const
 {
 	return do_run_calculation(config);
 }
@@ -571,11 +571,11 @@ std::unique_ptr<arcsdec::FileReaderSelection>
 
 
 std::tuple<Checksums, ARId, std::unique_ptr<ToC>> ARCalcApplication::calculate(
-	const std::vector<std::string> &audiofilenames,
-	const std::string &metafilename,
+	const std::vector<std::string>& audiofilenames,
+	const std::string& metafilename,
 	const bool first_file_is_first_track,
 	const bool last_file_is_last_track,
-	const std::vector<arcstk::checksum::type> &types_requested,
+	const std::vector<arcstk::checksum::type>& types_requested,
 	arcsdec::FileReaderSelection* audio_selection,
 	arcsdec::FileReaderSelection* toc_selection)
 {
@@ -703,7 +703,7 @@ std::unique_ptr<CalcTableCreator> ARCalcApplication::create_formatter(
 }
 
 
-auto ARCalcApplication::do_run_calculation(const Configuration &config) const
+auto ARCalcApplication::do_run_calculation(const Configuration& config) const
 	-> std::pair<int, std::unique_ptr<Result>>
 {
 	// Determine the explicitly requested types

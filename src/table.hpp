@@ -96,8 +96,8 @@ std::vector<std::string> split(std::string str, const std::string& delim);
  */
 template <typename Container> // TODO SFINAE stuff: empty(), size(), b+e, rbegin
 inline std::string to_sep_list(const Container c, const std::string delim,
-		const std::function<std::string(const typename Container::value_type &)>
-		&f)
+		const std::function<std::string(const typename Container::value_type&)>&
+		f)
 {
 	if (c.empty())
 	{

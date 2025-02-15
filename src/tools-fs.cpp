@@ -15,7 +15,7 @@ namespace file
 {
 
 
-std::string path(const std::string &filename)
+std::string path(const std::string& filename)
 {
 	if (filename.empty())
 	{
@@ -30,7 +30,7 @@ std::string path(const std::string &filename)
 }
 
 
-void prepend_path(const std::string &path, std::string &filename)
+void prepend_path(const std::string& path, std::string& filename)
 {
 	if (filename.empty())
 	{
@@ -46,7 +46,7 @@ void prepend_path(const std::string &path, std::string &filename)
 }
 
 
-bool file_is_readable(const std::string &filename)
+bool file_is_readable(const std::string& filename)
 {
 	auto open_file = std::ifstream { filename };
 

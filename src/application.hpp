@@ -67,7 +67,7 @@ public:
 	 *
 	 * \param[in] filename  Name of file to output to
 	 */
-	void to_file(const std::string &filename);
+	void to_file(const std::string& filename);
 
 	/**
 	* \brief Worker: output a result object to file or stdout.
@@ -219,7 +219,7 @@ protected:
 	 *
 	 * \param[in] message The error message
 	 */
-	void fatal_error(const std::string &message) const;
+	void fatal_error(const std::string& message) const;
 
 	/**
 	 * \brief Output the result.
@@ -259,7 +259,7 @@ private:
 	 *
 	 * \return Application return code
 	 */
-	virtual int do_run(const Configuration &config)
+	virtual int do_run(const Configuration& config)
 	= 0;
 };
 

@@ -236,15 +236,15 @@ class ARCalcApplicationBase : public Application
 	virtual bool do_calculation_requested(const Configuration& config) const;
 
 	virtual std::vector<arcstk::checksum::type> do_requested_types(
-			const Configuration &options) const;
+			const Configuration& options) const;
 
 	virtual std::pair<int, std::unique_ptr<Result>> do_run_calculation(
-			const Configuration &config) const
+			const Configuration& config) const
 	= 0;
 
 	// Application
 
-	virtual int do_run(const Configuration &config) override;
+	virtual int do_run(const Configuration& config) override;
 
 protected:
 
@@ -268,7 +268,7 @@ protected:
 	 * \return Checksum types to calculate.
 	 */
 	std::vector<arcstk::checksum::type> requested_types(
-			const Configuration &options) const;
+			const Configuration& options) const;
 
 	/**
 	 * \brief Run the actual calculation.
@@ -280,7 +280,7 @@ protected:
 	 * \return Exit code and calculation result
 	 */
 	std::pair<int, std::unique_ptr<Result>> run_calculation(
-			const Configuration &config) const;
+			const Configuration& config) const;
 
 	/**
 	 * \brief Select a file reader by id.
@@ -317,11 +317,11 @@ public:
 	 * \return Calculation result
 	 */
 	static std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
-		const std::vector<std::string> &audiofilenames,
-		const std::string &metafilename,
+		const std::vector<std::string>& audiofilenames,
+		const std::string& metafilename,
 		const bool first_file_is_first_track,
 		const bool last_file_is_last_track,
-		const std::vector<arcstk::checksum::type> &types,
+		const std::vector<arcstk::checksum::type>& types,
 		arcsdec::FileReaderSelection* audio_selection,
 		arcsdec::FileReaderSelection* toc_selection);
 
@@ -335,13 +335,13 @@ private:
 	 * \param[in] config The configuration parsed from command line
 	 */
 	std::unique_ptr<CalcTableCreator> create_formatter(
-			const Configuration &config) const;
+			const Configuration& config) const;
 
 
 	// ARCalcApplicationBase
 
 	std::pair<int, std::unique_ptr<Result>> do_run_calculation(
-			const Configuration &config) const final;
+			const Configuration& config) const final;
 
 	// Application
 

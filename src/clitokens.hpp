@@ -37,7 +37,7 @@ using OptionCode = uint64_t;
 
 
 class Option;
-bool operator == (const Option &lhs, const Option &rhs) noexcept;
+bool operator == (const Option& lhs, const Option& rhs) noexcept;
 
 /**
  * \brief Descriptor for a single command line option.
@@ -56,7 +56,7 @@ class Option final
 {
 public:
 
-	friend bool operator == (const Option &lhs, const Option &rhs) noexcept;
+	friend bool operator == (const Option& lhs, const Option& rhs) noexcept;
 
 	/**
 	 * \brief Constructor for options with shorthand and symbol.
@@ -67,9 +67,9 @@ public:
 	 * \param[in] default_arg Default argument as a string
 	 * \param[in] desc        Option description
 	 */
-	Option(const char shorthand, const std::string &symbol,
-		const bool needs_value, const std::string &default_arg,
-		const std::string &desc);
+	Option(const char shorthand, const std::string& symbol,
+		const bool needs_value, const std::string& default_arg,
+		const std::string& desc);
 
 	/**
 	 * \brief Constructor for options with symbol only.
@@ -79,8 +79,8 @@ public:
 	 * \param[in] default_arg Default argument as a string
 	 * \param[in] desc        Option description
 	 */
-	Option(const std::string &symbol, const bool needs_value,
-		   const std::string &default_arg, const std::string &desc)
+	Option(const std::string& symbol, const bool needs_value,
+		   const std::string& default_arg, const std::string& desc)
 		: Option ('\0', symbol, needs_value, default_arg, desc )
 	{ /* empty */ }
 
@@ -209,7 +209,7 @@ public:
 	 *
 	 * \param[in] what_arg What-Message
 	 */
-	CallSyntaxException(const std::string &what_arg);
+	CallSyntaxException(const std::string& what_arg);
 };
 
 
@@ -280,8 +280,8 @@ using option_callback =
  * \param[in] supported      Supported options
  * \param[in] pass_token     Function to call on each parsed token
  */
-void parse(const int argc, const char* const * const argv,
-		const OptionRegistry &supported, const option_callback& pass_token);
+void parse(const int argc, const char* const* const argv,
+		const OptionRegistry& supported, const option_callback& pass_token);
 
 } // namespace input
 } // namespace v_1_0_0

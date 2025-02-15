@@ -23,9 +23,9 @@ inline namespace v_1_0_0
 OptionCode NONE;
 
 
-Option::Option(const char shorthand, const std::string &symbol,
-		const bool needs_value, const std::string &default_arg,
-		const std::string &desc)
+Option::Option(const char shorthand, const std::string& symbol,
+		const bool needs_value, const std::string& default_arg,
+		const std::string& desc)
 	: shorthand_   { shorthand }
 	, symbol_      { symbol }
 	, needs_value_ { needs_value }
@@ -83,7 +83,7 @@ std::string Option::tokens_str() const
 }
 
 
-bool operator == (const Option &lhs, const Option &rhs) noexcept
+bool operator == (const Option& lhs, const Option& rhs) noexcept
 {
 	return lhs.symbol() == rhs.symbol()
 		&& lhs.shorthand_symbol() == rhs.shorthand_symbol()
@@ -99,7 +99,7 @@ namespace input
 // CallSyntaxException
 
 
-CallSyntaxException::CallSyntaxException(const std::string &what_arg)
+CallSyntaxException::CallSyntaxException(const std::string& what_arg)
 	: std::runtime_error { what_arg }
 {
 	// empty
@@ -114,8 +114,8 @@ CallSyntaxException::CallSyntaxException(const std::string &what_arg)
  * \param[in,out] pos     Character position in the call string
  * \param[in] pass_token  Function to call on each parsed token
  */
-void parse_symbol(const char * const opt, const char * const val,
-		const OptionRegistry& supported, int &pos,
+void parse_symbol(const char* const opt, const char* const val,
+		const OptionRegistry& supported, int& pos,
 		const option_callback& pass_token);
 
 
@@ -128,12 +128,12 @@ void parse_symbol(const char * const opt, const char * const val,
  * \param[in,out] pos    Character position in the call string
  * \param[in] pass_token Function to call on each parsed token
  */
-void parse_shorthand(const char * const opt, const char * const val,
-		const OptionRegistry& supported, int &pos,
+void parse_shorthand(const char* const opt, const char* const val,
+		const OptionRegistry& supported, int& pos,
 		const option_callback& pass_token);
 
 
-void parse(const int argc, const char* const * const argv,
+void parse(const int argc, const char* const* const argv,
 		const OptionRegistry& supported, const option_callback& pass_token)
 {
 	if (argc < 2 or !argv)
@@ -142,8 +142,8 @@ void parse(const int argc, const char* const * const argv,
 	}
 
 	auto pos = int { 1 };   // Current Position in argv, ignore argv[0]
-	const char * token = nullptr; // Current token
-	const char * next  = nullptr; // Next token
+	const char* token = nullptr; // Current token
+	const char* next  = nullptr; // Next token
 
 	//using unsigned_char = unsigned char;
 	auto first_ch  = /*unsigned_*/char { 0 }; // First char in argv[pos]
@@ -205,8 +205,8 @@ void parse(const int argc, const char* const * const argv,
 }
 
 
-void parse_symbol(const char * const token, const char * const next,
-		const OptionRegistry& supported, int &pos,
+void parse_symbol(const char* const token, const char* const next,
+		const OptionRegistry& supported, int& pos,
 		const option_callback& pass_token)
 {
 	// Determine Length of Option Symbol in Token
@@ -338,8 +338,8 @@ void parse_symbol(const char * const token, const char * const next,
 }
 
 
-void parse_shorthand(const char * const token, const char * const next,
-		const OptionRegistry& supported, int &pos,
+void parse_shorthand(const char* const token, const char* const next,
+		const OptionRegistry& supported, int& pos,
 		const option_callback& pass_token)
 {
 	auto code = OptionCode { ARGUMENT }; // Code to identify Option

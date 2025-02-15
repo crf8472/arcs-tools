@@ -851,7 +851,7 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	 * \param[in] block     The block to match tracks from
 	 * \param[in] version   The ARCS version to match tracks for
 	 */
-	void log_matching_files(const Checksums &checksums,
+	void log_matching_files(const Checksums& checksums,
 		const VerificationResult& vresult, const int block,
 		const bool version = true) const;
 

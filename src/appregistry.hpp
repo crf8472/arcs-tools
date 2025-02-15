@@ -56,7 +56,7 @@ inline std::unique_ptr<Application> instantiateApplication(Args&&... args)
  *
  * \return TRUE if \c callstr is equal to or ends with \c name, otherwise FALSE
  */
-inline bool matches_name(const std::string &name, const std::string &callstr)
+inline bool matches_name(const std::string& name, const std::string& callstr)
 {
 	if (name.empty() or callstr.empty() or name.length() > callstr.length())
 	{
@@ -98,7 +98,7 @@ public:
 	 *
 	 * \return Instance of the first application type matching the input
 	 */
-	static std::unique_ptr<Application> lookup(const std::string &callstr)
+	static std::unique_ptr<Application> lookup(const std::string& callstr)
 	{
 		// TODO Use find on a map???
 		for (const auto& [app_name, app_creator] : *get_map())

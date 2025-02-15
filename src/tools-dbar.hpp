@@ -65,7 +65,7 @@ public:
 	 *
 	 * \param[in] v The vector to wrap
 	 */
-	explicit VectorIStream(std::vector<CharT> &v)
+	explicit VectorIStream(std::vector<CharT>& v)
 	{
 		this->setg(v.data(), v.data(), v.data() + v.size());
 	}
@@ -170,7 +170,7 @@ public:
 	 *
 	 * \param[in] filename Name of the out file
 	 */
-	void set_outfile(const std::string &filename);
+	void set_outfile(const std::string& filename);
 
 protected:
 

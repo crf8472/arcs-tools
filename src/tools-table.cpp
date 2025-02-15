@@ -889,7 +889,7 @@ bool TableCreator::formats_labels() const
 }
 
 
-void TableCreator::set_format_labels(const bool &value)
+void TableCreator::set_format_labels(const bool& value)
 {
 	flags().set_flag(MAX_ATTR + 1, value);
 }

@@ -177,8 +177,8 @@ public:
 	 * \return Checksums, Id and ToC of the image represented by the input files
 	 */
 	std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
-			const std::vector<std::string> &audiofilenames,
-			const std::string &metafilename) const;
+			const std::vector<std::string>& audiofilenames,
+			const std::string& metafilename) const;
 
 	/**
 	 * \brief Calculate ARCSs for the given audio files.
@@ -202,7 +202,7 @@ public:
 	 * \return The AccurateRip checksums of these tracks
 	 */
 	std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
-			const std::vector<std::string> &audiofilenames,
+			const std::vector<std::string>& audiofilenames,
 			const bool first_is_first_track, const bool last_is_last_track)
 		const;
 

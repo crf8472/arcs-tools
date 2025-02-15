@@ -30,7 +30,7 @@ namespace file
  *
  * \return The path, if filename contains any, or an empty string
  */
-std::string path(const std::string &filename);
+std::string path(const std::string& filename);
 
 /**
  * \brief Worker to prepend a path to a filename.
@@ -41,7 +41,7 @@ std::string path(const std::string &filename);
  * \param[in]     path     The (absolute or relative) path to prepend
  * \param[in,out] filename The filename to prepend \c path to
  */
-void prepend_path(const std::string &path, std::string &filename);
+void prepend_path(const std::string& path, std::string& filename);
 
 /**
  * \brief Service method: check whether file exists and is readable.
@@ -53,7 +53,7 @@ void prepend_path(const std::string &path, std::string &filename);
  *
  * \return TRUE iff this file exists and is readable, otherwise FALSE
  */
-bool file_is_readable(const std::string &filename);
+bool file_is_readable(const std::string& filename);
 
 } // namespace file
 } // namespace v_1_0_0

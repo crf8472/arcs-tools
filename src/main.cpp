@@ -85,13 +85,13 @@ int main(int argc, char** argv)
 					// skip first token
 					return application->run(argc - 1, argv + 1);
 				}
-			} catch (const CallSyntaxException &cse)
+			} catch (const CallSyntaxException& cse)
 			{
 				std::cerr << "Syntax error: " << cse.what() << '\n';
 				application->print_usage();
 				return EXIT_FAILURE;
 
-			} catch (const std::exception &e)
+			} catch (const std::exception& e)
 			{
 				std::cerr << "ERROR: " << e.what() << '\n';
 				return EXIT_FAILURE;

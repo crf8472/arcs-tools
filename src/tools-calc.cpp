@@ -154,8 +154,8 @@ ChecksumCalculator::~ChecksumCalculator() noexcept
 
 std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 	ChecksumCalculator::calculate(
-			const std::vector<std::string> &audiofilenames,
-			const std::string &metafilename) const
+			const std::vector<std::string>& audiofilenames,
+			const std::string& metafilename) const
 {
 	ARCS_LOG_DEBUG << "Calculate result from metafilename"
 			" and one or more audiofiles";
@@ -243,8 +243,7 @@ ChecksumTypeset ChecksumCalculator::types() const
 }
 
 
-void ChecksumCalculator::set_toc_selection(
-		FileReaderSelection *selection)
+void ChecksumCalculator::set_toc_selection(FileReaderSelection* selection)
 {
 	toc_selection_ = selection;
 }
@@ -256,8 +255,7 @@ FileReaderSelection* ChecksumCalculator::toc_selection() const
 }
 
 
-void ChecksumCalculator::set_audio_selection(
-		FileReaderSelection *selection)
+void ChecksumCalculator::set_audio_selection(FileReaderSelection* selection)
 {
 	audio_selection_ = selection;
 }

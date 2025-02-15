@@ -83,7 +83,7 @@ class ARIdApplication final : public ARCalcApplicationBase
 {
 	// ARCalcApplicationBase
 
-	bool do_calculation_requested(const Configuration &config) const final;
+	bool do_calculation_requested(const Configuration& config) const final;
 
 	std::pair<int, std::unique_ptr<Result>> do_run_calculation(
 			const Configuration& config) const final;

@@ -51,7 +51,7 @@ public:
 	 *
 	 * \param[in] what_arg What-Message
 	 */
-	ConfigurationException(const std::string &what_arg);
+	ConfigurationException(const std::string& what_arg);
 };
 
 
@@ -95,7 +95,7 @@ public:
 	 *
 	 * \return TRUE iff the option is set, otherwise FALSE
 	 */
-	bool is_set(const OptionCode &option) const;
+	bool is_set(const OptionCode& option) const;
 
 	/**
 	 * \brief Set the option to TRUE with an empty value.
@@ -111,7 +111,7 @@ public:
 	 *
 	 * \throws ConfigurationException Iff passed OPTION::NONE or on failure
 	 */
-	void set(const OptionCode &option);
+	void set(const OptionCode& option);
 
 	/**
 	 * \brief Set the option to TRUE and add the specified value to it.
@@ -126,7 +126,7 @@ public:
 	 *
 	 * \throws ConfigurationException Iff passed OPTION::NONE or on failure
 	 */
-	void set(const OptionCode &option, const std::string &value);
+	void set(const OptionCode& option, const std::string& value);
 
 	/**
 	 * \brief Set the option to FALSE.
@@ -136,7 +136,7 @@ public:
 	 *
 	 * \param[in] option The option to be set to FALSE
 	 */
-	void unset(const OptionCode &option);
+	void unset(const OptionCode& option);
 
 	/**
 	 * \brief Get the value for a specified option.
@@ -147,14 +147,14 @@ public:
 	 *
 	 * \return The n-th value of the option passed
 	 */
-	std::string value(const OptionCode &option) const;
+	std::string value(const OptionCode& option) const;
 
 	/**
 	 * \brief Puts an argument to the end of the argument list.
 	 *
 	 * \param[in] argument The argument to be appended to the list of arguments
 	 */
-	void put_argument(const std::string &argument);
+	void put_argument(const std::string& argument);
 
 	/**
 	 * \brief Get an input argument by 0-based index.
@@ -372,7 +372,7 @@ public:
 	 * \throws CallSyntaxException If the call string is not syntactically wellformed
 	 */
 	std::unique_ptr<Options> read_options(const int argc,
-		const char* const * const argv) const;
+		const char* const* const argv) const;
 
 	/**
 	 * \brief Check and validate options
@@ -549,7 +549,7 @@ public:
 	 * \param[in] option The option to put the value object for
 	 * \param[in] object The value object to put
 	 */
-	void put(const OptionCode &option, const std::any& object);
+	void put(const OptionCode& option, const std::any& object);
 
 	/**
 	 * \brief Get a configuration object.
@@ -559,7 +559,7 @@ public:
 	 * \return Value object for the option passed
 	 */
 	template <typename T>
-	auto object_ptr(const OptionCode &option) const -> const T*
+	auto object_ptr(const OptionCode& option) const -> const T*
 	{
 		auto p { objects_.find(option) };
 
@@ -576,7 +576,7 @@ public:
 	 * \brief Get a configuration object.
 	 */
 	template <typename T>
-	auto object(const OptionCode &option) const -> T
+	auto object(const OptionCode& option) const -> T
 	{
 		auto p { this->object_ptr<T>(option) };
 		return p != nullptr ? *p : T{ /* empty */ };
@@ -591,7 +591,7 @@ public:
 	 *
 	 * \return TRUE iff the option is set, otherwise FALSE
 	 */
-	bool is_set(const OptionCode &option) const;
+	bool is_set(const OptionCode& option) const;
 
 	/**
 	 * \brief Get the value for a specified option.
@@ -602,7 +602,7 @@ public:
 	 *
 	 * \return The n-th value of the option passed
 	 */
-	std::string value(const OptionCode &option) const;
+	std::string value(const OptionCode& option) const;
 
 	/**
 	 * \brief Get an input argument by 0-based index.

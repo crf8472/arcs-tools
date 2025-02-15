@@ -57,7 +57,7 @@ std::unique_ptr<StringTableLayout> InfoResultComposer::create_layout() const
 
 
 std::string InfoResultComposer::libs_to_sep_list(
-		const FileReaderDescriptor &descriptor, const std::string& sep)
+		const FileReaderDescriptor& descriptor, const std::string& sep)
 {
 	// Aggregate all libraries
 
@@ -106,7 +106,7 @@ AudioFormatComposer::AudioFormatComposer()
 }
 
 
-void AudioFormatComposer::add(const arcsdec::FileReaderDescriptor &descriptor)
+void AudioFormatComposer::add(const arcsdec::FileReaderDescriptor& descriptor)
 {
 	auto sep { " " };
 
@@ -155,7 +155,7 @@ ToCFormatComposer::ToCFormatComposer()
 }
 
 
-void ToCFormatComposer::add(const arcsdec::FileReaderDescriptor &descriptor)
+void ToCFormatComposer::add(const arcsdec::FileReaderDescriptor& descriptor)
 {
 	auto sep { " " };
 
@@ -186,7 +186,7 @@ void ToCFormatComposer::add(const arcsdec::FileReaderDescriptor &descriptor)
 
 template <class Calculator>
 StringTable DefaultReaders(const std::function<
-		bool(const arcsdec::FileReaderDescriptor &descriptor)>& filter_func,
+		bool(const arcsdec::FileReaderDescriptor&)>& filter_func,
 		InfoResultComposer& builder)
 {
 	const auto readers { std::make_unique<Calculator>()->readers() };

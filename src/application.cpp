@@ -71,7 +71,7 @@ const std::string& Output::filename() const
 }
 
 
-void Output::to_file(const std::string &filename)
+void Output::to_file(const std::string& filename)
 {
 	const std::lock_guard<std::mutex> lock(mutex_);
 	filename_ = filename;
@@ -103,10 +103,10 @@ using arcstk::LOGLEVEL;
  *
  * \return The deduced log level
  */
-LOGLEVEL to_loglevel(const std::string &lvl_str);
+LOGLEVEL to_loglevel(const std::string& lvl_str);
 
 
-LOGLEVEL to_loglevel(const std::string &lvl_str)
+LOGLEVEL to_loglevel(const std::string& lvl_str)
 {
 	using arcstk::LOGLEVEL_MIN;
 	using arcstk::LOGLEVEL_MAX;
@@ -117,7 +117,7 @@ LOGLEVEL to_loglevel(const std::string &lvl_str)
 
 		parsed_level = std::stoi(lvl_str);
 
-	} catch (const std::invalid_argument &ia)
+	} catch (const std::invalid_argument& ia)
 	{
 		std::ostringstream ss;
 
@@ -128,7 +128,7 @@ LOGLEVEL to_loglevel(const std::string &lvl_str)
 
 		throw ConfigurationException(ss.str());
 
-	} catch (const std::out_of_range &oor)
+	} catch (const std::out_of_range& oor)
 	{
 		std::ostringstream ss;
 
@@ -350,7 +350,7 @@ void Application::setup_logging(const Options& options) const
 }
 
 
-void Application::fatal_error(const std::string &message) const
+void Application::fatal_error(const std::string& message) const
 {
 	throw std::runtime_error(message);
 }

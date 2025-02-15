@@ -29,7 +29,7 @@ inline namespace v_1_0_0
 // ConfigurationException
 
 
-ConfigurationException::ConfigurationException(const std::string &what_arg)
+ConfigurationException::ConfigurationException(const std::string& what_arg)
 	: std::runtime_error(what_arg)
 {
 	// empty
@@ -80,20 +80,20 @@ Options::Options()
 }
 
 
-bool Options::is_set(const OptionCode &option) const
+bool Options::is_set(const OptionCode& option) const
 {
 	using std::end;
 	return options_.find(option) != end(options_);
 }
 
 
-void Options::set(const OptionCode &option)
+void Options::set(const OptionCode& option)
 {
 	this->set(option, std::string{}); // TODO Use a constant
 }
 
 
-void Options::set(const OptionCode &option, const std::string &value)
+void Options::set(const OptionCode& option, const std::string& value)
 {
 	if (OPTION::NONE == option)
 	{
@@ -109,7 +109,7 @@ void Options::set(const OptionCode &option, const std::string &value)
 }
 
 
-void Options::unset(const OptionCode &option)
+void Options::unset(const OptionCode& option)
 {
 	const auto o { options_.find(option) };
 
@@ -122,7 +122,7 @@ void Options::unset(const OptionCode &option)
 }
 
 
-std::string Options::value(const OptionCode &option) const
+std::string Options::value(const OptionCode& option) const
 {
 	const auto o { options_.find(option) };
 
@@ -137,7 +137,7 @@ std::string Options::value(const OptionCode &option) const
 }
 
 
-void Options::put_argument(const std::string &argument)
+void Options::put_argument(const std::string& argument)
 {
 	arguments_.push_back(argument);
 }
@@ -360,19 +360,19 @@ Configuration::Configuration(std::unique_ptr<Options> options)
 }
 
 
-void Configuration::put(const OptionCode &option, const std::any& object)
+void Configuration::put(const OptionCode& option, const std::any& object)
 {
 	objects_[option] = object;
 }
 
 
-bool Configuration::is_set(const OptionCode &option) const
+bool Configuration::is_set(const OptionCode& option) const
 {
 	return options_->is_set(option);
 }
 
 
-std::string Configuration::value(const OptionCode &option) const
+std::string Configuration::value(const OptionCode& option) const
 {
 	return options_->value(option);
 }
@@ -420,7 +420,7 @@ constexpr OptionCode FORMATBASE::SUBCLASS_BASE;
 
 
 void parse_list(const std::string& list, const char delim,
-		std::function<void(const std::string& s)> value_hook)
+		std::function<void(const std::string&)> value_hook)
 {
 	if (list.empty())
 	{
