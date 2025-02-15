@@ -1484,10 +1484,10 @@ protected:
 	void bottom_delim(std::ostream& o, const PrintableTable& t,
 		const StringTableLayout& l) const;
 	void row_delim(std::ostream& o, const PrintableTable& t,
-		const StringTableLayout& l, const std::size_t width) const;
+		const std::size_t width, const std::string& delim) const;
 	void row_delimiters(std::ostream& o, const PrintableTable& t,
-		const std::vector<std::size_t>& col_widths, const StringTableLayout& l)
-		const;
+		const std::vector<std::size_t>& col_widths, const StringTableLayout& l,
+		const std::string& delim) const;
 
 	std::vector<std::size_t> printed_widths(const PrintableTable& t,
 		const StringTableLayout& l) const;
@@ -1575,12 +1575,17 @@ void TablePrinter::Impl::rows(std::ostream& o, const PrintableTable& t,
 		const StringTableLayout& l) const
 {
 	// Table rows
-	for (auto r = std::size_t { 0 }; r < t.rows(); ++r)
+	for (auto r = std::size_t { 0 }; r < t.rows() - 1; ++r)
 	{
 		row(o, t, r, col_widths, l);
 
-		// TODO row_delimiters();
+		if (l.row_inner_delims())
+		{
+			row_delimiters(o, t, col_widths, l, l.row_inner_delim());
+		}
 	}
+
+	row(o, t, t.rows() - 1, col_widths, l);
 }
 
 
@@ -1820,16 +1825,18 @@ void TablePrinter::Impl::bottom_delim(std::ostream& o,
 }
 
 
-void TablePrinter::Impl::row_delim(std::ostream& o, const PrintableTable& /*t\*/,
-		const StringTableLayout& l, const std::size_t width) const
+void TablePrinter::Impl::row_delim(std::ostream& o,
+		const PrintableTable& /*t\*/,
+		const std::size_t width,
+		const std::string& delim) const
 {
-	const auto n { width / l.row_header_delim().length() };
+	const auto n { width / delim.length() };
 	// FIXME This won't work for any width that is not a multiple of the
 	// delimiter length
 
 	for (auto i = std::size_t { 0 }; i < n; ++i)
 	{
-		o << l.row_header_delim();
+		o << delim;
 	}
 
 	// TODO Only if header row delim requested
@@ -1838,7 +1845,7 @@ void TablePrinter::Impl::row_delim(std::ostream& o, const PrintableTable& /*t\*/
 
 void TablePrinter::Impl::row_delimiters(std::ostream& o,
 		const PrintableTable& t, const std::vector<std::size_t>& col_widths,
-		const StringTableLayout& l) const
+		const StringTableLayout& l, const std::string& delim) const
 {
 	// Header row for row labels column
 	if (l.left_outer_delims())
@@ -1848,7 +1855,7 @@ void TablePrinter::Impl::row_delimiters(std::ostream& o,
 
 	if (l.row_labels())
 	{
-		this->row_delim(o, t, l, optimal_row_label_width(t));
+		this->row_delim(o, t, optimal_row_label_width(t), delim);
 	}
 
 	if (l.col_labels_delims())
@@ -1861,7 +1868,7 @@ void TablePrinter::Impl::row_delimiters(std::ostream& o,
 	auto c = std::size_t { 0 };
 	for (const auto& w : col_widths)
 	{
-		this->row_delim(o, t, l, w);
+		this->row_delim(o, t, w, delim);
 
 		// Set delimiter between inner table columns
 		if (l.col_inner_delims() && c < max_col)
@@ -1948,7 +1955,7 @@ void TablePrinter::Impl::print(std::ostream& o, const PrintableTable& t)
 	// Print top delims
 	if (l->top_delims())
 	{
-		row_delimiters(o, t, col_widths, *l);
+		row_delimiters(o, t, col_widths, *l, l->top_delim());
 	}
 
 	// Print column labels
@@ -1960,17 +1967,17 @@ void TablePrinter::Impl::print(std::ostream& o, const PrintableTable& t)
 		// Header row delims
 		if (l->row_header_delims() && t.rows() > 0)
 		{
-			row_delimiters(o, t, col_widths, *l);
+			row_delimiters(o, t, col_widths, *l, l->row_header_delim());
 		}
 	}
 
 	// Print rows
-	rows(o, t, col_widths, *l);
+	rows(o, t, col_widths, *l); // also prints row_inner_delims
 
 	// Print bottom delims
 	if (l->bottom_delims())
 	{
-		row_delimiters(o, t, col_widths, *l);
+		row_delimiters(o, t, col_widths, *l, l->bottom_delim());
 	}
 
 	o.flags(prev_settings);
