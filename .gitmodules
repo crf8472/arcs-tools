@@ -1,9 +1,9 @@
 [submodule "libs/libarcstk"]
 	path = libs/libarcstk
 	url = https://github.com/crf8472/libarcstk.git
-	branch = 0.3-dev
+	branch = main
 [submodule "libs/libarcsdec"]
 	path = libs/libarcsdec
 	url = https://github.com/crf8472/libarcsdec.git
-	branch = libarcstk-0.3
+	branch = main
 
