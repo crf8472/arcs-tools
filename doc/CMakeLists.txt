@@ -5,7 +5,8 @@ cmake_minimum_required (VERSION 3.12 )
 ## Support IN_LIST if() operator required by FindDoxygen.cmake
 cmake_policy (SET CMP0057 NEW )
 
-find_package (Doxygen 1.9.1...<1.9.7 ) # 1.9.7 crashes m.css
+find_package (Doxygen )
+#find_package (Doxygen 1.9.1...<1.9.7 ) # 1.9.7 crashes m.css
 #find_package (Doxygen 1.8.15...1.8.20 ) # OK too
 
 message (STATUS
@@ -123,9 +124,13 @@ unset (GENERATOR_DIR )
 ## DOXYGEN_NEEDS_XML_DEDUP indicates that XML output requires post processing.
 ## It also indicates that not only plain doxygen HTML is requested.
 
-if (LOAD_GENERATORS AND DOXYGEN_VERSION VERSION_GREATER_EQUAL 1.8.16 )
+if (LOAD_GENERATORS AND DOXYGEN_VERSION VERSION_GREATER_EQUAL 1.8.16
+                    AND DOXYGEN_VERSION VERSION_LESS_EQUAL    1.13.2 )
 
-	## Indicates that 1. XML is requested and 2. XML requires deduplication
+	## TODO Not sure which doxygen version fixes the "duplication bug"
+	## that was introduced in 1.8.16, but 1.13.2 seems to not contain it
+	## anymore.
+
 	set (DOXYGEN_NEEDS_XML_DEDUP TRUE ) ## Use this in subdirectories!
 endif()
 
