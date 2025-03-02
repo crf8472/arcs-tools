@@ -83,6 +83,7 @@ class RefvaluesSource final : public ChecksumSourceOf<RefValuesType>
 			const ChecksumSource::size_type track_idx) const final;
 	std::size_t do_size(const ChecksumSource::size_type block_idx) const final;
 	std::size_t do_size() const final;
+	std::unique_ptr<ChecksumSource> do_clone() const final;
 
 public:
 
@@ -110,6 +111,7 @@ class EmptyChecksumSource final : public ChecksumSource
 			const ChecksumSource::size_type track_idx) const final;
 	std::size_t do_size(const ChecksumSource::size_type block_idx) const final;
 	std::size_t do_size() const final;
+	std::unique_ptr<ChecksumSource> do_clone() const final;
 
 public:
 

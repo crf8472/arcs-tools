@@ -149,6 +149,12 @@ std::size_t RefvaluesSource::do_size() const
 }
 
 
+std::unique_ptr<ChecksumSource> RefvaluesSource::do_clone() const
+{
+	return std::make_unique<RefvaluesSource>(*this);
+}
+
+
 // EmptyChecksumSource
 
 
@@ -206,6 +212,12 @@ std::size_t EmptyChecksumSource::do_size(
 std::size_t EmptyChecksumSource::do_size() const
 {
 	return 0;
+}
+
+
+std::unique_ptr<ChecksumSource> EmptyChecksumSource::do_clone() const
+{
+	return std::make_unique<EmptyChecksumSource>(*this);
 }
 
 
