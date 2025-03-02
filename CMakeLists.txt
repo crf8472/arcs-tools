@@ -7,7 +7,7 @@ cmake_minimum_required (VERSION 3.15 )
 cmake_policy (SET CMP0048 NEW )
 
 
-project (arcstk VERSION 0.1.1 LANGUAGES CXX )
+project (arcstk VERSION 0.1.3 LANGUAGES CXX )
 
 
 ## --- Setup Version Information

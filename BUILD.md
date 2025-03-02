@@ -384,7 +384,7 @@ just not done. Help will be appreciated.
 [1]: https://include-what-you-use.org/
 [2]: https://github.com/catchorg/Catch2
 [3]: https://mcss.mosra.cz/doxygen/
-[4]: https://crf8472.github.io/arcs-tools/
+[4]: https://crf8472.github.io/arcs-tools/current/
 [5]: https://github.com/crf8472/libarcstk
 [6]: https://github.com/crf8472/libarcsdec
 
