@@ -440,8 +440,8 @@ endif (WITH_TESTS)
 
 ## --- Optional: Build documentation (default: OFF)
 
-option (WITH_DOCS          "Build documentation for public API"           OFF )
-option (MCSS               "Use m.css when building documentation"        OFF )
+option (WITH_DOCS          "Build documentation for public API"     OFF )
+option (USE_MCSS           "Build documentation using m.css"        OFF )
 
 ## Process configuration for building the documentation
 if (WITH_DOCS )

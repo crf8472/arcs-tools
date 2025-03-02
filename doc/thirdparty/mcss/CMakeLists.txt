@@ -155,6 +155,9 @@ if (DOXYGEN_NEEDS_XML_DEDUP )
 	)
 else()
 
+	add_dependencies (arcstools_mcss_doc
+		arcstools_create_output_dir arcstools_create_log_dir )
+
 	## Doxygen is called by m.css.
 
 	add_custom_command (

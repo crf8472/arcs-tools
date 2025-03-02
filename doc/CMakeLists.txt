@@ -39,15 +39,16 @@ set (DOC_COMMENT          "Build documentation for APIs" )
 ## Deployed mainpage file
 set (DOC_MAINPAGE         ${DOC_TEXTS_GEN_DIR}/MAINPAGE.md )
 
+## Define input for documentation
+set (DOC_SOURCES          ${INTERFACE_HEADERS} ${PRIVATE_HEADERS}
+						  ${DOC_MAINPAGE} )
+
 ## Define the target name and location of the base Doxyfile to be included
 set (DOC_DOXYFILE_BASE    ${DOC_BINARY_DIR}/Doxyfile-base )
 
 ## Define the target name and location of the base Doxyfile to be included
 set (DOC_DOXYFILE_BASE_TEMPLATE ${PROJECT_DOC_DIR}/Doxyfile.in )
 
-## Define input for documentation
-set (DOC_SOURCES          ${INTERFACE_HEADERS} ${PRIVATE_HEADERS}
-						  ${DOC_MAINPAGE} )
 
 
 ## --- Generate documentation output directory
@@ -105,7 +106,7 @@ list (APPEND GENERATORS MCSS RTD )
 
 foreach (GENERATOR IN ITEMS ${GENERATORS} )
 
-	if (${GENERATOR} )
+	if (USE_${GENERATOR} )
 
 		string (TOLOWER ${GENERATOR} GENERATOR_DIR )
 
@@ -118,6 +119,9 @@ unset (GENERATOR_DIR )
 
 
 ## --- Detect Doxygen version with duplication bug and setup deduplication
+
+## DOXYGEN_NEEDS_XML_DEDUP indicates that XML output requires post processing.
+## It also indicates that not only plain doxygen HTML is requested.
 
 if (LOAD_GENERATORS AND DOXYGEN_VERSION VERSION_GREATER_EQUAL 1.8.16 )
 
@@ -168,6 +172,12 @@ if (DOXYGEN_NEEDS_XML_DEDUP )
 		set (PYTHON_CMD )
 
 	endif (PYTHON_ENV_AVAILABLE )
+else()
+	if (NOT LOAD_GENERATORS )
+		message (STATUS "No index deduplication since no generators requested" )
+	else()
+		message (STATUS "Doxygen version does not require index deduplication" )
+	endif()
 endif()
 
 
