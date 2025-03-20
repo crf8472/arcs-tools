@@ -218,8 +218,8 @@ else()
 
 	message (STATUS "Link to system-installed libarcstk and libarcsdec" )
 
-	find_package (libarcstk  0.1.1 REQUIRED )
-	find_package (libarcsdec 0.1.0 REQUIRED )
+	find_package (libarcstk  0.3.0 REQUIRED )
+	find_package (libarcsdec 0.2.0 REQUIRED )
 endif()
 
 
