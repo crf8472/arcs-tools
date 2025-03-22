@@ -29,11 +29,14 @@
 
 
 // forward declarations
-namespace arcsdec::v_1_0_0
+namespace arcsdec
+{
+inline namespace v_1_0_0
 {
 class ARCSCalculator;
 class ToCParser;
-} // namespace arcsdec::v_1_0_0
+} // namespace v_1_0_0
+} // namespace arcsdec
 
 
 namespace arcsapp
