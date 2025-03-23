@@ -1,0 +1,20 @@
+## Doxygen configuration file for doxygen HTML based layout doxygen-awesome-css
+
+@INCLUDE = @DOC_DOXYFILE_BASE@
+
+## specific for doxygen-awesome-css
+## cf. https://github.com/jothepro/doxygen-awesome-css
+
+GENERATE_TREEVIEW      = YES # required!
+DISABLE_INDEX          = NO
+FULL_SIDEBAR           = NO
+
+HTML_EXTRA_STYLESHEET  = @TARGET_CSS_DIR@/doxygen-awesome.css \
+                         @TARGET_CSS_DIR@/doxygen-awesome-sidebar-only.css
+
+HTML_COLORSTYLE        = LIGHT # required with Doxygen >= 1.9.5
+
+HAVE_DOT               = YES
+DOT_IMAGE_FORMAT       = svg
+DOT_TRANSPARENT        = YES
+
