@@ -94,7 +94,7 @@ public:
 	virtual ~RecordInterface() noexcept = default;
 
 	/**
-	 * \brief Set the value for the specified field in record \c i.
+	 * \brief Set the value for the specified field in record \p i.
 	 */
 	void set_field(const int i, const F& field_type,
 			const std::string& value)
@@ -103,7 +103,7 @@ public:
 	}
 
 	/**
-	 * \brief Set the value for the specified field in record \c i, field \c j.
+	 * \brief Set the value for the specified field in record \p i, field \p j.
 	 */
 	void set_field(const int i, const int j,
 			const std::string& value)
@@ -354,7 +354,7 @@ public:
 	 * \brief Get decorator for record.
 	 *
 	 * Iff there is no decorator registered for the specified record,
-	 * \c nullptr is returned.
+	 * \p nullptr is returned.
 	 *
 	 * \param[in] record_idx Record index to get decorator for, if any
 	 */
@@ -373,7 +373,7 @@ public:
 	 * \brief Get decorator for field.
 	 *
 	 * Iff there is no decorator registered for the specified field,
-	 * \c nullptr is returned.
+	 * \p nullptr is returned.
 	 *
 	 * \param[in] field_idx Field index to get decorator for, if any
 	 */
@@ -425,11 +425,11 @@ public:
 	const std::vector<ATTR>& fields() const;
 
 	/**
-	 * \brief TRUE iff table to be composed has field \c a, otherwise FALSE.
+	 * \brief TRUE iff table to be composed has field \p f, otherwise FALSE.
 	 *
 	 * \param[in] f Field to check for
 	 *
-	 * \return TRUE iff instance will produce field \c a, otherwise FALSE
+	 * \return TRUE iff instance will produce field \p f, otherwise FALSE
 	 */
 	bool has_field(const ATTR f) const;
 
@@ -725,11 +725,11 @@ public:
 	using type = S;
 
 	/**
-	 * \brief TRUE iff value for parameter \c t is TRUE, otherwise FALSE.
+	 * \brief TRUE iff value for parameter \p t is TRUE, otherwise FALSE.
 	 *
 	 * \param[in] t  Input value to check flag value for
 	 *
-	 * \return TRUE iff \c t has flag value TRUE, otherwise FALSE.
+	 * \return TRUE iff \p t has flag value TRUE, otherwise FALSE.
 	 */
 	bool operator() (const T t) const
 	{
@@ -737,10 +737,10 @@ public:
 	}
 
 	/**
-	 * \brief Set a flag for input value \c t.
+	 * \brief Set a flag for input value \p t.
 	 *
 	 * \param[in] t     Input to set value for
-	 * \param[in] value Value to be set for \c t
+	 * \param[in] value Value to be set for \p t
 	 */
 	void set(const T t, const bool value)
 	{
@@ -812,7 +812,7 @@ public:
  *
  * Accepts functors for adding fields to records and records to the
  * TableComposer. Hence it is possible to "queue" the production of fields by
- * composing a vector of creators and then calling \c perfom() on it.
+ * composing a vector of creators and then calling <tt>perfom()</tt> on it.
  */
 class AddRecords final
 {
@@ -894,7 +894,7 @@ using calc::ChecksumLayout;
 
 
 /**
- * \brief Apply \c layout to \c checksum with default parameters.
+ * \brief Apply \p layout to \p checksum with default parameters.
  *
  * \param[in] checksum Checksum to format
  * \param[in] layout   Layout to use for format
@@ -991,20 +991,20 @@ public:
 	void set_format_labels(const bool& label);
 
 	/**
-	 * \brief TRUE iff data attribute \c a is to be formatted by this instance.
+	 * \brief TRUE iff data attribute \p a is to be formatted by this instance.
 	 *
-	 * \return TRUE iff \c a is formatted by this instance, otherwise FALSE.
+	 * \return TRUE iff \p a is formatted by this instance, otherwise FALSE.
 	 */
 	bool formats_field(const ATTR a) const;
 
 	/**
-	 * \brief Set data type to be formatted in the output.
+	 * \brief Set attribute to be formatted in the output.
 	 *
-	 * Iff data type \c d is set to false, it will not be contained in the
+	 * Iff attribute \p a is set to false, it will not be contained in the
 	 * printed output.
 	 *
-	 * \param[in] a     Data attributes to be formatted or not
-	 * \param[in] value Flag value to activate or deactivate formatting of \c d
+	 * \param[in] a     Attribute to be formatted or not
+	 * \param[in] value Flag value to activate or deactivate formatting of \p a
 	 */
 	void set_format_field(const ATTR a, const bool value);
 
@@ -1041,11 +1041,11 @@ protected:
 	using field_order_t = std::array<ATTR,4>;
 
 	/**
-	 * \brief Worker: TRUE iff field \c f is requested for output.
+	 * \brief Worker: TRUE iff field \p f is requested for output.
 	 *
 	 * \param[in] f Field to check
 	 *
-	 * \return TRUE iff \c f is requested for output, otherwise FALSE
+	 * \return TRUE iff \p f is requested for output, otherwise FALSE
 	 */
 	bool is_requested(const ATTR f) const;
 
@@ -1068,7 +1068,7 @@ protected:
 	 *
 	 * This creates FILENAME, TRACK, OFFSET, and LENGTH fields in accordance to
 	 * the print flags passed. The order of this fields from left to right can
-	 * be specified by \c ordering.
+	 * be specified by \p ordering.
 	 *
 	 * \param[in] print_flags Print flags to respect
 	 * \param[in] ordering    The left-to-right ordering of the fields
@@ -1181,7 +1181,7 @@ private:
 
 
 /**
- * \brief Worker for implementing \c do_create() in AddField subclasses.
+ * \brief Worker for implementing <tt>do_create()</tt> in AddField subclasses.
  *
  * \param[in] c          Composer to use
  * \param[in] record_idx Record to add field to
@@ -1193,7 +1193,7 @@ void add_field(TableComposer* c, const int record_idx, const ATTR f,
 
 
 /**
- * \brief Worker for implementing \c do_create() in AddField subclasses.
+ * \brief Worker for implementing <tt>do_create()</tt> in AddField subclasses.
  *
  * \param[in] c          Composer to use
  * \param[in] record_idx Record to add field to
@@ -1204,7 +1204,7 @@ void add_field(TableComposer* c, const int record_idx, const int field_idx,
 		const std::string& s);
 
 /**
- * \brief Remove reference and pointer from type \c T.
+ * \brief Remove reference and pointer from type \p T.
  *
  * \tparam T Type to remove reference and pointer from
  */
@@ -1215,7 +1215,7 @@ using Unqualified = typename
 				std::remove_reference_t<T>>>::type;
 
 /**
- * \brief Get \c size_type from type \c T.
+ * \brief Get \p size_type from type \p T.
  *
  * \tparam T Type to get size_type from
  */

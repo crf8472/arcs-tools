@@ -410,7 +410,7 @@ enum class DecorationType : int
  *
  * \param[in] name Name of the decoration type
  *
- * \return The DecorationType named as in \c name
+ * \return The DecorationType named as in \p name
  */
 DecorationType get_decorationtype(const std::string& name);
 
@@ -420,7 +420,7 @@ DecorationType get_decorationtype(const std::string& name);
  *
  * \param[in] type DecorationType to get name of
  *
- * \return Name of \c type
+ * \return Name of \p type
  */
 std::string name(const DecorationType type);
 
@@ -428,11 +428,11 @@ std::string name(const DecorationType type);
 /**
  * \brief Decorator to highlight matching checksums by color.
  *
- * If a cell is \c decorate_set() to TRUE, it will be printed in
- * \c color_for_match(). The default color for match is FG_GREEN (BRIGHT).
+ * If a cell is \p decorate_set() to TRUE, it will be printed in
+ * \p color_for_match(). The default color for match is FG_GREEN (BRIGHT).
  *
- * If a cell is \c decorate_set() to FALSE, it will be printed in
- * \c color_for_mismatch(). The default color for mismatch is FG_RED (BRIGHT).
+ * If a cell is \p decorate_set() to FALSE, it will be printed in
+ * \p color_for_mismatch(). The default color for mismatch is FG_RED (BRIGHT).
  */
 class MatchDecorator final : public CellDecorator
 {
@@ -501,7 +501,7 @@ public:
 	 *
 	 * \param[in] d DecorationType to get highlights for
 	 *
-	 * \return Highlights for type \c d
+	 * \return Highlights for type \p d
 	 */
 	std::pair<ansi::Highlight, ansi::Highlight> highlights(
 			const DecorationType& d) const;
@@ -511,7 +511,7 @@ public:
 	 *
 	 * \param[in] d DecorationType to get highlight for
 	 *
-	 * \return Highlight for type \c d
+	 * \return Highlight for type \p d
 	 */
 	Highlight hl(const DecorationType& d) const;
 
@@ -521,7 +521,7 @@ public:
 	 * The first element is the foreground color, the second element is the
 	 * background color.
 	 *
-	 * \return Colors for type \c d
+	 * \return Colors for type \p d
 	 */
 	std::pair<Color,Color> colors(const DecorationType& d) const;
 
@@ -530,7 +530,7 @@ public:
 	 *
 	 * \param[in] d DecorationType to get foreground color for
 	 *
-	 * \return Foreground color for type \c d
+	 * \return Foreground color for type \p d
 	 */
 	Color fg(const DecorationType& d) const;
 
@@ -539,7 +539,7 @@ public:
 	 *
 	 * \param[in] d DecorationType to get background color for
 	 *
-	 * \return Background color for type \c d
+	 * \return Background color for type \p d
 	 */
 	Color bg(const DecorationType& d) const;
 };
@@ -568,64 +568,64 @@ public:
 	 *
 	 * \param[in] d  DecorationType to check
 	 *
-	 * \return Color for type \c d
+	 * \return Color for type \p d
 	 */
 	bool has(DecorationType d) const;
 
 	/**
-	 * \brief Return colors for coloring output of type \c d.
+	 * \brief Return colors for coloring output of type \p d.
 	 *
 	 * \param[in] d  DecorationType to get actual color for
 	 *
-	 * \return Colors for coloring output of type \c d.
+	 * \return Colors for coloring output of type \p d.
 	 */
 	std::pair<ansi::Color,ansi::Color> get(DecorationType d) const;
 
 	/**
-	 * \brief Return foreground color for coloring output of type \c d.
+	 * \brief Return foreground color for coloring output of type \p d.
 	 *
 	 * \param[in] d  DecorationType to get actual color for
 	 *
-	 * \return Foreground color for coloring output of type \c d.
+	 * \return Foreground color for coloring output of type \p d.
 	 */
 	ansi::Color get_fg(DecorationType d) const;
 
 	/**
-	 * \brief Return background color for coloring output of type \c d.
+	 * \brief Return background color for coloring output of type \p d.
 	 *
 	 * \param[in] d  DecorationType to get actual color for
 	 *
-	 * \return Background color for coloring output of type \c d.
+	 * \return Background color for coloring output of type \p d.
 	 */
 	ansi::Color get_bg(DecorationType d) const;
 
 	/**
-	 * \brief Set foreground color for coloring output of type \c d.
+	 * \brief Set foreground color for coloring output of type \p d.
 	 *
 	 * Background color is set to BG_DEFAULT.
 	 *
 	 * \param[in] d  DecorationType to assign an actual color to
-	 * \param[in] c  Color for coloring output of type \c d.
+	 * \param[in] c  Color for coloring output of type \p d.
 	 */
 	void set_fg(DecorationType d, ansi::Color c);
 
 	/**
-	 * \brief Set background color for coloring output of type \c d.
+	 * \brief Set background color for coloring output of type \p d.
 	 *
 	 * Background color is set to BG_DEFAULT.
 	 *
 	 * \param[in] d  DecorationType to assign an actual color to
-	 * \param[in] c  Color for coloring output of type \c d.
+	 * \param[in] c  Color for coloring output of type \p d.
 	 */
 	void set_bg(DecorationType d, ansi::Color c);
 
 	/**
 	 * \brief Set foreground and background color for coloring output of
-	 * type \c d.
+	 * type \p d.
 	 *
 	 * \param[in] d  DecorationType to assign an actual color to
-	 * \param[in] fg Color for coloring output of type \c d.
-	 * \param[in] bg Color for coloring output of type \c d.
+	 * \param[in] fg Color for coloring output of type \p d.
+	 * \param[in] bg Color for coloring output of type \p d.
 	 */
 	void set(DecorationType d, ansi::Color fg, ansi::Color bg);
 
@@ -688,45 +688,45 @@ public:
 	ColorizingVerifyTableCreator(const ColorRegistry& colors);
 
 	/**
-	 * \brief Return colors for coloring output of type \c d.
+	 * \brief Return colors for coloring output of type \p d.
 	 *
 	 * \param[in] d  DecorationType to get actual color for
 	 *
-	 * \return Colors for coloring output of type \c d.
+	 * \return Colors for coloring output of type \p d.
 	 */
 	std::pair<Color,Color> colors(DecorationType d) const;
 
 	/**
-	 * \brief Return foreground color for coloring output of type \c d.
+	 * \brief Return foreground color for coloring output of type \p d.
 	 *
 	 * \param[in] d  DecorationType to get actual color for
 	 *
-	 * \return Foreground color for coloring output of type \c d.
+	 * \return Foreground color for coloring output of type \p d.
 	 */
 	Color color_fg(DecorationType d) const;
 
 	/**
-	 * \brief Return background color for coloring output of type \c d.
+	 * \brief Return background color for coloring output of type \p d.
 	 *
 	 * \param[in] d  DecorationType to get actual color for
 	 *
-	 * \return Background color for coloring output of type \c d.
+	 * \return Background color for coloring output of type \p d.
 	 */
 	Color color_bg(DecorationType d) const;
 
 	/**
-	 * \brief Set foreground color for coloring output of type \c d.
+	 * \brief Set foreground color for coloring output of type \p d.
 	 *
 	 * \param[in] d  DecorationType to assign an actual color to
-	 * \param[in] c  Color for coloring output of type \c d.
+	 * \param[in] c  Color for coloring output of type \p d.
 	 */
 	void set_color_fg(DecorationType d, Color c);
 
 	/**
-	 * \brief Set background color for coloring output of type \c d.
+	 * \brief Set background color for coloring output of type \p d.
 	 *
 	 * \param[in] d  DecorationType to assign an actual color to
-	 * \param[in] c  Color for coloring output of type \c d.
+	 * \param[in] c  Color for coloring output of type \p d.
 	 */
 	void set_color_bg(DecorationType d, Color c);
 };

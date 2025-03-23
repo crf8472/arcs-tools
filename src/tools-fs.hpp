@@ -35,11 +35,11 @@ std::string path(const std::string& filename);
 /**
  * \brief Worker to prepend a path to a filename.
  *
- * Parameter \c path must end with a file separator or its last part will be
- * replaced by \c filename.
+ * Parameter \p path must end with a file separator or its last part will be
+ * replaced by \p filename.
  *
  * \param[in]     path     The (absolute or relative) path to prepend
- * \param[in,out] filename The filename to prepend \c path to
+ * \param[in,out] filename The filename to prepend \p path to
  */
 void prepend_path(const std::string& path, std::string& filename);
 

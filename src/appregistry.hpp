@@ -49,12 +49,12 @@ inline std::unique_ptr<Application> instantiateApplication(Args&&... args)
 
 
 /**
- * \brief Returns TRUE if \c callstr is equal to or ends with \c name
+ * \brief Returns TRUE if \p callstr is equal to or ends with \p name
  *
  * \param[in] name    Application name requested
  * \param[in] callstr Call string
  *
- * \return TRUE if \c callstr is equal to or ends with \c name, otherwise FALSE
+ * \return TRUE if \p callstr is equal to or ends with \p name, otherwise FALSE
  */
 inline bool matches_name(const std::string& name, const std::string& callstr)
 {
@@ -92,7 +92,7 @@ public:
 	virtual ~ApplicationFactory() = default;
 
 	/**
-	 * \brief Return first match for a key name with \c callstr
+	 * \brief Return first match for a key name with \p callstr
 	 *
 	 * \param[in] callstr Name of an application type or call string
 	 *
@@ -178,7 +178,7 @@ protected:
 	 *
 	 * \param[in] create Function pointer to create the instance
 	 *
-	 * \return Instance returned by \c create
+	 * \return Instance returned by \p create
 	 */
 	static std::unique_ptr<Application> instantiate(const std::string&,
 			FunctionReturning<Application> create)

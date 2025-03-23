@@ -252,7 +252,7 @@ protected:
 	 * \brief Return TRUE iff the configuration requires a calculation.
 	 *
 	 * The result of this function is used to decide whether
-	 * \c run_calculation() will actually be called.
+	 * \p run_calculation() will actually be called.
 	 *
 	 * \param[in] config Application configuration
 	 *

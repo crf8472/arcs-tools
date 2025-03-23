@@ -98,9 +98,9 @@ std::vector<std::string> split(std::string str, const std::string& delim)
 /**
  * \brief Insert or resize.
  *
- * If the specified vector \c v is empty, it will be resized to new size
- * \c rows. If \c v contains elements, \c rows new elements will be inserted
- * after index \c row.
+ * If the specified vector \p v is empty, it will be resized to new size
+ * \p rows. If \p v contains elements, \p rows new elements will be inserted
+ * after index \p row.
  *
  * \tparam T Vector value_type to use
  *

@@ -34,13 +34,13 @@ namespace details
 /**
  * \brief Convert an object to a std::string.
  *
- * Type \c T must have operator <<.
+ * Type \p T must have operator <<.
  *
  * \tparam T Input type to convert, must have overloaded operator <<.
  *
  * \param[in] value The value to convert
  *
- * \return A string representation of \c value
+ * \return A string representation of \p value
  */
 template <typename T> // T must have <<
 inline std::string to_string(T&& value)
@@ -494,14 +494,14 @@ public:
 	/**
 	 * \brief TRUE iff the specified row exists in the table.
 	 *
-	 * \return TRUE iff row \c row exists, otherwise FALSE
+	 * \return TRUE iff row \p row exists, otherwise FALSE
 	 */
 	bool row_exists(const int row) const;
 
 	/**
 	 * \brief TRUE iff the specified column exists in the table.
 	 *
-	 * \return TRUE iff column \c col exists, otherwise FALSE
+	 * \return TRUE iff column \p col exists, otherwise FALSE
 	 */
 	bool col_exists(const int col) const;
 
@@ -599,7 +599,7 @@ protected:
 	 *
 	 * \param[in] i Value to turn to an index
 	 *
-	 * \return Value \c i as an index
+	 * \return Value \p i as an index
 	 */
 	index_type i(const int i) const;
 
@@ -897,17 +897,17 @@ private:
 	flag_store_type flags_;
 
 	/**
-	 * \brief Get value for flag \c f.
+	 * \brief Get value for flag \p f.
 	 *
-	 * \return Value for flag \c f.
+	 * \return Value for flag \p f.
 	 */
 	bool flag_get(const Flag f) const;
 
 	/**
-	 * \brief Set value for flag \c f.
+	 * \brief Set value for flag \p f.
 	 *
 	 * \param[in] f     Flag to set value for
-	 * \param[in] value Value for flag \c f.
+	 * \param[in] value Value for flag \p f.
 	 */
 	void flag_set(const Flag f, const bool value);
 
@@ -937,17 +937,17 @@ private:
 	delim_store_type delims_;
 
 	/**
-	 * \brief Get delimiter \c d.
+	 * \brief Get delimiter \p d.
 	 *
-	 * \return Delimiter \c d.
+	 * \return Delimiter \p d.
 	 */
 	std::string delim_get(const Delimiter d) const;
 
 	/**
-	 * \brief Set delimiter string for delimiter \c d.
+	 * \brief Set delimiter string for delimiter \p d.
 	 *
 	 * \param[in] d Delimiter type to set string for
-	 * \param[in] s Delimiter \c d.
+	 * \param[in] s Delimiter \p d.
 	 */
 	void delim_set(const Delimiter d, const std::string& s);
 
@@ -961,9 +961,9 @@ private:
 /**
  * \brief Decorator for table cells.
  *
- * A decorator can be registered for rows or columns. It gets an index \c i
+ * A decorator can be registered for rows or columns. It gets an index \p i
  * which can be either a row or column index and decorates the corresponding
- * string passed, iff \c i is set to be decorated.
+ * string passed, iff \p i is set to be decorated.
  */
 class CellDecorator
 {
@@ -997,7 +997,7 @@ protected:
 public:
 
 	/**
-	 * \brief Constructor for a decorator with \c n flags.
+	 * \brief Constructor for a decorator with \p n flags.
 	 *
 	 * \param[in] n Total number of flags
 	 */
@@ -1009,30 +1009,30 @@ public:
 	virtual ~CellDecorator() noexcept = default;
 
 	/**
-	 * \brief Set index \c i to be decorated.
+	 * \brief Set index \p i to be decorated.
 	 *
 	 * \param[in] i Index to be decorated
 	 */
 	void set(const int i);
 
 	/**
-	 * \brief Set index \c i to not be decorated.
+	 * \brief Set index \p i to not be decorated.
 	 *
 	 * \param[in] i Index to not be decorated
 	 */
 	void unset(const int i);
 
 	/**
-	 * \brief Return TRUE iff index \c i is set, otherwise FALSE.
+	 * \brief Return TRUE iff index \p i is set, otherwise FALSE.
 	 *
 	 * \param[in] i Index to check
 	 *
-	 * \return TRUE iff index \c i is set, otherwise FALSE
+	 * \return TRUE iff index \p i is set, otherwise FALSE
 	 */
 	bool is_set(const int i) const;
 
 	/**
-	 * \brief Decorate \c s iff index \c i is set.
+	 * \brief Decorate \p s iff index \p i is set.
 	 *
 	 * \param[in] i Index to be decorated
 	 * \param[in] s String to decorate
@@ -1077,7 +1077,7 @@ public:
 	DecoratorRegistry();
 
 	/**
-	 * \brief Register a decorator for column \c j.
+	 * \brief Register a decorator for column \p j.
 	 *
 	 * \param[in] j Column to register a decorator for
 	 * \param[in] d CellDecorator to be registered
@@ -1085,16 +1085,16 @@ public:
 	void register_to_col(const int j, std::unique_ptr<CellDecorator> d);
 
 	/**
-	 * \brief Return decorator for column \c j or nullptr.
+	 * \brief Return decorator for column \p j or nullptr.
 	 *
 	 * \param[in] j Column to get the decorator for
 	 *
-	 * \return CellDecorator for column \c j
+	 * \return CellDecorator for column \p j
 	 */
 	const CellDecorator* col_decorator(const int j) const;
 
 	/**
-	 * \brief Register a decorator for row \c i.
+	 * \brief Register a decorator for row \p i.
 	 *
 	 * \param[in] i Row to register a decorator for
 	 * \param[in] d CellDecorator to be registered
@@ -1102,16 +1102,16 @@ public:
 	void register_to_row(const int i, std::unique_ptr<CellDecorator> d);
 
 	/**
-	 * \brief Return decorator for row \c i or nullptr.
+	 * \brief Return decorator for row \p i or nullptr.
 	 *
 	 * \param[in] i Row to get the decorator for
 	 *
-	 * \return CellDecorator for row \c i
+	 * \return CellDecorator for row \p i
 	 */
 	const CellDecorator* row_decorator(const int i) const;
 
 	/**
-	 * \brief Mark cell \c i, \c j as decorated.
+	 * \brief Mark cell \p i, \p j as decorated.
 	 *
 	 * \param[in] i Row
 	 * \param[in] j Column
@@ -1119,7 +1119,7 @@ public:
 	void mark_decorated(const int i, const int j);
 
 	/**
-	 * \brief Mark cell \c i, \c j as not decorated.
+	 * \brief Mark cell \p i, \p j as not decorated.
 	 *
 	 * \param[in] i Row
 	 * \param[in] j Column
@@ -1127,12 +1127,12 @@ public:
 	void unmark_decorated(const int i, const int j);
 
 	/**
-	 * \brief TRUE iff \c i, \c j is marked as decorated.
+	 * \brief TRUE iff \p i, \p j is marked as decorated.
 	 *
 	 * \param[in] i Row
 	 * \param[in] j Column
 	 *
-	 * \return TRUE iff \c i, \c j is marked as decorated
+	 * \return TRUE iff \p i, \p j is marked as decorated
 	 */
 	bool is_decorated(const int i, const int j);
 
@@ -1192,12 +1192,12 @@ private:
 	void set_flag_worker(CellDecorator* d, const int n, const bool f);
 
 	/**
-	 * \brief Worker to check whether decorator is set on entry \c n.
+	 * \brief Worker to check whether decorator is set on entry \p n.
 	 *
 	 * \param[in] d CellDecorator to get a flag from
 	 * \param[in] n Row or Column to check for flag
 	 *
-	 * \return TRUE, if \c n is set in \c d, otherwise FALSE
+	 * \return TRUE, if \p n is set in \p d, otherwise FALSE
 	 */
 	bool is_decorated_worker(const CellDecorator* d, const int n);
 
@@ -1280,7 +1280,7 @@ public:
 	std::string& operator() (int row, int col);
 
 	/**
-	 * \brief Register a decorator for column \c j.
+	 * \brief Register a decorator for column \p j.
 	 *
 	 * \param[in] j Column to register a decorator for
 	 * \param[in] d CellDecorator to be registered
@@ -1288,16 +1288,16 @@ public:
 	void register_to_col(const int j, std::unique_ptr<CellDecorator> d);
 
 	/**
-	 * \brief Return decorator for column \c j or nullptr.
+	 * \brief Return decorator for column \p j or nullptr.
 	 *
 	 * \param[in] j Column to get the decorator for
 	 *
-	 * \return CellDecorator for column \c j
+	 * \return CellDecorator for column \p j
 	 */
 	const CellDecorator* col_decorator(const int j) const;
 
 	/**
-	 * \brief Register a decorator for row \c i.
+	 * \brief Register a decorator for row \p i.
 	 *
 	 * \param[in] i Row to register a decorator for
 	 * \param[in] d CellDecorator to be registered
@@ -1305,16 +1305,16 @@ public:
 	void register_to_row(const int i, std::unique_ptr<CellDecorator> d);
 
 	/**
-	 * \brief Return decorator for row \c i or nullptr.
+	 * \brief Return decorator for row \p i or nullptr.
 	 *
 	 * \param[in] i Row to get the decorator for
 	 *
-	 * \return CellDecorator for row \c i
+	 * \return CellDecorator for row \p i
 	 */
 	const CellDecorator* row_decorator(const int i) const;
 
 	/**
-	 * \brief Mark cell \c i, \c j as decorated.
+	 * \brief Mark cell \p i, \p j as decorated.
 	 *
 	 * This activates decoration for the specified cell.
 	 *
@@ -1326,7 +1326,7 @@ public:
 	void mark_decorated(const int i, const int j);
 
 	/**
-	 * \brief Mark cell \c i, \c j as not be decorated.
+	 * \brief Mark cell \p i, \p j as not be decorated.
 	 *
 	 * This activates decoration for the specified cell.
 	 *

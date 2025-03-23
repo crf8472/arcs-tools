@@ -72,19 +72,21 @@ public:
 	/**
 	* \brief Worker: output a result object to file or stdout.
 	*
+	* \details
+	*
 	* The object musst overload operator << for std::ostream or a compile error
 	* will occurr.
 	*
 	* If a filename is specified, the output is directed to the file with the
-	* specified name. If \c filename() returns an empty string means that the
-	* output is passed to std::cout.
+	* specified name. If <tt>filename()</tt> returns an empty string means that
+	* the output is passed to <tt>std::cout</tt>.
 	*
 	* If an existing file is specified, the file is overwritten by default.
-	* This behaviour can be changed by \c set_append(true) before calling
-	* \c output().
+	* This behaviour can be changed by <tt>set_append(true)</tt> before calling
+	* <tt>output()</tt>.
 	*
-	* This function is intended to be used in \c do_run() implementations for
-	* results. It is not suited to output errors or log messages.
+	* This function is intended to be used in <tt>do_run()</tt> implementations
+	* for results. It is not suited to output errors or log messages.
 	*
 	* \param[in] object    The object to output
 	*

@@ -207,11 +207,11 @@ public:
 	void set_cddb_id(const bool cddb_id);
 
 	/**
-	 * \brief Return TRUE if \c flag is the only flag set, otherwise FALSE
+	 * \brief Return TRUE if \p flag is the only flag set, otherwise FALSE
 	 *
 	 * \param[in] flag Flag to check
 	 *
-	 * \return TRUE iff \c flag is the only flag set, otherwise FALSE
+	 * \return TRUE iff \p flag is the only flag set, otherwise FALSE
 	 */
 	bool has_only(const ARID_FLAG flag) const;
 
@@ -384,7 +384,7 @@ std::ostream& operator << (std::ostream& o, const RichARId& a);
 /**
  * \brief Build an ARId enriched with print information.
  *
- * \param[in] toc        ToC by which \c arid was created
+ * \param[in] toc        ToC by which \p arid was created
  * \param[in] arid       Actual ARId
  * \param[in] alt_prefix Alternative URL prefix
  * \param[in] layout     Layout to print ARId

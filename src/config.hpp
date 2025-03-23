@@ -102,7 +102,7 @@ public:
 	 *
 	 * If the option is currently set, the call has no effect.
 	 *
-	 * If \c option is OPTION::NONE or the setting of the option fails for some
+	 * If \p option is OPTION::NONE or the setting of the option fails for some
 	 * reason, an exception is thrown.
 	 *
 	 * Equivalent to set(option, std::string{}).
@@ -116,9 +116,9 @@ public:
 	/**
 	 * \brief Set the option to TRUE and add the specified value to it.
 	 *
-	 * If \c option is currently set, the value will be updated to \c value.
+	 * If \p option is currently set, the value will be updated to \p value.
 	 *
-	 * If \c option is OPTION::NONE or the setting of the option fails for some
+	 * If \p option is OPTION::NONE or the setting of the option fails for some
 	 * reason, an exception is thrown.
 	 *
 	 * \param[in] option The option to be set to TRUE
@@ -159,7 +159,7 @@ public:
 	/**
 	 * \brief Get an input argument by 0-based index.
 	 *
-	 * Will return the \c i-th argument inserted on command line.
+	 * Will return the \p i-th argument inserted on command line.
 	 *
 	 * \param[in] i Index of the argument in the argument list
 	 *
@@ -302,12 +302,12 @@ using OptionRegistry = std::vector<std::pair<OptionCode, Option>>;
 //FIXME This definition is repeated from clitokens.hpp
 
 /**
- * \brief TRUE iff OptionRegistry \c r contains a pair with OptionCode \c c.
+ * \brief TRUE iff OptionRegistry \p r contains a pair with OptionCode \p c.
  *
  * \param[in] c OptionCode to search for
  * \param[in] r Registry to search
  *
- * \return TRUE iff \c r contains \c c, otherwise FALSE
+ * \return TRUE iff \p r contains \p c, otherwise FALSE
  */
 bool contains(const arcsapp::OptionCode c, const arcsapp::OptionRegistry& r);
 
@@ -358,8 +358,8 @@ public:
 	/**
 	 * \brief Parse, validate and configure options.
 	 *
-	 * Command line input \c argv is parsed. The caller is responsible that
-	 * \c argc is the exact size of \c argv. Otherwise, crashes are likely.
+	 * Command line input \p argv is parsed. The caller is responsible that
+	 * \p argc is the exact size of \p argv. Otherwise, crashes are likely.
 	 *
 	 * If the call string is not syntactically wellformed or unrecognized options are
 	 * present, a CallSyntaxException is thrown.
@@ -607,7 +607,7 @@ public:
 	/**
 	 * \brief Get an input argument by 0-based index.
 	 *
-	 * Will return the \c i-th argument inserted on command line.
+	 * Will return the \p i-th argument inserted on command line.
 	 *
 	 * \param[in] i Index of the argument in the argument list
 	 *
@@ -688,8 +688,8 @@ protected:
 
 
 /**
- * \brief Parse \c list as a sequence of strings separated by \c delim and call
- * \c entry_hook on each of them.
+ * \brief Parse \p list as a sequence of strings separated by \p delim and call
+ * \p entry_hook on each of them.
  *
  * \param[in] list       Input string to parse as a list
  * \param[in] delim      Delimiter for list entries
@@ -700,8 +700,8 @@ void parse_list(const std::string& list, const char delim,
 
 
 /**
- * \brief Parse \c list as a sequence of strings separated by \c delim and
- * convert each entry by \c convert_func.
+ * \brief Parse \p list as a sequence of strings separated by \p delim and
+ * convert each entry by \p convert_func.
  *
  * \tparam T Type of requested objects
  *

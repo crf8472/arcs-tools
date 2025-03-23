@@ -24,7 +24,7 @@ inline namespace v_1_0_0
 /**
  * \brief Abstract base class for formatters.
  *
- * Each subclass will provide a function \c format() that accepts exactly the
+ * Each subclass will provide a function \p format() that accepts exactly the
  * parameters from the template parameter pack as const references.
  */
 template <typename T, typename ...Args>
@@ -225,7 +225,7 @@ namespace details
  *
  * \param[in] e The value to convert
  *
- * \return Underlying type of \c e.
+ * \return Underlying type of \p e.
  */
 template <typename E>
 inline constexpr auto to_underlying(E e) noexcept

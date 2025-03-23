@@ -70,10 +70,10 @@ struct ToCFiles final
 	/**
 	 * \brief Returns whether the list of names represent the same file.
 	 *
-	 * The first value of the returned tuple is TRUE iff \c toc references
+	 * The first value of the returned tuple is TRUE iff \p toc references
 	 * either a single audio file or no audio files at all, otherwise FALSE.
 	 *
-	 * The second value of the returned tuple is TRUE iff \c toc references a
+	 * The second value of the returned tuple is TRUE iff \p toc references a
 	 * non-empty, pairwise distinct list of audio files, otherwise FALSE.
 	 *
 	 * <table>
@@ -170,7 +170,7 @@ public:
 	 * audio files.
 	 *
 	 * If the metadata file contains any names of audiofiles, they are ignored
-	 * in favor of \c audiofilenames. If the list of audiofiles is empty, the
+	 * in favor of \p audiofilenames. If the list of audiofiles is empty, the
 	 * path of the metafilename will be searched for audiofile names specified
 	 * within the metafilename.
 	 *
