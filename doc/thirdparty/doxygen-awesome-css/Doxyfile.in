@@ -10,7 +10,8 @@ DISABLE_INDEX          = NO
 FULL_SIDEBAR           = NO
 
 HTML_EXTRA_STYLESHEET  = @TARGET_CSS_DIR@/doxygen-awesome.css \
-                         @TARGET_CSS_DIR@/doxygen-awesome-sidebar-only.css
+                         @TARGET_CSS_DIR@/doxygen-awesome-sidebar-only.css \
+                         @TARGET_CSS_DIR@/@CUSTOM_STYLE_FILE@
 
 HTML_COLORSTYLE        = LIGHT # required with Doxygen >= 1.9.5
 

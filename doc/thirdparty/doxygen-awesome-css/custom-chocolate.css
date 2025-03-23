@@ -1,0 +1,103 @@
+/* arcs-tools documentation website theme - chocolate */
+
+/* See: */
+/* https://jothepro.github.io/doxygen-awesome-css/md_docs_2customization.html */
+
+html {
+	/* for light theme */
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not(.light-mode) {
+        /* define dark-mode variable overrides here if you DON'T use */
+		/* doxygen-awesome-darkmode-toggle.js */
+
+		/* primary theme color. This will affect the entire websites color */
+		/* scheme: links, arrows, labels, ... */
+		--primary-color: #ffe6a7;  /* non-active links */
+		--primary-dark-color: #432818;
+		--primary-light-color: #bb9457;
+
+		/* page base colors */
+		--page-background-color: #99582a;
+		--page-foreground-color: #f0eff4; /* some white */
+		--page-secondary-foreground-color: #ffe6a7;
+
+		/* color for all separators on the website: hr, borders, ... */
+		--separator-color: #ffe6a7;
+
+		/* border radius for all rounded components. Will affect many */
+		/* components, like dropdowns, memitems, codeblocks, ... */
+		/* --border-radius-large:  8px; */
+		/* --border-radius-small:  4px; */
+		/* --border-radius-medium: 6px; */
+
+		/* default spacings. Most components reference these values for */
+		/* spacing, to provide uniform spacing on the page. */
+		/* --spacing-small:   5px; */
+		/* --spacing-medium: 10px; */
+		/* --spacing-large:  16px; */
+
+		/* ... */
+
+		/* colors for various content boxes: */
+		/* @warning, @note, @deprecated @bug */
+		--warning-color: #faf3d8;
+		--warning-color-dark: #f3a600;
+		--warning-color-darker: #5f4204;
+		--note-color: #e4f3ff;
+		--note-color-dark: #1879C4;
+		--note-color-darker: #274a5c;
+		--todo-color: #e4dafd;
+		--todo-color-dark: #5b2bdd;
+		--todo-color-darker: #2a0d72;
+		--deprecated-color: #ecf0f3;
+		--deprecated-color-dark: #5b6269;
+		--deprecated-color-darker: #43454a;
+		--bug-color: #f8d1cc;
+		--bug-color-dark: #b61825;
+		--bug-color-darker: #75070f;
+		--invariant-color: #d8f1e3;
+		--invariant-color-dark: #44b86f;
+		--invariant-color-darker: #265532;
+
+		/* blockquote colors */
+		--blockquote-background: #f8f9fa;
+		--blockquote-foreground: #636568;
+
+		/* table colors */
+		--tablehead-background: #f1f1f1;
+		/* --tablehead-foreground: var(--page-foreground-color); */
+
+		/* ... */
+
+		/* code block colors */
+		--code-background: #6f1d1b;
+		/* --code-foreground: var(--page-foreground-color); */
+
+		/* fragment colors */
+		--fragment-background: #bb9457; /* X */
+		--fragment-foreground: #f0eff4; /* X */
+		--fragment-keyword: #ffe6a7; /* X */
+		--fragment-keywordtype: #8258b3;
+		--fragment-keywordflow: #d67c3b;
+		--fragment-token: #438a59;
+		--fragment-comment: #432818; /* X */
+		--fragment-link: #5383d6;
+		--fragment-preprocessor: #46aaa5;
+		--fragment-linenumber-color: #f0eff4; /* X */
+		--fragment-linenumber-background: #f4f4f5;
+		--fragment-linenumber-border: #e3e5e7;
+		--fragment-lineheight: 20px;
+
+		/* sidebar navigation (treeview) colors */
+		--side-nav-background: #432818;
+		/* --side-nav-foreground: var(--page-foreground-color); */
+		/* --side-nav-arrow-opacity: 0; */
+		/* --side-nav-arrow-hover-opacity: 0.9; */
+
+		/* --toc-background: var(--side-nav-background); */
+		/* --toc-foreground: var(--side-nav-foreground); */
+    }
+}
+

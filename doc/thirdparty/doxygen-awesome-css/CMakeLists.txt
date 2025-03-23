@@ -30,6 +30,8 @@ set (OUTPUT_MAINPAGE   "${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html" )
 set (DOXYFILE_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in" )
 set (DOXYFILE          "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile" )
 
+set (CUSTOM_STYLE_FILE "custom-chocolate.css" )
+
 set (TARGET_CSS_DIR    "${DOXYGEN_OUTPUT_DIRECTORY}/html/css" )
 
 
@@ -82,7 +84,7 @@ file (GLOB STYLE_FILES RELATIVE "${SOURCE_CSS_DIR}"
 	"${SOURCE_CSS_DIR}/*.css" "${SOURCE_CSS_DIR}/*.js" )
 
 
-## --- target: deploy style files
+## --- target: deploy stock style files
 
 foreach (FILE ${STYLE_FILES} )
 	add_custom_command(
@@ -97,6 +99,20 @@ list(TRANSFORM STYLE_FILES PREPEND "${TARGET_CSS_DIR}/" )
 
 add_custom_target (arcstools_deploy_css_files ALL DEPENDS ${STYLE_FILES} )
 
+
+## --- target: deploy custom style files
+
+add_custom_target (arcstools_deploy_custom_style_file ALL
+	DEPENDS ${TARGET_CSS_DIR}/${CUSTOM_STYLE_FILE} )
+
+add_custom_command(
+	OUTPUT  ${TARGET_CSS_DIR}/${CUSTOM_STYLE_FILE}
+	COMMAND ${CMAKE_COMMAND} -E copy
+			"${CMAKE_CURRENT_SOURCE_DIR}/${CUSTOM_STYLE_FILE}"
+			"${TARGET_CSS_DIR}/${FILE}" )
+
+add_dependencies   (arcstools_deploy_css_files
+										arcstools_deploy_custom_style_file )
 
 ## --- target: create css directory
 
