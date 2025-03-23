@@ -119,7 +119,7 @@ struct ToCFiles final
 	 * \return Expanded file path
 	 */
 	static std::string expand_path(const std::string& metafilename,
-		const std::string& audiofile);
+		const std::string& audiofilename);
 };
 
 
@@ -156,7 +156,7 @@ public:
 	/**
 	 * \brief Default Constructor
 	 *
-	 * \param[in] type The default type to request
+	 * \param[in] types The checksum types to calculate
 	 */
 	explicit ChecksumCalculator(const ChecksumTypeset& types);
 

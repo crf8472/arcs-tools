@@ -288,7 +288,7 @@ protected:
 	 * If no id is requested, no selection will be returned.
 	 *
 	 * \param[in] request OptionCode for requesting a parser or reader
-	 * \param[in] config  Current configuration
+	 * \param[in] options Current configuration options
 	 */
 	std::unique_ptr<arcsdec::FileReaderSelection> create_selection(
 			const OptionCode& request,
