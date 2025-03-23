@@ -11,18 +11,18 @@ See the [project repository](https://github.com/crf8472/arcs-tools)
 Arcs-tools provide an example implementation of the libarcstk feature set. The
 toolkit supports the following tasks for working with AccurateRip checksums:
 
-- Verify AccurateRip checksums against their reference sums from AccurateRip
-- Calculate the AccurateRip checksums of a succession of audio samples, may it
-  be a single track or an album
+- Verify AccurateRip checksums against their reference sums from AccurateRip.
+- Calculate the AccurateRip checksums of a sequence of audio samples, may it
+  be a single track or an album.
 - Calculate the AccurateRip ID of a CD from its TOC information (along with the
-  request URL and the canonical response filename)
-- Parse the responses of AccurateRip ("dBAR-format") to plaintext
+  request URL and the canonical response filename).
+- Parse the responses of AccurateRip ("dBAR-format") to plaintext.
 
 
 
 \section nonfeatures Non-features
 
-- No ripping of CDs
+- No ripping of CDs.
 - Does not send any requests to AccurateRip. Has no network facilities and is
   not supposed to get any. The actual HTTP request for fetching the reference
   values is better performed by the HTTP client of your choice.
@@ -49,9 +49,11 @@ arcs-tools:
 
 	$ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/usr/local ..
 
-If you do not intend to install the dependencies locally, you can instead pull
-them as submodules by doing:
+If you do not intend to install the dependencies locally for development, you
+can instead pull them as submodules by doing:
 
+	$ git submodule init
+	$ git submodule update
 	$ cmake -DCMAKE_BUILD_TYPE=Release -DWITH_SUBMODULES=ON ..
 
 This documentation was generated from commit
