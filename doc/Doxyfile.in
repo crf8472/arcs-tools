@@ -2,6 +2,8 @@
 
 ## Base configuration for doxygen.
 ##
+## Activates only HTML output, deactives LaTeX.
+##
 ## Can be used as a standalone config for doxygen or to be included by
 ## another doxyfile that adds generator-specific configuration.
 ## See e.g. doc/thirdparty/mcss/Doxyfile.in.
@@ -15,26 +17,26 @@ STRIP_FROM_PATH        = @DOXYGEN_STRIP_FROM_PATH@
 STRIP_FROM_INC_PATH    = @DOXYGEN_STRIP_FROM_INC_PATH@
 
 # Base configuration: define every m.css markup macro empty
-ALIASES                = \
-    "m_div{1}=" \
-    "m_enddiv=" \
-    "m_span{1}=" \
-    "m_endspan=" \
-    "m_class{1}=" \
-    "m_footernavigation=" \
-    "m_examplenavigation{2}=" \
-    "m_keywords{1}=" \
-    "m_keyword{3}=" \
-    "m_enum_values_as_keywords="
+# This entails to use this Doxyfile with m.css markup without using m.css.
+ALIASES               += \
+							"m_div{1}="                  \
+							"m_enddiv="                  \
+							"m_span{1}="                 \
+							"m_endspan="                 \
+							"m_class{1}="                \
+							"m_footernavigation="        \
+							"m_examplenavigation{2}="    \
+							"m_keywords{1}="             \
+							"m_keyword{3}="              \
+							"m_enum_values_as_keywords="
 
-EXTENSION_MAPPING      = tpp=C++
-
-INLINE_GROUPED_CLASSES = YES
+INLINE_GROUPED_CLASSES = YES  ## without effect since no groups were used
 EXTRACT_LOCAL_CLASSES  = NO
 HIDE_UNDOC_MEMBERS     = YES
 HIDE_UNDOC_CLASSES     = YES
 HIDE_FRIEND_COMPOUNDS  = YES
-INTERNAL_DOCS          = YES
+HIDE_IN_BODY_DOCS      = YES
+INTERNAL_DOCS          = @DOXYGEN_INTERNAL_DOCS@
 SHOW_GROUPED_MEMB_INC  = YES
 
 SORT_BRIEF_DOCS        = YES
@@ -42,10 +44,11 @@ SORT_MEMBERS_CTORS_1ST = YES
 SORT_GROUP_NAMES       = YES
 
 WARN_LOGFILE           = @PROJECT_LOG_DIR@/Doxygen_Warnings.log
+WARN_NO_PARAMDOC       = YES
 
 INPUT                  = @DOXYGEN_INPUT@
 FILE_PATTERNS          = @DOXYGEN_FILE_PATTERNS@
-RECURSIVE              = YES
+EXCLUDE_PATTERNS       = *.cpp
 
 USE_MDFILE_AS_MAINPAGE = @DOXYGEN_USE_MDFILE_AS_MAINPAGE@
 
@@ -53,8 +56,7 @@ VERBATIM_HEADERS       = NO
 
 #GENERATE_HTML          = YES # default
 
-#GENERATE_LATEX         = YES # default
-COMPACT_LATEX          = YES
+GENERATE_LATEX         = NO
 
 GROUP_GRAPHS           = NO
 
