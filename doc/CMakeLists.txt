@@ -95,8 +95,6 @@ configure_file (${DOC_TEXTS_SOURCE_DIR}/MAINPAGE.md.in ${DOC_MAINPAGE} @ONLY )
 ## Add default doc target.
 ## Each documentation config in thirdparty/ may add its own concrete dependency
 ## target to 'doc' and do the concrete work.
-## As a fallback, we provide target 'doc_plain' that generates doxygen's stock
-## HTML output that gives as this nice, cosy feeling of the Nineties.
 
 add_custom_target (arcstools_doc )
 
