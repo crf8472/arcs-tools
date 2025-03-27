@@ -83,15 +83,6 @@ std::string Option::tokens_str() const
 }
 
 
-bool operator == (const Option& lhs, const Option& rhs) noexcept
-{
-	return lhs.symbol() == rhs.symbol()
-		&& lhs.shorthand_symbol() == rhs.shorthand_symbol()
-		&& lhs.needs_value() == rhs.needs_value()
-		&& lhs.default_arg() == rhs.default_arg();
-}
-
-
 namespace input
 {
 

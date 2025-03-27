@@ -36,9 +36,6 @@ inline namespace v_1_0_0
 using OptionCode = uint64_t;
 
 
-class Option;
-bool operator == (const Option& lhs, const Option& rhs) noexcept;
-
 /**
  * \brief Descriptor for a single command line option.
  *
@@ -55,8 +52,6 @@ bool operator == (const Option& lhs, const Option& rhs) noexcept;
 class Option final
 {
 public:
-
-	friend bool operator == (const Option& lhs, const Option& rhs) noexcept;
 
 	/**
 	 * \brief Constructor for options with shorthand and symbol.
@@ -125,6 +120,15 @@ public:
 	 * \return List of tokens
 	 */
 	std::string tokens_str() const;
+
+
+	friend bool operator == (const Option& lhs, const Option& rhs) noexcept
+	{
+		return lhs.symbol() == rhs.symbol()
+			&& lhs.shorthand_symbol() == rhs.shorthand_symbol()
+			&& lhs.needs_value() == rhs.needs_value()
+			&& lhs.default_arg() == rhs.default_arg();
+	}
 
 private:
 
