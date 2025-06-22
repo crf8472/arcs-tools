@@ -694,6 +694,16 @@ std::unique_ptr<CalcTableCreator> ARCalcApplication::create_formatter(
 		? config.value(CALC::COLDELIM)
 		: " ");
 
+	// Remove label space if not requested
+
+	if (config.is_set(CALC::NOLABELS))
+	{
+		layout->set_col_labels(false);
+		layout->set_col_labels_delims(false);
+
+		layout->set_row_labels(false);
+	}
+
 	// Print tracks either as columns or as rows
 
 	std::unique_ptr<TableComposerBuilder> builder = nullptr;
