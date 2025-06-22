@@ -316,15 +316,28 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 		}
 	}
 
-	// Printing options
+	// Print checksums only if requested
 
 	if (options->is_set(CALC::SUMSONLY))
 	{
+		// TODO Does "sums only" also mean to skip id + url?
+		//options->unset(CALC::PRINTID);
+		//options->unset(CALC::PRINTURL);
+
 		options->set(CALC::NOTRACKS);
 		options->set(CALC::NOFILENAMES);
 		options->set(CALC::NOOFFSETS);
 		options->set(CALC::NOLENGTHS);
 		options->set(CALC::NOLABELS); // Multiple Checksum types?
+	}
+
+	if (options->is_set(CALC::NOTRACKS)
+		&& options->is_set(CALC::NOFILENAMES)
+		&& options->is_set(CALC::NOOFFSETS)
+		&& options->is_set(CALC::NOLENGTHS)
+		&& options->is_set(CALC::NOLABELS))
+	{
+		options->set(CALC::SUMSONLY);
 	}
 
 	return options;
