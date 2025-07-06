@@ -412,6 +412,8 @@ public:
 	 * Subclasses may declare their numerical range starting with this
 	 * OptionCode.
 	 *
+	 * \return Minimal OptionCode to be used by subclasses
+	 *
 	 * \see ARIdOptions
 	 * \see CALCBASE
 	 */
@@ -574,6 +576,12 @@ public:
 
 	/**
 	 * \brief Get a configuration object.
+	 *
+	 * \tparam T Configuration object type
+	 *
+	 * \param[in] option Option code to get value for
+	 *
+	 * \return Object for option \p option
 	 */
 	template <typename T>
 	auto object(const OptionCode& option) const -> T

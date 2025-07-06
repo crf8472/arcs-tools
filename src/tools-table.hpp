@@ -95,6 +95,10 @@ public:
 
 	/**
 	 * \brief Set the value for the specified field in record \p i.
+	 *
+	 * \param[in] i          Record index
+	 * \param[in] field_type Type of the field
+	 * \param[in] value      Value for the specified field
 	 */
 	void set_field(const int i, const F& field_type,
 			const std::string& value)
@@ -104,6 +108,10 @@ public:
 
 	/**
 	 * \brief Set the value for the specified field in record \p i, field \p j.
+	 *
+	 * \param[in] i     Record index
+	 * \param[in] j     Field index
+	 * \param[in] value Value for the specified field
 	 */
 	void set_field(const int i, const int j,
 			const std::string& value)
@@ -113,6 +121,11 @@ public:
 
 	/**
 	 * \brief The value of the specified field.
+	 *
+	 * \param[in] i           Record index
+	 * \param[in] field_type  Type of the field
+	 *
+	 * \return Value of the specified field
 	 */
 	std::string field(const int i, const F& field_type) const
 	{
@@ -121,6 +134,9 @@ public:
 
 	/**
 	 * \brief Set the label for the specified field type.
+	 *
+	 * \param[in] field_type  Type of the field
+	 * \param[in] label       Label to set for the field
 	 */
 	void set_label(const F& field_type, const std::string& label)
 	{
@@ -129,6 +145,10 @@ public:
 
 	/**
 	 * \brief Label for the specified field type.
+	 *
+	 * \param[in] field_type  Type of the field
+	 *
+	 * \return Label of the field of type \p field_type
 	 */
 	std::string label(const F& field_type) const
 	{
@@ -137,6 +157,9 @@ public:
 
 	/**
 	 * \brief Set the label for the specified field index.
+	 *
+	 * \param[in] field_idx Index of the field
+	 * \param[in] label     Label to set for the field
 	 */
 	void set_label(const int field_idx, const std::string& label)
 	{
@@ -145,6 +168,10 @@ public:
 
 	/**
 	 * \brief Label for the specified field index.
+	 *
+	 * \param[in] field_idx Index of the field
+	 *
+	 * \return Label of field \p field_idx
 	 */
 	std::string label(const int field_idx) const
 	{
@@ -155,6 +182,8 @@ public:
 	 * \brief First index of specified field type.
 	 *
 	 * \param[in] field_type  Type of the field
+	 *
+	 * \return Index of the first occurrence of a field of type \p field_type
 	 */
 	int field_idx(const F& field_type) const
 	{
@@ -166,6 +195,8 @@ public:
 	 *
 	 * \param[in] field_type  Type of the field
 	 * \param[in] i           Occurrence of the field_type
+	 *
+	 * \return Index of the i-th occurrence of a field of type \p field_type
 	 */
 	int field_idx(const F& field_type, const int i) const
 	{
@@ -174,6 +205,10 @@ public:
 
 	/**
 	 * \brief TRUE iff specified field type is part of the result.
+	 *
+	 * \param[in] field_type Type of the field
+	 *
+	 * \return TRUE iff \p field_type is part of the result, otherwise FALSE
 	 */
 	bool has_field(const F& field_type) const
 	{
@@ -182,6 +217,8 @@ public:
 
 	/**
 	 * \brief Total number of records.
+	 *
+	 * \return Total number of records
 	 */
 	size_type total_records() const
 	{
@@ -190,6 +227,8 @@ public:
 
 	/**
 	 * \brief Total number of fields per record.
+	 *
+	 * \return Total number of fields per record
 	 */
 	size_type fields_per_record() const
 	{
@@ -227,6 +266,8 @@ protected:
 
 	/**
 	 * \brief Read or manipulate the object holding the records.
+	 *
+	 * \return Object with records
 	 */
 	T& to_object()
 	{
@@ -300,6 +341,10 @@ constexpr int MAX_ATTR = 7;
 
 /**
  * \brief Produce default label for a specified attribute.
+ *
+ * \tparam A Attribute to get default label for
+ *
+ * \return DefaultLabel for attribute \p A
  */
 template<ATTR A>
 std::string DefaultLabel();
@@ -357,6 +402,8 @@ public:
 	 * \p nullptr is returned.
 	 *
 	 * \param[in] record_idx Record index to get decorator for, if any
+	 *
+	 * \return CellDecorator of record \p record_idx
 	 */
 	const CellDecorator* on_record(const int record_idx) const;
 
@@ -376,6 +423,8 @@ public:
 	 * \p nullptr is returned.
 	 *
 	 * \param[in] field_idx Field index to get decorator for, if any
+	 *
+	 * \return CellDecorator of field \p field_idx
 	 */
 	const CellDecorator* on_field(const int field_idx) const;
 
@@ -651,6 +700,8 @@ public:
 	 * \param[in] field_types List of fields for each record
 	 * \param[in] with_labels If TRUE, use default labels
 	 *
+	 * \return TableComposer instance
+	 *
 	 * \see DefaultLabel
 	 */
 	std::unique_ptr<TableComposer> build(
@@ -786,6 +837,8 @@ protected:
 	 * \brief Track represented by the specified record index.
 	 *
 	 * \param[in] record_idx The record index to get the track for
+	 *
+	 * \return Track number of \p record_idx
 	 */
 	int track(const int record_idx) const;
 
@@ -992,6 +1045,8 @@ public:
 
 	/**
 	 * \brief TRUE iff data attribute \p a is to be formatted by this instance.
+	 *
+	 * \param[in] a Attribute to check for
 	 *
 	 * \return TRUE iff \p a is formatted by this instance, otherwise FALSE.
 	 */

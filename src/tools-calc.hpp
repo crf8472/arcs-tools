@@ -130,6 +130,10 @@ struct IdSelection final
 {
 	/**
 	 * \brief Create a selection for the specific FileReader id.
+	 *
+	 * \param[in] id Id of the FileReader to use
+	 *
+	 * \return Selection for FileReader with id \p id
 	 */
 	std::unique_ptr<arcsdec::FileReaderSelection> operator()(
 			const std::string& id) const;

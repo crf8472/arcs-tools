@@ -93,6 +93,8 @@ std::vector<std::string> split(std::string str, const std::string& delim);
  * \param[in] c     Container to transform
  * \param[in] delim Delimiter to place between every two container elements
  * \param[in] f     Function to transform container element to string
+ *
+ * \return List of Container contents, separated by \p delim
  */
 template <typename Container> // TODO SFINAE stuff: empty(), size(), b+e, rbegin
 inline std::string to_sep_list(const Container c, const std::string delim,
@@ -241,6 +243,8 @@ public:
 	/**
 	 * \brief Alignment of the specified column.
 	 *
+	 * \param[in] col Column index
+	 *
 	 * \return Alignment applied to the specified column.
 	 */
 	Align align(int col) const;
@@ -251,6 +255,8 @@ public:
 	 * The column label if any may have a greater width. The optimal
 	 * width of a column respecting its label can be determined by
 	 * <code>std::max(optimal_width(c), col_label(c).width())</code>.
+	 *
+	 * \param[in] col Column index
 	 *
 	 * \return The optimal width of the specified column
 	 */
@@ -494,12 +500,16 @@ public:
 	/**
 	 * \brief TRUE iff the specified row exists in the table.
 	 *
+	 * \param[in] row Row index to check for existence
+	 *
 	 * \return TRUE iff row \p row exists, otherwise FALSE
 	 */
 	bool row_exists(const int row) const;
 
 	/**
 	 * \brief TRUE iff the specified column exists in the table.
+	 *
+	 * \param[in] col Column index to check for existence
 	 *
 	 * \return TRUE iff column \p col exists, otherwise FALSE
 	 */
@@ -618,6 +628,10 @@ protected:
 	/**
 	 * \brief TRUE iff (unsigned) cell index actually exists.
 	 *
+	 * \tparam T size_type of \p cells_
+	 *
+	 * \param[in] i Index of cell to check for existence
+	 *
 	 * \return TRUE iff the specified index points to an existing cell,
 	 * otherwise FALSE.
 	 */
@@ -630,6 +644,10 @@ protected:
 
 	/**
 	 * \brief TRUE iff (signed) cell index actually exists.
+	 *
+	 * \tparam T size_type of \p cells_
+	 *
+	 * \param[in] i Index of cell to check for existence
 	 *
 	 * \return TRUE iff the specified index points to an existing cell,
 	 * otherwise FALSE.

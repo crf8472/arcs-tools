@@ -521,6 +521,8 @@ public:
 	 * The first element is the foreground color, the second element is the
 	 * background color.
 	 *
+	 * \param[in] d DecorationType to get colors for
+	 *
 	 * \return Colors for type \p d
 	 */
 	std::pair<Color,Color> colors(const DecorationType& d) const;

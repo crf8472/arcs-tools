@@ -377,6 +377,8 @@ public:
  *
  * \param[in] o Stream to output object to
  * \param[in] a RichARId to print to stream
+ *
+ * \return Stream with \p a inserted
  */
 std::ostream& operator << (std::ostream& o, const RichARId& a);
 

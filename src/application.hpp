@@ -127,6 +127,8 @@ public:
 
 	/**
 	 * \brief Acquire singleton instance.
+	 *
+	 * \return Output singleton
 	 */
 	static Output& instance();
 
@@ -211,6 +213,8 @@ protected:
 
 	/**
 	 * \brief Setup logging according to options.
+	 *
+	 * \param[in] options Options to setup loggging
 	 */
 	void setup_logging(const Options& options) const;
 

@@ -283,16 +283,20 @@ protected:
 			const Configuration& config) const;
 
 	/**
-	 * \brief Select a file reader by id.
+	 * \brief Selection of FileReaders by id.
 	 *
-	 * If no id is requested, no selection will be returned.
+	 * The value of the option \p request in \p config must be a valid id for a
+	 * parser or reader, otherwise a null pointer will be returned instead of
+	 * a selection.
 	 *
-	 * \param[in] request OptionCode for requesting a parser or reader
-	 * \param[in] options Current configuration options
+	 * \param[in] request OptionCode for requesting a specific parser or reader
+	 * \param[in] config  Current configuration requests
+	 *
+	 * \return Selection according to input or nullptr
 	 */
 	std::unique_ptr<arcsdec::FileReaderSelection> create_selection(
-			const OptionCode& request,
-			const Configuration& options) const;
+			const OptionCode&    request,
+			const Configuration& config) const;
 };
 
 

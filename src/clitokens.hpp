@@ -111,6 +111,8 @@ public:
 
 	/**
 	 * \brief Description of the symbol
+	 *
+	 * \return Description of the symbol
 	 */
 	const std::string& description() const;
 

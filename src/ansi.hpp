@@ -45,6 +45,10 @@ enum class Highlight : int
 
 /**
  * \brief Get the reset code for the highlight.
+ *
+ * \param[in] hl Highlight to get reset code for
+ *
+ * \return Reset code for \p hl
  */
 Highlight reset(const Highlight hl);
 

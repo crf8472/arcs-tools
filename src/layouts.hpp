@@ -26,6 +26,9 @@ inline namespace v_1_0_0
  *
  * Each subclass will provide a function \p format() that accepts exactly the
  * parameters from the template parameter pack as const references.
+ *
+ * \tparam T    Formatting result type
+ * \tparam Args Parameters for formatting
  */
 template <typename T, typename ...Args>
 class Layout
@@ -46,6 +49,8 @@ public:
 	 * \brief Format objects.
 	 *
 	 * \param[in] t Tuple of the objects to format
+	 *
+	 * \return Formatted result
 	 */
 	T format(InputTuple t) const
 	{
@@ -56,9 +61,9 @@ public:
 	/**
 	 * \brief Format objects.
 	 *
-	 * Convenience for not having to turn anything explicitly into tuples.
-	 *
 	 * \param[in] args The objects to format
+	 *
+	 * \return Formatted result
 	 */
 	T format(const Args&... args) const
 	{
@@ -176,6 +181,8 @@ public:
 
 	/**
 	 * \brief Construct with individual flags.
+	 *
+	 * \param[in] flags Flags to use
 	 */
 	explicit WithInternalFlags(const uint32_t flags) : flags_ { flags }
 		{ /* empty */ }

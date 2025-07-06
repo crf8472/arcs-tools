@@ -69,13 +69,23 @@ protected:
 	 */
 	InfoResultComposer(const std::size_t rows, const std::size_t cols);
 
+	/**
+	 * \brief Create layout for result.
+	 *
+	 * \return Layout for result
+	 */
 	std::unique_ptr<StringTableLayout> create_layout() const;
 
 	/**
 	 * \brief Format library filenames as separated list.
+	 *
+	 * \param[in] descriptor Descriptor
+	 * \param[in] delim      Delimiter
+	 *
+	 * \return List of library filenames of \p descriptor, separated by \p delim
 	 */
 	std::string libs_to_sep_list(const FileReaderDescriptor& descriptor,
-			const std::string& sep);
+			const std::string& delim);
 
 	/**
 	 * \brief Get the collected information

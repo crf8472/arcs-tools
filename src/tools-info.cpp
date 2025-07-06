@@ -57,7 +57,7 @@ std::unique_ptr<StringTableLayout> InfoResultComposer::create_layout() const
 
 
 std::string InfoResultComposer::libs_to_sep_list(
-		const FileReaderDescriptor& descriptor, const std::string& sep)
+		const FileReaderDescriptor& descriptor, const std::string& delim)
 {
 	// Aggregate all libraries
 
@@ -66,7 +66,7 @@ std::string InfoResultComposer::libs_to_sep_list(
 		const auto dependencies { descriptor.libraries() };
 		for (const auto& [dep_name, dep_libs] : dependencies)
 		{
-			deps += dep_libs + sep;
+			deps += dep_libs + delim;
 		}
 	}
 

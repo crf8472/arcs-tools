@@ -50,6 +50,8 @@ private:
  *
  * \param[in] o       The stream to print the result to
  * \param[in] result  The result object to print
+ *
+ * \return Stream \p o with \p result inserted
  */
 std::ostream& operator << (std::ostream& o, const Result& result);
 
@@ -121,6 +123,8 @@ public:
 
 	/**
 	 * \brief Join another ResultObject to the list of arguments.
+	 *
+	 * \param[in] r Result object to join
 	 */
 	void join(ResultObject&& r)
 	{
@@ -129,6 +133,8 @@ public:
 
 	/**
 	 * \brief Return the tuple of arguments.
+	 *
+	 * \return Tuple of arguments
 	 */
 	const Tuple& object() const
 	{
