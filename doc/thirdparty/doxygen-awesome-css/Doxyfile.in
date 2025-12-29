@@ -5,6 +5,10 @@
 ## specific for doxygen-awesome-css
 ## cf. https://github.com/jothepro/doxygen-awesome-css
 
+## annoying duplicates:
+## https://stackoverflow.com/a/79032607
+## https://github.com/JoergBrueggmann/duplicate-descriptions-doxygen
+
 GENERATE_TREEVIEW      = YES # required!
 DISABLE_INDEX          = NO
 FULL_SIDEBAR           = NO
@@ -18,4 +22,17 @@ HTML_COLORSTYLE        = LIGHT # required with Doxygen >= 1.9.5
 HAVE_DOT               = YES
 DOT_IMAGE_FORMAT       = svg
 DOT_TRANSPARENT        = YES
+
+
+## Specific for arcs-tools doxygen-awesomce-css/HTML:
+
+# Do not show namespace names in title
+HIDE_SCOPE_NAMES       = YES
+
+# Do not generate a 'Namespaces' page. Remove Namespaces entry from the
+# Quick Index and from the Folder Tree View.
+SHOW_NAMESPACES        = NO
+
+# Show also includes with double quotes, not only with angle brackets
+FORCE_LOCAL_INCLUDES   = YES
 
