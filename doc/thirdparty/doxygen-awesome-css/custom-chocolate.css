@@ -16,12 +16,12 @@ html {
 		/* scheme: links, arrows, labels, ... */
 		--primary-color: #ffe6a7;  /* non-active links */
 		--primary-dark-color: #432818;
-		--primary-light-color: #bb9457;
+		--primary-light-color: #ffe6a7;
 
 		/* page base colors */
-		--page-background-color: #99582a;
+		--page-background-color: #432818; /* #99582a; */
 		--page-foreground-color: #f0eff4; /* some white */
-		--page-secondary-foreground-color: #ffe6a7;
+		--page-secondary-foreground-color: #bb9457;
 
 		/* color for all separators on the website: hr, borders, ... */
 		--separator-color: #ffe6a7;
@@ -76,7 +76,7 @@ html {
 		/* --code-foreground: var(--page-foreground-color); */
 
 		/* fragment colors */
-		--fragment-background: #bb9457; /* X */
+		--fragment-background: #99582a; /* X */
 		--fragment-foreground: #f0eff4; /* X */
 		--fragment-keyword: #ffe6a7; /* X */
 		--fragment-keywordtype: #8258b3;
