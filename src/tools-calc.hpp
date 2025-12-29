@@ -15,9 +15,6 @@
 #include <arcsdec/selection.hpp>       // FileReaderSelection
 #endif
 
-#ifndef __LIBARCSTK_IDENTIFIER_HPP__
-#include <arcstk/identifier.hpp>       // for ARId
-#endif
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>        // for Checksums, checksum::type
 #endif
@@ -50,7 +47,6 @@ inline namespace v_1_0_0
 namespace calc
 {
 
-using arcstk::ARId;
 using arcstk::ToC;
 using arcstk::Checksums;
 
@@ -181,9 +177,9 @@ public:
 	 * \param[in] audiofilenames Name of the audio files
 	 * \param[in] metafilename   Name of the metadata file
 	 *
-	 * \return Checksums, Id and ToC of the image represented by the input files
+	 * \return Checksums and ToC of the image represented by the input files
 	 */
-	std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
+	std::tuple<Checksums, std::unique_ptr<ToC>> calculate(
 			const std::vector<std::string>& audiofilenames,
 			const std::string& metafilename) const;
 
@@ -198,17 +194,13 @@ public:
 	 * result for audiofilenames[i]. The result will have the same size as
 	 * audiofilenames.
 	 *
-	 * Note that in this use case, it is not offered to compute the ARId of the
-	 * album since the exact offsets are missing. The ARId returned will
-	 * therefore be empty, the ToC pointer will be nullptr.
-	 *
 	 * \param[in] audiofilenames       Names of the audiofiles
 	 * \param[in] first_is_first_track Declare first file as first track
 	 * \param[in] last_is_last_track   Declare last file as last track
 	 *
 	 * \return The AccurateRip checksums of these tracks
 	 */
-	std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
+	std::tuple<Checksums, std::unique_ptr<ToC>> calculate(
 			const std::vector<std::string>& audiofilenames,
 			const bool first_is_first_track, const bool last_is_last_track)
 		const;
@@ -265,9 +257,9 @@ private:
 	 * \param[in] metafilename Metadata file
 	 * \param[in] searchpath   Searchpath for audiofiles
 	 *
-	 * \return Checksums, ARId and ToC for the input
+	 * \return Checksums and ToC for the input
 	 */
-	std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
+	std::tuple<Checksums, std::unique_ptr<ToC>> calculate(
 			std::unique_ptr<ToC> toc, const std::string& searchpath) const;
 
 	/**
@@ -275,7 +267,7 @@ private:
 	 *
 	 * \return ARCSCalculator to perform the calculations
 	 */
-	ARCSCalculator setup_calculator() const;
+	ARCSCalculator setup_arcs_calculator() const;
 
 	/**
 	 * \brief Setup internal ToCParser instance.
@@ -363,13 +355,12 @@ private:
  *
  * \param[in] checksums  Checksums as resulted
  * \param[in] toc        ToC as resulted
- * \param[in] arid       ARId as resulted
  * \param[in] filenames  Filenames as resulted
  *
  * \throws invalid_argument If validation fails
  */
 void validate(const Checksums& checksums, const ToC* toc,
-	const ARId& arid, const std::vector<std::string>& filenames);
+	const std::vector<std::string>& filenames);
 
 
 } // namespace calc

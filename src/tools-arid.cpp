@@ -19,6 +19,10 @@
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
 
+#ifndef __LIBARCSTK_METADATA_HPP__
+#include <arcstk/metadata.hpp>    // for ToC
+#endif
+
 namespace arcsapp
 {
 inline namespace v_1_0_0
@@ -352,6 +356,45 @@ std::unique_ptr<ARIdLayout> default_arid_layout(const bool& with_labels)
 				false, /* no id 2 */
 				false  /* no cddb id */
 	);
+}
+
+
+// validate
+
+
+void validate(const ARId& arid, const std::size_t total_tracks, const ToC* toc)
+{
+	if (arid.empty())
+	{
+		return;
+		//otherwise:
+		//throw std::invalid_argument("AccurateRip id must not be empty");
+	}
+
+	using std::to_string;
+
+	const auto arid_total_tracks = static_cast<std::size_t>(arid.track_count());
+
+	if (arid_total_tracks != total_tracks)
+	{
+		throw std::invalid_argument("Mismatch: "
+			"Checksums for " + to_string(total_tracks)
+			+ " files/tracks, but AccurateRip id specifies "
+			+ to_string(arid.track_count()) + " tracks.");
+	}
+
+	if (toc)
+	{
+		const auto toc_total_tracks = toc->total_tracks();
+
+		if (arid.track_count() != toc_total_tracks)
+		{
+			throw std::invalid_argument("Mismatch: "
+				"Checksums for " + to_string(toc_total_tracks)
+				+ " files/tracks, but AccurateRip id specifies "
+				+ to_string(arid.track_count()) + " tracks.");
+		}
+	}
 }
 
 } // namespace arid

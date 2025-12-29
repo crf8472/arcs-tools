@@ -396,6 +396,7 @@ std::ostream& operator << (std::ostream& o, const RichARId& a);
 RichARId build_id(const ToC* toc, const ARId& arid,
 		const std::string& alt_prefix, const ARIdLayout& layout);
 
+
 /**
  * \brief Define default layout for ARIds.
  *
@@ -404,6 +405,22 @@ RichARId build_id(const ToC* toc, const ARId& arid,
  * \return Default layout for ARIds
  */
 std::unique_ptr<ARIdLayout> default_arid_layout(const bool& with_labels);
+
+
+/**
+ * \brief Validate the input objects common to every result.
+ *
+ * Throws if validation fails.
+ *
+ * \param[in] arid         ARId to validate against the other data
+ * \param[in] total_tracks Number of tracks as resulted
+ * \param[in] toc          ToC as resulted
+ * \param[in] filenames    Filenames as resulted
+ *
+ * \throws invalid_argument If validation fails
+ */
+void validate(const ARId& arid, const std::size_t total_tracks, const ToC* toc);
+
 
 } // namespace arid
 } // namespace v_1_0_0

@@ -220,7 +220,7 @@ protected:
 
 private:
 
-	void assertions(InputTuple t) const final;
+	void assertions(const InputTuple t) const final;
 
 	void do_init_composer(TableComposer& c) const final;
 
@@ -320,7 +320,7 @@ public:
 	 *
 	 * \return Calculation result
 	 */
-	static std::tuple<Checksums, ARId, std::unique_ptr<ToC>> calculate(
+	static std::tuple<Checksums, std::unique_ptr<ToC>> calculate(
 		const std::vector<std::string>& audiofilenames,
 		const std::string& metafilename,
 		const bool first_file_is_first_track,

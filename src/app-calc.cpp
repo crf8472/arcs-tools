@@ -401,7 +401,7 @@ void CalcTableCreator::populate_result_creators(
 }
 
 
-void CalcTableCreator::assertions(InputTuple t) const
+void CalcTableCreator::assertions(const InputTuple t) const
 {
 	const auto checksums = std::get<1>(t);
 	const auto arid      = std::get<2>(t);
@@ -409,7 +409,10 @@ void CalcTableCreator::assertions(InputTuple t) const
 	const auto filenames = std::get<4>(t);
 
 	using calc::validate;
-	validate(checksums, toc, arid, filenames);
+	validate(checksums, toc, filenames);
+
+	using arid::validate;
+	validate(arid, checksums.size(), toc);
 }
 
 
@@ -583,7 +586,7 @@ std::unique_ptr<arcsdec::FileReaderSelection>
 // ARCalcApplication
 
 
-std::tuple<Checksums, ARId, std::unique_ptr<ToC>> ARCalcApplication::calculate(
+std::tuple<Checksums, std::unique_ptr<ToC>> ARCalcApplication::calculate(
 	const std::vector<std::string>& audiofilenames,
 	const std::string& metafilename,
 	const bool first_file_is_first_track,
@@ -607,12 +610,12 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>> ARCalcApplication::calculate(
 	if (toc_selection)   { c.set_toc_selection  (toc_selection);   }
 	if (audio_selection) { c.set_audio_selection(audio_selection); }
 
-	auto [ checksums, arid, toc ] = metafilename.empty()
+	auto [ checksums, toc ] = metafilename.empty()
 		? c.calculate(audiofilenames,                    //Tracks/Album w/o ToC
 				first_file_is_first_track, last_file_is_last_track)
 		: c.calculate(audiofilenames, metafilename);     //Album: w ToC
 
-	return std::make_tuple(checksums, arid, std::move(toc));
+	return std::make_tuple(checksums, std::move(toc));
 }
 
 
@@ -750,7 +753,7 @@ auto ARCalcApplication::do_run_calculation(const Configuration& config) const
 
 	// Perform the actual calculation
 
-	auto [ checksums, arid, toc ] = ARCalcApplication::calculate(
+	auto [ checksums, toc ] = ARCalcApplication::calculate(
 			*config.arguments(),
 			config.value(CALC::METAFILE),
 			config.is_set(CALC::FIRST),
@@ -780,10 +783,24 @@ auto ARCalcApplication::do_run_calculation(const Configuration& config) const
 				std::back_inserter(types_to_print));
 	}
 
+	// If AccurateRip Id or URL is requested to print, calculate + validate ARId
+
+	auto arid = std::unique_ptr<ARId>{};
+
+	if (config.is_set(CALC::PRINTID) || config.is_set(CALC::PRINTURL))
+	{
+		arid = arcstk::make_arid(*toc);
+	} else
+	{
+		arid = arcstk::make_empty_arid();
+	}
+
+	// Compose the result
+
 	auto result { create_formatter(config)->format(
 	/* types  */  types_to_print,
 	/* ARCSs  */  checksums,
-	/* ARId   */  arid,
+	/* ARId   */  *arid,
 	/* ToC    */  toc ? toc.get() : nullptr,
 	/* files  */  toc ? toc->filenames() : *config.arguments(),
 	/* Prefix */  std::string { /* TODO Implement Alt-Prefix */ }

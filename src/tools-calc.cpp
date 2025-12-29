@@ -24,9 +24,6 @@
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>     // for Checksums, type
 #endif
-#ifndef __LIBARCSTK_IDENTIFIER_HPP__
-#include <arcstk/identifier.hpp>    // for ARId, EmptyARId
-#endif
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
 #endif
@@ -152,7 +149,7 @@ ChecksumCalculator::~ChecksumCalculator() noexcept
 = default;
 
 
-std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
+std::tuple<Checksums, std::unique_ptr<ToC>>
 	ChecksumCalculator::calculate(
 			const std::vector<std::string>& audiofilenames,
 			const std::string& metafilename) const
@@ -193,7 +190,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 
 	// Run
 
-	auto calculator { setup_calculator() };
+	auto calculator { setup_arcs_calculator() };
 
 	// case: single-file album w ToC
 	if (1 == filecount)
@@ -201,33 +198,32 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 		const auto [ checksums, arid ] =
 			calculator.calculate(audiofilenames.front(), *toc);
 
-		return { checksums, arid, std::move(toc) };
+		return { checksums, std::move(toc) };
 	}
 
 	// case: multi-file album w ToC (== "EAC-styled layout")
 	if (toc->total_tracks() == filecount)
 	{
 		const auto chksums { calculator.calculate(audiofilenames, true, true) };
-		const auto arid    { make_arid(*toc) };
 
-		return { chksums, *arid, std::move(toc) };
+		return { chksums, std::move(toc) };
 	}
 
-	return { Checksums{ 0 }, arcstk::EmptyARId, nullptr };
+	return { Checksums{ 0 }, nullptr };
 }
 
 
-std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
+std::tuple<Checksums, std::unique_ptr<ToC>>
 	ChecksumCalculator::calculate(
 		const std::vector<std::string>& audiofilenames,
 		const bool first_is_first_track, const bool last_is_last_track) const
 {
-	auto calculator { setup_calculator() };
+	auto calculator { setup_arcs_calculator() };
 
 	const auto checksums { calculator.calculate(audiofilenames,
 			first_is_first_track, last_is_last_track) };
 
-	return { checksums, arcstk::EmptyARId, nullptr };
+	return { checksums, nullptr };
 }
 
 
@@ -267,7 +263,7 @@ FileReaderSelection* ChecksumCalculator::audio_selection() const
 }
 
 
-std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
+std::tuple<Checksums, std::unique_ptr<ToC>>
 	ChecksumCalculator::calculate(
 		std::unique_ptr<ToC> toc, const std::string& filepath) const
 {
@@ -288,7 +284,7 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 
 	// Calculate ARCSs
 
-	auto calculator { setup_calculator() };
+	auto calculator { setup_arcs_calculator() };
 
 	if (is_single_file)
 	{
@@ -296,9 +292,9 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 			ToCFiles::expand_path(filepath, audiofiles.front());
 
 		// case: single-file album w ToC
-		const auto [ checksums, arid ] = calculator.calculate(audiofile, *toc);
+		const auto [ checksums, toc2 ] = calculator.calculate(audiofile, *toc);
 
-		return { checksums, arid, std::move(toc) };
+		return { checksums, std::make_unique<ToC>(toc2) };
 	} else
 	{
 		for (auto& audiofile : audiofiles)
@@ -308,14 +304,13 @@ std::tuple<Checksums, ARId, std::unique_ptr<ToC>>
 
 		// case: multi-file album w toc (== "EAC-styled layout")
 		const auto checksums { calculator.calculate(audiofiles, true, true) };
-		const auto arid      { make_arid(*toc) };
 
-		return { checksums, *arid, std::move(toc) };
+		return { checksums, std::move(toc) };
 	}
 }
 
 
-ARCSCalculator ChecksumCalculator::setup_calculator() const
+ARCSCalculator ChecksumCalculator::setup_arcs_calculator() const
 {
 	auto calculator { ARCSCalculator { types() } };
 
@@ -400,7 +395,7 @@ std::string HexLayout::do_format(InputTuple t) const
 
 
 void validate(const Checksums& checksums, const ToC* toc,
-		const ARId& arid, const std::vector<std::string>& filenames)
+		const std::vector<std::string>& filenames)
 {
 	using std::to_string;
 
@@ -439,15 +434,6 @@ void validate(const Checksums& checksums, const ToC* toc,
 				"Checksums for " + to_string(total_tracks)
 				+ " files/tracks, but ToC specifies "
 				+ to_string(toc->total_tracks()) + " tracks.");
-	}
-
-	if (!(arid.empty()
-		|| static_cast<uint16_t>(arid.track_count()) == total_tracks))
-	{
-		throw std::invalid_argument("Mismatch: "
-				"Checksums for " + to_string(total_tracks)
-				+ " files/tracks, but AccurateRip id specifies "
-				+ to_string(arid.track_count()) + " tracks.");
 	}
 }
 

@@ -343,7 +343,7 @@ private:
 
 	// Verify10Layout
 
-	void assertions(InputTuple t) const final;
+	void assertions(const InputTuple t) const final;
 
 	std::unique_ptr<Result> do_format(InputTuple t) const final;
 
@@ -820,7 +820,6 @@ public:
  *
  * \param[in] checksums  Checksums as resulted
  * \param[in] toc        ToC as resulted
- * \param[in] arid       ARId as resulted
  * \param[in] filenames  Filenames as resulted
  * \param[in] reference  Reference checksums
  * \param[in] vresult    VerificationResult
@@ -829,7 +828,7 @@ public:
  * \throws invalid_argument If validation fails
  */
 void validate(const Checksums& checksums, const ToC* toc,
-	const ARId& arid, const std::vector<std::string>& filenames,
+	const std::vector<std::string>& filenames,
 	const ChecksumSource& reference,
 	const VerificationResult* vresult, const int block);
 

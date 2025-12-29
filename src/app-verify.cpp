@@ -793,7 +793,11 @@ void VerifyTableCreator::assertions(const InputTuple t) const
 	const auto vresult    = std::get<1>(t);
 	const auto block      = std::get<2>(t);
 
-	validate(checksums, toc, arid, filenames, *ref_source, vresult, block);
+	arid::validate(arid, checksums.size(), toc);
+	// TODO ref_source should have at least one block with id == arid
+
+	//TODO using verify::validate;
+	validate(checksums, toc, filenames, *ref_source, vresult, block);
 }
 
 
@@ -1361,19 +1365,17 @@ AddField<ATTR::THEIRS>::AddField(
 
 
 void validate(const Checksums& checksums, const ToC* toc,
-	const ARId& arid, const std::vector<std::string>& filenames,
+	const std::vector<std::string>& filenames,
 	const ChecksumSource& reference,
 	const VerificationResult* vresult, const int block)
 {
-	calc::validate(checksums, toc, arid, filenames);
+	calc::validate(checksums, toc, filenames);
 
 	if (!reference.size())
 	{
 		throw std::invalid_argument("Missing reference checksums, "
 				"nothing to print.");
 	}
-
-	// TODO ref should have at least one block with id == arid
 
 	auto at_least_one_block_of_equal_size = bool { false };
 	for (auto i = std::size_t {0}; i < reference.size(); ++i)
@@ -1581,7 +1583,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	// Calculate the actual ARCSs from input files
 
-	auto [ checksums, mine_arid, toc ] = ARCalcApplication::calculate(
+	auto [ checksums, toc ] = ARCalcApplication::calculate(
 			*config.arguments(),
 			config.value(VERIFY::METAFILE),
 			!config.is_set(VERIFY::NOFIRST),
@@ -1595,6 +1597,12 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	{
 		this->fatal_error("Calculation returned no checksums.");
 	}
+
+	// ARId
+
+	std::unique_ptr<ARId> mine_arid = (toc && toc->complete())
+		? arcstk::make_arid(*toc)
+		: arcstk::make_empty_arid();
 
 	// Prepare verification
 
@@ -1622,7 +1630,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 					"Album requested, but calculation returned no ToC.");
 		}
 
-		if (mine_arid.empty())
+		if (mine_arid->empty())
 		{
 			this->fatal_error(
 					"Album requested, but calculation returned an empty ARId.");
@@ -1646,12 +1654,12 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 			ARCS_LOG_DEBUG <<
 				"Process reference input as AccurateRip response for album";
 			ARCS_LOG_DEBUG <<
-				"Computed AccurateRip ID: "  << to_string(mine_arid);
+				"Computed AccurateRip ID: "  << to_string(*mine_arid);
 			ARCS_LOG_DEBUG <<
-				"Computed AccurateRip URL: " << mine_arid.url();
+				"Computed AccurateRip URL: " << mine_arid->url();
 
 			const auto v =
-				std::make_unique<AlbumVerifier>(checksums, mine_arid);
+				std::make_unique<AlbumVerifier>(checksums, *mine_arid);
 			vresult = v->perform(*ref_source);
 		}
 
@@ -1748,7 +1756,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		/* verification results */     vresult.get(),
 		/* optional best match */      best_block,
 		/* mine ARCSs */               checksums,
-		/* optional mine ARId */       mine_arid,
+		/* optional mine ARId */       *mine_arid,
 		/* optional ToC */             toc.get(),
 		/* reference checksum source */ref_source.get(),
 		/* input audio filenames */    filenames,
