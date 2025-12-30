@@ -1500,6 +1500,8 @@ void ARVerifyApplication::log_matching_files(const Checksums& checksums,
 		const VerificationResult& vresult, const int block,
 		const bool version) const
 {
+	using std::to_string;
+
 	auto unmatched { checksums.size() };
 
 	// Traverse checksums
@@ -1510,9 +1512,9 @@ void ARVerifyApplication::log_matching_files(const Checksums& checksums,
 		{
 			if (vresult.track(block, track, version))
 			{
-				ARCS_LOG_DEBUG << "Pos " << std::to_string(track)
-					<< " matches track " << std::to_string(track + 1)
-					<< " in block " << std::to_string(block);
+				ARCS_LOG_DEBUG << "Pos " << to_string(track)
+					<< " matches track " << to_string(track + 1)
+					<< " in block " << to_string(block);
 
 				--unmatched;
 			}
