@@ -415,7 +415,6 @@ std::unique_ptr<ARIdLayout> default_arid_layout(const bool& with_labels);
  * \param[in] arid         ARId to validate against the other data
  * \param[in] total_tracks Number of tracks as resulted
  * \param[in] toc          ToC as resulted
- * \param[in] filenames    Filenames as resulted
  *
  * \throws invalid_argument If validation fails
  */
