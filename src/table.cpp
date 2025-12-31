@@ -1096,6 +1096,8 @@ bool DecoratorRegistry::is_decorated(const int i, const int j)
 	}
 
 	return is_decorated_worker(col_decorator(j), i);
+
+	// TODO == return a or b;
 }
 
 
