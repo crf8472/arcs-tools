@@ -1106,11 +1106,17 @@ void DecoratorRegistry::add_decorator(std::unique_ptr<CellDecorator> d,
 }
 
 
-CellDecorator* DecoratorRegistry::get_decorator(const int idx) const
+const CellDecorator* DecoratorRegistry::get_decorator(const int idx) const
 {
-	using std::end;
 	auto d { internal_registry_.find(idx) };
-	return (end(internal_registry_) != d) ? d->second.get() : nullptr;
+
+	using std::cend;
+	if (cend(internal_registry_) == d)
+	{
+		return nullptr;
+	}
+
+	return d->second.get(); // causes -Wstrict-overflow > 3 in g++ 15.2.1
 }
 
 
@@ -1128,21 +1134,29 @@ int DecoratorRegistry::col_idx(const int j) const
 
 void DecoratorRegistry::set_flag(const int i, const int j, const bool flag)
 {
-	auto dec { get_decorator(col_idx(j)) }; // decorator for column j
-	this->set_flag_worker(dec, i, flag);
-
-	dec = get_decorator(row_idx(i)); // decorator for row i
-	this->set_flag_worker(dec, j, flag);
+	this->set_flag_worker(col_idx(j), i, flag);
+	this->set_flag_worker(row_idx(i), j, flag);
 }
 
 
-void DecoratorRegistry::set_flag_worker(CellDecorator* d, const int n,
+void DecoratorRegistry::set_flag_worker(const int idx, const int n,
 		const bool flag)
 {
-	if (d)
+	auto d { internal_registry_.find(idx) };
+
+	using std::cend;
+	if (cend(internal_registry_) == d)
 	{
-		flag ? d->set(n) : d->unset(n);
+		return;
 	}
+
+	if (flag)
+	{
+		d->second->set(n); // causes -Wstrict-overflow > 3 in g++ 15.2.1
+	} else
+	{
+		d->second->unset(n); // causes -Wstrict-overflow > 3 in g++ 15.2.1
+	};
 }
 
 
@@ -1279,15 +1293,15 @@ const std::string& DecoratedStringTable::do_ref(int row, int col) const
 
 std::string DecoratedStringTable::do_cell(int row, int col) const
 {
-	if (auto cold { col_decorator(col) }; cold)
+	if (auto col_d { col_decorator(col) }; col_d)
 	{
-		if (auto rowd { row_decorator(row) }; rowd)
+		if (auto row_d { row_decorator(row) }; row_d)
 		{
-			return rowd->decorate(row,
-					cold->decorate(row, table()->cell(row, col)));
+			return row_d->decorate(row,
+					col_d->decorate(row, table()->cell(row, col)));
 		}
 
-		return cold->decorate(row, table()->cell(row, col));
+		return col_d->decorate(row, table()->cell(row, col));
 	}
 
 	return table()->cell(row, col);

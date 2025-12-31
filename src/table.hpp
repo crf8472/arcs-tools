@@ -1171,7 +1171,7 @@ private:
 	 *
 	 * \return Decorator for this row or column index or nullptr
 	 */
-	CellDecorator* get_decorator(const int idx) const;
+	const CellDecorator* get_decorator(const int idx) const;
 
 	/**
 	 * \brief Convert row to inner row index.
@@ -1203,11 +1203,11 @@ private:
 	/**
 	 * \brief Worker to set a flag to a single decorator.
 	 *
-	 * \param[in] d CellDecorator to set a flag on
-	 * \param[in] n Row or Column to be flagged
-	 * \param[in] f Boolean value for flag
+	 * \param[in] idx Registry index for CellDecorator to modify
+	 * \param[in] n   Row or Column to be flagged
+	 * \param[in] f   Boolean value for flag
 	 */
-	void set_flag_worker(CellDecorator* d, const int n, const bool f);
+	void set_flag_worker(const int idx, const int n, const bool f);
 
 	/**
 	 * \brief Worker to check whether decorator is set on entry \p n.
