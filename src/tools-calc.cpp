@@ -195,10 +195,10 @@ std::tuple<Checksums, std::unique_ptr<ToC>>
 	// case: single-file album w ToC
 	if (1 == filecount)
 	{
-		const auto [ checksums, arid ] =
+		const auto [ checksums, toc2 ] =
 			calculator.calculate(audiofilenames.front(), *toc);
 
-		return { checksums, std::move(toc) };
+		return { checksums, std::make_unique<ToC>(toc2) };
 	}
 
 	// case: multi-file album w ToC (== "EAC-styled layout")
