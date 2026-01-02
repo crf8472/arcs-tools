@@ -580,20 +580,6 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 
 	if (voptions->is_set(VERIFY::REFVALUES))
 	{
-		if (voptions->is_set(VERIFY::PRINTID))
-		{
-			ARCS_LOG_WARNING <<
-				"Ignore option PRINTID since option REFVALUES is active "
-				"and reference values do not provide an ID to print.";
-			voptions->unset(VERIFY::PRINTID);
-		}
-		if (voptions->is_set(VERIFY::PRINTURL))
-		{
-			ARCS_LOG_WARNING <<
-				"Ignore option PRINTURL since option REFVALUES is active "
-				"and reference values do not provide an URL to print.";
-			voptions->unset(VERIFY::PRINTURL);
-		}
 		if (voptions->is_set(VERIFY::CONFIDENCE))
 		{
 			ARCS_LOG_WARNING <<
@@ -830,7 +816,9 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 	using arid::build_id;
 	using arid::default_arid_layout;
 
-	auto buf = ResultBuffer  {};
+	auto buf = ResultBuffer {};
+
+	// If ARId is present, print it
 
 	if (!mine_arid.empty())
 	{
@@ -1436,7 +1424,6 @@ std::unique_ptr<VerifyTableCreator> ARVerifyApplication::create_formatter(
 
 	// Layout for ARId
 
-	if (config.is_set(VERIFY::PRINTID) || config.is_set(VERIFY::PRINTURL))
 	{
 		std::unique_ptr<ARIdLayout> id_layout =
 			std::make_unique<ARIdTableLayout>(
@@ -1449,6 +1436,9 @@ std::unique_ptr<VerifyTableCreator> ARVerifyApplication::create_formatter(
 				false, /* no id 2 */
 				false  /* no cddb id */
 		);
+
+		id_layout->set_label(ARIdLayout::ARID_FLAG::ID,  "ID(mine) ");
+		id_layout->set_label(ARIdLayout::ARID_FLAG::URL, "URL(mine)");
 
 		fmt->set_arid_layout(std::move(id_layout));
 	}

@@ -228,6 +228,24 @@ auto ARIdLayout::labels() const -> decltype( labels_ )
 }
 
 
+auto ARIdLayout::array_idx(const ARID_FLAG flag) const -> unsigned
+{
+	return static_cast<unsigned>(details::to_underlying(flag));
+}
+
+
+auto ARIdLayout::label(const ARID_FLAG flag) const -> std::string
+{
+	return labels_[array_idx(flag)];
+}
+
+
+void ARIdLayout::set_label(const ARID_FLAG flag, const std::string& label)
+{
+	labels_[array_idx(flag)] = label;
+}
+
+
 std::string ARIdLayout::hex_id(const uint32_t id) const
 {
 	std::ostringstream out;
@@ -244,14 +262,14 @@ std::string ARIdLayout::hex_id(const uint32_t id) const
 
 std::string ARIdTableLayout::do_format(InputTuple t) const
 {
-	auto arid       = std::get<0>(t);
-	auto alt_prefix = std::get<1>(t);
-
-	if (flags().no_flags()) // return ARId as default
+	if (flags().no_flags())
 	{
-		using std::to_string;
-		return to_string(arid) + '\n';
+		// no flags set means nothing to print
+		return std::string{};
 	}
+
+	const auto arid       = std::get<0>(t);
+	const auto alt_prefix = std::get<1>(t);
 
 	auto stream = std::ostringstream {};
 	auto value  = std::string {};
@@ -259,7 +277,6 @@ std::string ARIdTableLayout::do_format(InputTuple t) const
 	// TODO Use optimal_label_width?
 	//auto label_width = fieldlabels() ? optimal_width(labels()) : 0;
 	auto label_width = fieldlabels() ? 8 : 0;
-	auto label_idx   = std::size_t { 0 };
 
 	for (const auto& sflag : show_flags())
 	{
@@ -269,12 +286,8 @@ std::string ARIdTableLayout::do_format(InputTuple t) const
 
 		if (fieldlabels())
 		{
-			label_idx = static_cast<std::size_t>(details::to_underlying(sflag));
-
-			stream << std::setw(label_width)
-				<< std::left
-				<< labels()[label_idx]
-				<< " ";
+			stream << std::setw(label_width) << std::left << label(sflag)
+				<< " "; // always one whitespace between label and value
 		}
 
 		switch (sflag)

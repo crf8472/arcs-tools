@@ -165,24 +165,6 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 		CHECK ( options1->is_set(VERIFY::NOOUTPUT) );
 	}
 
-	SECTION ("Option --refvalues deactivates --print-url and --print-id")
-	{
-		const int argc = 6;
-		const char* argv[] = { "arcstk-verify",
-			"--refvalues=1,2,3", "foo/foo.cue", "foo/foo.wav",
-			"--print-url", "--print-id"
-		};
-
-		ARVerifyConfigurator conf1;
-
-		auto options1 = conf1.read_options(argc, argv);
-		options1 = conf1.configure_options(std::move(options1));
-
-		CHECK (     options1->is_set(VERIFY::REFVALUES) );
-		CHECK ( not options1->is_set(VERIFY::PRINTID)     );
-		CHECK ( not options1->is_set(VERIFY::PRINTURL)    );
-	}
-
 	SECTION ("Incompatible options --refvalues and --response are refused")
 	{
 		const int argc = 6;

@@ -95,6 +95,23 @@ public:
 	virtual ~ARIdLayout() noexcept;
 
 	/**
+	 * \brief Label for the specified flag.
+	 *
+	 * \param[in] flag Flag to get label for
+	 *
+	 * \return Label for \c flag
+	 */
+	auto label(const ARID_FLAG flag) const -> std::string;
+
+	/**
+	 * \brief Set label for the specified flag.
+	 *
+	 * \param[in] flag  Flag to set label for
+	 * \param[in] label Label to set
+	 */
+	void set_label(const ARID_FLAG flag, const std::string& label);
+
+	/**
 	 * \brief Returns TRUE iff instance is configured to print field labels.
 	 *
 	 * \return TRUE iff instance is configured to print field labels
@@ -251,7 +268,7 @@ private:
 	 *
 	 * Order matches definition order in ARID_FLAG.
 	 */
-	const std::array<std::string,
+	std::array<std::string,
 		static_cast<std::underlying_type_t<ARID_FLAG>>(ARID_FLAG::COUNT)>
 			labels_
 	{
@@ -296,6 +313,15 @@ protected:
 	 * \return Flag labels
 	 */
 	auto labels() const -> decltype( labels_ );
+
+	/**
+	 * \brief Turn flag to an array index.
+	 *
+	 * \param[in] flag Flag to turn to an array index
+	 *
+	 * \return Array index this flag points to
+	 */
+	auto array_idx(const ARID_FLAG flag) const -> unsigned;
 };
 
 
