@@ -22,6 +22,7 @@
 #include <memory>      // for unique_ptr
 #include <string>      // for string
 #include <tuple>       // for tuple
+#include <utility>     // for pair
 #include <vector>      // for vector
 
 
@@ -66,10 +67,10 @@ struct ToCFiles final
 	/**
 	 * \brief Returns whether the list of names represent the same file.
 	 *
-	 * The first value of the returned tuple is TRUE iff \p toc references
+	 * The first value of the returned pair is TRUE iff \p toc references
 	 * either a single audio file or no audio files at all, otherwise FALSE.
 	 *
-	 * The second value of the returned tuple is TRUE iff \p toc references a
+	 * The second value of the returned pair is TRUE iff \p toc references a
 	 * non-empty, pairwise distinct list of audio files, otherwise FALSE.
 	 *
 	 * <table>
@@ -88,7 +89,7 @@ struct ToCFiles final
 	 *
 	 * \return Flags for audiolayout
 	 */
-	static std::tuple<bool,bool> flags(const std::vector<std::string>& names);
+	static std::pair<bool,bool> flags(const std::vector<std::string>& names);
 
 	/**
 	 * \brief Returns the audiofile layout of a ToC.
@@ -179,7 +180,7 @@ public:
 	 *
 	 * \return Checksums and ToC of the image represented by the input files
 	 */
-	std::tuple<Checksums, std::unique_ptr<ToC>> calculate(
+	std::pair<Checksums, std::unique_ptr<ToC>> calculate(
 			const std::vector<std::string>& audiofilenames,
 			const std::string& metafilename) const;
 
@@ -200,7 +201,7 @@ public:
 	 *
 	 * \return The AccurateRip checksums of these tracks
 	 */
-	std::tuple<Checksums, std::unique_ptr<ToC>> calculate(
+	std::pair<Checksums, std::unique_ptr<ToC>> calculate(
 			const std::vector<std::string>& audiofilenames,
 			const bool first_is_first_track, const bool last_is_last_track)
 		const;
@@ -259,7 +260,7 @@ private:
 	 *
 	 * \return Checksums and ToC for the input
 	 */
-	std::tuple<Checksums, std::unique_ptr<ToC>> calculate(
+	std::pair<Checksums, std::unique_ptr<ToC>> calculate(
 			std::unique_ptr<ToC> toc, const std::string& searchpath) const;
 
 	/**

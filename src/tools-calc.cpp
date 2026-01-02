@@ -14,7 +14,7 @@
 #include <string>                   // for string
 #include <tuple>                    // for make_tuple, tuple
 #include <unordered_set>            // for unordered_set
-#include <utility>                  // for move
+#include <utility>                  // for move, make_pair, pair
 #include <vector>                   // for vector
 
 #if __cplusplus >= 201703L
@@ -75,7 +75,7 @@ std::tuple<bool,bool,std::vector<std::string>> ToCFiles::get(const ToC& toc)
 }
 
 
-std::tuple<bool,bool> ToCFiles::flags(const std::vector<std::string>& filenames)
+std::pair<bool,bool> ToCFiles::flags(const std::vector<std::string>& filenames)
 {
 	if (filenames.empty())
 	{
@@ -149,7 +149,7 @@ ChecksumCalculator::~ChecksumCalculator() noexcept
 = default;
 
 
-std::tuple<Checksums, std::unique_ptr<ToC>>
+std::pair<Checksums, std::unique_ptr<ToC>>
 	ChecksumCalculator::calculate(
 			const std::vector<std::string>& audiofilenames,
 			const std::string& metafilename) const
@@ -209,11 +209,11 @@ std::tuple<Checksums, std::unique_ptr<ToC>>
 		return { chksums, std::move(toc) };
 	}
 
-	return { Checksums{ 0 }, nullptr };
+	return { Checksums{ 0 }, nullptr }; // TODO should throw instead
 }
 
 
-std::tuple<Checksums, std::unique_ptr<ToC>>
+std::pair<Checksums, std::unique_ptr<ToC>>
 	ChecksumCalculator::calculate(
 		const std::vector<std::string>& audiofilenames,
 		const bool first_is_first_track, const bool last_is_last_track) const
@@ -263,7 +263,7 @@ FileReaderSelection* ChecksumCalculator::audio_selection() const
 }
 
 
-std::tuple<Checksums, std::unique_ptr<ToC>>
+std::pair<Checksums, std::unique_ptr<ToC>>
 	ChecksumCalculator::calculate(
 		std::unique_ptr<ToC> toc, const std::string& filepath) const
 {
@@ -305,7 +305,7 @@ std::tuple<Checksums, std::unique_ptr<ToC>>
 		// case: multi-file album w toc (== "EAC-styled layout")
 		const auto checksums { calculator.calculate(audiofiles, true, true) };
 
-		return { checksums, std::move(toc) };
+		return { checksums, nullptr };
 	}
 }
 
