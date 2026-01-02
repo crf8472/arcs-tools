@@ -168,7 +168,7 @@ std::pair<Checksums, std::unique_ptr<ToC>>
 	{
 		// No audio files passed? => Use from ToC
 
-		return calculate(std::move(toc), file::path(metafilename));
+		return calculate(toc, file::path(metafilename));
 	}
 
 	// Validate track number
@@ -265,7 +265,7 @@ FileReaderSelection* ChecksumCalculator::audio_selection() const
 
 std::pair<Checksums, std::unique_ptr<ToC>>
 	ChecksumCalculator::calculate(
-		std::unique_ptr<ToC> toc, const std::string& filepath) const
+		const std::unique_ptr<ToC>& toc, const std::string& filepath) const
 {
 	ARCS_LOG_DEBUG << "Calculate result from ToC"
 			" and searchpath for audiofiles";

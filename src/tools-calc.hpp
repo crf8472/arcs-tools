@@ -259,13 +259,14 @@ private:
 	 *
 	 * If metafile does not specify any audiofilenames, result will be empty.
 	 *
-	 * \param[in] metafilename Metadata file
+	 * \param[in] toc          Album ToC
 	 * \param[in] searchpath   Searchpath for audiofiles
 	 *
 	 * \return Checksums and ToC for the input
 	 */
 	std::pair<Checksums, std::unique_ptr<ToC>> calculate(
-			std::unique_ptr<ToC> toc, const std::string& searchpath) const;
+			const std::unique_ptr<ToC>& toc, const std::string& searchpath)
+			const;
 
 	/**
 	 * \brief Setup internal ARCSCalculator instance.
