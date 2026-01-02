@@ -18,12 +18,16 @@
 #ifndef __LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>        // for Checksums, checksum::type
 #endif
+#ifndef __LIBARCSTK_METADATA_HPP__
+#include <arcstk/metadata.hpp>         // for ToC
+#endif
 
-#include <memory>      // for unique_ptr
-#include <string>      // for string
-#include <tuple>       // for tuple
-#include <utility>     // for pair
-#include <vector>      // for vector
+#include <memory>        // for unique_ptr
+#include <string>        // for string
+#include <tuple>         // for tuple
+#include <utility>       // for pair
+#include <unordered_set> // for unordered_set
+#include <vector>        // for vector
 
 
 // forward declarations
