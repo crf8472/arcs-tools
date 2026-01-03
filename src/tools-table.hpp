@@ -760,53 +760,6 @@ class ColTableComposerBuilder final : public TableComposerBuilder
 };
 
 
-/**
- * \brief A set of flags.
- */
-template <typename T, typename S>
-class Flags final
-{
-public:
-
-	/**
-	 * \brief Type for flags.
-	 *
-	 * Is an unsigned numeric type.
-	 */
-	using type = S;
-
-	/**
-	 * \brief TRUE iff value for parameter \p t is TRUE, otherwise FALSE.
-	 *
-	 * \param[in] t  Input value to check flag value for
-	 *
-	 * \return TRUE iff \p t has flag value TRUE, otherwise FALSE.
-	 */
-	bool operator() (const T t) const
-	{
-		return flags_ & (1 << std::underlying_type_t<T>(t));
-	}
-
-	/**
-	 * \brief Set a flag for input value \p t.
-	 *
-	 * \param[in] t     Input to set value for
-	 * \param[in] value Value to be set for \p t
-	 */
-	void set(const T t, const bool value)
-	{
-		flags_ |= (value << std::underlying_type_t<T>(t));
-	}
-
-private:
-
-	/**
-	 * \brief Internal flags.
-	 */
-	type flags_;
-};
-
-
 // Required for TableCreator
 
 
@@ -1084,7 +1037,7 @@ protected:
 	 *
 	 * Is an unsigned numeric type.
 	 */
-	using print_flag_t = Flags<ATTR, uint8_t>;
+	using print_flag_t = Flags2<ATTR, uint8_t>;
 
 	/**
 	 * \brief Type for the ordering of the optional default fields.
