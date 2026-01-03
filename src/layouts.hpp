@@ -94,7 +94,10 @@ public:
 
 protected:
 
-	virtual void assertions(InputTuple) const { /* empty */ };
+	virtual void assertions(InputTuple) const
+	{
+		/* empty */
+	};
 
 private:
 
@@ -150,6 +153,20 @@ public:
 	};
 
 	/**
+	 * \brief Set the specified flag to TRUE.
+	 *
+	 * \param[in] idx Index to set
+	 */
+	void set(const int idx);
+
+	/**
+	 * \brief Set the specified flag to FALSE.
+	 *
+	 * \param[in] idx Index to set
+	 */
+	void unset(const int idx);
+
+	/**
 	 * \brief Set the specified flag to the specified value.
 	 *
 	 * \param[in] idx   Index to set
@@ -198,6 +215,54 @@ private:
 };
 
 
+// TODO Remove this type in favor of Flags. Only used in tools-table
+/**
+ * \brief A set of flags.
+ */
+template <typename T, typename S>
+class Flags2 final
+{
+public:
+
+	/**
+	 * \brief Type for flags.
+	 *
+	 * Is an unsigned numeric type.
+	 */
+	using type = S;
+
+	/**
+	 * \brief TRUE iff value for parameter \p t is TRUE, otherwise FALSE.
+	 *
+	 * \param[in] t  Input value to check flag value for
+	 *
+	 * \return TRUE iff \p t has flag value TRUE, otherwise FALSE.
+	 */
+	bool operator() (const T t) const
+	{
+		return flags_ & (1 << std::underlying_type_t<T>(t));
+	}
+
+	/**
+	 * \brief Set a flag for input value \p t.
+	 *
+	 * \param[in] t     Input to set value for
+	 * \param[in] value Value to be set for \p t
+	 */
+	void set(const T t, const bool value)
+	{
+		flags_ |= (value << std::underlying_type_t<T>(t));
+	}
+
+private:
+
+	/**
+	 * \brief Internal flags.
+	 */
+	type flags_;
+};
+
+
 /**
  * \brief Flags with type KEY as key.
  */
@@ -220,11 +285,58 @@ public:
 	/**
 	 * \brief Default constructor.
 	 *
-	 * Initializes any internal setting with FALSE.
+	 * Default-initializes internal flags.
 	 */
-	FlagStore() : FlagStore(0)
+	FlagStore()
+		: flags_ {/*default*/}
 	{
 		/* empty */
+	}
+
+	/**
+	 * \brief Set the specified flag to TRUE.
+	 *
+	 * \param[in] idx Index to set
+	 */
+	void set(const KEY key)
+	{
+		flags_.set(array_index(key));
+	}
+
+	/**
+	 * \brief Set the specified flag to FALSE.
+	 *
+	 * \param[in] idx Index to set
+	 */
+	void unset(const KEY key)
+	{
+		flags_.unset(array_index(key));
+	}
+
+	/**
+	 * \brief Set value of flag \c key to \c value.
+	 *
+	 * Equivalent to set().
+	 *
+	 * \param[in] key   Key of the flag to set
+	 * \param[in] value New value
+	 */
+	void set_flag(const KEY key, const bool value)
+	{
+		flags_.set_flag(array_index(key), value);
+	}
+
+	/**
+	 * \brief Set value of flag \c key to \c value.
+	 *
+	 * Equivalent to set_flag().
+	 *
+	 * \param[in] key   Key of the flag to set
+	 * \param[in] value New value
+	 */
+	void set(const KEY key, const bool value)
+	{
+		this->set_flag(key, value);
 	}
 
 	/**
@@ -240,14 +352,15 @@ public:
 	}
 
 	/**
-	 * \brief Set value of flag \c key to \c value.
+	 * \brief Get value of flag \c key.
 	 *
-	 * \param[in] key   Key of the flag to set
-	 * \param[in] value New value
+	 * \param[in] key Key of the flag to get
+	 *
+	 * \return Value of flag \c key
 	 */
-	void set_flag(const KEY key, const bool value)
+	bool operator() (const KEY key) const
 	{
-		return flags_.set_flag(array_index(key));
+		return this->flag(key);
 	}
 
 private:
@@ -258,7 +371,7 @@ private:
 	 * \return Array index
 	 */
 	auto array_index(const KEY key) const ->
-		decltype( details::to_underlying<KEY> )
+		decltype( details::to_underlying<KEY>(key) )
 	{
 		return details::to_underlying<KEY>(key);
 	}
@@ -278,7 +391,7 @@ private:
  * \tparam Args
  */
 template <typename KEY, typename T, typename ...Args>
-class LayoutWithFlags
+class LayoutWithFlags : Layout<T, Args...>
 {
 public:
 
@@ -342,6 +455,7 @@ private:
 	 */
 	FlagStore<KEY> flag_state_;
 };
+
 
 /**
  * \brief Provides internal settings as member.

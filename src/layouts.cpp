@@ -25,15 +25,21 @@ Flags::Flags(const uint32_t flags)
 }
 
 
+void Flags::set(const int idx)
+{
+	flags_ |= (1u << idx);
+}
+
+
+void Flags::unset(const int idx)
+{
+	flags_ &= ~(1u << idx);
+}
+
+
 void Flags::set_flag(const int idx, const bool value)
 {
-	if (value)
-	{
-		flags_ |=  (1u << idx); // <= true
-	} else
-	{
-		flags_ &= ~(1u << idx); // <= false
-	}
+	if (value) { set(idx); } else { unset(idx); }
 }
 
 
