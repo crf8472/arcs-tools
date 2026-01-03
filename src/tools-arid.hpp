@@ -37,7 +37,7 @@ using arcstk::ToC;
 
 
 /**
- * \brief Show flags of the ARIdLayout
+ * \brief Show flags of ARIdLayout
  */
 enum class ARID_FLAG : int
 {

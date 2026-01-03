@@ -287,9 +287,7 @@ std::string DBARTripletLayout::do_format(InputTuple t) const
 	const auto track   = std::get<0>(t);
 	const auto triplet = std::get<1>(t);
 
-	calc::HexLayout hex; // TODO Make this configurable, inherit from WithChecksums...
-	hex.set_show_base(false);
-	hex.set_uppercase(true);
+	auto hex = calc::HexLayout {};
 
 	const int width_arcs = 8;
 	const int width_conf = 2;

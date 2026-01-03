@@ -340,34 +340,9 @@ ToCParser ChecksumCalculator::setup_parser() const
 
 
 HexLayout::HexLayout()
-	: WithInternalFlags()
+	: PropertyFlags { 0x00000002 }
 {
-	set_show_base(false);
-	set_uppercase(true);
-}
-
-
-void HexLayout::set_show_base(const bool base)
-{
-	flags().set_flag(0, base);
-}
-
-
-bool HexLayout::shows_base() const
-{
-	return flags().flag(0);
-}
-
-
-void HexLayout::set_uppercase(const bool uppercase)
-{
-	flags().set_flag(1, uppercase);
-}
-
-
-bool HexLayout::is_uppercase() const
-{
-	return flags().flag(1);
+	// means: SHOW_BASE is OFF, UPPERCASE is ON
 }
 
 
@@ -378,12 +353,12 @@ std::string HexLayout::do_format(InputTuple t) const
 
 	std::ostringstream ss;
 
-	if (shows_base())
+	if (has_property(HEX_FLAG::SHOW_BASE))
 	{
 		ss << std::showbase;
 	}
 
-	if (is_uppercase())
+	if (has_property(HEX_FLAG::UPPERCASE))
 	{
 		ss << std::uppercase;
 	}
@@ -392,6 +367,9 @@ std::string HexLayout::do_format(InputTuple t) const
 
 	return ss.str();
 }
+
+
+// validate
 
 
 void validate(const Checksums& checksums, const ToC* toc,

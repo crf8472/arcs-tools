@@ -134,14 +134,25 @@ TEST_CASE ( "ToCFiles", "" )
 TEST_CASE ( "HexLayout", "[hexlayout]" )
 {
 	using arcstk::Checksum;
+
+	using arcsapp::calc::HEX_FLAG;
 	using arcsapp::calc::HexLayout;
 
-	auto hex_layout = std::make_unique<HexLayout>();
+	const auto hex_layout = HexLayout {/*default*/};
 
-	CHECK ( hex_layout->format(Checksum { 3456 }, 2) == "D80" );
-	CHECK ( hex_layout->format(Checksum { 3456 }, 3) == "D80" );
-	CHECK ( hex_layout->format(Checksum { 1023 }, 4) == "03FF" );
-	CHECK ( hex_layout->format(Checksum { 1023 }, 6) == "0003FF" );
+	SECTION ( "Constructor defaults are correct" )
+	{
+		CHECK ( not hex_layout.has_property(HEX_FLAG::SHOW_BASE) );
+		CHECK (     hex_layout.has_property(HEX_FLAG::UPPERCASE) );
+	}
+
+	SECTION ( "Formatting works" )
+	{
+		CHECK ( hex_layout.format(Checksum { 3456 }, 2) == "D80" );
+		CHECK ( hex_layout.format(Checksum { 3456 }, 3) == "D80" );
+		CHECK ( hex_layout.format(Checksum { 1023 }, 4) == "03FF" );
+		CHECK ( hex_layout.format(Checksum { 1023 }, 6) == "0003FF" );
+	}
 }
 
 
