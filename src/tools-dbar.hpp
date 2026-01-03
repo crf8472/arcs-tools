@@ -245,8 +245,7 @@ using TripletLayout = Layout<std::string, int, arcstk::DBARTriplet>;
 /**
  * \brief Interface for formatting DBARTriplet instances for output.
  */
-class DBARTripletLayout : protected WithInternalFlags
-						, public TripletLayout
+class DBARTripletLayout : public TripletLayout
 {
 public:
 
