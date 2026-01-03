@@ -95,23 +95,6 @@ public:
 	virtual ~ARIdLayout() noexcept;
 
 	/**
-	 * \brief Label for the specified flag.
-	 *
-	 * \param[in] flag Flag to get label for
-	 *
-	 * \return Label for \c flag
-	 */
-	auto label(const ARID_FLAG flag) const -> std::string;
-
-	/**
-	 * \brief Set label for the specified flag.
-	 *
-	 * \param[in] flag  Flag to set label for
-	 * \param[in] label Label to set
-	 */
-	void set_label(const ARID_FLAG flag, const std::string& label);
-
-	/**
 	 * \brief Returns TRUE iff instance is configured to print field labels.
 	 *
 	 * \return TRUE iff instance is configured to print field labels
@@ -224,6 +207,23 @@ public:
 	void set_cddb_id(const bool cddb_id);
 
 	/**
+	 * \brief Label for the specified flag.
+	 *
+	 * \param[in] flag Flag to get label for
+	 *
+	 * \return Label for \c flag
+	 */
+	auto label(const ARID_FLAG flag) const -> std::string;
+
+	/**
+	 * \brief Set label for the specified flag.
+	 *
+	 * \param[in] flag  Flag to set label for
+	 * \param[in] label Label to set
+	 */
+	void set_label(const ARID_FLAG flag, const std::string& label);
+
+	/**
 	 * \brief Return TRUE if \p flag is the only flag set, otherwise FALSE
 	 *
 	 * \param[in] flag Flag to check
@@ -238,6 +238,7 @@ public:
 	 * \return Deep copy of this instance
 	 */
 	std::unique_ptr<ARIdLayout> clone() const;
+	// TODO Implement clone_base()
 
 protected:
 
@@ -322,6 +323,32 @@ protected:
 	 * \return Array index this flag points to
 	 */
 	auto array_idx(const ARID_FLAG flag) const -> unsigned;
+
+	/**
+	 * \brief Turn flag to an index for InternalFlags.
+	 *
+	 * \param[in] flag Flag to turn to an index
+	 *
+	 * \return Index in InternalFlags this flag points to
+	 */
+	auto flag_idx(const ARID_FLAG flag) const -> int;
+
+	/**
+	 * \brief Value of flag \c flag.
+	 *
+	 * \param[in] flag Flag to get value for
+	 *
+	 * \return Value of flag \c flag
+	 */
+	auto flag(const ARID_FLAG flag) const -> bool;
+
+	/**
+	 * \brief Set value for flag \c flag.
+	 *
+	 * \param[in] flag  Flag to get value for
+	 * \param[in] value New value for \c flag
+	 */
+	void set_flag(const ARID_FLAG flag, const bool value);
 };
 
 

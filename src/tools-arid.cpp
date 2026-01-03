@@ -122,91 +122,103 @@ void ARIdLayout::set_fieldlabels(const bool labels)
 
 bool ARIdLayout::id() const
 {
-	return flags().flag(details::to_underlying(ARID_FLAG::ID));
+	return flag(ARID_FLAG::ID);
 }
 
 
 void ARIdLayout::set_id(const bool id)
 {
-	flags().set_flag(details::to_underlying(ARID_FLAG::ID), id);
+	set_flag(ARID_FLAG::ID, id);
 }
 
 
 bool ARIdLayout::url() const
 {
-	return flags().flag(details::to_underlying(ARID_FLAG::URL));
+	return flag(ARID_FLAG::URL);
 }
 
 
 void ARIdLayout::set_url(const bool url)
 {
-	flags().set_flag(details::to_underlying(ARID_FLAG::URL), url);
+	set_flag(ARID_FLAG::URL, url);
 }
 
 
 bool ARIdLayout::filename() const
 {
-	return flags().flag(details::to_underlying(ARID_FLAG::FILENAME));
+	return flag(ARID_FLAG::FILENAME);
 }
 
 
 void ARIdLayout::set_filename(const bool filename)
 {
-	flags().set_flag(details::to_underlying(ARID_FLAG::FILENAME), filename);
+	set_flag(ARID_FLAG::FILENAME, filename);
 }
 
 
 bool ARIdLayout::track_count() const
 {
-	return flags().flag(details::to_underlying(ARID_FLAG::TRACKS));
+	return flag(ARID_FLAG::TRACKS);
 }
 
 
 void ARIdLayout::set_trackcount(const bool trackcount)
 {
-	flags().set_flag(details::to_underlying(ARID_FLAG::TRACKS), trackcount);
+	set_flag(ARID_FLAG::TRACKS, trackcount);
 }
 
 
 bool ARIdLayout::disc_id_1() const
 {
-	return flags().flag(details::to_underlying(ARID_FLAG::ID1));
+	return flag(ARID_FLAG::ID1);
 }
 
 
 void ARIdLayout::set_disc_id_1(const bool disc_id_1)
 {
-	flags().set_flag(details::to_underlying(ARID_FLAG::ID1), disc_id_1);
+	set_flag(ARID_FLAG::ID1, disc_id_1);
 }
 
 
 bool ARIdLayout::disc_id_2() const
 {
-	return flags().flag(details::to_underlying(ARID_FLAG::ID2));
+	return flag(ARID_FLAG::ID2);
 }
 
 
 void ARIdLayout::set_disc_id_2(const bool disc_id_2)
 {
-	flags().set_flag(details::to_underlying(ARID_FLAG::ID2), disc_id_2);
+	set_flag(ARID_FLAG::ID2, disc_id_2);
 }
 
 
 bool ARIdLayout::cddb_id() const
 {
-	return flags().flag(details::to_underlying(ARID_FLAG::CDDBID));
+	return flag(ARID_FLAG::CDDBID);
 }
 
 
 void ARIdLayout::set_cddb_id(const bool cddb_id)
 {
-	flags().set_flag(details::to_underlying(ARID_FLAG::CDDBID), cddb_id);
+	set_flag(ARID_FLAG::CDDBID, cddb_id);
+}
+
+
+auto ARIdLayout::label(const ARID_FLAG flag) const -> std::string
+{
+	return labels_[array_idx(flag)];
+}
+
+
+void ARIdLayout::set_label(const ARID_FLAG flag, const std::string& label)
+{
+	labels_[array_idx(flag)] = label;
 }
 
 
 bool ARIdLayout::has_only(const ARID_FLAG flag) const
 {
-	return flags().only(details::to_underlying(flag));
+	return flags().only(flag_idx(flag));
 }
 
 
@@ -234,15 +246,21 @@ auto ARIdLayout::array_idx(const ARID_FLAG flag) const -> unsigned
 }
 
 
-auto ARIdLayout::label(const ARID_FLAG flag) const -> std::string
+auto ARIdLayout::flag_idx(const ARID_FLAG flag) const -> int
 {
-	return labels_[array_idx(flag)];
+	return details::to_underlying(flag);
 }
 
 
-void ARIdLayout::set_label(const ARID_FLAG flag, const std::string& label)
+auto ARIdLayout::flag(const ARID_FLAG flag) const -> bool
 {
-	labels_[array_idx(flag)] = label;
+	return flags().flag(flag_idx(flag));
+}
+
+
+void ARIdLayout::set_flag(const ARID_FLAG flag, const bool value)
+{
+	flags().set_flag(flag_idx(flag), value);
 }
 
 
