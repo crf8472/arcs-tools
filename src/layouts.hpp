@@ -21,6 +21,28 @@ namespace arcsapp
 inline namespace v_1_0_0
 {
 
+namespace details
+{
+
+/**
+ * \brief Convert an object to its underlying value.
+ *
+ * Convenience function to convert typed enum values to their underlying
+ * value.
+ *
+ * \param[in] e The value to convert
+ *
+ * \return Underlying type of \p e.
+ */
+template <typename E>
+inline constexpr auto to_underlying(E e) noexcept
+{
+    return static_cast<std::underlying_type_t<E>>(e);
+}
+
+} // namespace details
+
+
 /**
  * \brief Abstract base class for formatters.
  *
@@ -105,7 +127,7 @@ private:
  *
  * Provides 32 boolean states with accessors.
  */
-class InternalFlags final
+class Flags final
 {
 public:
 
@@ -114,14 +136,18 @@ public:
 	 *
 	 * \param[in] flags Initial internal state
 	 */
-	explicit InternalFlags(const uint32_t flags);
+	explicit Flags(const uint32_t flags);
 
 	/**
 	 * \brief Default Constructor.
 	 *
 	 * Initializes every flag to FALSE.
 	 */
-	InternalFlags() : InternalFlags(0) { /* empty */ };
+	Flags()
+		: Flags(0)
+	{
+		/* empty */
+	};
 
 	/**
 	 * \brief Set the specified flag to the specified value.
@@ -173,6 +199,151 @@ private:
 
 
 /**
+ * \brief Flags with type KEY as key.
+ */
+template<typename KEY>
+class FlagStore final
+{
+public:
+
+	/**
+	 * \brief Construct with individual flags.
+	 *
+	 * \param[in] flags Flags to use
+	 */
+	explicit FlagStore(const uint32_t flags)
+		: flags_ { flags }
+	{
+		/* empty */
+	}
+
+	/**
+	 * \brief Default constructor.
+	 *
+	 * Initializes any internal setting with FALSE.
+	 */
+	FlagStore() : FlagStore(0)
+	{
+		/* empty */
+	}
+
+	/**
+	 * \brief Get value of flag \c key.
+	 *
+	 * \param[in] key Key of the flag to get
+	 *
+	 * \return Value of flag \c key
+	 */
+	bool flag(const KEY key) const
+	{
+		return flags_.flag(array_index(key));
+	}
+
+	/**
+	 * \brief Set value of flag \c key to \c value.
+	 *
+	 * \param[in] key   Key of the flag to set
+	 * \param[in] value New value
+	 */
+	void set_flag(const KEY key, const bool value)
+	{
+		return flags_.set_flag(array_index(key));
+	}
+
+private:
+
+	/**
+	 * \brief Turn \c key to an array index.
+	 *
+	 * \return Array index
+	 */
+	auto array_index(const KEY key) const ->
+		decltype( details::to_underlying<KEY> )
+	{
+		return details::to_underlying<KEY>(key);
+	}
+
+	/**
+	 * \brief Internal flag store.
+	 */
+	Flags flags_;
+};
+
+
+/**
+ * \brief Layout with boolean flags.
+ *
+ * \tparam KEY   Key type for flags
+ * \tparam T
+ * \tparam Args
+ */
+template <typename KEY, typename T, typename ...Args>
+class LayoutWithFlags
+{
+public:
+
+	/**
+	 * \brief Return TRUE if layout has property \c key.
+	 *
+	 * \param[in] key Property to test for
+	 *
+	 * \return TRUE if this instance has property \c key
+	 */
+	bool has_property(const KEY key) const
+	{
+		return flag_state_.flag(key);
+	}
+
+	/**
+	 * \brief Set or unset property \c key.
+	 *
+	 * \param[in] key   Property to set or unset
+	 * \param[in] value TRUE or FALSE
+	 */
+	void update_property(const KEY key, const bool value)
+	{
+		flag_state_.set_flag(key, value);
+	}
+
+	/**
+	 * \brief Sets property \c key to TRUE.
+	 *
+	 * \param[in] key Property to set
+	 */
+	void set_property(const KEY key)
+	{
+		update_property(key, true);
+	}
+
+	/**
+	 * \brief Sets property \c key to FALSE.
+	 *
+	 * \param[in] key Property to unset
+	 */
+	void unset_property(const KEY key)
+	{
+		update_property(key, false);
+	}
+
+	/**
+	 * \brief Toggles property \c key.
+	 *
+	 * \param[in] key Property to toggle
+	 */
+	void toggle_property(const KEY key)
+	{
+		update_property(key, !has_property(key));
+	}
+
+private:
+
+	/**
+	 * \brief Internal flag state.
+	 */
+	FlagStore<KEY> flag_state_;
+};
+
+/**
  * \brief Provides internal settings as member.
  */
 class WithInternalFlags
@@ -206,41 +377,20 @@ protected:
 	 *
 	 * \return Settings.
 	 */
-	InternalFlags& flags() { return flags_; }
+	Flags& flags() { return flags_; }
 
 	/**
 	 * \brief Access internal settings.
 	 *
 	 * \return Settings.
 	 */
-	const InternalFlags& flags() const { return flags_; }
+	const Flags& flags() const { return flags_; }
 
 private:
 
-	InternalFlags flags_;
+	Flags flags_;
 };
 
-
-namespace details
-{
-
-/**
- * \brief Convert an object to its underlying value.
- *
- * Convenience function to convert typed enum values to their underlying
- * value.
- *
- * \param[in] e The value to convert
- *
- * \return Underlying type of \p e.
- */
-template <typename E>
-inline constexpr auto to_underlying(E e) noexcept
-{
-    return static_cast<std::underlying_type_t<E>>(e);
-}
-
-} // namespace details
 } // namespace v_1_0_0
 } // namespace arcsapp
 

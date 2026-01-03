@@ -4,11 +4,11 @@
 #include "layouts.hpp"
 #endif
 
-TEST_CASE ( "InternalFlags", "[internalflags]" )
+TEST_CASE ( "Flags", "[flags]" )
 {
-	using arcsapp::InternalFlags;
+	using arcsapp::Flags;
 
-	InternalFlags flags(0);
+	Flags flags(0);
 	flags.set_flag(4, true);
 
 	REQUIRE ( not flags.flag(0) );
