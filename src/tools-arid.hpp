@@ -19,7 +19,7 @@
 #endif
 
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"      // for Layout, ARIdLayout
+#include "layouts.hpp"      // for Layout
 #endif
 
 namespace arcsapp
