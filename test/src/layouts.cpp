@@ -145,6 +145,5 @@ TEST_CASE ( "FlagStore", "[flagstore]" )
 		CHECK ( not store.flag(FOO::TWO) );
 		CHECK ( not store.flag(FOO::THREE) );
 	}
-
 }
 

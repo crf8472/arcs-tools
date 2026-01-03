@@ -363,6 +363,19 @@ public:
 		return this->flag(key);
 	}
 
+	/**
+	 * \brief Set value of flag \c key to \c value.
+	 *
+	 * Equivalent to set_flag().
+	 *
+	 * \param[in] key   Key of the flag to set
+	 * \param[in] value New value
+	 */
+	void set(const KEY key, const bool value)
+	{
+		this->set_flag(key, value);
+	}
+
 private:
 
 	/**
