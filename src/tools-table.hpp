@@ -1037,7 +1037,7 @@ protected:
 	 *
 	 * Is an unsigned numeric type.
 	 */
-	using print_flag_t = Flags2<ATTR, uint8_t>;
+	using print_flag_t = FlagStore<ATTR>;
 
 	/**
 	 * \brief Type for the ordering of the optional default fields.

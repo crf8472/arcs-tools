@@ -216,51 +216,51 @@ private:
 
 
 // TODO Remove this type in favor of Flags. Only used in tools-table
-/**
- * \brief A set of flags.
- */
-template <typename T, typename S>
-class Flags2 final
-{
-public:
-
-	/**
-	 * \brief Type for flags.
-	 *
-	 * Is an unsigned numeric type.
-	 */
-	using type = S;
-
-	/**
-	 * \brief TRUE iff value for parameter \p t is TRUE, otherwise FALSE.
-	 *
-	 * \param[in] t  Input value to check flag value for
-	 *
-	 * \return TRUE iff \p t has flag value TRUE, otherwise FALSE.
-	 */
-	bool operator() (const T t) const
-	{
-		return flags_ & (1 << std::underlying_type_t<T>(t));
-	}
-
-	/**
-	 * \brief Set a flag for input value \p t.
-	 *
-	 * \param[in] t     Input to set value for
-	 * \param[in] value Value to be set for \p t
-	 */
-	void set(const T t, const bool value)
-	{
-		flags_ |= (value << std::underlying_type_t<T>(t));
-	}
-
-private:
-
-	/**
-	 * \brief Internal flags.
-	 */
-	type flags_;
-};
+// /**
+//  * \brief A set of flags.
+//  */
+// template <typename T, typename S>
+// class Flags2 final
+// {
+// public:
+//
+// 	/**
+// 	 * \brief Type for flags.
+// 	 *
+// 	 * Is an unsigned numeric type.
+// 	 */
+// 	using type = S;
+//
+// 	/**
+// 	 * \brief TRUE iff value for parameter \p t is TRUE, otherwise FALSE.
+// 	 *
+// 	 * \param[in] t  Input value to check flag value for
+// 	 *
+// 	 * \return TRUE iff \p t has flag value TRUE, otherwise FALSE.
+// 	 */
+// 	bool operator() (const T t) const
+// 	{
+// 		return flags_ & (1 << std::underlying_type_t<T>(t));
+// 	}
+//
+// 	/**
+// 	 * \brief Set a flag for input value \p t.
+// 	 *
+// 	 * \param[in] t     Input to set value for
+// 	 * \param[in] value Value to be set for \p t
+// 	 */
+// 	void set(const T t, const bool value)
+// 	{
+// 		flags_ |= (value << std::underlying_type_t<T>(t));
+// 	}
+//
+// private:
+//
+// 	/**
+// 	 * \brief Internal flags.
+// 	 */
+// 	type flags_;
+// };
 
 
 /**
