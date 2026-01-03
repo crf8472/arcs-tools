@@ -79,7 +79,7 @@ std::ostream& operator << (std::ostream& o, const RichARId& a)
 
 
 ARIdLayout::ARIdLayout()
-	: WithInternalFlags { 0xFFFFFFFF } // all flags true
+	: PropertyFlags { 0xFFFFFFFF } // all flags true
 	, field_labels_ { true }
 {
 	// empty
@@ -89,7 +89,7 @@ ARIdLayout::ARIdLayout()
 ARIdLayout::ARIdLayout(const bool labels, const bool id, const bool url,
 		const bool filename, const bool track_count, const bool disc_id_1,
 		const bool disc_id_2, const bool cddb_id)
-	: WithInternalFlags(
+	: PropertyFlags(
 			static_cast<uint32_t>(0)
 			| flag_operand(ARID_FLAG::ID,       id)
 			| flag_operand(ARID_FLAG::URL,      url)
@@ -120,90 +120,6 @@ void ARIdLayout::set_fieldlabels(const bool labels)
 }
 
 
-bool ARIdLayout::id() const
-{
-	return flag(ARID_FLAG::ID);
-}
-
-
-void ARIdLayout::set_id(const bool id)
-{
-	set_flag(ARID_FLAG::ID, id);
-}
-
-
-bool ARIdLayout::url() const
-{
-	return flag(ARID_FLAG::URL);
-}
-
-
-void ARIdLayout::set_url(const bool url)
-{
-	set_flag(ARID_FLAG::URL, url);
-}
-
-
-bool ARIdLayout::filename() const
-{
-	return flag(ARID_FLAG::FILENAME);
-}
-
-
-void ARIdLayout::set_filename(const bool filename)
-{
-	set_flag(ARID_FLAG::FILENAME, filename);
-}
-
-
-bool ARIdLayout::track_count() const
-{
-	return flag(ARID_FLAG::TRACKS);
-}
-
-
-void ARIdLayout::set_trackcount(const bool trackcount)
-{
-	set_flag(ARID_FLAG::TRACKS, trackcount);
-}
-
-
-bool ARIdLayout::disc_id_1() const
-{
-	return flag(ARID_FLAG::ID1);
-}
-
-
-void ARIdLayout::set_disc_id_1(const bool disc_id_1)
-{
-	set_flag(ARID_FLAG::ID1, disc_id_1);
-}
-
-
-bool ARIdLayout::disc_id_2() const
-{
-	return flag(ARID_FLAG::ID2);
-}
-
-
-void ARIdLayout::set_disc_id_2(const bool disc_id_2)
-{
-	set_flag(ARID_FLAG::ID2, disc_id_2);
-}
-
-
-bool ARIdLayout::cddb_id() const
-{
-	return flag(ARID_FLAG::CDDBID);
-}
-
-
-void ARIdLayout::set_cddb_id(const bool cddb_id)
-{
-	set_flag(ARID_FLAG::CDDBID, cddb_id);
-}
-
-
 auto ARIdLayout::label(const ARID_FLAG flag) const -> std::string
 {
 	return labels_[array_idx(flag)];
@@ -213,12 +129,6 @@ auto ARIdLayout::label(const ARID_FLAG flag) const -> std::string
 void ARIdLayout::set_label(const ARID_FLAG flag, const std::string& label)
 {
 	labels_[array_idx(flag)] = label;
-}
-
-
-bool ARIdLayout::has_only(const ARID_FLAG flag) const
-{
-	return flags().only(flag_idx(flag));
 }
 
 
@@ -246,24 +156,6 @@ auto ARIdLayout::array_idx(const ARID_FLAG flag) const -> unsigned
 }
 
 
-auto ARIdLayout::flag_idx(const ARID_FLAG flag) const -> int
-{
-	return details::to_underlying(flag);
-}
-
-
-auto ARIdLayout::flag(const ARID_FLAG flag) const -> bool
-{
-	return flags().flag(flag_idx(flag));
-}
-
-
-void ARIdLayout::set_flag(const ARID_FLAG flag, const bool value)
-{
-	flags().set_flag(flag_idx(flag), value);
-}
-
-
 std::string ARIdLayout::hex_id(const uint32_t id) const
 {
 	std::ostringstream out;
@@ -280,9 +172,9 @@ std::string ARIdLayout::hex_id(const uint32_t id) const
 
 std::string ARIdTableLayout::do_format(InputTuple t) const
 {
-	if (flags().no_flags())
+	if (no_properties())
 	{
-		// no flags set means nothing to print
+		// no properties set means nothing to print
 		return std::string{};
 	}
 
@@ -298,7 +190,7 @@ std::string ARIdTableLayout::do_format(InputTuple t) const
 
 	for (const auto& sflag : show_flags())
 	{
-		if (not flags().flag(details::to_underlying(sflag))) { continue; }
+		if (not has_property(sflag)) { continue; }
 
 		if (!stream.str().empty()) { stream << '\n'; }
 

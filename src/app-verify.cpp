@@ -75,6 +75,7 @@ using arcstk::AlbumVerifier;
 using arcstk::TracksetVerifier;
 
 // arcsapp
+using arid::ARID_FLAG;
 using arid::ARIdLayout;
 using arid::ARIdTableLayout;
 using arid::RichARId;
@@ -1437,8 +1438,8 @@ std::unique_ptr<VerifyTableCreator> ARVerifyApplication::create_formatter(
 				false  /* no cddb id */
 		);
 
-		id_layout->set_label(ARIdLayout::ARID_FLAG::ID,  "ID(mine) ");
-		id_layout->set_label(ARIdLayout::ARID_FLAG::URL, "URL(mine)");
+		id_layout->set_label(ARID_FLAG::ID,  "ID(mine) ");
+		id_layout->set_label(ARID_FLAG::URL, "URL(mine)");
 
 		fmt->set_arid_layout(std::move(id_layout));
 	}

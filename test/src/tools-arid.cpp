@@ -8,6 +8,7 @@
 
 TEST_CASE ( "ARIdTableLayout", "[aridtablelayout]" )
 {
+	using arcsapp::arid::ARID_FLAG;
 	using arcsapp::arid::ARIdTableLayout;
 
 	ARIdTableLayout lyt1(false, false, true, false, false, false, false, false);
@@ -15,23 +16,16 @@ TEST_CASE ( "ARIdTableLayout", "[aridtablelayout]" )
 	SECTION ( "Constructor flags are correctly set" )
 	{
 		CHECK ( not lyt1.fieldlabels() );
-		CHECK ( not lyt1.id() );
-		CHECK (     lyt1.url() );
-		CHECK ( not lyt1.filename() );
-		CHECK ( not lyt1.track_count() );
-		CHECK ( not lyt1.disc_id_1() );
-		CHECK ( not lyt1.disc_id_2() );
-		CHECK ( not lyt1.cddb_id() );
+		CHECK ( not lyt1.has_property(ARID_FLAG::ID) );
+		CHECK (     lyt1.has_property(ARID_FLAG::URL) );
+		CHECK ( not lyt1.has_property(ARID_FLAG::FILENAME) );
+		CHECK ( not lyt1.has_property(ARID_FLAG::TRACKS) );
+		CHECK ( not lyt1.has_property(ARID_FLAG::ID1) );
+		CHECK ( not lyt1.has_property(ARID_FLAG::ID2) );
+		CHECK ( not lyt1.has_property(ARID_FLAG::CDDBID) );
 	}
 
 	// set_fieldlabels()
-	// set_id()
-	// set_url()
-	// set_filename()
-	// set_track_count()
-	// set_disc_id1()
-	// set_disc_id2()
-	// set_cddb_id()
 
 	// label()
 	// set_label()

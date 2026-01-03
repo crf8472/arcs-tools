@@ -146,11 +146,7 @@ public:
 	 *
 	 * Initializes every flag to FALSE.
 	 */
-	Flags()
-		: Flags(0)
-	{
-		/* empty */
-	};
+	Flags();
 
 	/**
 	 * \brief Set the specified flag to TRUE.
@@ -274,7 +270,7 @@ public:
 	/**
 	 * \brief Construct with individual flags.
 	 *
-	 * \param[in] flags Flags to use
+	 * \param[in] flags Initial internal state
 	 */
 	explicit FlagStore(const uint32_t flags)
 		: flags_ { flags }
@@ -363,6 +359,16 @@ public:
 		return this->flag(key);
 	}
 
+	/**
+	 * \brief Return true if no flags are set.
+	 *
+	 * \return TRUE if no flags are set
+	 */
+	bool no_flags() const
+	{
+		return flags_.no_flags();
+	}
+
 private:
 
 	/**
@@ -384,16 +390,28 @@ private:
 
 
 /**
- * \brief Layout with boolean flags.
- *
- * \tparam KEY   Key type for flags
- * \tparam T
- * \tparam Args
+ * \brief Class with flags.
  */
-template <typename KEY, typename T, typename ...Args>
-class LayoutWithFlags : Layout<T, Args...>
+template<typename KEY>
+class PropertyFlags
 {
 public:
+
+	/**
+	 * \brief Constructor with flags.
+	 *
+	 * \param[in] flags Initial internal state
+	 */
+	explicit PropertyFlags(const uint32_t flags)
+		: flag_store_ {flags}
+	{
+		// empty
+	}
+
+	/**
+	 * \brief Default destructor.
+	 */
+	virtual ~PropertyFlags() noexcept = default;
 
 	/**
 	 * \brief Return TRUE if layout has property \c key.
@@ -404,7 +422,7 @@ public:
 	 */
 	bool has_property(const KEY key) const
 	{
-		return flag_state_.flag(key);
+		return flag_store_.flag(key);
 	}
 
 	/**
@@ -415,7 +433,7 @@ public:
 	 */
 	void update_property(const KEY key, const bool value)
 	{
-		flag_state_.set_flag(key, value);
+		flag_store_.set_flag(key, value);
 	}
 
 	/**
@@ -448,12 +466,22 @@ public:
 		update_property(key, !has_property(key));
 	}
 
+	/**
+	 * \brief Returns TRUE if no properties are set.
+	 *
+	 * \return TRUE if no properties are set, otherwise FALSE
+	 */
+	bool no_properties() const
+	{
+		return flag_store_.no_flags();
+	}
+
 private:
 
 	/**
 	 * \brief Internal flag state.
 	 */
-	FlagStore<KEY> flag_state_;
+	FlagStore<KEY> flag_store_;
 };
 
 

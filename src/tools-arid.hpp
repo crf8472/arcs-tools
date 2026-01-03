@@ -12,7 +12,6 @@
 #include <memory>       // for unique_ptr
 #include <ostream>      // for ostream
 #include <string>       // for string
-#include <type_traits>  // for underlying_type_t
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>  // for ARId
@@ -38,6 +37,21 @@ using arcstk::ToC;
 
 
 /**
+ * \brief Show flags of the ARIdLayout
+ */
+enum class ARID_FLAG : int
+{
+	ID       = 0,
+	URL      = 1,
+	FILENAME = 2,
+	TRACKS   = 3,
+	ID1      = 4,
+	ID2      = 5,
+	CDDBID   = 6
+};
+
+
+/**
  * \brief Interface for formatting ARIds.
  */
 using IdLayout = Layout<std::string, arcstk::ARId, std::string>;
@@ -46,25 +60,10 @@ using IdLayout = Layout<std::string, arcstk::ARId, std::string>;
 /**
  * \brief Interface for formatting ARId instances for output.
  */
-class ARIdLayout : protected WithInternalFlags
+class ARIdLayout : public PropertyFlags<ARID_FLAG>
 				 , public IdLayout // TODO Do also Settings!
 {
 public:
-
-	/**
-	 * \brief Show flags of the ARIdLayout
-	 */
-	enum class ARID_FLAG : int
-	{
-		ID       = 0,
-		URL      = 1,
-		FILENAME = 2,
-		TRACKS   = 3,
-		ID1      = 4,
-		ID2      = 5,
-		CDDBID   = 6,
-		COUNT    = 7
-	};
 
 	/**
 	 * \brief Default constructor.
@@ -109,104 +108,6 @@ public:
 	void set_fieldlabels(const bool labels);
 
 	/**
-	 * \brief Returns TRUE iff instance is configured to format the ID.
-	 *
-	 * \return ID flag
-	 */
-	bool id() const;
-
-	/**
-	 * \brief Set to TRUE to print the ID.
-	 *
-	 * \param[in] id Flag to indicate that the ID has to be printed
-	 */
-	void set_id(const bool id);
-
-	/**
-	 * \brief Returns TRUE iff instance is configured to format the URL.
-	 *
-	 * \return URL flag
-	 */
-	bool url() const;
-
-	/**
-	 * \brief Set to TRUE to print the URL.
-	 *
-	 * \param[in] url Flag to indicate that the URL has to be printed
-	 */
-	void set_url(const bool url);
-
-	/**
-	 * \brief Returns TRUE iff instance is configured to format the filename.
-	 *
-	 * \return Filename flag
-	 */
-	bool filename() const;
-
-	/**
-	 * \brief Set to TRUE to print the filename.
-	 *
-	 * \param[in] filename Flag to indicate that the filename has to be printed
-	 */
-	void set_filename(const bool filename);
-
-	/**
-	 * \brief Returns TRUE iff instance is configured to format the track_count.
-	 *
-	 * \return Track count flag
-	 */
-	bool track_count() const;
-
-	/**
-	 * \brief Set to TRUE to print the track count.
-	 *
-	 * \param[in] trackcount TRUE indicates to print track count
-	 */
-	void set_trackcount(const bool trackcount);
-
-	/**
-	 * \brief Returns TRUE iff instance is configured to format the disc id 1.
-	 *
-	 * \return Disc id 1 flag
-	 */
-	bool disc_id_1() const;
-
-	/**
-	 * \brief Set to TRUE to print the first disc id.
-	 *
-	 * \param[in] disc_id_1 TRUE indicates to print disc id 1
-	 */
-	void set_disc_id_1(const bool disc_id_1);
-
-	/**
-	 * \brief Returns TRUE iff instance is configured to format the disc id 2.
-	 *
-	 * \return Disc id 2 flag
-	 */
-	bool disc_id_2() const;
-
-	/**
-	 * \brief Set to TRUE to print the second disc id.
-	 *
-	 * \param[in] disc_id_2 TRUE indicates to print disc id 2
-	 */
-	void set_disc_id_2(const bool disc_id_2);
-
-	/**
-	 * \brief Returns TRUE iff instance is configured to format the cddb id.
-	 *
-	 * \return CDDB id flag
-	 */
-	bool cddb_id() const;
-
-	/**
-	 * \brief Set to TRUE to print the cddb id.
-	 *
-	 * \param[in] cddb_id Flag to indicate that the cddb id has to be printed
-	 */
-	void set_cddb_id(const bool cddb_id);
-
-	/**
 	 * \brief Label for the specified flag.
 	 *
 	 * \param[in] flag Flag to get label for
@@ -222,15 +123,6 @@ public:
 	 * \param[in] label Label to set
 	 */
 	void set_label(const ARID_FLAG flag, const std::string& label);
-
-	/**
-	 * \brief Return TRUE if \p flag is the only flag set, otherwise FALSE
-	 *
-	 * \param[in] flag Flag to check
-	 *
-	 * \return TRUE iff \p flag is the only flag set, otherwise FALSE
-	 */
-	bool has_only(const ARID_FLAG flag) const;
 
 	/**
 	 * \brief Deep copy of this instance.
@@ -251,9 +143,7 @@ private:
 	 *
 	 * Order matches definition order in ARID_FLAG.
 	 */
-	const std::array<ARID_FLAG,
-		static_cast<std::underlying_type_t<ARID_FLAG>>(ARID_FLAG::COUNT)>
-			show_flags_
+	const std::array<ARID_FLAG, 7> show_flags_
 	{
 		ARID_FLAG::ID,
 		ARID_FLAG::URL,
@@ -269,9 +159,7 @@ private:
 	 *
 	 * Order matches definition order in ARID_FLAG.
 	 */
-	std::array<std::string,
-		static_cast<std::underlying_type_t<ARID_FLAG>>(ARID_FLAG::COUNT)>
-			labels_
+	std::array<std::string, 7> labels_
 	{
 		"ID",
 		"URL",
@@ -323,32 +211,6 @@ protected:
 	 * \return Array index this flag points to
 	 */
 	auto array_idx(const ARID_FLAG flag) const -> unsigned;
-
-	/**
-	 * \brief Turn flag to an index for InternalFlags.
-	 *
-	 * \param[in] flag Flag to turn to an index
-	 *
-	 * \return Index in InternalFlags this flag points to
-	 */
-	auto flag_idx(const ARID_FLAG flag) const -> int;
-
-	/**
-	 * \brief Value of flag \c flag.
-	 *
-	 * \param[in] flag Flag to get value for
-	 *
-	 * \return Value of flag \c flag
-	 */
-	auto flag(const ARID_FLAG flag) const -> bool;
-
-	/**
-	 * \brief Set value for flag \c flag.
-	 *
-	 * \param[in] flag  Flag to get value for
-	 * \param[in] value New value for \c flag
-	 */
-	void set_flag(const ARID_FLAG flag, const bool value);
 };
 
 

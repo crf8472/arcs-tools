@@ -25,6 +25,13 @@ Flags::Flags(const uint32_t flags)
 }
 
 
+Flags::Flags()
+	: Flags(0)
+{
+	// empty
+};
+
+
 void Flags::set(const int idx)
 {
 	flags_ |= (1u << idx);
