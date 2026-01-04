@@ -4,6 +4,9 @@
 #include "layouts.hpp"
 #endif
 
+// TODO PropertyStore
+// TODO LabelStore
+
 TEST_CASE ( "Flags", "[flags]" )
 {
 	using arcsapp::Flags;
