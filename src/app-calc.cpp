@@ -603,35 +603,12 @@ std::tuple<Checksums, std::unique_ptr<ToC>> ARCalcApplication::calculate(
 std::unique_ptr<CalcTableCreator> ARCalcApplication::create_formatter(
 		const Configuration& config) const
 {
+	auto fmt = std::make_unique<CalcTableCreator>();
+
+
+	// Configure Attributes
+
 	ARCS_LOG(DEBUG3) << "Define output attributes:";
-
-	auto fmt = std::unique_ptr<CalcTableCreator>
-	{
-		std::make_unique<CalcTableCreator>()
-	};
-
-	// Layouts for Checksums + ARId
-
-	fmt->set_checksum_layout(std::make_unique<HexLayout>());
-
-	// Layout for ARId
-
-	if (config.is_set(CALC::PRINTID) || config.is_set(CALC::PRINTURL))
-	{
-		std::unique_ptr<ARIdLayout> id_layout =
-			std::make_unique<ARIdTableLayout>(
-				!config.is_set(CALC::NOLABELS),
-				config.is_set(CALC::PRINTID),
-				config.is_set(CALC::PRINTURL),
-				false, /* no filenames */
-				false, /* no tracks */
-				false, /* no id 1 */
-				false, /* no id 2 */
-				false  /* no cddb id */
-		);
-
-		fmt->set_arid_layout(std::move(id_layout));
-	}
 
 	// ToC present? Helper for determining other properties
 	const bool has_toc = !config.value(CALC::METAFILE).empty();
@@ -640,11 +617,6 @@ std::unique_ptr<CalcTableCreator> ARCalcApplication::create_formatter(
 	const bool tracks_numbered = config.is_set(CALC::FIRST)
 		|| config.is_set(CALC::LAST) || has_toc;
 
-
-	// Print labels or not
-	fmt->set_with_labels(!config.is_set(CALC::NOLABELS));
-
-	ARCS_LOG(DEBUG3) << "Print LABEL :   " << fmt->with_labels();
 
 	// Print track numbers if they are not forbidden and a ToC is present
 	fmt->update_property(ATTR::TRACK,
@@ -670,41 +642,73 @@ std::unique_ptr<CalcTableCreator> ARCalcApplication::create_formatter(
 	ARCS_LOG(DEBUG3) << "Print FILENAME: " <<
 			fmt->has_property(ATTR::FILENAME);
 
-	auto layout { std::make_unique<StringTableLayout>() };
+
+	// Layout for checksum table
+
+	auto cs_table_layout { std::make_unique<StringTableLayout>() };
 
 	// Define delimiters and switch them on or off
 
-	layout->set_col_inner_delim(config.is_set(CALC::COLDELIM)
+	cs_table_layout->set_col_inner_delim(config.is_set(CALC::COLDELIM)
 		? config.value(CALC::COLDELIM)
 		: " ");
 
-	// Remove label space if not requested
+	// Remove labels and delims if requested
 
 	if (config.is_set(CALC::NOLABELS))
 	{
-		layout->set_col_labels(false);
-		layout->set_col_labels_delims(false);
+		ARCS_LOG(DEBUG3) << "Print without labels";
 
-		layout->set_row_labels(false);
+		cs_table_layout->set_col_labels(false);
+		cs_table_layout->set_col_labels_delims(false);
+
+		cs_table_layout->set_row_labels(false);
+	} else
+	{
+		ARCS_LOG(DEBUG3) << "Print with labels";
 	}
 
 	// Print tracks either as columns or as rows
 
-	std::unique_ptr<TableComposerBuilder> builder = nullptr;
+	std::unique_ptr<TableComposerBuilder> cs_table_builder = nullptr;
 	if (config.is_set(CALC::TRACKSASCOLS))
 	{
-		builder = std::make_unique<ColTableComposerBuilder>();
+		cs_table_builder = std::make_unique<ColTableComposerBuilder>();
 
 		// delimiter between labels column and column for first track
-		layout->set_col_labels_delim(layout->col_inner_delim());
-		layout->set_col_labels_delims(true);
+		cs_table_layout->set_col_labels_delim(
+				cs_table_layout->col_inner_delim()); // XXX What???
+		cs_table_layout->set_col_labels_delims(true);
 	} else
 	{
-		builder = std::make_unique<RowTableComposerBuilder>();
+		cs_table_builder = std::make_unique<RowTableComposerBuilder>();
 	}
 
-	fmt->set_table_layout(std::move(layout));
-	fmt->set_builder(std::move(builder));
+
+	// Layout for ARId
+
+	if (config.is_set(CALC::PRINTID) || config.is_set(CALC::PRINTURL))
+	{
+		std::unique_ptr<ARIdLayout> id_layout =
+			std::make_unique<ARIdTableLayout>(
+				!config.is_set(CALC::NOLABELS),
+				config.is_set(CALC::PRINTID),
+				config.is_set(CALC::PRINTURL),
+				false, /* no filenames */
+				false, /* no tracks */
+				false, /* no id 1 */
+				false, /* no id 2 */
+				false  /* no cddb id */
+		);
+
+		fmt->set_arid_layout(std::move(id_layout));
+	}
+
+	// Put things together
+
+	fmt->set_checksum_layout(std::make_unique<HexLayout>());
+	fmt->set_table_layout(std::move(cs_table_layout));
+	fmt->set_builder(std::move(cs_table_builder));
 
 	return fmt;
 }
