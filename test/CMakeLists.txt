@@ -25,7 +25,7 @@ list (APPEND TEST_SETS ansi        )
 ## TODO tests for appregistry
 list (APPEND TEST_SETS app-calc    )
 list (APPEND TEST_SETS app-id      )
-## TODO tests for app-parse
+list (APPEND TEST_SETS app-parse   )
 list (APPEND TEST_SETS app-verify  )
 list (APPEND TEST_SETS clitokens   )
 list (APPEND TEST_SETS config      ) ## custom test script
