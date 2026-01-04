@@ -109,7 +109,7 @@ class Modifier
 	Highlight hl_;
 
 	/**
-	 * \brief List of codes to use.
+	 * \brief List of colors to use.
 	 */
 	std::vector<Color> colors_;
 
@@ -128,7 +128,7 @@ public:
 	 * \brief Constructor.
 	 *
 	 * \param[in] hl     Highlight to set
-	 * \param[in] colors Color to set
+	 * \param[in] colors Colors to set
 	 */
 	Modifier(Highlight hl, const std::vector<Color>& colors);
 
@@ -149,9 +149,9 @@ public:
 	Highlight highlight() const;
 
 	/**
-	 * \brief Color of this modifier.
+	 * \brief Colors of this modifier.
 	 *
-	 * \return String representation of the color of this modifier
+	 * \return List of colors of this modifier
 	 */
 	std::vector<Color> colors() const;
 
