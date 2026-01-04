@@ -89,7 +89,7 @@ ARIdLayout::ARIdLayout()
 ARIdLayout::ARIdLayout(const bool labels, const bool id, const bool url,
 		const bool filename, const bool track_count, const bool disc_id_1,
 		const bool disc_id_2, const bool cddb_id)
-	: PropertyFlags(
+	: PropertyFlags {
 			static_cast<uint32_t>(0)
 			| details::flag_operand(ARID_FLAG::ID,       id)
 			| details::flag_operand(ARID_FLAG::URL,      url)
@@ -98,7 +98,7 @@ ARIdLayout::ARIdLayout(const bool labels, const bool id, const bool url,
 			| details::flag_operand(ARID_FLAG::ID1,      disc_id_1)
 			| details::flag_operand(ARID_FLAG::ID2,      disc_id_2)
 			| details::flag_operand(ARID_FLAG::CDDBID,   cddb_id)
-		)
+		}
 	, field_labels_ { labels }
 {
 	// empty
