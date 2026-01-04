@@ -20,19 +20,23 @@ set (TEST_SOURCE_DIR "src" )
 set (TEST_SETS )
 
 ## default tests
+list (APPEND TEST_SETS ansi        )
+## TODO tests for application
+## TODO tests for appregistry
+list (APPEND TEST_SETS app-calc    )
+list (APPEND TEST_SETS app-id      )
+## TODO tests for app-parse
+list (APPEND TEST_SETS app-verify  )
 list (APPEND TEST_SETS clitokens   )
 list (APPEND TEST_SETS config      ) ## custom test script
 list (APPEND TEST_SETS layouts     )
+## TODO tests for result
 list (APPEND TEST_SETS table       )
 list (APPEND TEST_SETS tools-arid  )
 list (APPEND TEST_SETS tools-calc  )
 list (APPEND TEST_SETS tools-dbar  )
 list (APPEND TEST_SETS tools-fs    )
 list (APPEND TEST_SETS tools-table )
-list (APPEND TEST_SETS app-id      )
-list (APPEND TEST_SETS app-calc    )
-list (APPEND TEST_SETS app-verify  )
-## no tests for app-parse
 
 ## --- Add common configuration for all testsuites (catch2 + project deps)
 
