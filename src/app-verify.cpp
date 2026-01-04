@@ -816,27 +816,22 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 	const auto vresult        = std::get<1>(t);
 	const auto block          = std::get<2>(t);
 	const auto checksums      = std::get<3>(t);
-	const auto mine_arid      = std::get<4>(t);
+	const auto arid           = std::get<4>(t);
 	const auto toc            = std::get<5>(t);
 	const auto ref_source     = std::get<6>(t);
 	const auto filenames      = std::get<7>(t);
 	const auto alt_prefix     = std::get<8>(t);
 
 	using arid::build_id;
-	using arid::default_arid_layout;
 
 	auto buf = ResultBuffer {};
 
 	// If ARId is present, print it
 
-	if (!mine_arid.empty())
+	if (!arid.empty())
 	{
-		auto layout { arid_layout()
-			? arid_layout()->clone()
-			: default_arid_layout(with_labels()) /* FIXME */};
-
 		// Print locally calculated ARId ("Mine")
-		buf.append(build_id(toc, mine_arid, alt_prefix, *layout));
+		buf.append(build_id(toc, arid, alt_prefix, *arid_layout()->clone()));
 	}
 
 	const auto print_flags { create_field_requests(toc, filenames) };
@@ -1477,9 +1472,11 @@ std::unique_ptr<VerifyTableCreator> ARVerifyApplication::create_formatter(
 	auto cs_table_layout { std::make_unique<StringTableLayout>() };
 
 	// Set inner column delimiter
-	cs_table_layout->set_col_inner_delim(config.is_set(VERIFY::COLDELIM)
-		? config.value(VERIFY::COLDELIM)
-		: " ");
+
+	if (config.is_set(VERIFY::COLDELIM))
+	{
+		cs_table_layout->set_col_inner_delim(config.value(VERIFY::COLDELIM));
+	}
 
 	// Remove labels and delims if requested
 
@@ -1487,10 +1484,10 @@ std::unique_ptr<VerifyTableCreator> ARVerifyApplication::create_formatter(
 	{
 		ARCS_LOG(DEBUG3) << "Print without labels";
 
-		cs_table_layout->set_col_labels(false);
-		cs_table_layout->set_col_labels_delims(false);
-
 		cs_table_layout->set_row_labels(false);
+		cs_table_layout->set_col_labels(false);
+		cs_table_layout->set_col_labels_delims(false); // for safety
+
 	} else
 	{
 		ARCS_LOG(DEBUG3) << "Print with labels";

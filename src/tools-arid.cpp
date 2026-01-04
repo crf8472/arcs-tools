@@ -258,25 +258,6 @@ RichARId build_id(const ToC* /*toc*/, const ARId& arid,
 }
 
 
-// default_arid_layout
-
-
-std::unique_ptr<ARIdLayout> default_arid_layout(const bool& with_labels)
-{
-	// FIXME This is not 'default', default would be just ARIdTableLayout{}
-	return std::make_unique<ARIdTableLayout>(
-				with_labels, /* field label */
-				true,  /* print ID */
-				true,  /* print URL */
-				false, /* no filenames */
-				false, /* no tracks */
-				false, /* no id 1 */
-				false, /* no id 2 */
-				false  /* no cddb id */
-	);
-}
-
-
 // validate
 
 

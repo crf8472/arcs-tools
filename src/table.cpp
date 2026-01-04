@@ -947,14 +947,12 @@ std::string StringTableLayout::right_outer_delim() const
 
 void StringTableLayout::delim_set(const TABLE_DELIM d, const std::string& value)
 {
-	//delims_[static_cast<std::underlying_type_t<TABLE_FLAG>>(d)] = value;
 	delims_.set_label(d, value);
 }
 
 
 std::string StringTableLayout::delim_get(const TABLE_DELIM d) const
 {
-	//return delims_[static_cast<std::underlying_type_t<TABLE_FLAG>>(i)];
 	return delims_.label(d);
 }
 

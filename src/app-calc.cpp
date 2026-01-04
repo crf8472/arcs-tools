@@ -432,17 +432,12 @@ std::unique_ptr<Result> CalcTableCreator::do_format(InputTuple t) const
 	const auto alt_prefix = std::get<5>(t);
 
 	using arid::build_id;
-	using arid::default_arid_layout;
 
 	auto buf = ResultBuffer {};
 
 	if (!arid.empty())
 	{
-		auto layout { arid_layout()
-			? arid_layout()->clone()
-			: default_arid_layout(with_labels()) /* FIXME */};
-
-		buf.append(build_id(toc, arid, alt_prefix, *layout));
+		buf.append(build_id(toc, arid, alt_prefix, *arid_layout()->clone()));
 	}
 
 	const auto print_flags { create_field_requests(toc, filenames) };
@@ -645,11 +640,12 @@ std::unique_ptr<CalcTableCreator> ARCalcApplication::create_formatter(
 
 	auto cs_table_layout { std::make_unique<StringTableLayout>() };
 
-	// Define delimiters and switch them on or off
+	// Set inner column delimiter
 
-	cs_table_layout->set_col_inner_delim(config.is_set(CALC::COLDELIM)
-		? config.value(CALC::COLDELIM)
-		: " ");
+	if (config.is_set(CALC::COLDELIM))
+	{
+		cs_table_layout->set_col_inner_delim(config.value(CALC::COLDELIM));
+	}
 
 	// Remove labels and delims if requested
 
@@ -657,10 +653,10 @@ std::unique_ptr<CalcTableCreator> ARCalcApplication::create_formatter(
 	{
 		ARCS_LOG(DEBUG3) << "Print without labels";
 
-		cs_table_layout->set_col_labels(false);
-		cs_table_layout->set_col_labels_delims(false);
-
 		cs_table_layout->set_row_labels(false);
+		cs_table_layout->set_col_labels(false);
+		cs_table_layout->set_col_labels_delims(false); // for safety
+
 	} else
 	{
 		ARCS_LOG(DEBUG3) << "Print with labels";

@@ -310,16 +310,6 @@ RichARId build_id(const ToC* toc, const ARId& arid,
 
 
 /**
- * \brief Define default layout for ARIds.
- *
- * \param[in] with_labels Iff TRUE, print field labels.
- *
- * \return Default layout for ARIds
- */
-std::unique_ptr<ARIdLayout> default_arid_layout(const bool& with_labels);
-
-
-/**
  * \brief Validate the input objects common to every result.
  *
  * Throws if validation fails.

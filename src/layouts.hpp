@@ -483,45 +483,65 @@ class LabelStore
 {
 public:
 
+	/**
+	 * \brief Internal store type.
+	 */
 	using store_t = std::map<KEY, std::string>;
 
+	/**
+	 * \brief Default constructor.
+	 */
 	LabelStore()
-		: active_ { true }
-		, labels_ { /*default*/ }
+		: labels_ { /*default*/ }
 	{
 		// empty
 	}
 
+	/**
+	 * \brief Constructor to set all labels.
+	 */
+	explicit LabelStore(const store_t& labels)
+		: labels_ { labels }
+	{
+		// empty
+	}
+
+	/**
+	 * \brief Default destructor.
+	 */
 	virtual ~LabelStore() noexcept = default;
 
-	bool labels_active() const
-	{
-		return active_;
-	}
-
-	void set_labels_active(const bool flag)
-	{
-		active_ = flag;
-	}
-
+	/**
+	 * \brief Set all labels.
+	 *
+	 * \param[in] labels All labels
+	 */
 	void set_labels(const store_t& labels)
 	{
 		labels_ = labels;
 	}
 
+	/**
+	 * \brief Set a label for \c key.
+	 *
+	 * \param[in] key   The key to set a label for
+	 * \param[in] label The label to set for \c key
+	 */
 	void set_label(const KEY key, const std::string& label)
 	{
 		labels_.insert_or_assign(key, label);
 	}
 
+	/**
+	 * \brief Get the label for \c key.
+	 *
+	 * \param[in] key The key to get the label for
+	 *
+	 * \return The label for \c key
+	 */
 	std::string label(const KEY key) const
 	{
-		if (not labels_active())
-		{
-			return std::string{};
-		}
-
-		auto label_ptr { labels_.find(key) };
+		const auto label_ptr { labels_.find(key) };
 
 		using std::cend;
 		if (cend(labels_) == label_ptr)
@@ -533,11 +553,6 @@ public:
 	}
 
 private:
-
-	/**
-	 * \brief Internal on/off switch.
-	 */
-	bool active_;
 
 	/**
 	 * \brief Internal association of KEYs with labels.

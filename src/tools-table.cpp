@@ -41,7 +41,7 @@
 #ifndef __ARCSTOOLS_TOOLS_ARID_HPP__ // for ARIdLayout
 #include "tools-arid.hpp"
 #endif
-#ifndef __ARCSTOOLS_TOOLS_CALC_HPP__ // for ChecksumLayout
+#ifndef __ARCSTOOLS_TOOLS_CALC_HPP__ // for ChecksumLayout, HexLayout
 #include "tools-calc.hpp"
 #endif
 
@@ -54,6 +54,7 @@ namespace table
 
 // arcsapp
 using arcsapp::arid::ARIdTableLayout;
+using arcsapp::calc::HexLayout;
 
 
 // DefaultLabel
@@ -818,10 +819,10 @@ std::string formatted(const Checksum& checksum,
 
 
 TableCreator::TableCreator()
-	: checksum_table_composer_builder_ { /* nullptr */ }
-	, checksum_table_layout_           { /* nullptr */ }
-	, checksum_layout_                 { /* nullptr */ }
-	, arid_layout_                     { /* nullptr */ }
+	: checksum_table_composer_builder_ { std::make_unique<RowTableComposerBuilder>() }
+	, checksum_table_layout_           { std::make_unique<StringTableLayout>() }
+	, checksum_layout_                 { std::make_unique<HexLayout>()         }
+	, arid_layout_                     { std::make_unique<ARIdTableLayout>()   }
 {
 	// empty
 }
@@ -874,20 +875,6 @@ void TableCreator::set_checksum_layout(
 const ChecksumLayout* TableCreator::checksum_layout() const
 {
 	return checksum_layout_ ? checksum_layout_.get() : nullptr;
-}
-
-
-bool TableCreator::with_labels() const
-{
-	const auto arid_labels_active =
-		arid_layout_ && arid_layout()->labels_active();
-
-	const auto checksum_table_labels_active =
-		checksum_table_layout_ && (
-			checksum_table_layout_->row_labels()
-				|| checksum_table_layout_->col_labels());
-
-	return arid_labels_active || checksum_table_labels_active;
 }
 
 

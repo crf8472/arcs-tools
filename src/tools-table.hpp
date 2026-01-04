@@ -922,6 +922,11 @@ std::string formatted(const Checksum& checksum,
  * Actual data for the table can be provided by AddField specializations.
  * TableCreator uses a TableComposer for inserting the actual data to the
  * table.
+ *
+ * With the default settings TableCreator creates a table with labelled columns,
+ * a default StringTableLayout for the main table, a default HexLayout for
+ * printing the checksums and a default ARIdTableLayout for printing the ARId
+ * info.
  */
 class TableCreator : public PropertyFlags<ATTR>
 {
@@ -973,15 +978,6 @@ public:
 	 * \return Layout for printing the checksums
 	 */
 	const ChecksumLayout* checksum_layout() const;
-
-	/**
-	 * \brief Return TRUE iff instance is configured to format any labels.
-	 *
-	 * Intended to control the printing of column titles and row labels.
-	 *
-	 * \return Flag for printing the label
-	 */
-	bool with_labels() const;
 
 	/**
 	 * \brief Set the TableComposerBuilder to use.
