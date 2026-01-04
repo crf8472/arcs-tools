@@ -236,7 +236,8 @@ class ARCalcApplicationBase : public Application
 	virtual bool do_calculation_requested(const Configuration& config) const;
 
 	virtual std::vector<arcstk::checksum::type> do_requested_types(
-			const Configuration& options) const;
+			const Configuration& options) const
+	= 0;
 
 	virtual std::pair<int, std::unique_ptr<Result>> do_run_calculation(
 			const Configuration& config) const
@@ -345,6 +346,9 @@ private:
 	// ARCalcApplicationBase
 
 	std::pair<int, std::unique_ptr<Result>> do_run_calculation(
+			const Configuration& config) const final;
+
+	std::vector<arcstk::checksum::type> do_requested_types(
 			const Configuration& config) const final;
 
 	// Application

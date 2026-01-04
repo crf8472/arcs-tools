@@ -121,18 +121,18 @@ std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 	{
 		ARCS_LOG_INFO << "Calculation task requested";
 
-		if (options->is_set(CALCBASE::LIST_TOC_FORMATS))
+		if (options->is_set(FORMATBASE::LIST_TOC_FORMATS))
 		{
 			ARCS_LOG_WARNING <<
 				"Option LIST_TOC_FORMATS is ignored due to calculation task";
-			options->unset(CALCBASE::LIST_TOC_FORMATS);
+			options->unset(FORMATBASE::LIST_TOC_FORMATS);
 		}
 
-		if (options->is_set(CALCBASE::LIST_AUDIO_FORMATS))
+		if (options->is_set(FORMATBASE::LIST_AUDIO_FORMATS))
 		{
 			ARCS_LOG_WARNING <<
 				"Option LIST_AUDIO_FORMATS is ignored due to calculation task";
-			options->unset(CALCBASE::LIST_AUDIO_FORMATS);
+			options->unset(FORMATBASE::LIST_AUDIO_FORMATS);
 		}
 	}
 
@@ -482,26 +482,6 @@ bool ARCalcApplicationBase::do_calculation_requested(
 }
 
 
-std::vector<arcstk::checksum::type> ARCalcApplicationBase::do_requested_types(
-		const Configuration& config) const
-{
-	// Select the checksum::type(s) to print
-
-	std::vector<arcstk::checksum::type> types = {};
-
-	if (!config.is_set(CALC::NOV1))
-	{
-		types.push_back(arcstk::checksum::type::ARCS1);
-	}
-	if (!config.is_set(CALC::NOV2))
-	{
-		types.push_back(arcstk::checksum::type::ARCS2);
-	}
-
-	return types;
-}
-
-
 int ARCalcApplicationBase::do_run(const Configuration& config)
 {
 	// Is an actual calculation requested?
@@ -515,12 +495,12 @@ int ARCalcApplicationBase::do_run(const Configuration& config)
 
 	// If only info options are present, handle info request
 
-	if (config.is_set(CALC::LIST_TOC_FORMATS))
+	if (config.is_set(FORMATBASE::LIST_TOC_FORMATS))
 	{
 		Output::instance().output(AvailableFileReaders::toc());
 	}
 
-	if (config.is_set(CALC::LIST_AUDIO_FORMATS))
+	if (config.is_set(FORMATBASE::LIST_AUDIO_FORMATS))
 	{
 		Output::instance().output(AvailableFileReaders::audio());
 	}
@@ -808,6 +788,26 @@ auto ARCalcApplication::do_run_calculation(const Configuration& config) const
 	)};
 
 	return std::make_pair(EXIT_SUCCESS, std::move(result));
+}
+
+
+std::vector<arcstk::checksum::type> ARCalcApplication::do_requested_types(
+		const Configuration& config) const
+{
+	// Select the checksum::type(s) to print
+
+	std::vector<arcstk::checksum::type> types = {};
+
+	if (!config.is_set(CALC::NOV1))
+	{
+		types.push_back(arcstk::checksum::type::ARCS1);
+	}
+	if (!config.is_set(CALC::NOV2))
+	{
+		types.push_back(arcstk::checksum::type::ARCS2);
+	}
+
+	return types;
 }
 
 

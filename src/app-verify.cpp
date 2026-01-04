@@ -1583,6 +1583,8 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	// If no selections are assigned, the libarcsdec default selections
 	// will be used.
 
+	const auto requested_types = this->requested_types(config);
+
 	// Calculate the actual ARCSs from input files
 
 	auto [ checksums, toc ] = ARCalcApplication::calculate(
@@ -1590,7 +1592,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 			config.value(VERIFY::METAFILE),
 			!config.is_set(VERIFY::NOFIRST),
 			!config.is_set(VERIFY::NOLAST),
-			{ arcstk::checksum::type::ARCS2 }, /* force ARCSv1 + ARCSv2 */
+			requested_types,
 			audio_selection.get(),
 			toc_selection.get()
 	);
@@ -1770,6 +1772,13 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		: EXIT_SUCCESS;
 
 	return { exit_code, std::move(result) };
+}
+
+
+std::vector<arcstk::checksum::type> ARVerifyApplication::do_requested_types(
+		const Configuration& /*config*/) const
+{
+	return { arcstk::checksum::type::ARCS1, arcstk::checksum::type::ARCS2 };
 }
 
 } // namespace v_1_0_0

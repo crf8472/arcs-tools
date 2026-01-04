@@ -864,6 +864,9 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	std::pair<int, std::unique_ptr<Result>> do_run_calculation(
 			const Configuration& config) const final;
 
+	std::vector<arcstk::checksum::type> do_requested_types(
+		const Configuration& config) const final;
+
 	// Application
 
 	std::string do_name() const final;

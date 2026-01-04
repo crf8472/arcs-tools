@@ -255,6 +255,13 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 }
 
 
+std::vector<arcstk::checksum::type> ARIdApplication::do_requested_types(
+			const Configuration& /*config*/) const
+{
+	return {/*none*/};
+}
+
+
 std::string ARIdApplication::do_name() const
 {
 	return "id";
