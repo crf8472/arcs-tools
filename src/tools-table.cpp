@@ -818,10 +818,10 @@ std::string formatted(const Checksum& checksum,
 
 
 TableCreator::TableCreator()
-	: table_composer_builder_ { /* empty */ }
-	, table_layout_           { /* empty */ }
-	, arid_layout_            { /* empty */ }
-	, checksum_layout_        { /* empty */ }
+	: checksum_table_composer_builder_ { /* nullptr */ }
+	, checksum_table_layout_           { /* nullptr */ }
+	, checksum_layout_                 { /* nullptr */ }
+	, arid_layout_                     { /* nullptr */ }
 {
 	// empty
 }
@@ -830,25 +830,25 @@ TableCreator::TableCreator()
 void TableCreator::set_builder(
 		std::unique_ptr<TableComposerBuilder> c)
 {
-	table_composer_builder_ = std::move(c);
+	checksum_table_composer_builder_ = std::move(c);
 }
 
 
 const TableComposerBuilder* TableCreator::builder() const
 {
-	return table_composer_builder_.get();
+	return checksum_table_composer_builder_.get();
 }
 
 
 void TableCreator::set_table_layout(std::unique_ptr<StringTableLayout> l)
 {
-	table_layout_ = std::move(l);
+	checksum_table_layout_ = std::move(l);
 }
 
 
 StringTableLayout TableCreator::copy_table_layout() const
 {
-	return *table_layout_;
+	return *checksum_table_layout_;
 }
 
 
@@ -882,11 +882,12 @@ bool TableCreator::with_labels() const
 	const auto arid_labels_active =
 		arid_layout_ && arid_layout()->labels_active();
 
-	const auto table_labels_active =
-		table_layout_ && (
-			table_layout_->row_labels() || table_layout_->col_labels());
+	const auto checksum_table_labels_active =
+		checksum_table_layout_ && (
+			checksum_table_layout_->row_labels()
+				|| checksum_table_layout_->col_labels());
 
-	return arid_labels_active || table_labels_active;
+	return arid_labels_active || checksum_table_labels_active;
 }
 
 

@@ -1133,22 +1133,22 @@ private:
 	/**
 	 * \brief Internal TableComposerBuilder.
 	 */
-	std::unique_ptr<TableComposerBuilder> table_composer_builder_;
+	std::unique_ptr<TableComposerBuilder> checksum_table_composer_builder_;
 
 	/**
 	 * \brief Format for the result StringTable.
 	 */
-	std::unique_ptr<StringTableLayout> table_layout_;
-
-	/**
-	 * \brief Format for the ARId.
-	 */
-	std::unique_ptr<ARIdLayout> arid_layout_;
+	std::unique_ptr<StringTableLayout> checksum_table_layout_;
 
 	/**
 	 * \brief Format for the Checksums.
 	 */
 	std::unique_ptr<ChecksumLayout> checksum_layout_;
+
+	/**
+	 * \brief Format for the ARId.
+	 */
+	std::unique_ptr<ARIdLayout> arid_layout_;
 };
 
 
