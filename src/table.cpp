@@ -4,6 +4,7 @@
  * \brief Implementation of a printable table holdings strings.
  */
 
+#include "layouts.hpp"
 #include <algorithm>  // for max, min, find_if, for_each
 #include <cstddef>    // for size_t
 #include <cctype>     // for isspace
@@ -653,17 +654,20 @@ std::unique_ptr<StringSplitter> DefaultSplitter::do_clone() const
 
 
 StringTableLayout::StringTableLayout(std::unique_ptr<StringSplitter> s)
-	: flags_ {  /* print title */              true
-			  , /* print row labels */         true
-			  , /* print col labels */         true
-			  , /* print top delims */         false
-			  , /* print row header delims */  false
-			  , /* print row inner delims */   false
-			  , /* print bottom delims */      false
-			  , /* print left outer delims */  false
-			  , /* print labels delims */      false
-			  , /* print col inner delims */   true
-			  , /* print right outer delims */ false }
+	: PropertyFlags {
+			static_cast<uint32_t>(0)
+			| details::flag_operand(TABLE_FLAG::TITLE,                  true )
+			| details::flag_operand(TABLE_FLAG::ROW_LABELS,             true )
+			| details::flag_operand(TABLE_FLAG::COL_LABELS,             true )
+			| details::flag_operand(TABLE_FLAG::ROW_TOP_DELIMS,         false)
+			| details::flag_operand(TABLE_FLAG::ROW_HEADER_DELIMS,      false)
+			| details::flag_operand(TABLE_FLAG::ROW_INNER_DELIMS,       false)
+			| details::flag_operand(TABLE_FLAG::ROW_BOTTOM_DELIMS,      false)
+			| details::flag_operand(TABLE_FLAG::COL_LEFT_OUTER_DELIMS,  false)
+			| details::flag_operand(TABLE_FLAG::COL_LABELS_DELIMS,      false)
+			| details::flag_operand(TABLE_FLAG::COL_INNER_DELIMS,       true )
+			| details::flag_operand(TABLE_FLAG::COL_RIGHT_OUTER_DELIMS, false)
+		}
 	, delims_ { /* TOP_DELIM */                "="
 		      , /* ROW_HEADER_DELIM */         "="
 		      , /* ROW_INNER_DELIM */          "-"
@@ -686,9 +690,9 @@ StringTableLayout::StringTableLayout()
 
 
 StringTableLayout::StringTableLayout(const StringTableLayout& rhs)
-	: flags_    { rhs.flags_ }
-	, delims_   { rhs.delims_ }
-	, splitter_ { rhs.splitter_->clone() }
+	: PropertyFlags { rhs }
+	, delims_       { rhs.delims_ }
+	, splitter_     { rhs.splitter_->clone() }
 {
 	// empty
 }
@@ -705,154 +709,143 @@ StringTableLayout& StringTableLayout::operator=(const StringTableLayout& rhs)
 
 void StringTableLayout::swap(StringTableLayout& rhs) noexcept
 {
+	//FIXME broken until base_swap for PropertyFlags is used
 	using std::swap;
-	swap(flags_, rhs.flags_);
-	swap(delims_, rhs.delims_);
+	//swap(flags_, rhs.flags_);
+	swap(delims_,   rhs.delims_);
 	swap(splitter_, rhs.splitter_);
 }
 
 
 void StringTableLayout::set_title(const bool f)
 {
-	flag_set(Flag::TITLE, f);
+	update_property(TABLE_FLAG::TITLE, f);
 }
 
 
 void StringTableLayout::set_row_labels(const bool f)
 {
-	flag_set(Flag::ROW_LABELS, f);
+	update_property(TABLE_FLAG::ROW_LABELS, f);
 }
 
 
 void StringTableLayout::set_col_labels(const bool f)
 {
-	flag_set(Flag::COL_LABELS, f);
+	update_property(TABLE_FLAG::COL_LABELS, f);
 }
 
 
 void StringTableLayout::set_top_delims(const bool f)
 {
-	flag_set(Flag::ROW_TOP_DELIMS, f);
+	update_property(TABLE_FLAG::ROW_TOP_DELIMS, f);
 }
 
 
 void StringTableLayout::set_row_header_delims(const bool f)
 {
-	flag_set(Flag::ROW_HEADER_DELIMS, f);
+	update_property(TABLE_FLAG::ROW_HEADER_DELIMS, f);
 }
 
 
 void StringTableLayout::set_row_inner_delims(const bool f)
 {
-	flag_set(Flag::ROW_INNER_DELIMS, f);
+	update_property(TABLE_FLAG::ROW_INNER_DELIMS, f);
 }
 
 
 void StringTableLayout::set_bottom_delims(const bool f)
 {
-	flag_set(Flag::ROW_BOTTOM_DELIMS, f);
+	update_property(TABLE_FLAG::ROW_BOTTOM_DELIMS, f);
 }
 
 
 void StringTableLayout::set_left_outer_delims(const bool f)
 {
-	flag_set(Flag::COL_LEFT_OUTER_DELIMS, f);
+	update_property(TABLE_FLAG::COL_LEFT_OUTER_DELIMS, f);
 }
 
 
 void StringTableLayout::set_col_labels_delims(const bool f)
 {
-	flag_set(Flag::COL_LABELS_DELIMS, f);
+	update_property(TABLE_FLAG::COL_LABELS_DELIMS, f);
 }
 
 
 void StringTableLayout::set_col_inner_delims(const bool f)
 {
-	flag_set(Flag::COL_INNER_DELIMS, f);
+	update_property(TABLE_FLAG::COL_INNER_DELIMS, f);
 }
 
 
 void StringTableLayout::set_right_outer_delims(const bool f)
 {
-	flag_set(Flag::COL_RIGHT_OUTER_DELIMS, f);
+	update_property(TABLE_FLAG::COL_RIGHT_OUTER_DELIMS, f);
 }
 
 
 bool StringTableLayout::title() const
 {
-	return flag_get(Flag::TITLE);
+	return has_property(TABLE_FLAG::TITLE);
 }
 
 
 bool StringTableLayout::row_labels() const
 {
-	return flag_get(Flag::ROW_LABELS);
+	return has_property(TABLE_FLAG::ROW_LABELS);
 }
 
 
 bool StringTableLayout::col_labels() const
 {
-	return flag_get(Flag::COL_LABELS);
+	return has_property(TABLE_FLAG::COL_LABELS);
 }
 
 
 bool StringTableLayout::top_delims() const
 {
-	return flag_get(Flag::ROW_TOP_DELIMS);
+	return has_property(TABLE_FLAG::ROW_TOP_DELIMS);
 }
 
 
 bool StringTableLayout::row_header_delims() const
 {
-	return flag_get(Flag::ROW_HEADER_DELIMS);
+	return has_property(TABLE_FLAG::ROW_HEADER_DELIMS);
 }
 
 
 bool StringTableLayout::row_inner_delims() const
 {
-	return flag_get(Flag::ROW_INNER_DELIMS);
+	return has_property(TABLE_FLAG::ROW_INNER_DELIMS);
 }
 
 
 bool StringTableLayout::bottom_delims() const
 {
-	return flag_get(Flag::ROW_BOTTOM_DELIMS);
+	return has_property(TABLE_FLAG::ROW_BOTTOM_DELIMS);
 }
 
 
 bool StringTableLayout::left_outer_delims() const
 {
-	return flag_get(Flag::COL_LEFT_OUTER_DELIMS);
+	return has_property(TABLE_FLAG::COL_LEFT_OUTER_DELIMS);
 }
 
 
 bool StringTableLayout::col_labels_delims() const
 {
-	return flag_get(Flag::COL_LABELS_DELIMS);
+	return has_property(TABLE_FLAG::COL_LABELS_DELIMS);
 }
 
 
 bool StringTableLayout::col_inner_delims() const
 {
-	return flag_get(Flag::COL_INNER_DELIMS);
+	return has_property(TABLE_FLAG::COL_INNER_DELIMS);
 }
 
 
 bool StringTableLayout::right_outer_delims() const
 {
-	return flag_get(Flag::COL_RIGHT_OUTER_DELIMS);
-}
-
-
-bool StringTableLayout::flag_get(const Flag f) const
-{
-	return flags_[static_cast<std::underlying_type_t<Flag>>(f)];
-}
-
-
-void StringTableLayout::flag_set(const Flag f, const bool value)
-{
-	flags_[static_cast<std::underlying_type_t<Flag>>(f)] = value;
+	return has_property(TABLE_FLAG::COL_RIGHT_OUTER_DELIMS);
 }
 
 
@@ -954,14 +947,15 @@ std::string StringTableLayout::right_outer_delim() const
 
 void StringTableLayout::delim_set(const Delimiter i, const std::string& value)
 {
-	delims_[static_cast<std::underlying_type_t<Flag>>(i)] = value;
+	//delims_[static_cast<std::underlying_type_t<TABLE_FLAG>>(i)] = value;
+	delims_[details::to_underlying(i)] = value;
 }
 
 
 std::string StringTableLayout::delim_get(const Delimiter i) const
 {
-	return delims_[static_cast<std::underlying_type_t<Flag>>(i)];
-
+	//return delims_[static_cast<std::underlying_type_t<TABLE_FLAG>>(i)];
+	return delims_[details::to_underlying(i)];
 }
 
 

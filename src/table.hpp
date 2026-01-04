@@ -18,6 +18,10 @@
 //#include <iterator>    // for ostream_iterator
 //#include <sstream>     // for ostringstream
 
+#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"      // for Layout
+#endif
+
 /**
  * \file
  *
@@ -778,13 +782,32 @@ class DefaultSplitter final : public StringSplitter
 
 
 /**
+ * \brief Flags for printing aspects of the table.
+ */
+enum class TABLE_FLAG : int
+{
+	TITLE,
+	ROW_LABELS,
+	COL_LABELS,
+	ROW_TOP_DELIMS,
+	ROW_HEADER_DELIMS,
+	ROW_INNER_DELIMS,
+	ROW_BOTTOM_DELIMS,
+	COL_LEFT_OUTER_DELIMS,
+	COL_LABELS_DELIMS,
+	COL_INNER_DELIMS,
+	COL_RIGHT_OUTER_DELIMS
+};
+
+
+/**
  * \brief Layout for a StringTable.
  *
  * Layout contains all the visual information about a StringTable that can be
  * expressed without any knowledge of the concrete instance. Therefore, things
  * like alignment of columns is part of the table not of its layout.
  */
-class StringTableLayout final
+class StringTableLayout final : public PropertyFlags<TABLE_FLAG>
 {
 public:
 
@@ -886,48 +909,7 @@ public:
 
 private:
 
-	/**
-	 * \brief Internal type to store actual flags.
-	 */
-	using flag_store_type = std::vector<bool>;
-
-	/**
-	 * \brief Flags for printing aspects of the table.
-	 */
-	enum class Flag : flag_store_type::size_type
-	{
-		TITLE,
-		ROW_LABELS,
-		COL_LABELS,
-		ROW_TOP_DELIMS,
-		ROW_HEADER_DELIMS,
-		ROW_INNER_DELIMS,
-		ROW_BOTTOM_DELIMS,
-		COL_LEFT_OUTER_DELIMS,
-		COL_LABELS_DELIMS,
-		COL_INNER_DELIMS,
-		COL_RIGHT_OUTER_DELIMS
-	};
-
-	/**
-	 * \brief Internal flag store.
-	 */
-	flag_store_type flags_;
-
-	/**
-	 * \brief Get value for flag \p f.
-	 *
-	 * \return Value for flag \p f.
-	 */
-	bool flag_get(const Flag f) const;
-
-	/**
-	 * \brief Set value for flag \p f.
-	 *
-	 * \param[in] f     Flag to set value for
-	 * \param[in] value Value for flag \p f.
-	 */
-	void flag_set(const Flag f, const bool value);
+	// FIXME The delim store should be a generic string store/LabelStore
 
 	/**
 	 * \brief Internal type to store delimiters.
