@@ -668,17 +668,19 @@ StringTableLayout::StringTableLayout(std::unique_ptr<StringSplitter> s)
 			| details::flag_operand(TABLE_FLAG::COL_INNER_DELIMS,       true )
 			| details::flag_operand(TABLE_FLAG::COL_RIGHT_OUTER_DELIMS, false)
 		}
-	, delims_ { /*default*/ }
+	, delims_ {{
+			{ TABLE_DELIM::ROW_TOP_DELIM,         "=" },
+			{ TABLE_DELIM::ROW_HEADER_DELIM,      "=" },
+			{ TABLE_DELIM::ROW_INNER_DELIM,       "-" },
+			{ TABLE_DELIM::ROW_BOTTOM_DELIM,      "=" },
+			{ TABLE_DELIM::COL_LEFT_OUTER_DELIM,  "|" },
+			{ TABLE_DELIM::COL_LABELS_DELIM,      "|" },
+			{ TABLE_DELIM::COL_INNER_DELIM,       " " },
+			{ TABLE_DELIM::COL_RIGHT_OUTER_DELIM, "|" },
+		}}
 	, splitter_  { std::move(s) }
 {
-	delims_.set_label(TABLE_DELIM::ROW_TOP_DELIM,         "=" );
-	delims_.set_label(TABLE_DELIM::ROW_HEADER_DELIM,      "=" );
-	delims_.set_label(TABLE_DELIM::ROW_INNER_DELIM,       "-" );
-	delims_.set_label(TABLE_DELIM::ROW_BOTTOM_DELIM,      "=" );
-	delims_.set_label(TABLE_DELIM::COL_LEFT_OUTER_DELIM,  "|" );
-	delims_.set_label(TABLE_DELIM::COL_LABELS_DELIM,      "|" );
-	delims_.set_label(TABLE_DELIM::COL_INNER_DELIM,       " " );
-	delims_.set_label(TABLE_DELIM::COL_RIGHT_OUTER_DELIM, "|" );
+	// empty
 }
 
 
