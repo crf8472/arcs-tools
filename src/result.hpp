@@ -148,6 +148,8 @@ private:
 	 *
 	 * The tuple members are printed in the order they occurr in the tuple.
 	 * Each tuple member is printed using operator '<<'.
+	 *
+	 * \param[in] o Stream to print to
 	 */
 	void do_print(std::ostream& o) const final
 	{
