@@ -975,7 +975,7 @@ public:
 	const ChecksumLayout* checksum_layout() const;
 
 	/**
-	 * \brief Return TRUE iff instance is configured to format the label.
+	 * \brief Return TRUE iff instance is configured to format any labels.
 	 *
 	 * Intended to control the printing of column titles and row labels.
 	 *
@@ -984,7 +984,7 @@ public:
 	bool with_labels() const;
 
 	/**
-	 * \brief Activate or deactivate the printing of labels.
+	 * \brief Activate or deactivate the printing of all labels.
 	 *
 	 * Intended to control the printing of column titles and row labels.
 	 *

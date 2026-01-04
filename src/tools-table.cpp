@@ -879,8 +879,14 @@ const ChecksumLayout* TableCreator::checksum_layout() const
 
 bool TableCreator::with_labels() const
 {
-	return arid_layout()->labels_active();
-	// FIXME StringTableLayout
+	const auto arid_labels_active =
+		arid_layout_ && arid_layout()->labels_active();
+
+	const auto table_labels_active =
+		table_layout_ && (
+			table_layout_->row_labels() || table_layout_->col_labels());
+
+	return arid_labels_active || table_labels_active;
 }
 
 
