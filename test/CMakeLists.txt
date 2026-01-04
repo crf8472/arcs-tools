@@ -30,7 +30,7 @@ list (APPEND TEST_SETS app-verify  )
 list (APPEND TEST_SETS clitokens   )
 list (APPEND TEST_SETS config      ) ## custom test script
 list (APPEND TEST_SETS layouts     )
-## TODO tests for result
+list (APPEND TEST_SETS result      )
 list (APPEND TEST_SETS table       )
 list (APPEND TEST_SETS tools-arid  )
 list (APPEND TEST_SETS tools-calc  )
