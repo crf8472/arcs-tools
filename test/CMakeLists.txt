@@ -21,7 +21,7 @@ set (TEST_SETS )
 
 ## default tests
 list (APPEND TEST_SETS ansi        )
-## TODO tests for application
+list (APPEND TEST_SETS application )
 ## TODO tests for appregistry
 list (APPEND TEST_SETS app-calc    )
 list (APPEND TEST_SETS app-id      )
