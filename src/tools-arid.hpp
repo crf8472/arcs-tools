@@ -62,6 +62,7 @@ using IdLayout = Layout<std::string, arcstk::ARId, std::string>;
  */
 class ARIdLayout : public PropertyFlags<ARID_FLAG>
 				 , public IdLayout // TODO Do also Settings!
+				 , public LabelStore<ARID_FLAG>
 {
 public:
 

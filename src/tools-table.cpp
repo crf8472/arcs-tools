@@ -537,17 +537,13 @@ void TableComposerBuilder::assign_default_labels(TableComposer& c,
 
 
 std::unique_ptr<TableComposer> TableComposerBuilder::build(
-		const std::size_t records,
-		const std::vector<ATTR>& field_types, const bool with_labels) const
+		const std::size_t records, const std::vector<ATTR>& field_types) const
 {
-	auto composer { do_build(records, field_types, with_labels) };
+	auto composer { do_build(records, field_types) };
 
-	if (with_labels)
-	{
-		this->assign_default_labels(*composer.get(), field_types);
-		// Default labels may be updated by the application subclass when
-		// calling AddField
-	}
+	this->assign_default_labels(*composer.get(), field_types);
+	// Default labels may be updated by the application subclass when
+	// calling AddField
 
 	return composer;
 }
@@ -557,8 +553,7 @@ std::unique_ptr<TableComposer> TableComposerBuilder::build(
 
 
 std::unique_ptr<TableComposer> RowTableComposerBuilder::do_build(
-	const std::size_t records,
-	const std::vector<ATTR>& field_types, const bool /*with_labels*/) const
+	const std::size_t records, const std::vector<ATTR>& field_types) const
 {
 	return std::make_unique<RowTableComposer>(records, field_types);
 }
@@ -568,8 +563,7 @@ std::unique_ptr<TableComposer> RowTableComposerBuilder::do_build(
 
 
 std::unique_ptr<TableComposer> ColTableComposerBuilder::do_build(
-		const std::size_t records,
-		const std::vector<ATTR>& field_types, const bool /*with_labels*/) const
+		const std::size_t records, const std::vector<ATTR>& field_types) const
 {
 	return std::make_unique<ColTableComposer>(records, field_types);
 }
@@ -883,27 +877,24 @@ const ChecksumLayout* TableCreator::checksum_layout() const
 }
 
 
-bool TableCreator::formats_labels() const
+bool TableCreator::with_labels() const
 {
-	return flags().flag(MAX_ATTR + 1);
+	//return flags().flag(MAX_ATTR + 1);
+	return arid_layout()->labels_active();
+	// FIXME StringTableLayout
 }
 
 
-void TableCreator::set_format_labels(const bool& value)
+void TableCreator::set_with_labels(const bool& value)
 {
-	flags().set_flag(MAX_ATTR + 1, value);
-}
+	//flags().set_flag(MAX_ATTR + 1, value);
+	if (arid_layout_) { arid_layout_->set_labels_active(value); }
 
-
-bool TableCreator::formats_field(const ATTR a) const
-{
-	return flags().flag(std::underlying_type_t<ATTR>(a));
-}
-
-
-void TableCreator::set_format_field(const ATTR a, const bool value)
-{
-	flags().set_flag(std::underlying_type_t<ATTR>(a), value);
+	if (table_layout_)
+	{
+		table_layout_->set_row_labels(value);
+		table_layout_->set_col_labels(value);
+	}
 }
 
 
@@ -995,16 +986,16 @@ void TableCreator::do_init_composer(TableComposer& /*c*/) const
 
 
 std::unique_ptr<TableComposer> TableCreator::create_composer(
-		const std::size_t total_entries,
-		const std::vector<ATTR>& field_types, const bool with_labels) const
+		const std::size_t total_entries, const std::vector<ATTR>& field_types)
+		const
 {
-	return builder()->build(total_entries, field_types, with_labels);
+	return builder()->build(total_entries, field_types);
 }
 
 
 bool TableCreator::is_requested(const ATTR a) const
 {
-	return this->formats_field(a);
+	return this->has_property(a);
 }
 
 
@@ -1039,14 +1030,15 @@ std::unique_ptr<PrintableTable> TableCreator::format_table(
 		const bool with_labels,
 		std::vector<std::unique_ptr<FieldCreator>>& field_creators) const
 {
-	auto composer { create_composer(total_records, field_list, with_labels) };
-
+	auto composer { create_composer(total_records, field_list) };
 	init_composer(*composer); // Hook implemented by subclass
 
 	AddRecords(composer.get())(field_creators);
 
-	composer->set_layout(
-			std::make_unique<StringTableLayout>(copy_table_layout()));
+	auto layout { std::make_unique<StringTableLayout>(copy_table_layout()) };
+	layout->set_row_labels(with_labels);
+	layout->set_col_labels(with_labels);
+	composer->set_layout(std::move(layout));
 
 	return composer->table();
 }

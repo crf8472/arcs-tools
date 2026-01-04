@@ -13,6 +13,8 @@
  */
 
 #include <cstdint>                // for uint32_t
+#include <map>                    // for map
+#include <string>                 // for string
 #include <tuple>                  // for tuple, make_tuple
 #include <type_traits>            // for underlying_type_t
 
@@ -211,54 +213,6 @@ private:
 };
 
 
-// TODO Remove this type in favor of Flags. Only used in tools-table
-// /**
-//  * \brief A set of flags.
-//  */
-// template <typename T, typename S>
-// class Flags2 final
-// {
-// public:
-//
-// 	/**
-// 	 * \brief Type for flags.
-// 	 *
-// 	 * Is an unsigned numeric type.
-// 	 */
-// 	using type = S;
-//
-// 	/**
-// 	 * \brief TRUE iff value for parameter \p t is TRUE, otherwise FALSE.
-// 	 *
-// 	 * \param[in] t  Input value to check flag value for
-// 	 *
-// 	 * \return TRUE iff \p t has flag value TRUE, otherwise FALSE.
-// 	 */
-// 	bool operator() (const T t) const
-// 	{
-// 		return flags_ & (1 << std::underlying_type_t<T>(t));
-// 	}
-//
-// 	/**
-// 	 * \brief Set a flag for input value \p t.
-// 	 *
-// 	 * \param[in] t     Input to set value for
-// 	 * \param[in] value Value to be set for \p t
-// 	 */
-// 	void set(const T t, const bool value)
-// 	{
-// 		flags_ |= (value << std::underlying_type_t<T>(t));
-// 	}
-//
-// private:
-//
-// 	/**
-// 	 * \brief Internal flags.
-// 	 */
-// 	type flags_;
-// };
-
-
 /**
  * \brief Flags with type KEY as key.
  */
@@ -409,6 +363,15 @@ public:
 	}
 
 	/**
+	 * \brief Default constructor.
+	 */
+	PropertyFlags()
+		: flag_store_ {}
+	{
+		// empty
+	}
+
+	/**
 	 * \brief Default destructor.
 	 */
 	virtual ~PropertyFlags() noexcept = default;
@@ -486,51 +449,75 @@ private:
 
 
 /**
- * \brief Provides internal settings as member.
+ * \brief Template for associating keys with labels.
+ *
+ * \tparam KEY Key type
  */
-class WithInternalFlags
+template <typename KEY>
+class LabelStore
 {
 public:
 
-	/**
-	 * \brief Construct with individual flags.
-	 *
-	 * \param[in] flags Flags to use
-	 */
-	explicit WithInternalFlags(const uint32_t flags) : flags_ { flags }
-		{ /* empty */ }
+	using store_t = std::map<KEY, std::string>;
 
-	/**
-	 * \brief Default constructor.
-	 *
-	 * Initializes any internal setting with FALSE.
-	 */
-	WithInternalFlags() : WithInternalFlags(0) { /* empty */ }
+	LabelStore()
+		: active_ { true }
+		, labels_ {}
+	{
+		// empty
+	}
 
-	/**
-	 * \brief Virtual default destructor.
-	 */
-	virtual ~WithInternalFlags() noexcept = default;
+	virtual ~LabelStore() noexcept = default;
 
-protected:
+	bool labels_active() const
+	{
+		return active_;
+	}
 
-	/**
-	 * \brief Access internal settings.
-	 *
-	 * \return Settings.
-	 */
-	Flags& flags() { return flags_; }
+	void set_labels_active(const bool flag)
+	{
+		active_ = flag;
+	}
 
-	/**
-	 * \brief Access internal settings.
-	 *
-	 * \return Settings.
-	 */
-	const Flags& flags() const { return flags_; }
+	void set_labels(const store_t& labels)
+	{
+		labels_ = labels;
+	}
+
+	void set_label(const KEY key, const std::string& label)
+	{
+		labels_.insert_or_assign(key, label);
+	}
+
+	std::string label(const KEY key) const
+	{
+		if (not labels_active())
+		{
+			return std::string{};
+		}
+
+		auto label_ptr { labels_.find(key) };
+
+		using std::cend;
+		if (cend(labels_) == label_ptr)
+		{
+			return std::string{};
+		}
+
+		return label_ptr.second;
+	}
 
 private:
 
-	Flags flags_;
+	/**
+	 * \brief Internal on/off switch.
+	 */
+	bool active_;
+
+	/**
+	 * \brief Internal association of KEYs with labels.
+	 */
+	store_t labels_;
 };
 
 } // namespace v_1_0_0

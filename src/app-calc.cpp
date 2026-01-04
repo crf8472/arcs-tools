@@ -435,12 +435,13 @@ std::unique_ptr<Result> CalcTableCreator::do_format(InputTuple t) const
 	using arid::default_arid_layout;
 
 	auto buf = ResultBuffer {};
+	const auto w_labels = with_labels();
 
 	if (!arid.empty())
 	{
 		auto layout { arid_layout()
 			? arid_layout()->clone()
-			: default_arid_layout(formats_labels()) };
+			: default_arid_layout(w_labels) };
 
 		buf.append(build_id(toc, arid, alt_prefix, *layout));
 	}
@@ -465,7 +466,7 @@ std::unique_ptr<Result> CalcTableCreator::do_format(InputTuple t) const
 	// Add table to result
 
 	buf.append(format_table(
-				field_list, checksums.size(), formats_labels(), creators));
+				field_list, checksums.size(), w_labels, creators));
 
 	return buf.flush();
 }
@@ -661,33 +662,33 @@ std::unique_ptr<CalcTableCreator> ARCalcApplication::create_formatter(
 
 
 	// Print labels or not
-	fmt->set_format_labels(!config.is_set(CALC::NOLABELS));
+	fmt->set_with_labels(!config.is_set(CALC::NOLABELS));
 
-	ARCS_LOG(DEBUG3) << "Print LABEL :   " << fmt->formats_labels();
+	ARCS_LOG(DEBUG3) << "Print LABEL :   " << fmt->with_labels();
 
 	// Print track numbers if they are not forbidden and a ToC is present
-	fmt->set_format_field(ATTR::TRACK,
+	fmt->update_property(ATTR::TRACK,
 			config.is_set(CALC::NOTRACKS) ? false : tracks_numbered);
 
-	ARCS_LOG(DEBUG3) << "Print TRACK :   " << fmt->formats_field(ATTR::TRACK);
+	ARCS_LOG(DEBUG3) << "Print TRACK :   " << fmt->has_property(ATTR::TRACK);
 
 	// Print offsets if they are not forbidden and a ToC is present
-	fmt->set_format_field(ATTR::OFFSET,
+	fmt->update_property(ATTR::OFFSET,
 			config.is_set(CALC::NOOFFSETS) ? false : has_toc);
 
-	ARCS_LOG(DEBUG3) << "Print OFFSET:   " << fmt->formats_field(ATTR::OFFSET);
+	ARCS_LOG(DEBUG3) << "Print OFFSET:   " << fmt->has_property(ATTR::OFFSET);
 
 	// Print lengths if they are not forbidden
-	fmt->set_format_field(ATTR::LENGTH, !config.is_set(CALC::NOLENGTHS));
+	fmt->update_property(ATTR::LENGTH, !config.is_set(CALC::NOLENGTHS));
 
-	ARCS_LOG(DEBUG3) << "Print LENGTH:   " << fmt->formats_field(ATTR::LENGTH);
+	ARCS_LOG(DEBUG3) << "Print LENGTH:   " << fmt->has_property(ATTR::LENGTH);
 
 	// Print filenames if they are not forbidden and a ToC is _not_ present
-	fmt->set_format_field(ATTR::FILENAME,
+	fmt->update_property(ATTR::FILENAME,
 			config.is_set(CALC::NOFILENAMES) ? false : !has_toc);
 
 	ARCS_LOG(DEBUG3) << "Print FILENAME: " <<
-			fmt->formats_field(ATTR::FILENAME);
+			fmt->has_property(ATTR::FILENAME);
 
 	auto layout { std::make_unique<StringTableLayout>() };
 

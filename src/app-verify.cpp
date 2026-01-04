@@ -730,6 +730,7 @@ void VerifyTableCreator::populate_result_creators(
 	// do not repeat the find mechanism
 	const auto required = [](const std::vector<ATTR>& fields, const ATTR f)
 			{
+				// TODO cbegi, cend
 				using std::begin;
 				using std::end;
 				using std::find;
@@ -748,21 +749,28 @@ void VerifyTableCreator::populate_result_creators(
 				}
 			};
 
+	//TODO lambda: add attr with theirs
+	// ATTR field_list
+
 	if (required(field_list, ATTR::CHECKSUM_ARCS1))
 	{
+		// add ARCSv1 row or column
 		creators.emplace_back(
 			std::make_unique<AddField<ATTR::CHECKSUM_ARCS1>>(
 				&checksums, this->checksum_layout()));
 
+		// add corresponding theirs column
 		populate_theirs();
 	}
 
 	if (required(field_list, ATTR::CHECKSUM_ARCS2))
 	{
+		// add ARCSv2 row or column
 		creators.emplace_back(
 			std::make_unique<AddField<ATTR::CHECKSUM_ARCS2>>(
 				&checksums, this->checksum_layout()));
 
+		// add corresponding theirs column
 		populate_theirs();
 	}
 }
@@ -818,6 +826,7 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 	using arid::default_arid_layout;
 
 	auto buf = ResultBuffer {};
+	const auto w_labels = with_labels();
 
 	// If ARId is present, print it
 
@@ -825,7 +834,7 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 	{
 		auto layout { arid_layout()
 			? arid_layout()->clone()
-			: default_arid_layout(formats_labels()) };
+			: default_arid_layout(w_labels) };
 
 		// Print locally calculated ARId ("Mine")
 		buf.append(build_id(toc, mine_arid, alt_prefix, *layout));
@@ -858,7 +867,7 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 	// Add table to result
 
 	buf.append(format_table(
-				field_list, checksums.size(), formats_labels(), creators));
+				field_list, checksums.size(), w_labels, creators));
 
 	return buf.flush();
 }
@@ -1445,31 +1454,31 @@ std::unique_ptr<VerifyTableCreator> ARVerifyApplication::create_formatter(
 	}
 
 	// Print labels or not
-	fmt->set_format_labels(!config.is_set(VERIFY::NOLABELS));
+	fmt->set_with_labels(!config.is_set(VERIFY::NOLABELS));
 
 	// ToC present? Helper for determining other properties
 	const bool has_toc = !config.value(VERIFY::METAFILE).empty();
 
 	// Print track numbers if they are not forbidden and a ToC is present
-	fmt->set_format_field(ATTR::TRACK,
+	fmt->update_property(ATTR::TRACK,
 			config.is_set(VERIFY::NOTRACKS) ? false : has_toc);
 
 	// Print offsets if they are not forbidden and a ToC is present
-	fmt->set_format_field(ATTR::OFFSET,
+	fmt->update_property(ATTR::OFFSET,
 			config.is_set(VERIFY::NOOFFSETS) ? false : has_toc);
 
 	// Print lengths if they are not forbidden
-	fmt->set_format_field(ATTR::LENGTH, !config.is_set(VERIFY::NOLENGTHS));
+	fmt->update_property(ATTR::LENGTH, !config.is_set(VERIFY::NOLENGTHS));
 
 	// Print filenames if they are not forbidden and a ToC is _not_ present
-	fmt->set_format_field(ATTR::FILENAME,
+	fmt->update_property(ATTR::FILENAME,
 			!config.is_set(VERIFY::NOFILENAMES) || !has_toc);
 
 	// Indicate a matching checksum by this symbol
 	fmt->set_match_symbol("==");
 
 	// Indicate that confidence values should be printed (if available)
-	fmt->set_format_field(ATTR::CONFIDENCE, config.is_set(VERIFY::CONFIDENCE));
+	fmt->update_property(ATTR::CONFIDENCE, config.is_set(VERIFY::CONFIDENCE));
 
 	// Method for creating the result table
 	fmt->set_builder(std::make_unique<RowTableComposerBuilder>());

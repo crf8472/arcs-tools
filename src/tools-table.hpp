@@ -29,7 +29,7 @@
 #endif
 
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"      // for WithInternalFlags, ARIdLayout, ChecksumLayout
+#include "layouts.hpp"      // for ARIdLayout, ChecksumLayout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"
@@ -698,15 +698,13 @@ public:
 	 *
 	 * \param[in] records     Total number of records
 	 * \param[in] field_types List of fields for each record
-	 * \param[in] with_labels If TRUE, use default labels
 	 *
 	 * \return TableComposer instance
 	 *
 	 * \see DefaultLabel
 	 */
 	std::unique_ptr<TableComposer> build(
-		const std::size_t records,
-		const std::vector<ATTR>& field_types, const bool with_labels) const;
+		const std::size_t records, const std::vector<ATTR>& field_types) const;
 
 protected:
 
@@ -726,7 +724,7 @@ private:
 	 */
 	virtual std::unique_ptr<TableComposer> do_build(
 		const std::size_t records,
-		const std::vector<ATTR>& field_types, const bool with_labels) const
+		const std::vector<ATTR>& field_types) const
 	= 0;
 
 	/**
@@ -743,8 +741,7 @@ class RowTableComposerBuilder final : public TableComposerBuilder
 {
 	std::unique_ptr<TableComposer> do_build(
 		const std::size_t records,
-		const std::vector<ATTR>& field_types, const bool with_labels) const
-		final;
+		const std::vector<ATTR>& field_types) const final;
 };
 
 
@@ -755,8 +752,7 @@ class ColTableComposerBuilder final : public TableComposerBuilder
 {
 	std::unique_ptr<TableComposer> do_build(
 		const std::size_t records,
-		const std::vector<ATTR>& field_types, const bool with_labels) const
-		final;
+		const std::vector<ATTR>& field_types) const final;
 };
 
 
@@ -927,7 +923,7 @@ std::string formatted(const Checksum& checksum,
  * TableCreator uses a TableComposer for inserting the actual data to the
  * table.
  */
-class TableCreator : public WithInternalFlags
+class TableCreator : public PropertyFlags<ATTR>
 {
 public:
 
@@ -985,36 +981,16 @@ public:
 	 *
 	 * \return Flag for printing the label
 	 */
-	bool formats_labels() const;
+	bool with_labels() const;
 
 	/**
 	 * \brief Activate or deactivate the printing of labels.
 	 *
 	 * Intended to control the printing of column titles and row labels.
 	 *
-	 * \param[in] label Flag to set for printing the labels
+	 * \param[in] flag Flag to set for printing the labels
 	 */
-	void set_format_labels(const bool& label);
-
-	/**
-	 * \brief TRUE iff data attribute \p a is to be formatted by this instance.
-	 *
-	 * \param[in] a Attribute to check for
-	 *
-	 * \return TRUE iff \p a is formatted by this instance, otherwise FALSE.
-	 */
-	bool formats_field(const ATTR a) const;
-
-	/**
-	 * \brief Set attribute to be formatted in the output.
-	 *
-	 * Iff attribute \p a is set to false, it will not be contained in the
-	 * printed output.
-	 *
-	 * \param[in] a     Attribute to be formatted or not
-	 * \param[in] value Flag value to activate or deactivate formatting of \p a
-	 */
-	void set_format_field(const ATTR a, const bool value);
+	void set_with_labels(const bool& flag);
 
 	/**
 	 * \brief Set the TableComposerBuilder to use.
@@ -1123,13 +1099,12 @@ protected:
 	 *
 	 * \param[in] total_records Number of records to print
 	 * \param[in] field_types   List of fields to format for print
-	 * \param[in] with_labels   Decide whether to print field labels
 	 *
 	 * \return TableComposer with specified field list, size and labels
 	 */
 	std::unique_ptr<TableComposer> create_composer(
 		const std::size_t total_records,
-		const std::vector<ATTR>& field_types, const bool with_labels) const;
+		const std::vector<ATTR>& field_types) const;
 
 	/**
 	 * \brief Hook in format_table() for initializing composer.
