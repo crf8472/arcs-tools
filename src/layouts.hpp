@@ -372,7 +372,7 @@ private:
  * \brief Base class with boolean properties.
  */
 template<typename KEY>
-class PropertyFlags
+class PropertyStore
 {
 public:
 
@@ -381,7 +381,7 @@ public:
 	 *
 	 * \param[in] flags Initial internal state
 	 */
-	explicit PropertyFlags(const flags_t flags)
+	explicit PropertyStore(const flags_t flags)
 		: flag_store_ { flags }
 	{
 		// empty
@@ -390,7 +390,7 @@ public:
 	/**
 	 * \brief Default constructor.
 	 */
-	PropertyFlags()
+	PropertyStore()
 		: flag_store_ { /*default*/ }
 	{
 		// empty
@@ -399,7 +399,7 @@ public:
 	/**
 	 * \brief Default destructor.
 	 */
-	virtual ~PropertyFlags() noexcept = default;
+	virtual ~PropertyStore() noexcept = default;
 
 	/**
 	 * \brief Return TRUE if layout has property \c key.

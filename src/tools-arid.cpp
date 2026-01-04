@@ -79,7 +79,7 @@ std::ostream& operator << (std::ostream& o, const RichARId& a)
 
 
 ARIdLayout::ARIdLayout()
-	: PropertyFlags { 0xFFFFFFFF } // all flags true
+	: PropertyStore { 0xFFFFFFFF } // all flags true
 	, field_labels_ { true }
 {
 	// empty
@@ -89,7 +89,7 @@ ARIdLayout::ARIdLayout()
 ARIdLayout::ARIdLayout(const bool labels, const bool id, const bool url,
 		const bool filename, const bool track_count, const bool disc_id_1,
 		const bool disc_id_2, const bool cddb_id)
-	: PropertyFlags {
+	: PropertyStore {
 			static_cast<uint32_t>(0)
 			| details::flag_operand(ARID_FLAG::ID,       id)
 			| details::flag_operand(ARID_FLAG::URL,      url)

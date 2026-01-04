@@ -320,7 +320,7 @@ enum class HEX_FLAG : int
 /**
  * \brief Format Checksums in hexadecimal representation.
  */
-class HexLayout final : public PropertyFlags<HEX_FLAG>
+class HexLayout final : public PropertyStore<HEX_FLAG>
 					  , public ChecksumLayout
 {
 public:

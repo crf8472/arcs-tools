@@ -654,7 +654,7 @@ std::unique_ptr<StringSplitter> DefaultSplitter::do_clone() const
 
 
 StringTableLayout::StringTableLayout(std::unique_ptr<StringSplitter> s)
-	: PropertyFlags {
+	: PropertyStore {
 			static_cast<uint32_t>(0)
 			| details::flag_operand(TABLE_FLAG::TITLE,                  true )
 			| details::flag_operand(TABLE_FLAG::ROW_LABELS,             true )
@@ -692,7 +692,7 @@ StringTableLayout::StringTableLayout()
 
 
 StringTableLayout::StringTableLayout(const StringTableLayout& rhs)
-	: PropertyFlags { rhs }
+	: PropertyStore { rhs } // slice subclass parts away
 	, delims_       { rhs.delims_ }
 	, splitter_     { rhs.splitter_->clone() }
 {
@@ -711,7 +711,7 @@ StringTableLayout& StringTableLayout::operator=(const StringTableLayout& rhs)
 
 void StringTableLayout::swap(StringTableLayout& rhs) noexcept
 {
-	//FIXME broken until base_swap for PropertyFlags is used
+	//FIXME broken until base_swap for PropertyStore is used
 	using std::swap;
 	//swap(flags_, rhs.flags_);
 	swap(delims_,   rhs.delims_);

@@ -340,7 +340,7 @@ ToCParser ChecksumCalculator::setup_parser() const
 
 
 HexLayout::HexLayout()
-	: PropertyFlags { 0x00000002 }
+	: PropertyStore { 0x00000002 }
 {
 	// means: SHOW_BASE is OFF, UPPERCASE is ON
 }

@@ -823,7 +823,7 @@ enum class TABLE_DELIM : int
  * expressed without any knowledge of the concrete instance. Therefore, things
  * like alignment of columns is part of the table not of its layout.
  */
-class StringTableLayout final : public PropertyFlags<TABLE_FLAG>
+class StringTableLayout final : public PropertyStore<TABLE_FLAG>
 {
 public:
 

@@ -928,7 +928,7 @@ std::string formatted(const Checksum& checksum,
  * printing the checksums and a default ARIdTableLayout for printing the ARId
  * info.
  */
-class TableCreator : public PropertyFlags<ATTR>
+class TableCreator : public PropertyStore<ATTR>
 {
 public:
 
