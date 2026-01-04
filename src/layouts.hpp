@@ -369,7 +369,7 @@ private:
 
 
 /**
- * \brief Class with flags.
+ * \brief Base class with boolean properties.
  */
 template<typename KEY>
 class PropertyFlags
