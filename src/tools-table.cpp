@@ -879,7 +879,6 @@ const ChecksumLayout* TableCreator::checksum_layout() const
 
 bool TableCreator::with_labels() const
 {
-	//return flags().flag(MAX_ATTR + 1);
 	return arid_layout()->labels_active();
 	// FIXME StringTableLayout
 }
@@ -887,7 +886,6 @@ bool TableCreator::with_labels() const
 
 void TableCreator::set_with_labels(const bool& value)
 {
-	//flags().set_flag(MAX_ATTR + 1, value);
 	if (arid_layout_) { arid_layout_->set_labels_active(value); }
 
 	if (table_layout_)
