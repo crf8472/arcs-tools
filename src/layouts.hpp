@@ -23,6 +23,13 @@ namespace arcsapp
 inline namespace v_1_0_0
 {
 
+/**
+ * \brief Type for a sequence of boolean flags.
+ */
+using flags_t = uint32_t;
+// TODO this should be a bitfield or vector<bool>
+
+
 namespace details
 {
 
@@ -55,9 +62,9 @@ inline constexpr auto to_underlying(E e) noexcept
  * \return A numerical flag
  */
 template<typename E>
-inline constexpr uint32_t flag_operand(const E type, const bool value)
+inline constexpr flags_t flag_operand(const E type, const bool value)
 {
-	return static_cast<uint32_t>(value) << to_underlying(type);
+	return static_cast<flags_t>(value) << to_underlying(type);
 }
 
 } // namespace details
@@ -159,7 +166,7 @@ public:
 	 *
 	 * \param[in] flags Initial internal state
 	 */
-	explicit Flags(const uint32_t flags);
+	explicit Flags(const flags_t flags);
 
 	/**
 	 * \brief Default Constructor.
@@ -227,7 +234,7 @@ private:
 	/**
 	 * \brief Implementation of the flags
 	 */
-	uint32_t flags_;
+	flags_t flags_;
 };
 
 
@@ -244,7 +251,7 @@ public:
 	 *
 	 * \param[in] flags Initial internal state
 	 */
-	explicit FlagStore(const uint32_t flags)
+	explicit FlagStore(const flags_t flags)
 		: flags_ { flags }
 	{
 		/* empty */
@@ -374,8 +381,8 @@ public:
 	 *
 	 * \param[in] flags Initial internal state
 	 */
-	explicit PropertyFlags(const uint32_t flags)
-		: flag_store_ {flags}
+	explicit PropertyFlags(const flags_t flags)
+		: flag_store_ { flags }
 	{
 		// empty
 	}
@@ -384,7 +391,7 @@ public:
 	 * \brief Default constructor.
 	 */
 	PropertyFlags()
-		: flag_store_ {}
+		: flag_store_ { /*default*/ }
 	{
 		// empty
 	}

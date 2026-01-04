@@ -18,15 +18,15 @@ inline namespace v_1_0_0
 // Flags
 
 
-Flags::Flags(const uint32_t flags)
-	: flags_(flags)
+Flags::Flags(const flags_t flags)
+	: flags_ { flags }
 {
 	// empty
 }
 
 
 Flags::Flags()
-	: Flags(0)
+	: Flags { 0 }
 {
 	// empty
 };
