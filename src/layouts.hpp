@@ -487,7 +487,7 @@ public:
 
 	LabelStore()
 		: active_ { true }
-		, labels_ {}
+		, labels_ { /*default*/ }
 	{
 		// empty
 	}
@@ -529,7 +529,7 @@ public:
 			return std::string{};
 		}
 
-		return label_ptr.second;
+		return label_ptr->second;
 	}
 
 private:
