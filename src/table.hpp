@@ -801,6 +801,22 @@ enum class TABLE_FLAG : int
 
 
 /**
+ * \brief Delimiter type.
+ */
+enum class TABLE_DELIM : int
+{
+	ROW_TOP_DELIM,
+	ROW_HEADER_DELIM,
+	ROW_INNER_DELIM,
+	ROW_BOTTOM_DELIM,
+	COL_LEFT_OUTER_DELIM,
+	COL_LABELS_DELIM,
+	COL_INNER_DELIM,
+	COL_RIGHT_OUTER_DELIM
+};
+
+
+/**
  * \brief Layout for a StringTable.
  *
  * Layout contains all the visual information about a StringTable that can be
@@ -914,34 +930,19 @@ private:
 	/**
 	 * \brief Internal type to store delimiters.
 	 */
-	using delim_store_type = std::vector<std::string>;
-
-	/**
-	 * \brief Delimiter type.
-	 */
-	enum class Delimiter : delim_store_type::size_type
-	{
-		ROW_TOP_DELIM,
-		ROW_HEADER_DELIM,
-		ROW_INNER_DELIM,
-		ROW_BOTTOM_DELIM,
-		COL_LEFT_OUTER_DELIM,
-		COL_LABELS_DELIM,
-		COL_INNER_DELIM,
-		COL_RIGHT_OUTER_DELIM
-	};
+	//using delim_store_type = std::vector<std::string>;
 
 	/**
 	 * \brief Internal delimiter store.
 	 */
-	delim_store_type delims_;
+	LabelStore<TABLE_DELIM> delims_;
 
 	/**
 	 * \brief Get delimiter \p d.
 	 *
 	 * \return Delimiter \p d.
 	 */
-	std::string delim_get(const Delimiter d) const;
+	std::string delim_get(const TABLE_DELIM d) const;
 
 	/**
 	 * \brief Set delimiter string for delimiter \p d.
@@ -949,7 +950,7 @@ private:
 	 * \param[in] d Delimiter type to set string for
 	 * \param[in] s Delimiter \p d.
 	 */
-	void delim_set(const Delimiter d, const std::string& s);
+	void delim_set(const TABLE_DELIM d, const std::string& s);
 
 	/**
 	 * \brief Internal splitter for formatting multiline cells.

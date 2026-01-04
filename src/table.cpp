@@ -668,17 +668,17 @@ StringTableLayout::StringTableLayout(std::unique_ptr<StringSplitter> s)
 			| details::flag_operand(TABLE_FLAG::COL_INNER_DELIMS,       true )
 			| details::flag_operand(TABLE_FLAG::COL_RIGHT_OUTER_DELIMS, false)
 		}
-	, delims_ { /* TOP_DELIM */                "="
-		      , /* ROW_HEADER_DELIM */         "="
-		      , /* ROW_INNER_DELIM */          "-"
-		      , /* BOTTOM_DELIM */             "="
-		      , /* LEFT_OUTER_DELIM */         "|"
-		      , /* COL_LABELS_DELIM */         "|"
-		      , /* COL_INNER_DELIM */          " "
-		      , /* RIGHT_OUTER_DELIM */        "|" }
+	, delims_ { /*default*/ }
 	, splitter_  { std::move(s) }
 {
-	// empty
+	delims_.set_label(TABLE_DELIM::ROW_TOP_DELIM,         "=" );
+	delims_.set_label(TABLE_DELIM::ROW_HEADER_DELIM,      "=" );
+	delims_.set_label(TABLE_DELIM::ROW_INNER_DELIM,       "-" );
+	delims_.set_label(TABLE_DELIM::ROW_BOTTOM_DELIM,      "=" );
+	delims_.set_label(TABLE_DELIM::COL_LEFT_OUTER_DELIM,  "|" );
+	delims_.set_label(TABLE_DELIM::COL_LABELS_DELIM,      "|" );
+	delims_.set_label(TABLE_DELIM::COL_INNER_DELIM,       " " );
+	delims_.set_label(TABLE_DELIM::COL_RIGHT_OUTER_DELIM, "|" );
 }
 
 
@@ -851,111 +851,111 @@ bool StringTableLayout::right_outer_delims() const
 
 void StringTableLayout::set_top_delim(const std::string& d)
 {
-	delim_set(Delimiter::ROW_TOP_DELIM, d);
+	delim_set(TABLE_DELIM::ROW_TOP_DELIM, d);
 }
 
 
 void StringTableLayout::set_row_header_delim(const std::string& d)
 {
-	delim_set(Delimiter::ROW_HEADER_DELIM, d);
+	delim_set(TABLE_DELIM::ROW_HEADER_DELIM, d);
 }
 
 
 void StringTableLayout::set_row_inner_delim(const std::string& d)
 {
-	delim_set(Delimiter::ROW_INNER_DELIM, d);
+	delim_set(TABLE_DELIM::ROW_INNER_DELIM, d);
 }
 
 
 void StringTableLayout::set_bottom_delim(const std::string& d)
 {
-	delim_set(Delimiter::ROW_BOTTOM_DELIM, d);
+	delim_set(TABLE_DELIM::ROW_BOTTOM_DELIM, d);
 }
 
 
 void StringTableLayout::set_left_outer_delim(const std::string& d)
 {
-	delim_set(Delimiter::COL_LEFT_OUTER_DELIM, d);
+	delim_set(TABLE_DELIM::COL_LEFT_OUTER_DELIM, d);
 }
 
 
 void StringTableLayout::set_col_labels_delim(const std::string& d)
 {
-	delim_set(Delimiter::COL_LABELS_DELIM, d);
+	delim_set(TABLE_DELIM::COL_LABELS_DELIM, d);
 }
 
 
 void StringTableLayout::set_col_inner_delim(const std::string& d)
 {
-	delim_set(Delimiter::COL_INNER_DELIM, d);
+	delim_set(TABLE_DELIM::COL_INNER_DELIM, d);
 }
 
 
 void StringTableLayout::set_right_outer_delim(const std::string& d)
 {
-	delim_set(Delimiter::COL_RIGHT_OUTER_DELIM, d);
+	delim_set(TABLE_DELIM::COL_RIGHT_OUTER_DELIM, d);
 }
 
 
 std::string StringTableLayout::top_delim() const
 {
-	return delim_get(Delimiter::ROW_TOP_DELIM);
+	return delim_get(TABLE_DELIM::ROW_TOP_DELIM);
 }
 
 
 std::string StringTableLayout::row_header_delim() const
 {
-	return delim_get(Delimiter::ROW_HEADER_DELIM);
+	return delim_get(TABLE_DELIM::ROW_HEADER_DELIM);
 }
 
 
 std::string StringTableLayout::row_inner_delim() const
 {
-	return delim_get(Delimiter::ROW_INNER_DELIM);
+	return delim_get(TABLE_DELIM::ROW_INNER_DELIM);
 }
 
 
 std::string StringTableLayout::bottom_delim() const
 {
-	return delim_get(Delimiter::ROW_BOTTOM_DELIM);
+	return delim_get(TABLE_DELIM::ROW_BOTTOM_DELIM);
 }
 
 
 std::string StringTableLayout::left_outer_delim() const
 {
-	return delim_get(Delimiter::COL_LEFT_OUTER_DELIM);
+	return delim_get(TABLE_DELIM::COL_LEFT_OUTER_DELIM);
 }
 
 
 std::string StringTableLayout::col_labels_delim() const
 {
-	return delim_get(Delimiter::COL_LABELS_DELIM);
+	return delim_get(TABLE_DELIM::COL_LABELS_DELIM);
 }
 
 
 std::string StringTableLayout::col_inner_delim() const
 {
-	return delim_get(Delimiter::COL_INNER_DELIM);
+	return delim_get(TABLE_DELIM::COL_INNER_DELIM);
 }
 
 
 std::string StringTableLayout::right_outer_delim() const
 {
-	return delim_get(Delimiter::COL_RIGHT_OUTER_DELIM);
+	return delim_get(TABLE_DELIM::COL_RIGHT_OUTER_DELIM);
 }
 
 
-void StringTableLayout::delim_set(const Delimiter i, const std::string& value)
+void StringTableLayout::delim_set(const TABLE_DELIM d, const std::string& value)
 {
-	//delims_[static_cast<std::underlying_type_t<TABLE_FLAG>>(i)] = value;
-	delims_[details::to_underlying(i)] = value;
+	//delims_[static_cast<std::underlying_type_t<TABLE_FLAG>>(d)] = value;
+	delims_.set_label(d, value);
 }
 
 
-std::string StringTableLayout::delim_get(const Delimiter i) const
+std::string StringTableLayout::delim_get(const TABLE_DELIM d) const
 {
 	//return delims_[static_cast<std::underlying_type_t<TABLE_FLAG>>(i)];
-	return delims_[details::to_underlying(i)];
+	return delims_.label(d);
 }
 
 
