@@ -214,7 +214,7 @@ protected:
 /**
  * \brief Table-style layout for ARId information.
  */
-class ARIdTableLayout : public ARIdLayout
+class ARIdTableLayout final : public ARIdLayout
 {
 public:
 
@@ -233,7 +233,7 @@ private:
  *
  * This object contains all information necessary to be printed.
  */
-class RichARId
+class RichARId final
 {
 	arcstk::ARId id_;
 
