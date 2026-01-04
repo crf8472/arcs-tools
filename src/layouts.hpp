@@ -42,6 +42,24 @@ inline constexpr auto to_underlying(E e) noexcept
     return static_cast<std::underlying_type_t<E>>(e);
 }
 
+
+/**
+ * \brief Turn a numeric enum class type and a boolean to an arithmetic flag.
+ *
+ * Convenience function to convert typed enum values and their boolean values
+ * to a concrete flag value.
+ *
+ * \param[in] type  The type to convert
+ * \param[in] value The value to convert
+ *
+ * \return A numerical flag
+ */
+template<typename E>
+inline constexpr uint32_t flag_operand(const E type, const bool value)
+{
+	return static_cast<uint32_t>(value) << to_underlying(type);
+}
+
 } // namespace details
 
 

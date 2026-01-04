@@ -133,10 +133,6 @@ public:
 	std::unique_ptr<ARIdLayout> clone() const;
 	// TODO Implement clone_base()
 
-protected:
-
-	uint32_t flag_operand(const ARID_FLAG type, const bool value) const;
-
 private:
 
 	/**
