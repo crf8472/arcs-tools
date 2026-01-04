@@ -984,15 +984,6 @@ public:
 	bool with_labels() const;
 
 	/**
-	 * \brief Activate or deactivate the printing of all labels.
-	 *
-	 * Intended to control the printing of column titles and row labels.
-	 *
-	 * \param[in] flag Flag to set for printing the labels
-	 */
-	void set_with_labels(const bool& flag);
-
-	/**
 	 * \brief Set the TableComposerBuilder to use.
 	 *
 	 * \param[in] c The TableComposerBuilder to use
@@ -1125,7 +1116,6 @@ protected:
 	 *
 	 * \param[in] field_types    List of fields to format for print
 	 * \param[in] total_records  Number of records to print
-	 * \param[in] with_labels    Decide whether to print field labels
 	 * \param[in] field_creators List of field creators
 	 *
 	 * \return Table
@@ -1133,7 +1123,6 @@ protected:
 	std::unique_ptr<PrintableTable> format_table(
 		const std::vector<ATTR>& field_types,
 		const std::size_t total_records,
-		const bool with_labels,
 		std::vector<std::unique_ptr<FieldCreator>>& field_creators) const;
 
 private:

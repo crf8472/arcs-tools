@@ -890,18 +890,6 @@ bool TableCreator::with_labels() const
 }
 
 
-void TableCreator::set_with_labels(const bool& value)
-{
-	if (arid_layout_) { arid_layout_->set_labels_active(value); }
-
-	if (table_layout_)
-	{
-		table_layout_->set_row_labels(value);
-		table_layout_->set_col_labels(value);
-	}
-}
-
-
 std::vector<ATTR> TableCreator::create_field_types(
 		const print_flag_t print_flags, const field_order_t& ordering) const
 {
@@ -1031,7 +1019,6 @@ TableCreator::print_flag_t TableCreator::create_field_requests(
 std::unique_ptr<PrintableTable> TableCreator::format_table(
 		const std::vector<ATTR>& field_list,
 		const std::size_t total_records,
-		const bool with_labels,
 		std::vector<std::unique_ptr<FieldCreator>>& field_creators) const
 {
 	auto composer { create_composer(total_records, field_list) };
@@ -1039,9 +1026,8 @@ std::unique_ptr<PrintableTable> TableCreator::format_table(
 
 	AddRecords(composer.get())(field_creators);
 
+	// TODO This is ridiculous
 	auto layout { std::make_unique<StringTableLayout>(copy_table_layout()) };
-	layout->set_row_labels(with_labels);
-	layout->set_col_labels(with_labels);
 	composer->set_layout(std::move(layout));
 
 	return composer->table();

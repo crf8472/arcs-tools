@@ -435,13 +435,12 @@ std::unique_ptr<Result> CalcTableCreator::do_format(InputTuple t) const
 	using arid::default_arid_layout;
 
 	auto buf = ResultBuffer {};
-	const auto w_labels = with_labels();
 
 	if (!arid.empty())
 	{
 		auto layout { arid_layout()
 			? arid_layout()->clone()
-			: default_arid_layout(w_labels) };
+			: default_arid_layout(with_labels()) /* FIXME */};
 
 		buf.append(build_id(toc, arid, alt_prefix, *layout));
 	}
@@ -465,8 +464,7 @@ std::unique_ptr<Result> CalcTableCreator::do_format(InputTuple t) const
 
 	// Add table to result
 
-	buf.append(format_table(
-				field_list, checksums.size(), w_labels, creators));
+	buf.append(format_table(field_list, checksums.size(), creators));
 
 	return buf.flush();
 }

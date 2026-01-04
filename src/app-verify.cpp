@@ -826,7 +826,6 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 	using arid::default_arid_layout;
 
 	auto buf = ResultBuffer {};
-	const auto w_labels = with_labels();
 
 	// If ARId is present, print it
 
@@ -834,7 +833,7 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 	{
 		auto layout { arid_layout()
 			? arid_layout()->clone()
-			: default_arid_layout(w_labels) };
+			: default_arid_layout(with_labels()) /* FIXME */};
 
 		// Print locally calculated ARId ("Mine")
 		buf.append(build_id(toc, mine_arid, alt_prefix, *layout));
@@ -866,8 +865,7 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 
 	// Add table to result
 
-	buf.append(format_table(
-				field_list, checksums.size(), w_labels, creators));
+	buf.append(format_table(field_list, checksums.size(), creators));
 
 	return buf.flush();
 }
@@ -1419,23 +1417,92 @@ std::unique_ptr<VerifyTableCreator> ARVerifyApplication::create_formatter(
 {
 	auto fmt = std::unique_ptr<VerifyTableCreator>();
 
+
+	// Configure Attributes
+
+	ARCS_LOG(DEBUG3) << "Define output attributes:";
+
 	if (config.is_set(VERIFY::COLORED))
 	{
+		ARCS_LOG(DEBUG3) << "Print with colors";
+
 		fmt = std::make_unique<ColorizingVerifyTableCreator>(
 				config.object<ColorRegistry>(VERIFY::COLORED));
 	} else
 	{
+		ARCS_LOG(DEBUG3) << "Print without colors";
+
 		fmt = std::make_unique<MonochromeVerifyTableCreator>();
 	}
 
-	// Layouts for Checksums + ARId
+	// ToC present? Helper for determining other properties
+	const bool has_toc = !config.value(VERIFY::METAFILE).empty();
 
-	fmt->set_checksum_layout(std::make_unique<HexLayout>());
+	// Print track numbers if they are not forbidden and a ToC is present
+	fmt->update_property(ATTR::TRACK,
+			config.is_set(VERIFY::NOTRACKS) ? false : has_toc);
+
+	ARCS_LOG(DEBUG3) << "Print TRACK :     " << fmt->has_property(ATTR::TRACK);
+
+	// Print offsets if they are not forbidden and a ToC is present
+	fmt->update_property(ATTR::OFFSET,
+			config.is_set(VERIFY::NOOFFSETS) ? false : has_toc);
+
+	ARCS_LOG(DEBUG3) << "Print OFFSET:     " << fmt->has_property(ATTR::OFFSET);
+
+	// Print lengths if they are not forbidden
+	fmt->update_property(ATTR::LENGTH, !config.is_set(VERIFY::NOLENGTHS));
+
+	ARCS_LOG(DEBUG3) << "Print LENGTH:     " << fmt->has_property(ATTR::LENGTH);
+
+	// Print filenames if they are not forbidden and a ToC is _not_ present
+	fmt->update_property(ATTR::FILENAME,
+			!config.is_set(VERIFY::NOFILENAMES) || !has_toc);
+
+	ARCS_LOG(DEBUG3) << "Print FILENAME:   " <<
+			fmt->has_property(ATTR::FILENAME);
+
+	// Indicate that confidence values should be printed (if available)
+	fmt->update_property(ATTR::CONFIDENCE, config.is_set(VERIFY::CONFIDENCE));
+
+	ARCS_LOG(DEBUG3) << "Print CONFIDENCE: " <<
+			fmt->has_property(ATTR::CONFIDENCE);
+
+	// Indicate a matching checksum by this symbol
+	fmt->set_match_symbol("==");
+
+
+	// Layout for checksum table
+
+	auto cs_table_layout { std::make_unique<StringTableLayout>() };
+
+	// Set inner column delimiter
+	cs_table_layout->set_col_inner_delim(config.is_set(VERIFY::COLDELIM)
+		? config.value(VERIFY::COLDELIM)
+		: " ");
+
+	// Remove labels and delims if requested
+
+	if (config.is_set(VERIFY::NOLABELS))
+	{
+		ARCS_LOG(DEBUG3) << "Print without labels";
+
+		cs_table_layout->set_col_labels(false);
+		cs_table_layout->set_col_labels_delims(false);
+
+		cs_table_layout->set_row_labels(false);
+	} else
+	{
+		ARCS_LOG(DEBUG3) << "Print with labels";
+	}
+
+	// Print labels or not
+	//fmt->set_with_labels(!config.is_set(VERIFY::NOLABELS));
+
 
 	// Layout for ARId
 
-	{
-		std::unique_ptr<ARIdLayout> id_layout =
+	std::unique_ptr<ARIdLayout> id_layout =
 			std::make_unique<ARIdTableLayout>(
 				!config.is_set(VERIFY::NOLABELS),
 				config.is_set(VERIFY::PRINTID),
@@ -1447,50 +1514,16 @@ std::unique_ptr<VerifyTableCreator> ARVerifyApplication::create_formatter(
 				false  /* no cddb id */
 		);
 
-		id_layout->set_label(ARID_FLAG::ID,  "ID(mine) ");
-		id_layout->set_label(ARID_FLAG::URL, "URL(mine)");
+	id_layout->set_label(ARID_FLAG::ID,  "ID(mine) ");
+	id_layout->set_label(ARID_FLAG::URL, "URL(mine)");
 
-		fmt->set_arid_layout(std::move(id_layout));
-	}
 
-	// Print labels or not
-	fmt->set_with_labels(!config.is_set(VERIFY::NOLABELS));
+	// Put things together
 
-	// ToC present? Helper for determining other properties
-	const bool has_toc = !config.value(VERIFY::METAFILE).empty();
-
-	// Print track numbers if they are not forbidden and a ToC is present
-	fmt->update_property(ATTR::TRACK,
-			config.is_set(VERIFY::NOTRACKS) ? false : has_toc);
-
-	// Print offsets if they are not forbidden and a ToC is present
-	fmt->update_property(ATTR::OFFSET,
-			config.is_set(VERIFY::NOOFFSETS) ? false : has_toc);
-
-	// Print lengths if they are not forbidden
-	fmt->update_property(ATTR::LENGTH, !config.is_set(VERIFY::NOLENGTHS));
-
-	// Print filenames if they are not forbidden and a ToC is _not_ present
-	fmt->update_property(ATTR::FILENAME,
-			!config.is_set(VERIFY::NOFILENAMES) || !has_toc);
-
-	// Indicate a matching checksum by this symbol
-	fmt->set_match_symbol("==");
-
-	// Indicate that confidence values should be printed (if available)
-	fmt->update_property(ATTR::CONFIDENCE, config.is_set(VERIFY::CONFIDENCE));
-
-	// Method for creating the result table
+	fmt->set_arid_layout(std::move(id_layout));
+	fmt->set_checksum_layout(std::make_unique<HexLayout>());
+	fmt->set_table_layout(std::move(cs_table_layout));
 	fmt->set_builder(std::make_unique<RowTableComposerBuilder>());
-
-	auto layout { std::make_unique<StringTableLayout>() };
-
-	// Set inner column delimiter
-	layout->set_col_inner_delim(config.is_set(VERIFY::COLDELIM)
-		? config.value(VERIFY::COLDELIM)
-		: " ");
-
-	fmt->set_table_layout(std::move(layout));
 
 	return fmt;
 }
