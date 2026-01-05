@@ -11,6 +11,8 @@
 #include "version.hpp"
 #endif
 
+#include <string>   // for string
+
 namespace arcsapp
 {
 inline namespace v_1_0_0
@@ -18,11 +20,11 @@ inline namespace v_1_0_0
 
 extern const std::string ARCSTOOLS_BINARY_NAME = "@PROJECT_NAME@";
 
-extern const int ARCSTOOLS_VERSION_MAJOR = @PROJECT_VERSION_MAJOR@;
+extern const int ARCSTOOLS_VERSION_MAJOR = std::stoi("@PROJECT_VERSION_MAJOR@");
 
-extern const int ARCSTOOLS_VERSION_MINOR = @PROJECT_VERSION_MINOR@;
+extern const int ARCSTOOLS_VERSION_MINOR = std::stoi("@PROJECT_VERSION_MINOR@");
 
-extern const int ARCSTOOLS_VERSION_PATCH = @PROJECT_VERSION_PATCH@;
+extern const int ARCSTOOLS_VERSION_PATCH = std::stoi("@PROJECT_VERSION_PATCH@");
 
 extern const std::string ARCSTOOLS_VERSION_SUFFIX { "@PROJECT_VERSION_SUFFIX@" };
 
