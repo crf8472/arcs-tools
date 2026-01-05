@@ -1,14 +1,15 @@
 #include "catch2/catch_test_macros.hpp"
 
-#ifndef __ARCSTOOLS_APPREGISTRY_HPP__
-#include "appregistry.hpp"
-#endif
-
 /**
  * \file
  *
- * \brief Fixtures for appregistry.cpp
+ * \brief Fixtures for appregistry.hpp.
  */
+
+#ifndef __ARCSTOOLS_APPREGISTRY_HPP__
+#include "appregistry.hpp"        // TO BE TESTED
+#endif
+
 
 // TODO instantiate_application()
 // TODO RegisterApplicationType

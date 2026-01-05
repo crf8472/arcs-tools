@@ -1,14 +1,15 @@
 #include "catch2/catch_test_macros.hpp"
 
-#ifndef __ARCSTOOLS_TOOLSINFO_HPP__
-#include "tools-info.hpp"
-#endif
-
 /**
  * \file
  *
- * \brief Fixtures for tools-info.cpp
+ * \brief Fixtures for tools-info.hpp.
  */
+
+#ifndef __ARCSTOOLS_TOOLSINFO_HPP__
+#include "tools-info.hpp"         // TO BE TESTED
+#endif
+
 
 // TODO InfoResultComposer
 // TODO AudioFormatComposer

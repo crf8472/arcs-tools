@@ -1,7 +1,13 @@
 #include "catch2/catch_test_macros.hpp"
 
+/**
+ * \file
+ *
+ * \brief Fixtures for app-id.hpp.
+ */
+
 #ifndef __ARCSTOOLS_APPARID_HPP__
-#include "app-id.hpp"
+#include "app-id.hpp"             // TO BE TESTED
 #endif
 
 

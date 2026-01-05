@@ -1,16 +1,17 @@
 #include "catch2/catch_test_macros.hpp"
 
-#include <vector>
-
-#ifndef __ARCSTOOLS_ANSI_HPP__
-#include "ansi.hpp"
-#endif
-
 /**
  * \file
  *
- * \brief Fixtures for ansi.cpp
+ * \brief Fixtures for ansi.hpp.
  */
+
+#ifndef __ARCSTOOLS_ANSI_HPP__
+#include "ansi.hpp"               // TO BE TESTED
+#endif
+
+#include <vector>                 // for vector
+
 
 // TODO reset()
 // TODO get_color()

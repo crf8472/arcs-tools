@@ -1,13 +1,19 @@
 #include "catch2/catch_test_macros.hpp"
 
-#include <algorithm> // for find_if
-#include <cstdint>   // for uint32_t
-#include <iterator>  // for begin, end
-#include <utility>   // for pair
+/**
+ * \file
+ *
+ * \brief Fixtures for config.hpp.
+ */
 
 #ifndef __ARCSTOOLS_CONFIG_HPP__
-#include "config.hpp"
+#include "config.hpp"             // TO BE TESTED
 #endif
+
+#include <algorithm>              // for find_if
+#include <cstdint>                // for uint32_t
+#include <iterator>               // for begin, end
+#include <utility>                // for pair
 
 
 TEST_CASE ( "DefaultConfigurator", "[DefaultConfigurator]" )

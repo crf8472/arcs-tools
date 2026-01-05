@@ -1,11 +1,18 @@
 #include "catch2/catch_test_macros.hpp"
 
-#include <type_traits>  // for is_copy_constructible
-#include <memory>       // for unique_ptr
+/**
+ * \file
+ *
+ * \brief Fixtures for table.hpp.
+ */
 
 #ifndef __ARCSTOOLS_TABLE_HPP__
-#include "table.hpp"
+#include "table.hpp"              // TO BE TESTED
 #endif
+
+#include <type_traits>            // for is_copy_constructible
+#include <memory>                 // for unique_ptr
+
 
 namespace arcsapp
 {

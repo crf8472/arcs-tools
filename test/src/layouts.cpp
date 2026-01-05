@@ -1,8 +1,15 @@
 #include "catch2/catch_test_macros.hpp"
 
+/**
+ * \file
+ *
+ * \brief Fixtures for layouts.hpp.
+ */
+
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"
+#include "layouts.hpp"            // TO BE TESTED
 #endif
+
 
 // TODO PropertyStore
 // TODO LabelStore

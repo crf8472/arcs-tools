@@ -1,14 +1,15 @@
 #include "catch2/catch_test_macros.hpp"
 
-#ifndef __ARCSTOOLS_APPLICATION_HPP__
-#include "application.hpp"
-#endif
-
 /**
  * \file
  *
- * \brief Fixtures for application.cpp
+ * \brief Fixtures for application.hpp.
  */
+
+#ifndef __ARCSTOOLS_APPLICATION_HPP__
+#include "application.hpp"        // TO BE TESTED
+#endif
+
 
 TEST_CASE ( "Output", "[output]" )
 {

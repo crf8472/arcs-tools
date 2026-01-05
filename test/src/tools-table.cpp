@@ -1,11 +1,19 @@
 #include "catch2/catch_test_macros.hpp"
 
+/**
+ * \file
+ *
+ * \brief Fixtures for tools-table.hpp.
+ */
+
 #ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
-#include "tools-table.hpp"
+#include "tools-table.hpp"        // TO BE TESTED
 #endif
+
 #ifndef __ARCSTOOLS_APPVERIFY_HPP__
-#include "app-verify.hpp"     // for MatchDecorator
+#include "app-verify.hpp"         // for MatchDecorator
 #endif
+
 
 // TODO Testcase RowTableComposer
 // TODO Testcase ColTableComposer

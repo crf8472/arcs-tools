@@ -1,7 +1,13 @@
 #include "catch2/catch_test_macros.hpp"
 
+/**
+ * \file
+ *
+ * \brief Fixtures for tools-dbar.hpp.
+ */
+
 #ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
-#include "tools-dbar.hpp"
+#include "tools-dbar.hpp"         // TO BE TESTED
 #endif
 
 

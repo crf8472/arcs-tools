@@ -1,7 +1,13 @@
 #include "catch2/catch_test_macros.hpp"
 
+/**
+ * \file
+ *
+ * \brief Fixtures for app-calc.hpp.
+ */
+
 #ifndef __ARCSTOOLS_APPARCALC_HPP__
-#include "app-calc.hpp"
+#include "app-calc.hpp"           // TO BE TESTED
 #endif
 
 

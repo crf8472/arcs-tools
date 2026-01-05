@@ -1,11 +1,17 @@
 #include "catch2/catch_test_macros.hpp"
 
+/**
+ * \file
+ *
+ * \brief Fixtures for clitokens.hpp.
+ */
+
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp"
+#include "clitokens.hpp"          // TO BE TESTED
 #endif
 
 #ifndef __ARCSTOOLS_CLITOKENS_MOCKS_HPP__
-#include "clitokens_mocks.hpp"
+#include "clitokens_mocks.hpp"    // for
 #endif
 
 

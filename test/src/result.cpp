@@ -1,14 +1,15 @@
 #include "catch2/catch_test_macros.hpp"
 
-#ifndef __ARCSTOOLS_RESULT_HPP__
-#include "result.hpp"
-#endif
-
 /**
  * \file
  *
- * \brief Fixtures for result.cpp
+ * \brief Fixtures for result.hpp.
  */
+
+#ifndef __ARCSTOOLS_RESULT_HPP__
+#include "result.hpp"             // TO BE TESTED
+#endif
+
 
 // TODO Result
 // TODO ResultList

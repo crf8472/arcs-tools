@@ -1,14 +1,15 @@
 #include "catch2/catch_test_macros.hpp"
 
-#ifndef __ARCSTOOLS_APPPARSE_HPP__
-#include "app-parse.hpp"
-#endif
-
 /**
  * \file
  *
- * \brief Fixtures for app-parse.cpp
+ * \brief Fixtures for app-parse.hpp.
  */
+
+#ifndef __ARCSTOOLS_APPPARSE_HPP__
+#include "app-parse.hpp"          // TO BE TESTED
+#endif
+
 
 TEST_CASE ( "ARParseApplication", "[arparseapplication]" )
 {

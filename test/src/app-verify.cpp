@@ -1,8 +1,15 @@
 #include "catch2/catch_test_macros.hpp"
 
+/**
+ * \file
+ *
+ * \brief Fixtures for app-verify.hpp.
+ */
+
 #ifndef __ARCSTOOLS_APPARVERIFY_HPP__
-#include "app-verify.hpp"
+#include "app-verify.hpp"         // TO BE TESTED
 #endif
+
 
 TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 {
