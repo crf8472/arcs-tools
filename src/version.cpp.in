@@ -16,19 +16,19 @@ namespace arcsapp
 inline namespace v_1_0_0
 {
 
-const std::string ARCSTOOLS_BINARY_NAME = "@PROJECT_NAME@";
+extern const std::string ARCSTOOLS_BINARY_NAME = "@PROJECT_NAME@";
 
-const int ARCSTOOLS_VERSION_MAJOR = @PROJECT_VERSION_MAJOR@;
+extern const int ARCSTOOLS_VERSION_MAJOR = @PROJECT_VERSION_MAJOR@;
 
-const int ARCSTOOLS_VERSION_MINOR = @PROJECT_VERSION_MINOR@;
+extern const int ARCSTOOLS_VERSION_MINOR = @PROJECT_VERSION_MINOR@;
 
-const int ARCSTOOLS_VERSION_PATCH = @PROJECT_VERSION_PATCH@;
+extern const int ARCSTOOLS_VERSION_PATCH = @PROJECT_VERSION_PATCH@;
 
-const std::string ARCSTOOLS_VERSION_SUFFIX { "@PROJECT_VERSION_SUFFIX@" };
+extern const std::string ARCSTOOLS_VERSION_SUFFIX { "@PROJECT_VERSION_SUFFIX@" };
 
-const std::string ARCSTOOLS_VERSION { "@PROJECT_VERSION_STRING@" };
+extern const std::string ARCSTOOLS_VERSION { "@PROJECT_VERSION_STRING@" };
 
-const std::string ARCSTOOLS_GIT_VERSION { "@GIT_VERSION_STRING@" };
+extern const std::string ARCSTOOLS_GIT_VERSION { "@GIT_VERSION_STRING@" };
 
 } // namespace v_1_0_0
 } // namespace arcsapp
