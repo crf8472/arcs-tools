@@ -1,3 +1,11 @@
+/**
+ * \internal
+ *
+ * \file
+ *
+ * \brief Implements symbols from tools-fs.hpp.
+ */
+
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
 #include "tools-fs.hpp"
 #endif

@@ -1,3 +1,11 @@
+/**
+ * \internal
+ *
+ * \file
+ *
+ * \brief Implements symbols from app-verify.hpp.
+ */
+
 #include "clitokens.hpp"
 #ifndef __ARCSTOOLS_APPARVERIFY_HPP__
 #include "app-verify.hpp"

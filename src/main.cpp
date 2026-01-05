@@ -1,7 +1,9 @@
 /**
+ * \internal
+ *
  * \file
  *
- * \brief arcstk, a toolbox for AccurateRip checksums
+ * \brief Function main().
  */
 
 #include <cstdlib>           // for EXIT_SUCCESS, EXIT_FAILURE

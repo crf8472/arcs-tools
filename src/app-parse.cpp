@@ -1,3 +1,11 @@
+/**
+ * \internal
+ *
+ * \file
+ *
+ * \brief Implements symbols from app-parse.hpp.
+ */
+
 #ifndef __ARCSTOOLS_APPPARSE_HPP__
 #include "app-parse.hpp"
 #endif

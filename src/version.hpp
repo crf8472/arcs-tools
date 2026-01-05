@@ -18,6 +18,14 @@ inline namespace v_1_0_0
 {
 
 /**
+ * \defgroup version Version information
+ *
+ * \brief Access version information and check version
+ *
+ * @{
+ */
+
+/**
  * \brief Name of the binary
  */
 extern const std::string ARCSTOOLS_BINARY_NAME;
@@ -52,19 +60,20 @@ extern const std::string ARCSTOOLS_VERSION;
  */
 extern const std::string ARCSTOOLS_GIT_VERSION;
 
+/** @} */
+
 
 /**
  * \internal
+ *
  * \brief Namespace for implementation details.
  */
 namespace details
-{
-// empty
-}
+{ // empty
+} // namespace details
 
 } // namespace v_1_0_0
 } // namespace arcsapp
 
 #endif
-
 

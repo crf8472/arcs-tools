@@ -1,3 +1,11 @@
+/**
+ * \internal
+ *
+ * \file
+ *
+ * \brief Implements symbols from tools-info.hpp.
+ */
+
 #ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
 #include "tools-info.hpp"
 #endif

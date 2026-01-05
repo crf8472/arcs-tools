@@ -1,3 +1,11 @@
+/**
+ * \internal
+ *
+ * \file
+ *
+ * \brief Implements symbols from app-id.hpp.
+ */
+
 #ifndef __ARCSTOOLS_APPID_HPP__
 #include "app-id.hpp"
 #endif

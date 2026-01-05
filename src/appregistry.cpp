@@ -1,3 +1,11 @@
+/**
+ * \internal
+ *
+ * \file
+ *
+ * \brief Implements symbols from appregistry.hpp.
+ */
+
 #ifndef __ARCSTOOLS_APPREGISTRY_HPP__
 #include "appregistry.hpp"
 #endif

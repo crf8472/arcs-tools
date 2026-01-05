@@ -1,13 +1,14 @@
+/**
+ * \internal
+ *
+ * \file
+ *
+ * \brief Implements symbols from result.hpp.
+ */
+
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"
 #endif
-
-/**
- * \file
- *
- * \brief Result interface implementation
- */
-
 
 #include <memory>         // for unique_ptr
 #include <ostream>        // for ostream

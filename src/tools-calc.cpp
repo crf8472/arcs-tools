@@ -1,5 +1,9 @@
 /**
- * \file tools-calc.cpp Combine ARCS calculation with file handling
+ * \internal
+ *
+ * \file
+ *
+ * \brief Implements symbols from tools-calc.hpp.
  */
 
 #ifndef __ARCSTOOLS_TOOLS_CALC_HPP__

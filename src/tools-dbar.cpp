@@ -1,3 +1,11 @@
+/**
+ * \internal
+ *
+ * \file
+ *
+ * \brief Implements symbols from tools-dbar.hpp.
+ */
+
 #ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
 #include "tools-dbar.hpp"
 #endif

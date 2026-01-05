@@ -1,7 +1,9 @@
 /**
+ * \internal
+ *
  * \file
  *
- * \brief Formatting interfaces and classes
+ * \brief Implements symbols from layouts.hpp.
  */
 
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__

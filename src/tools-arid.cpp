@@ -1,12 +1,14 @@
-#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
-#include "tools-arid.hpp"
-#endif
-
 /**
+ * \internal
+ *
  * \file
  *
  * \brief Implements symbols from tools-arid.hpp.
  */
+
+#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
+#include "tools-arid.hpp"
+#endif
 
 #include <cstddef>      // for size_t
 #include <iomanip>      // for setw, setfill

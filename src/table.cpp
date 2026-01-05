@@ -1,7 +1,9 @@
 /**
+ * \internal
+ *
  * \file
  *
- * \brief Implementation of a printable table holdings strings.
+ * \brief Implements symbols from table.hpp.
  */
 
 #include "layouts.hpp"

@@ -1,3 +1,12 @@
+// vim:ft=cpp
+/**
+ * \internal
+ *
+ * \file
+ *
+ * \brief Implements symbols from version.hpp.
+ */
+
 #ifndef __ARCSTOOLS_VERSION_HPP___
 #include "version.hpp"
 #endif
@@ -23,5 +32,4 @@ const std::string ARCSTOOLS_GIT_VERSION { "@GIT_VERSION_STRING@" };
 
 } // namespace v_1_0_0
 } // namespace arcsapp
-
 

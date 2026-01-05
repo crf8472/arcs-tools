@@ -1,3 +1,11 @@
+/**
+ * \internal
+ *
+ * \file
+ *
+ * \brief Implements symbols from app-calc.hpp.
+ */
+
 #include <arcsdec/descriptor.hpp>
 #ifndef __ARCSTOOLS_APPCALC_HPP__
 #include "app-calc.hpp"
