@@ -23,9 +23,11 @@ namespace ansi
 
 
 /**
- * \brief ANSI highlight codes.
+ * \brief Subset of ANSI SGR codes.
  *
- * According to https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+ * Supports Reset/Normal, Bold, Faint/Dim, Underline and SlowBlink.
+ *
+ * According to https://en.wikipedia.org/wiki/ANSI_escape_code#Select_Graphic_Rendition_parameters
  */
 enum class Highlight : int
 {
@@ -36,8 +38,8 @@ enum class Highlight : int
 	UNDERL =  4,
 	BLINK  =  5,
 	//
-	NOBOLD   = 22,
-	NOFAINT  = 22,
+	NOBOLD   = 22, // normal intensity, also resets FAINT
+	NOFAINT  = 22, // normal intensity, also resets BOLD
 	NOUNDERL = 24,
 	NOBLINK  = 25
 };
@@ -125,6 +127,15 @@ public:
 	friend std::ostream& operator << (std::ostream& o, const Modifier& m);
 
 	/**
+	 * \brief Default constructor.
+	 *
+	 * Highlight will be NORMAL, no colors.
+	 *
+	 * Can be used to reset previous settings.
+	 */
+	Modifier();
+
+	/**
 	 * \brief Constructor.
 	 *
 	 * \param[in] hl     Highlight to set
@@ -140,6 +151,15 @@ public:
 	 * \param[in] hl Highlight to set
 	 */
 	Modifier(Highlight hl);
+
+	/**
+	 * \brief Constructor.
+	 *
+	 * Sets default SGR (== 0).
+	 *
+	 * \param[in] colors Colors to set
+	 */
+	Modifier(const std::vector<Color>& colors);
 
 	/**
 	 * \brief Highlight of this modifier.

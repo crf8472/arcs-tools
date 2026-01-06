@@ -27,7 +27,7 @@ namespace ansi
 Highlight reset(const Highlight hl)
 {
 	static const std::unordered_map<Highlight, Highlight> highlights = {
-		{ Highlight::NORMAL, Highlight::NORMAL   },
+		{ Highlight::NORMAL, Highlight::NORMAL   }, /* TODO lambda? */
 		{ Highlight::BOLD,   Highlight::NOBOLD   },
 		{ Highlight::FAINT,  Highlight::NOFAINT  },
 		{ Highlight::UNDERL, Highlight::NOUNDERL },
@@ -82,6 +82,13 @@ Color get_color(const std::string& name)
 // Modifier
 
 
+Modifier::Modifier()
+	: Modifier { Highlight::NORMAL, {/*no colors*/} }
+{
+	/* empty */
+}
+
+
 Modifier::Modifier(Highlight hl, const std::vector<Color>& colors)
 	: hl_     { hl }
 	, colors_ { colors }
@@ -91,8 +98,14 @@ Modifier::Modifier(Highlight hl, const std::vector<Color>& colors)
 
 
 Modifier::Modifier(Highlight hl)
-	: hl_     { hl }
-	, colors_ { /* empty */ }
+	: Modifier { hl, {/*no colors*/} }
+{
+	/* empty */
+}
+
+
+Modifier::Modifier(const std::vector<Color>& colors)
+	: Modifier { Highlight::NORMAL, colors }
 {
 	/* empty */
 }
@@ -131,6 +144,9 @@ std::string Modifier::colors_str() const
 
 std::string Modifier::str() const
 {
+	// XXX Since hl_ will always be set and 0 is its default, any modifier
+	// will undo any previous modifier.
+
 	using std::to_string;
 	return "\x1B["
 		+ to_string(static_cast<std::underlying_type_t<Highlight>>(hl_))
