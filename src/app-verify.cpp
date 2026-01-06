@@ -1383,10 +1383,10 @@ std::unique_ptr<Configurator> ARVerifyApplication::do_create_configurator()
 auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	-> std::pair<int, std::unique_ptr<Result>>
 {
-	const auto ref_source { select_reference_source(
-			config.object<DBAR>(VERIFY::RESPONSEFILE),
-			config.object<ChecksumValuesType>(VERIFY::REFVALUES)
-	) };
+	const auto ref1 = config.object<DBAR>(VERIFY::RESPONSEFILE);
+	const auto ref2 = config.object<ChecksumValuesType>(VERIFY::REFVALUES);
+
+	const auto ref_source { select_reference_source(ref1, ref2) };
 
 	ARCS_LOG_DEBUG << "Reference checksum source contains "
 		<< ref_source->size() << "blocks of checksums";
