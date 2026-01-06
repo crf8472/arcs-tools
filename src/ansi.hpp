@@ -101,9 +101,9 @@ std::ostream& operator << (std::ostream& o, const Modifier& m);
 
 
 /**
- * \brief Color modifier that encodes the color and the highlight.
+ * \brief ANSI modifier encoding a highlight SGR and a trailing set of colors.
  */
-class Modifier
+class Modifier // TODO May encode many HL-SGR codes instead of one
 {
 	/**
 	 * \brief Internal highlight.
@@ -111,14 +111,14 @@ class Modifier
 	Highlight hl_;
 
 	/**
-	 * \brief List of colors to use.
+	 * \brief Internal list of colors to use.
 	 */
 	std::vector<Color> colors_;
 
 	/**
 	 * \brief Return SGR string of color codes.
 	 *
-	 * \return String representation of color codes for SGR
+	 * \return SGR string representation of trailing color codes for SGR
 	 */
 	std::string colors_str() const;
 
