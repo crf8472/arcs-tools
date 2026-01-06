@@ -214,6 +214,9 @@ private:
  */
 struct OPTION
 {
+	// This is not an enum but a struct to provide inheritance.
+	// Concrete configurators should be able to add their options.
+
 	static constexpr OptionCode NONE      = input::ARGUMENT; // MUST be 0
 	static constexpr OptionCode HELP      = 1;
 	static constexpr OptionCode VERSION   = 2;
@@ -221,6 +224,13 @@ struct OPTION
 	static constexpr OptionCode QUIET     = 4;
 	static constexpr OptionCode LOGFILE   = 5;
 	static constexpr OptionCode OUTFILE   = 6;
+	// BASE will be 7 for subclasses to start with
+
+// TODO SUBCLASS_BASE would be systematic / wouldn't need Configuratior::BASE()
+//
+// protected:
+//
+// 	static constexpr OptionCode SUBCLASS_BASE = BASE + 7;
 };
 
 
@@ -238,6 +248,13 @@ using OptionRegistry = std::vector<std::pair<OptionCode, Option>>;
 bool contains(const arcsapp::OptionCode c, const arcsapp::OptionRegistry& r);
 
 
+/**
+ * \brief Registry to associate OptionCodes with StringParser implementations.
+ *
+ * Concrete Applications will implement this specifically. Note that the parsers
+ * is represented by a lambda that instantiates it. The concrete parser class is
+ * only instantiated when required.
+ */
 using OptionParsers = std::vector<std::pair<OptionCode,
 		std::function<std::unique_ptr<StringParser>(void)>
 		>>;
@@ -342,6 +359,7 @@ public:
 	 *
 	 * \see ARIdOptions
 	 * \see CALCBASE
+	 * \see FORMATBASE
 	 */
 	static constexpr OptionCode BASE() { return 7/* last OPTION + 1 */; };
 

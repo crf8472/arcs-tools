@@ -66,6 +66,9 @@ using arcstk::Verifier;
 // arcsapp
 using table::TableComposer;
 
+/**
+ * \brief Type for list of reference values.
+ */
 using RefValuesType = std::vector<uint32_t>;
 
 

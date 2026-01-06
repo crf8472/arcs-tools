@@ -22,11 +22,11 @@
 #include <vector>        // for vector
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
-#include <arcstk/logging.hpp>
+#include <arcstk/logging.hpp>     // for ARCS_LOG_DEBUG,...
 #endif
 
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#include "clitokens.hpp"    // for parse
+#include "clitokens.hpp"          // for parse
 #endif
 #ifndef __ARCSTOOLS_TOOLS_INPUT_HPP__
 #include "tools-input.hpp"        // for StringParser
