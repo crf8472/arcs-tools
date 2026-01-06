@@ -39,6 +39,9 @@
 #ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
 #include "tools-table.hpp"       // for CellDecorator
 #endif
+#ifndef __ARCSTOOLS_TOOLS_INPUT_HPP__
+#include "tools-input.hpp"       // for InputStringParser
+#endif
 
 
 namespace arcsapp

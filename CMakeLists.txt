@@ -104,6 +104,7 @@ set (PRIVATE_HEADERS
 	${PROJECT_SOURCE_DIR}/tools-dbar.hpp
 	${PROJECT_SOURCE_DIR}/tools-fs.hpp
 	${PROJECT_SOURCE_DIR}/tools-info.hpp
+	${PROJECT_SOURCE_DIR}/tools-input.hpp
 	${PROJECT_SOURCE_DIR}/tools-table.hpp
 	${PROJECT_SOURCE_DIR}/result.hpp
 	${PROJECT_SOURCE_DIR}/version.hpp
@@ -184,6 +185,7 @@ add_library (objects OBJECT
 	${PROJECT_SOURCE_DIR}/tools-dbar.cpp
 	${PROJECT_SOURCE_DIR}/tools-fs.cpp
 	${PROJECT_SOURCE_DIR}/tools-info.cpp
+	${PROJECT_SOURCE_DIR}/tools-input.cpp
 	${PROJECT_SOURCE_DIR}/tools-table.cpp
 	${PROJECT_SOURCE_DIR}/result.cpp
 	${PROJECT_BUILD_SOURCE_DIR}/version.cpp )

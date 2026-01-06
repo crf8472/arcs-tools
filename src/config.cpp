@@ -28,6 +28,9 @@
 #ifndef __ARCSTOOLS_CLITOKENS_HPP__
 #include "clitokens.hpp"    // for parse
 #endif
+#ifndef __ARCSTOOLS_TOOLS_INPUT_HPP__
+#include "tools-input.hpp"        // for StringParser
+#endif
 
 namespace arcsapp
 {
@@ -177,16 +180,6 @@ bool Options::no_arguments() const
 bool Options::empty() const
 {
 	return options_.empty() and arguments_.empty();
-}
-
-
-// StringParser
-
-
-std::any StringParser::parse(const std::string& s) const
-{
-	ARCS_LOG(DEBUG1) << "=> " << start_message();
-	return this->do_parse(s);
 }
 
 
