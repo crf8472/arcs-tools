@@ -80,7 +80,7 @@ inline std::vector<Token> get_tokens(const int argc,
 		{
 			tokens.emplace_back(c, v);
 		};
-	arcsapp::input::parse(argc, argv, supported, append_token);
+	arcsapp::cli::parse(argc, argv, supported, append_token);
 	return tokens;
 }
 

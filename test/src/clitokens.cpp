@@ -38,10 +38,10 @@ TEST_CASE ( "parse()", "[parse]" )
 	using arcsapp::Option;
 	using arcsapp::OptionRegistry;
 
-	using arcsapp::input::ARGUMENT;
-	using arcsapp::input::DASH;
-	using arcsapp::input::DDASH;
-	using arcsapp::input::CallSyntaxException;
+	using arcsapp::cli::ARGUMENT;
+	using arcsapp::cli::DASH;
+	using arcsapp::cli::DDASH;
+	using arcsapp::cli::CallSyntaxException;
 
 	/**
 	 * Mock for supported OptionCodes

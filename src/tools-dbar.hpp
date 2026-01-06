@@ -4,20 +4,17 @@
 /**
  * \file
  *
- * \brief Content and error handlers for ARParsers.
+ * \brief Content and error handlers for DBAR parsers.
  *
- * Provides parser handlers for ARParsers.
+ * Provides parser handlers for parsing DBAR files.
  */
 
-#include <cstddef>           // for size_t
 #include <cstdint>           // for uint32_t, uint8_t
 #include <memory>            // for unique_ptr
-#include <streambuf>         // for basic_streambuf
-#include <string>            // for string, char_traits
-#include <vector>            // for vector
+#include <string>            // for string
 
 #ifndef __LIBARCSTK_DBAR_HPP__
-#include <arcstk/dbar.hpp>
+#include <arcstk/dbar.hpp>   // for DBAR, ParseHandler, ParseErrorHandler
 #endif
 
 #ifndef __ARCSTOOLS_LAYOUTS_HPP__
@@ -51,71 +48,6 @@ using arcstk::ParseErrorHandler;
 
 // arcsapp
 using arcsapp::arid::ARIdLayout;
-
-/**
- * \brief Wrap a vector in an istream.
- */
-template<typename CharT, typename TraitsT = std::char_traits<CharT> >
-class VectorIStream : public std::basic_streambuf<CharT, TraitsT>
-{
-public:
-
-	/**
-	 * \brief Constructor
-	 *
-	 * \param[in] v The vector to wrap
-	 */
-	explicit VectorIStream(std::vector<CharT>& v)
-	{
-		this->setg(v.data(), v.data(), v.data() + v.size());
-	}
-};
-
-
-/**
- * \brief Buffered binary read access to stdin.
- */
-class StdIn final
-{
-public:
-
-	/**
-	 * \brief Constructor.
-	 *
-	 * \param[in] buf_size Buffer size in bytes
-	 */
-	explicit StdIn(const std::size_t buf_size);
-
-	/**
-	 * \brief Reads stdin bytes in binary mode to a vector<char>.
-	 *
-	 * \return Bytes from stdin
-	 */
-	std::vector<char> bytes();
-
-	/**
-	 * \brief Size of read buffer in bytes.
-	 *
-	 * \return Buffer size in bytes
-	 */
-	std::size_t buf_size() const;
-
-private:
-
-	/**
-	 * \brief Maximal number of kilobytes to accept as input.
-	 */
-	static const int MAX_KB_ = 50;
-
-	/**
-	 * \brief Bytes per read
-	 */
-	const std::size_t buf_size_;
-};
-
-
-unsigned read_from_stdin(const std::size_t amount_of_bytes, ParseHandler* p,
-		ParseErrorHandler* e);
 
 
 /**

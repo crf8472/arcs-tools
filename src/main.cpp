@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 	using arcsapp::ARCSTOOLS_BINARY_NAME;
 	using arcsapp::ARCSTOOLS_VERSION;
 	using arcsapp::ApplicationFactory;
-	using arcsapp::input::CallSyntaxException;
+	using arcsapp::cli::CallSyntaxException;
 
 	// Was binary called by some alias?
 

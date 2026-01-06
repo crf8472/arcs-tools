@@ -19,7 +19,6 @@
 #include <iterator>      // for end
 #include <map>           // for map
 #include <memory>        // for unique_ptr
-#include <ostream>       // for ostream
 #include <stdexcept>     // for runtime_error
 #include <string>        // for string
 #include <utility>       // for pair
@@ -41,6 +40,8 @@ namespace arcsapp
 inline namespace v_1_0_0
 {
 
+using input::StringParser;
+
 
 /**
  * \brief Reports a problem while defining the configuration.
@@ -61,7 +62,9 @@ public:
 class Options;
 
 /**
- * \brief Log an option object.
+ * \brief Log options and argumetns object on loglevel DEBUG1.
+ *
+ * This is intended to log the cli input as it was parsed.
  *
  * \param[in] options  Options to log
  * \param[in] registry Option data
@@ -217,7 +220,7 @@ struct OPTION
 	// This is not an enum but a struct to provide inheritance.
 	// Concrete configurators should be able to add their options.
 
-	static constexpr OptionCode NONE      = input::ARGUMENT; // MUST be 0
+	static constexpr OptionCode NONE      = cli::ARGUMENT; // MUST be 0
 	static constexpr OptionCode HELP      = 1;
 	static constexpr OptionCode VERSION   = 2;
 	static constexpr OptionCode VERBOSITY = 3;
@@ -637,48 +640,6 @@ protected:
 
 	static constexpr OptionCode SUBCLASS_BASE      = BASE + 4;
 };
-
-
-/**
- * \brief Parse \p list as a sequence of strings separated by \p delim and call
- * \p entry_hook on each of them.
- *
- * \param[in] list       Input string to parse as a list
- * \param[in] delim      Delimiter for list entries
- * \param[in] entry_hook Call this function on each entry
- */
-void parse_list(const std::string& list, const char delim,
-		std::function<void(const std::string& s)> entry_hook);
-
-
-/**
- * \brief Parse \p list as a sequence of strings separated by \p delim and
- * convert each entry by \p convert_func.
- *
- * \tparam T Type of requested objects
- *
- * \param[in] list         Input string to parse as a list
- * \param[in] delim        Delimiter for list entries
- * \param[in] convert_func Function to convert std::string to T
- *
- * \return Sequence of input values converted from strings
- */
-template <typename T>
-inline std::vector<T> parse_list_to_objects(const std::string& list,
-		const char delim,
-		const std::function<T(const std::string& s)>& convert_func)
-{
-	auto results = std::vector<T> {};
-	// TODO reserve default?
-
-	parse_list(list, delim,
-			[&convert_func,&results](const std::string& s)
-			{
-				results.emplace_back(convert_func(s));
-			});
-
-	return results;
-}
 
 
 } // namespace v_1_0_0

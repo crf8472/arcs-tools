@@ -18,14 +18,14 @@
 #include <vector>        // for vector
 
 #ifndef __LIBARCSTK_VERIFY_HPP__
-#include <arcstk/verify.hpp>
+#include <arcstk/verify.hpp>     // for ChecksumSource, ChecksumSourceOf
 #endif
 #ifndef __LIBARCSTK_DBAR_HPP__
-#include <arcstk/dbar.hpp>       // for DBAR, ChecksumSource, ChecksumSourceOf
+#include <arcstk/dbar.hpp>       // for DBAR
 #endif
 
 #ifndef __ARCSTOOLS_ANSI_HPP__
-#include "ansi.hpp"              // for Color
+#include "ansi.hpp"              // for Highlight, Color
 #endif
 #ifndef __ARCSTOOLS_APPCALC_HPP__
 #include "app-calc.hpp"          // for ARCalcConfigurator, CALC
@@ -61,10 +61,10 @@ using arcstk::ChecksumSourceOf;
 using arcstk::DBAR;
 using arcstk::ToC;
 using arcstk::VerificationResult;
-using arcstk::Verifier;
 
 // arcsapp
 using table::TableComposer;
+using input::InputStringParser;
 
 /**
  * \brief Type for list of reference values.
@@ -95,32 +95,6 @@ public:
 
 	using ChecksumSourceOf::ChecksumSourceOf;
 	using ChecksumSourceOf::operator=;
-};
-
-
-/**
- * \brief Parser for a dBAR response, either from a file or from stdin.
- *
- * Accepts binary input for option VERIFY::RESPONSEFILE.
- */
-class DBARParser final : public InputStringParser<DBAR>
-{
-	/**
-	 * \brief Load DBAR from file or from stdin.
-	 *
-	 * In case the filename is empty, input is expected from stdin.
-	 *
-	 * \param[in] file The name of the response file
-	 */
-	DBAR load_data(const std::string& file) const;
-
-	// InputStringParser
-
-	std::string start_message() const final;
-
-	DBAR do_parse_empty() const final;
-
-	DBAR do_parse_nonempty(const std::string& s) const final;
 };
 
 

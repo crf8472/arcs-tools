@@ -176,7 +176,7 @@ using OptionRegistry = std::vector<std::pair<OptionCode, Option>>;
 /**
  * \brief Parse the command line input.
  */
-namespace input
+namespace cli
 {
 
 
@@ -289,7 +289,7 @@ using option_callback =
 void parse(const int argc, const char* const* const argv,
 		const OptionRegistry& supported, const option_callback& pass_token);
 
-} // namespace input
+} // namespace cli
 } // namespace v_1_0_0
 } // namespace arcsapp
 

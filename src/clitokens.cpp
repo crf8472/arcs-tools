@@ -91,7 +91,7 @@ std::string Option::tokens_str() const
 }
 
 
-namespace input
+namespace cli
 {
 
 
@@ -416,7 +416,7 @@ void parse_shorthand(const char* const token, const char* const next,
 	} // while
 }
 
-} // namespace input
+} // namespace cli
 } // namespace v_1_0_0
 } // namespace arcsapp
 

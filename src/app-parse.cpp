@@ -44,6 +44,7 @@ const auto parse = RegisterApplicationType<ARParseApplication>("parse");
 
 // arcsapp
 using dbar::PrintParseHandler;
+using input::read_from_stdin;
 
 
 // ARParseApplication

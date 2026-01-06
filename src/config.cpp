@@ -10,12 +10,10 @@
 #include "config.hpp"
 #endif
 
-#include <algorithm>     // for find_if, replace
+#include <algorithm>     // for find_if
 #include <cstddef>       // for size_t
 #include <iomanip>       // for setw
 #include <memory>        // for unique_ptr, make_unique
-#include <ostream>       // for ostream, endl, operator<<
-#include <sstream>       // for istringstream
 #include <stdexcept>     // for runtime_error
 #include <string>        // for string
 #include <utility>       // for make_pair, move
@@ -219,9 +217,9 @@ std::unique_ptr<Options> Configurator::read_options(const int argc,
 			[&options](const OptionCode c, const std::string& v)
 			{
 				// Discard dashes
-				if (input::DASH == c || input::DDASH == c) { return; }
+				if (cli::DASH == c || cli::DDASH == c) { return; }
 
-				if (input::ARGUMENT == c)
+				if (cli::ARGUMENT == c)
 				{
 					options->put_argument(v);
 				} else
@@ -230,7 +228,7 @@ std::unique_ptr<Options> Configurator::read_options(const int argc,
 				}
 			};
 
-		input::parse(argc, argv, supported_options(), add_option);
+		cli::parse(argc, argv, supported_options(), add_option);
 	}
 
 	// --quiet is just an alias for -v 0.
@@ -415,43 +413,6 @@ constexpr OptionCode FORMATBASE::READERID;
 constexpr OptionCode FORMATBASE::PARSERID;
 
 constexpr OptionCode FORMATBASE::SUBCLASS_BASE;
-
-
-//
-
-
-void parse_list(const std::string& list, const char delim,
-		std::function<void(const std::string&)> value_hook)
-{
-	if (list.empty())
-	{
-		return;
-	}
-
-	auto in { list }; // copy
-
-	// replace delimiters by spaces
-	if (delim != ' ')
-	{
-		using std::begin;
-		using std::end;
-		std::replace(begin(in), end(in), delim, ' ');
-	}
-	// FIXME If the cli input list contains spaces, parsing will break
-	// Like "a:b,c:d e,f:g" (with quotes containing spaces)?
-	// Parsed as: a:b,c:d,e,f:g
-	// In this example, "c" will not have the value "d e" but "d" and "e" will
-	// be a name instead of a value having no value by itself.
-
-	auto input = std::istringstream { in };
-	auto value = std::string {};
-
-	while (input >> value)
-	{
-		value_hook(value);
-		value.clear();
-	}
-}
 
 } // namespace v_1_0_0
 } // namespace arcsapp

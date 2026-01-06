@@ -6,7 +6,6 @@
  * \brief Implements symbols from app-verify.hpp.
  */
 
-#include "clitokens.hpp"
 #ifndef __ARCSTOOLS_APPARVERIFY_HPP__
 #include "app-verify.hpp"
 #endif
@@ -30,10 +29,10 @@
 #include <arcstk/metadata.hpp>      // for ToC
 #endif
 #ifndef __LIBARCSTK_VERIFY_HPP__
-#include <arcstk/verify.hpp>
+#include <arcstk/verify.hpp>        // for Checksum, Checksums, ChecksumSource
 #endif
 #ifndef __LIBARCSTK_DBAR_HPP__
-#include <arcstk/dbar.hpp>
+#include <arcstk/dbar.hpp>          // for DBAR, DBARBuilder, DBARSource
 #endif
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>       // for ARCS_LOG_DEBUG, ARCS_LOG_ERROR
@@ -53,6 +52,9 @@
 #endif
 #ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
 #include "tools-dbar.hpp"           // for ContentHandler
+#endif
+#ifndef __ARCSTOOLS_TOOLS_INPUT_HPP__
+#include "tools-input.hpp"          // for DBARParser, EmptyChecksumSource
 #endif
 #ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
 #include "tools-table.hpp"          // for StringTableLayout, CellDecorator
@@ -74,8 +76,10 @@ const auto verify = RegisterApplicationType<ARVerifyApplication>("verify");
 }
 
 // libarcstk
+using arcstk::ARId;
 using arcstk::Checksum;
 using arcstk::Checksums;
+using arcstk::ChecksumSource;
 using arcstk::DBARBuilder;
 using arcstk::DBARSource;
 using arcstk::Logging;
@@ -88,7 +92,8 @@ using arid::ARIdLayout;
 using arid::ARIdTableLayout;
 using arid::RichARId;
 using calc::HexLayout;
-using dbar::read_from_stdin;
+using input::DBARParser;
+using input::EmptyChecksumSource;
 using table::ATTR;
 using table::AddField;
 using table::CellDecorator;
@@ -164,51 +169,6 @@ std::unique_ptr<ChecksumSource> RefvaluesSource::do_clone() const
 }
 
 
-// DBARParser
-
-
-DBAR DBARParser::load_data(const std::string& responsefile) const
-{
-	using input::CallSyntaxException;
-
-	auto builder = DBARBuilder {};
-
-	try
-	{
-		if (!responsefile.empty())
-		{
-			arcstk::parse_file(responsefile, &builder, nullptr);
-		} else
-		{
-			read_from_stdin(1024, &builder, nullptr);
-		}
-	} catch (const std::exception& e)
-	{
-		throw CallSyntaxException(e.what());
-	}
-
-	return builder.result();
-}
-
-
-std::string DBARParser::start_message() const
-{
-	return "AccurateRip reference checksums (=\"Theirs\")";
-}
-
-
-DBAR DBARParser::do_parse_empty() const
-{
-	return this->load_data("");
-}
-
-
-DBAR DBARParser::do_parse_nonempty(const std::string& s) const
-{
-	return this->load_data(s);
-}
-
-
 // ChecksumListParser
 
 
@@ -222,7 +182,7 @@ RefValuesType ChecksumListParser::do_parse_nonempty(
 		const std::string& checksum_list) const
 {
 	auto i = int { 0 };
-	auto refvals = parse_list_to_objects<uint32_t>(
+	auto refvals = input::parse_list_to_objects<uint32_t>(
 				checksum_list,
 				',',
 				[&i](const std::string& s) -> uint32_t
@@ -249,8 +209,8 @@ std::string ColorSpecParser::start_message() const
 
 ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 {
-	using input::CallSyntaxException;
-	using input::OP_VALUE;
+	using cli::CallSyntaxException;
+	using cli::OP_VALUE;
 
 	if (input == OP_VALUE::USE_DEFAULT)
 	{
@@ -262,7 +222,7 @@ ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 	ColorRegistry r;
 	r.clear(); // remove defaults, use only values from input string
 
-	parse_list(input, ',',
+	input::parse_list(input, ',',
 			[&r,&sep](const std::string& s) // parse a single TYPE:COLOR pair
 			{
 				const auto pos = s.find(sep);
@@ -346,7 +306,7 @@ constexpr OptionCode VERIFY::NOOUTPUT;
 
 void ARVerifyConfigurator::do_flush_local_options(OptionRegistry& r) const
 {
-	using input::OP_VALUE;
+	using cli::OP_VALUE;
 	using std::end;
 
 	r.insert(end(r),
