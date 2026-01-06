@@ -313,8 +313,7 @@ const uint32_t& ChecksumValuesSource::do_confidence(
 		const ChecksumSource::size_type /*block_idx*/,
 		const ChecksumSource::size_type /*t*/) const
 {
-	static const auto zero = uint32_t { 0 };
-	return zero;
+	return EmptyChecksumSource::zero;
 }
 
 
@@ -322,8 +321,7 @@ const uint32_t& ChecksumValuesSource::do_frame450_arcs_value(
 		const ChecksumSource::size_type /*block_idx*/,
 		const ChecksumSource::size_type /*t*/) const
 {
-	static const auto zero = uint32_t { 0 };
-	return zero;
+	return EmptyChecksumSource::zero;
 }
 
 

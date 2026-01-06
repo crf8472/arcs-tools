@@ -318,8 +318,6 @@ public:
  */
 class EmptyChecksumSource final : public ChecksumSource
 {
-	static const auto zero = uint32_t { 0 };
-
 	ARId do_id(const ChecksumSource::size_type block_idx) const final;
 	Checksum do_checksum(const ChecksumSource::size_type block_idx,
 			const ChecksumSource::size_type idx) const final;
@@ -336,6 +334,14 @@ class EmptyChecksumSource final : public ChecksumSource
 
 public:
 
+	/**
+	 * \brief Reference object for a checksum value of 0.
+	 */
+	static constexpr auto zero = uint32_t { 0 };
+
+	/**
+	 * \brief Default constructor.
+	 */
 	EmptyChecksumSource();
 };
 
