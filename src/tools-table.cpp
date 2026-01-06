@@ -18,7 +18,6 @@
 #include <type_traits>  // for underlying_type_t
 #include <utility>      // for move
 #include <vector>       // for vector
-#include <iostream>
 
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>  // for ARId
