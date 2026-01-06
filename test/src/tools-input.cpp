@@ -50,3 +50,35 @@ TEST_CASE ( "parse_list_to_objects()", "[parse_list_to_objects]" )
 
 }
 
+
+TEST_CASE ( "ChecksumValuesParser", "[checksumvaluesparser]" )
+{
+	using arcsapp::input::ChecksumValuesParser;
+	using arcsapp::input::ChecksumValuesType;
+
+	const auto parser = ChecksumValuesParser {};
+
+	SECTION ( "Parsing non-empty correct list works" )
+	{
+		const auto input = std::string {
+			"0xB89992E5,0x4F77EB03,0x56582282,0x9E2187F9,0x6BE71E50,"
+			"0x01E7235F,0xD8F7763C,0x8480223E,0x42C5061C,0x47A70F02,"
+			"0xBABF08CC,0x563EDCCB,0xAB123C7C,0xC65C20E4,0x58FC3C3E"
+		};
+
+		REQUIRE ( 164 == input.size() );
+
+		const auto ref_output = ChecksumValuesType {
+			0xB89992E5, 0x4F77EB03, 0x56582282, 0x9E2187F9, 0x6BE71E50,
+			0x01E7235F, 0xD8F7763C, 0x8480223E, 0x42C5061C, 0x47A70F02,
+			0xBABF08CC, 0x563EDCCB, 0xAB123C7C, 0xC65C20E4, 0x58FC3C3E
+		};
+
+		const auto output = parser.parse(input); // std::any
+
+		//CHECK ( output.size() == 1 );
+		//CHECK ( output.at( 1) == 0xB89992E5 );
+		//CHECK ( output.at(15) == 0x58FC3C3E );
+	}
+}
+
