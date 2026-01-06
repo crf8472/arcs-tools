@@ -124,15 +124,15 @@ ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 		return ColorRegistry{ /* default colors */ };
 	}
 
-	const std::string sep = ":"; // name-value separator
+	const std::string nv_sep = ":"; // name-value separator
 
 	ColorRegistry r;
 	r.clear(); // remove defaults, use only values from input string
 
 	input::parse_list(input, ',',
-			[&r,&sep](const std::string& s) // parse a single TYPE:COLOR pair
+			[&r,&nv_sep](const std::string& s) // parse a single TYPE:COLOR pair
 			{
-				const auto pos = s.find(sep);
+				const auto pos = s.find(nv_sep);
 
 				if (pos == std::string::npos)
 				{
@@ -154,7 +154,7 @@ ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 				};
 
 				const auto type   { uppercase(s.substr(0, pos)) };
-				const auto colors { uppercase(s.substr(pos + sep.length())) };
+				const auto colors { uppercase(s.substr(pos + nv_sep.length())) };
 
 				using ansi::get_color;
 
