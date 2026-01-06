@@ -94,108 +94,15 @@ using arid::RichARId;
 using calc::HexLayout;
 using input::DBARParser;
 using input::EmptyChecksumSource;
+using input::ChecksumValuesParser;
+using input::ChecksumValuesSource;
+using input::ChecksumValuesType;
 using table::ATTR;
 using table::AddField;
 using table::CellDecorator;
 using table::FieldCreator;
 using table::RowTableComposerBuilder;
 using table::TableComposer;
-
-
-// RefvaluesSource
-
-
-ARId RefvaluesSource::do_id(const ChecksumSource::size_type /*block_idx*/) const
-{
-	return arcstk::EmptyARId;
-}
-
-
-Checksum RefvaluesSource::do_checksum(const ChecksumSource::size_type /*b*/,
-		const ChecksumSource::size_type idx) const
-{
-	return source()->at(idx);
-}
-
-
-const uint32_t& RefvaluesSource::do_arcs_value(
-		const ChecksumSource::size_type /*b*/,
-		const ChecksumSource::size_type track) const
-{
-	return source()->at(track);
-}
-
-
-const uint32_t& RefvaluesSource::do_confidence(
-		const ChecksumSource::size_type /*b*/,
-		const ChecksumSource::size_type /*t*/) const
-{
-	static const auto zero = uint32_t { 0 };
-	return zero;
-}
-
-
-const uint32_t& RefvaluesSource::do_frame450_arcs_value(
-		const ChecksumSource::size_type /*b*/,
-		const ChecksumSource::size_type /*t*/) const
-{
-	static const auto zero = uint32_t { 0 };
-	return zero;
-}
-
-
-std::size_t RefvaluesSource::do_size(
-		const ChecksumSource::size_type block_idx) const
-{
-	if (block_idx > 0)
-	{
-		throw std::invalid_argument("Only index 0 is legal, cannot access index"
-				+ std::to_string(block_idx));
-	}
-
-	return source()->size();
-}
-
-
-std::size_t RefvaluesSource::do_size() const
-{
-	return 1;
-}
-
-
-std::unique_ptr<ChecksumSource> RefvaluesSource::do_clone() const
-{
-	return std::make_unique<RefvaluesSource>(*this);
-}
-
-
-// ChecksumListParser
-
-
-std::string ChecksumListParser::start_message() const
-{
-	return "List of local reference checksums (=\"Theirs\")";
-}
-
-
-RefValuesType ChecksumListParser::do_parse_nonempty(
-		const std::string& checksum_list) const
-{
-	auto i = int { 0 };
-	auto refvals = input::parse_list_to_objects<uint32_t>(
-				checksum_list,
-				',',
-				[&i](const std::string& s) -> uint32_t
-				{
-					const uint32_t value = std::stoul(s, nullptr, 16);
-					ARCS_LOG(DEBUG1) << "Parse checksum: " << Checksum { value }
-						<< " (Track " << ++i << ")";
-					return value;
-				});
-
-	ARCS_LOG(DEBUG1) << "Parsed " << refvals.size() << " checksums";
-	return refvals;
-}
 
 
 // ColorSpecParser
@@ -527,7 +434,7 @@ OptionParsers ARVerifyConfigurator::do_parser_list() const
 		{ VERIFY::RESPONSEFILE,
 			[]{ return std::make_unique<DBARParser>(); } },
 		{ VERIFY::REFVALUES,
-			[]{ return std::make_unique<ChecksumListParser>(); } },
+			[]{ return std::make_unique<ChecksumValuesParser>(); } },
 		{ VERIFY::COLORED,
 			[]{ return std::make_unique<ColorSpecParser>(); } }
 	};
@@ -539,7 +446,7 @@ void ARVerifyConfigurator::do_validate(const Configuration& c) const
 	// No reference checksums at all? => Error
 
 	if (c.object<DBAR>(VERIFY::RESPONSEFILE).size() == 0
-		&& c.object<RefValuesType>(VERIFY::REFVALUES).empty())
+		&& c.object<ChecksumValuesType>(VERIFY::REFVALUES).empty())
 	{
 		throw std::runtime_error(
 				"No reference checksums for verification available.");
@@ -1127,30 +1034,37 @@ void ColorizingVerifyTableCreator::set_color_bg(DecorationType d, Color c)
 }
 
 
-// SourceCreator
+// select_reference_source
 
 
-bool SourceCreator::reference_is_dbar(
-			const DBAR& dBAR, const RefValuesType& /*refvalues*/) const
-{
-	return dBAR.size() > 0;
-}
+/**
+ * \internal
+ *
+ * \brief Worker: Select preferred input and create reference object from it.
+ *
+ * Prefer any non-empty DBAR object over any standalone ARCS values.
+ *
+ * \param[in] dBAR      DBAR object
+ * \param[in] refvalues Reference ARCSs object
+ *
+ * \return The reference source for the verification
+ */
+std::unique_ptr<const ChecksumSource> select_reference_source(const DBAR& dBAR,
+		const ChecksumValuesType& refvalues);
 
-
-std::unique_ptr<const ChecksumSource>
-SourceCreator::create_reference_source(const DBAR& dBAR,
-		const RefValuesType& refvalues) const
+std::unique_ptr<const ChecksumSource> select_reference_source(const DBAR& dBAR,
+		const ChecksumValuesType& refvalues)
 {
 	std::unique_ptr<const ChecksumSource> ref_src;
 
-	if (reference_is_dbar(dBAR, refvalues))
+	if (dBAR.size() > 0) // For any non-empty DBAR, prefer DBAR over values
 	{
 		ref_src = std::make_unique<DBARSource>(&dBAR);
 	} else
 	{
 		if (!refvalues.empty())
 		{
-			ref_src = std::make_unique<RefvaluesSource>(&refvalues);
+			ref_src = std::make_unique<ChecksumValuesSource>(&refvalues);
 		} else
 		{
 			ref_src = std::make_unique<EmptyChecksumSource>();
@@ -1159,14 +1073,6 @@ SourceCreator::create_reference_source(const DBAR& dBAR,
 	}
 
 	return ref_src;
-}
-
-
-std::unique_ptr<const ChecksumSource>
-SourceCreator::operator()(const DBAR& dBAR, const RefValuesType& refvalues)
-	const
-{
-	return create_reference_source(dBAR, refvalues);
 }
 
 
@@ -1477,11 +1383,10 @@ std::unique_ptr<Configurator> ARVerifyApplication::do_create_configurator()
 auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	-> std::pair<int, std::unique_ptr<Result>>
 {
-	const auto dbar   = config.object<DBAR>(VERIFY::RESPONSEFILE);
-	const auto refvls = config.object<RefValuesType>(VERIFY::REFVALUES);
-
-	const auto get_src = SourceCreator {};
-	const auto ref_source { get_src(dbar, refvls) };
+	const auto ref_source { select_reference_source(
+			config.object<DBAR>(VERIFY::RESPONSEFILE),
+			config.object<ChecksumValuesType>(VERIFY::REFVALUES)
+	) };
 
 	ARCS_LOG_DEBUG << "Reference checksum source contains "
 		<< ref_source->size() << "blocks of checksums";

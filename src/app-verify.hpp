@@ -66,51 +66,6 @@ using arcstk::VerificationResult;
 using table::TableComposer;
 using input::InputStringParser;
 
-/**
- * \brief Type for list of reference values.
- */
-using RefValuesType = std::vector<uint32_t>;
-
-
-/**
- * \brief Access list of reference values by block and index.
- */
-class RefvaluesSource final : public ChecksumSourceOf<RefValuesType>
-{
-	ARId do_id(const ChecksumSource::size_type block_idx) const final;
-	Checksum do_checksum(const ChecksumSource::size_type block_idx,
-			const ChecksumSource::size_type idx) const final;
-	const uint32_t& do_arcs_value(const ChecksumSource::size_type block_idx,
-			const ChecksumSource::size_type track_idx) const final;
-	const uint32_t& do_confidence(const ChecksumSource::size_type block_idx,
-			const ChecksumSource::size_type track_idx) const final;
-	const uint32_t& do_frame450_arcs_value(
-			const ChecksumSource::size_type block_idx,
-			const ChecksumSource::size_type track_idx) const final;
-	std::size_t do_size(const ChecksumSource::size_type block_idx) const final;
-	std::size_t do_size() const final;
-	std::unique_ptr<ChecksumSource> do_clone() const final;
-
-public:
-
-	using ChecksumSourceOf::ChecksumSourceOf;
-	using ChecksumSourceOf::operator=;
-};
-
-
-/**
- * \brief Parser for a checksum list.
- *
- * Accepts a comma-separated list of hexadecimal values as input for option
- * VERIFY::REFVALUES.
- */
-class ChecksumListParser final : public InputStringParser<RefValuesType>
-{
-	std::string start_message() const final;
-
-	RefValuesType do_parse_nonempty(const std::string& s) const final;
-};
-
 
 class ColorRegistry;
 
@@ -684,51 +639,6 @@ public:
 	 * \param[in] c  Color for coloring output of type \p d.
 	 */
 	void set_color_bg(DecorationType d, Color c);
-};
-
-
-/**
- * \brief Functor to create a ChecksumSource from input objects.
- */
-class SourceCreator
-{
-	/**
-	 * \brief Determine whether the DBAR object or the Refvalues are used.
-	 *
-	 * Use this function whenever to decide which source to choose or which
-	 * source was actually chosen.
-	 *
-	 * \param[in] dBAR      DBAR object
-	 * \param[in] refvalues Reference value list
-	 *
-	 * \return TRUE iff DBAR is the actual reference, otherwise FALSE
-	 */
-	bool reference_is_dbar(
-			const DBAR& dBAR, const RefValuesType& refvalues) const;
-
-	/**
-	 * \brief Create the reference object from the input.
-	 *
-	 * \param[in] dBAR      DBAR object
-	 * \param[in] refvalues Refvalues object
-	 *
-	 * \return The reference source for the verification
-	 */
-	std::unique_ptr<const ChecksumSource> create_reference_source(
-			const DBAR& dBAR, const RefValuesType& refvalues) const;
-
-public:
-
-	/**
-	 * \brief Create the reference object from the input.
-	 *
-	 * \param[in] dBAR      DBAR object
-	 * \param[in] refvalues Refvalues object
-	 *
-	 * \return The reference source for the verification
-	 */
-	std::unique_ptr<const ChecksumSource> operator()(
-			const DBAR& dBAR, const RefValuesType& refvalues) const;
 };
 
 

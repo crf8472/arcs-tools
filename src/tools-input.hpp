@@ -16,7 +16,7 @@
 #include <arcstk/dbar.hpp>        // for DBAR, ParseHandler, ParseErrorHandler
 #endif
 #ifndef __LIBARCSTK_VERIFY_HPP__
-#include <arcstk/verify.hpp>      // for ChecksumSource
+#include <arcstk/verify.hpp>      // for ChecksumSource, ChecksumSourceOf
 #endif
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>     // for ARCS_LOG,...
@@ -32,6 +32,7 @@ namespace input
 using arcstk::ARId;
 using arcstk::Checksum;
 using arcstk::ChecksumSource;
+using arcstk::ChecksumSourceOf;
 using arcstk::DBAR;
 
 
@@ -237,6 +238,7 @@ class InputStringParser : public StringParser
 	}
 };
 
+
 /**
  * \brief Parser for a dBAR response, either from a file or from stdin.
  *
@@ -260,6 +262,54 @@ class DBARParser final : public InputStringParser<DBAR>
 	DBAR do_parse_empty() const final;
 
 	DBAR do_parse_nonempty(const std::string& s) const final;
+};
+
+
+/**
+ * \brief Type for list of ARCS values.
+ */
+using ChecksumValuesType = std::vector<uint32_t>;
+
+
+/**
+ * \brief Parser for a list of ARCS values.
+ *
+ * Accepts a comma-separated list of 32 bit hexadecimal values as input.
+ * Does not support blocks, i.e. all input values are considered as part of
+ * block 0. The class is therefore only suitable to represent a single sequence
+ * of contiguous tracks of a single album.
+ */
+class ChecksumValuesParser final : public InputStringParser<ChecksumValuesType>
+{
+	std::string start_message() const final;
+
+	ChecksumValuesType do_parse_nonempty(const std::string& s) const final;
+};
+
+
+/**
+ * \brief Compatibility wrapper for a list of ARCS values.
+ */
+class ChecksumValuesSource final : public ChecksumSourceOf<ChecksumValuesType>
+{
+	ARId do_id(const ChecksumSource::size_type block_idx) const final;
+	Checksum do_checksum(const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type idx) const final;
+	const uint32_t& do_arcs_value(const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type track_idx) const final;
+	const uint32_t& do_confidence(const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type track_idx) const final;
+	const uint32_t& do_frame450_arcs_value(
+			const ChecksumSource::size_type block_idx,
+			const ChecksumSource::size_type track_idx) const final;
+	std::size_t do_size(const ChecksumSource::size_type block_idx) const final;
+	std::size_t do_size() const final;
+	std::unique_ptr<ChecksumSource> do_clone() const final;
+
+public:
+
+	using ChecksumSourceOf::ChecksumSourceOf;
+	using ChecksumSourceOf::operator=;
 };
 
 

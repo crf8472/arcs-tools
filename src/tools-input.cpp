@@ -254,6 +254,104 @@ DBAR DBARParser::do_parse_nonempty(const std::string& s) const
 }
 
 
+// ChecksumValuesParser
+
+
+std::string ChecksumValuesParser::start_message() const
+{
+	return "List of local reference checksums (=\"Theirs\")";
+}
+
+
+ChecksumValuesType ChecksumValuesParser::do_parse_nonempty(
+		const std::string& checksum_list) const
+{
+	auto i = int { 0 };
+	auto refvals = input::parse_list_to_objects<uint32_t>(
+				checksum_list,
+				',',
+				[&i](const std::string& s) -> uint32_t
+				{
+					const uint32_t value = std::stoul(s, nullptr, 16);
+					ARCS_LOG(DEBUG1) << "Parse checksum: " << Checksum { value }
+						<< " (Track " << ++i << ")";
+					return value;
+				});
+
+	ARCS_LOG(DEBUG1) << "Parsed " << refvals.size() << " checksums";
+	return refvals;
+}
+
+
+// ChecksumValuesSource
+
+
+ARId ChecksumValuesSource::do_id(const ChecksumSource::size_type /*block_idx*/)
+	const
+{
+	return arcstk::EmptyARId;
+}
+
+
+Checksum ChecksumValuesSource::do_checksum(
+		const ChecksumSource::size_type /*block_idx*/,
+		const ChecksumSource::size_type track_idx) const
+{
+	return source()->at(track_idx);
+}
+
+
+const uint32_t& ChecksumValuesSource::do_arcs_value(
+		const ChecksumSource::size_type /*block_idx*/,
+		const ChecksumSource::size_type track_idx) const
+{
+	return source()->at(track_idx);
+}
+
+
+const uint32_t& ChecksumValuesSource::do_confidence(
+		const ChecksumSource::size_type /*block_idx*/,
+		const ChecksumSource::size_type /*t*/) const
+{
+	static const auto zero = uint32_t { 0 };
+	return zero;
+}
+
+
+const uint32_t& ChecksumValuesSource::do_frame450_arcs_value(
+		const ChecksumSource::size_type /*block_idx*/,
+		const ChecksumSource::size_type /*t*/) const
+{
+	static const auto zero = uint32_t { 0 };
+	return zero;
+}
+
+
+std::size_t ChecksumValuesSource::do_size(
+		const ChecksumSource::size_type block_idx) const
+{
+	if (block_idx > 0)
+	{
+		throw std::invalid_argument("Only index 0 is legal, cannot access index"
+				+ std::to_string(block_idx));
+	}
+
+	return source()->size();
+}
+
+
+std::size_t ChecksumValuesSource::do_size() const
+{
+	return 1;
+}
+
+
+std::unique_ptr<ChecksumSource> ChecksumValuesSource::do_clone() const
+{
+	return std::make_unique<ChecksumValuesSource>(*this);
+}
+
+
 // EmptyChecksumSource
 
 
