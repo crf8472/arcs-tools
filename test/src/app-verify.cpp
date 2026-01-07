@@ -252,10 +252,22 @@ TEST_CASE ( "ColorSpecParser", "[colorspecparser]" )
 	{
 		const auto r1 = std::any_cast<ColorRegistry>(p.parse(
 					"MINE:FG_GREEN+BG_YELLOW"));
+		const auto r2 = std::any_cast<ColorRegistry>(p.parse(
+					"MINE:FG_GREEN+BG_YELLOW,MATCH:FG_BLUE,MISMATCH:FG_CYAN+BG_BLACK"));
 
 		CHECK ( r1.has(DecorationType::MINE) );
 		CHECK ( Color::FG_GREEN   == r1.get_fg(DecorationType::MINE) );
 		CHECK ( Color::BG_YELLOW  == r1.get_bg(DecorationType::MINE) );
+
+		CHECK ( r2.has(DecorationType::MINE) );
+		CHECK ( r2.has(DecorationType::MATCH) );
+		CHECK ( r2.has(DecorationType::MISMATCH) );
+		CHECK ( Color::FG_GREEN   == r2.get_fg(DecorationType::MINE) );
+		CHECK ( Color::BG_YELLOW  == r2.get_bg(DecorationType::MINE) );
+		CHECK ( Color::FG_BLUE    == r2.get_fg(DecorationType::MATCH) );
+		CHECK ( Color::BG_DEFAULT == r2.get_bg(DecorationType::MATCH) );
+		CHECK ( Color::FG_CYAN    == r2.get_fg(DecorationType::MISMATCH) );
+		CHECK ( Color::BG_BLACK   == r2.get_bg(DecorationType::MISMATCH) );
 	}
 }
 
