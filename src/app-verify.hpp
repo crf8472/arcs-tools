@@ -90,7 +90,7 @@ class ColorSpecParser final : public InputStringParser<ColorRegistry>
  *
  * Access options for verify exclusively by this class, not by CALCBASE.
  */
-class VERIFY : public CALCBASE
+class VERIFY final : public CALCBASE
 {
 	static constexpr auto& BASE = CALCBASE::SUBCLASS_BASE;
 

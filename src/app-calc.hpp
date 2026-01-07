@@ -121,7 +121,7 @@ protected:
  *
  * Access options for verify exclusively by this class, not by CALCBASE.
  */
-class CALC : public CALCBASE
+class CALC final : public CALCBASE
 {
 	static constexpr auto& BASE = CALCBASE::SUBCLASS_BASE;
 

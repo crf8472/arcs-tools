@@ -229,11 +229,9 @@ struct OPTION
 	static constexpr OptionCode OUTFILE   = 6;
 	// BASE will be 7 for subclasses to start with
 
-// TODO SUBCLASS_BASE would be systematic / wouldn't need Configuratior::BASE()
-//
-// protected:
-//
-// 	static constexpr OptionCode SUBCLASS_BASE = BASE + 7;
+protected:
+
+	static constexpr OptionCode SUBCLASS_BASE = 7;
 };
 
 
@@ -364,7 +362,7 @@ public:
 	 * \see CALCBASE
 	 * \see FORMATBASE
 	 */
-	static constexpr OptionCode BASE() { return 7/* last OPTION + 1 */; };
+	//static constexpr OptionCode BASE() { return 7/* last OPTION + 1 */; };
 
 	/**
 	 * \brief Load the specified options into a Configuration.
@@ -618,11 +616,11 @@ private:
  * Those options can be implemented by all applications that use libarcsdec
  * provided parsers and readers.
  */
-struct FORMATBASE
+struct FORMATBASE : private OPTION
 {
 private:
 
-	static constexpr OptionCode BASE = Configurator::BASE();
+	static constexpr auto& BASE = OPTION::SUBCLASS_BASE;
 
 public:
 

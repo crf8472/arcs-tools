@@ -34,7 +34,7 @@ class Result;
 /**
  * \brief Configuration options for ARIdApplications.
  */
-class ARIdOptions : public FORMATBASE
+class ARIdOptions final : public FORMATBASE
 {
 	static constexpr auto& BASE = FORMATBASE::SUBCLASS_BASE;
 
