@@ -15,7 +15,7 @@ namespace arcsdec
 {
 inline namespace v_1_0_0
 {
-class FileReaderDescriptor;
+class FileReaderDescriptor; // Add this to arcsdec
 } // namespace v_1_0_0
 } // namespace arcsdec
 
@@ -24,6 +24,13 @@ namespace arcsapp
 {
 inline namespace v_1_0_0
 {
+
+/**
+ * \brief Tools for informing about the capabilities of this binary.
+ */
+namespace info
+{
+
 // libarcsdec
 using arcsdec::FileReaderDescriptor;
 
@@ -144,6 +151,7 @@ public:
 	static const StringTable& toc();
 };
 
+} // namespace info
 } // namespace v_1_0_0
 } // namespace arcsapp
 

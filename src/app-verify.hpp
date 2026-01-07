@@ -63,6 +63,7 @@ using arcstk::ToC;
 using arcstk::VerificationResult;
 
 // arcsapp
+using table::CellDecorator;
 using table::TableComposer;
 using input::InputStringParser;
 

@@ -27,7 +27,7 @@ inline namespace v_1_0_0
 {
 
 /**
- * \brief Tools and helpers for managing ARIds.
+ * \brief Tools for managing ARIds.
  */
 namespace arid
 {

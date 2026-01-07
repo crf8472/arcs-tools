@@ -16,9 +16,12 @@ namespace arcsapp
 {
 inline namespace v_1_0_0
 {
+
+/**
+ * \brief Validation tools.
+ */
 namespace valid
 {
-
 
 /**
  * \brief Encapsulate a single validation.

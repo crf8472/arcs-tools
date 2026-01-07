@@ -43,14 +43,13 @@ namespace arcsapp
 {
 inline namespace v_1_0_0
 {
+namespace dbar
+{
 
 // libarcstk
 using arcstk::ARId;
 using arcstk::DBARTriplet;
 using arcstk::parse_stream;
-
-namespace dbar
-{
 
 // arcsapp
 using arcsapp::arid::ARIdTableLayout;

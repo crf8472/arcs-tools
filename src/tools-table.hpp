@@ -52,6 +52,12 @@ namespace arid {
 	class RichARId;
 }
 
+/**
+ * \brief Construct a table of strings.
+ */
+namespace table
+{
+
 using arcstk::AudioSize;
 
 // arcsapp
@@ -61,10 +67,6 @@ using table::CellDecorator;
 using table::DecoratedStringTable;
 using table::PrintableTable;
 using table::StringTableLayout;
-
-
-namespace table
-{
 
 /**
  * \brief Interface for composing a container object holding records.

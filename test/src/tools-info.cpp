@@ -17,7 +17,7 @@
 
 TEST_CASE ( "AvailableFileReaders", "[availablefilereaders]" )
 {
-	using arcsapp::AvailableFileReaders;
+	using arcsapp::info::AvailableFileReaders;
 
 	SECTION ( "At least one reader for audio and one reader for meta" )
 	{

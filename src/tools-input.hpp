@@ -26,6 +26,10 @@ namespace arcsapp
 {
 inline namespace v_1_0_0
 {
+
+/**
+ * \brief Tools for parsing and managing input.
+ */
 namespace input
 {
 

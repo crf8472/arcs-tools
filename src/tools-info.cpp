@@ -31,6 +31,8 @@ namespace arcsapp
 {
 inline namespace v_1_0_0
 {
+namespace info
+{
 
 using table::StringTableLayout;
 
@@ -254,6 +256,7 @@ const StringTable& AvailableFileReaders::toc()
 	return table;
 }
 
+} // namespace info
 } // namespace v_1_0_0
 } // namespace arcsapp
 

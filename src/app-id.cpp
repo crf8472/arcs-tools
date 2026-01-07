@@ -59,6 +59,7 @@ const auto id = RegisterApplicationType<ARIdApplication>("id");
 
 // libarcstk
 using arcstk::ARId;
+using arcstk::AudioSize;
 using arcstk::make_arid;
 
 // libarcsdec
@@ -66,7 +67,9 @@ using arcsdec::AudioInfo;
 using arcsdec::ToCParser;
 
 // arcsapp
+using arid::ARIdLayout;
 using arid::ARIdTableLayout;
+using arid::RichARId;
 
 
 // ARIdConfigurator

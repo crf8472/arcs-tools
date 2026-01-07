@@ -487,12 +487,12 @@ int ARCalcApplicationBase::do_run(const Configuration& config)
 
 	if (config.is_set(FORMATBASE::LIST_TOC_FORMATS))
 	{
-		Output::instance().output(AvailableFileReaders::toc());
+		Output::instance().output(info::AvailableFileReaders::toc());
 	}
 
 	if (config.is_set(FORMATBASE::LIST_AUDIO_FORMATS))
 	{
-		Output::instance().output(AvailableFileReaders::audio());
+		Output::instance().output(info::AvailableFileReaders::audio());
 	}
 
 	return EXIT_SUCCESS;

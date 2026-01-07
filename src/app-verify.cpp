@@ -104,6 +104,7 @@ using table::AddField;
 using table::CellDecorator;
 using table::FieldCreator;
 using table::RowTableComposerBuilder;
+using table::StringTableLayout;
 using table::TableComposer;
 
 
