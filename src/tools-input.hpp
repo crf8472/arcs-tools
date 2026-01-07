@@ -152,11 +152,22 @@ inline std::vector<T> parse_list_to_objects(const std::string& list,
 	auto results = std::vector<T> {};
 	// TODO reserve default?
 
+	ARCS_LOG(DEBUG2) << "Split input string by delimiter '" << delim << "'";
+
+	auto counter = int { 0 };
 	parse_list(list, delim,
-			[&convert_func,&results](const std::string& s)
+			[&convert_func, &results, &counter](const std::string& s)
 			{
+				ARCS_LOG(DEBUG1) << "Parse input string part "
+					<< std::setw(2) << ++counter
+					<< ": '"
+					<< s
+					<< "'";
 				results.emplace_back(convert_func(s));
 			});
+
+	ARCS_LOG(DEBUG1) << "Parsed " << results.size()
+		<< " parts of the input string";
 
 	return results;
 }

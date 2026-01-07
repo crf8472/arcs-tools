@@ -27,7 +27,7 @@
 #include <ostream>       // for ostream, endl, operator<<
 #include <sstream>       // for istringstream, ostringstream
 #include <stdexcept>     // for runtime_error
-#include <string>        // for string
+#include <string>        // for string, stoul, getline
 
 #ifndef __LIBARCSTK_CHECKSUM_HPP__
 #include <arcstk/checksum.hpp>    // for Checksum, EmptyChecksum
@@ -165,36 +165,38 @@ unsigned read_from_stdin(const std::size_t amount_of_bytes, ParseHandler* p,
 // parse_list
 
 
-void parse_list(const std::string& list, const char delim,
+void parse_list(const std::string& input, const char delim,
 		std::function<void(const std::string&)> value_hook)
 {
-	if (list.empty())
+	if (input.empty())
 	{
 		return;
 	}
 
-	auto in { list }; // copy
-
-	// replace delimiters by spaces
-	if (delim != ' ')
+	if (input.length() > 500)  // TODO magic number, just give up on big input
 	{
-		using std::begin;
-		using std::end;
-		std::replace(begin(in), end(in), delim, ' ');
+		return;
 	}
-	// FIXME If the cli input list contains spaces, parsing will break
-	// Like "a:b,c:d e,f:g" (with quotes containing spaces)?
-	// Parsed as: a:b,c:d,e,f:g
-	// In this example, "c" will not have the value "d e" but "d" and "e" will
-	// be a name instead of a value having no value by itself.
 
-	auto input = std::istringstream { in };
-	auto value = std::string {};
+	auto input_stream = std::istringstream { input };
+	auto string_part  = std::string {};
 
-	while (input >> value)
+	while ( std::getline( input_stream, string_part, delim ) )
 	{
-		value_hook(value);
-		value.clear();
+		value_hook(string_part);
+	}
+
+	if (input_stream.eof())
+	{
+		ARCS_LOG(DEBUG2) << "Input stream hit eof, parsing ended normally";
+		return;
+	}
+
+	if (input_stream.fail())
+	{
+		ARCS_LOG_WARNING << "Input stream failed!"
+			<< " Maybe not all parts have been parsed. Expect problems.";
+		// TODO throw something
 	}
 }
 
@@ -266,20 +268,13 @@ std::string ChecksumValuesParser::start_message() const
 ChecksumValuesType ChecksumValuesParser::do_parse_nonempty(
 		const std::string& checksum_list) const
 {
-	auto i = int { 0 };
-	auto refvals = input::parse_list_to_objects<uint32_t>(
+	return input::parse_list_to_objects<uint32_t>(
 				checksum_list,
 				',',
-				[&i](const std::string& s) -> uint32_t
+				[](const std::string& s) -> uint32_t
 				{
-					const uint32_t value = std::stoul(s, nullptr, 16);
-					ARCS_LOG(DEBUG1) << "Parse checksum: " << Checksum { value }
-						<< " (Track " << ++i << ")";
-					return value;
+					return std::stoul(s, nullptr, 16);
 				});
-
-	ARCS_LOG(DEBUG1) << "Parsed " << refvals.size() << " checksums";
-	return refvals;
 }
 
 
@@ -330,8 +325,9 @@ std::size_t ChecksumValuesSource::do_size(
 {
 	if (block_idx > 0)
 	{
+		using std::to_string;
 		throw std::invalid_argument("Only index 0 is legal, cannot access index"
-				+ std::to_string(block_idx));
+				+ to_string(block_idx));
 	}
 
 	return source()->size();
