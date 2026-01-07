@@ -20,6 +20,20 @@ TEST_CASE ( "ARIdTableLayout", "[aridtablelayout]" )
 
 	ARIdTableLayout lyt1(false, false, true, false, false, false, false, false);
 
+	SECTION ( "Default construction works" )
+	{
+		const auto lyt = ARIdTableLayout {};
+
+		CHECK ( lyt.fieldlabels() );
+		CHECK ( lyt.has_property(ARID_FLAG::ID) );
+		CHECK ( lyt.has_property(ARID_FLAG::URL) );
+		CHECK ( lyt.has_property(ARID_FLAG::FILENAME) );
+		CHECK ( lyt.has_property(ARID_FLAG::TRACKS) );
+		CHECK ( lyt.has_property(ARID_FLAG::ID1) );
+		CHECK ( lyt.has_property(ARID_FLAG::ID2) );
+		CHECK ( lyt.has_property(ARID_FLAG::CDDBID) );
+	}
+
 	SECTION ( "Constructor flags are correctly set" )
 	{
 		CHECK ( not lyt1.fieldlabels() );
