@@ -224,3 +224,38 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 	}
 }
 
+
+TEST_CASE ( "ColorSpecParser", "[colorspecparser]" )
+{
+	using arcsapp::ColorSpecParser;
+	using arcsapp::ColorRegistry;
+	using arcsapp::ansi::Color;
+	using arcsapp::DecorationType;
+
+	const auto p = ColorSpecParser {};
+
+	SECTION ( "Parsing of single color works" )
+	{
+		const auto r1 = std::any_cast<ColorRegistry>(p.parse("MINE:FG_GREEN"));
+		const auto r2 = std::any_cast<ColorRegistry>(p.parse("MATCH:BG_CYAN"));
+
+		CHECK ( r1.has(DecorationType::MINE) );
+		CHECK ( Color::FG_GREEN   == r1.get_fg(DecorationType::MINE) );
+		CHECK ( Color::BG_DEFAULT == r1.get_bg(DecorationType::MINE) );
+
+		CHECK ( r2.has(DecorationType::MATCH) );
+		CHECK ( Color::FG_DEFAULT == r2.get_fg(DecorationType::MATCH) );
+		CHECK ( Color::BG_CYAN    == r2.get_bg(DecorationType::MATCH) );
+	}
+
+	SECTION ( "Parsing of color pair works" )
+	{
+		const auto r1 = std::any_cast<ColorRegistry>(p.parse(
+					"MINE:FG_GREEN+BG_YELLOW"));
+
+		CHECK ( r1.has(DecorationType::MINE) );
+		CHECK ( Color::FG_GREEN   == r1.get_fg(DecorationType::MINE) );
+		CHECK ( Color::BG_YELLOW  == r1.get_bg(DecorationType::MINE) );
+	}
+}
+
