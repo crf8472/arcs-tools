@@ -168,18 +168,20 @@ bool ARIdApplication::do_calculation_requested(const Configuration& config)
 auto ARIdApplication::do_run_calculation(const Configuration& config) const
 	-> std::pair<int, std::unique_ptr<Result>>
 {
-	// Compute requested values
-
 	const auto metafilename = config.argument(0);
-	auto audiofilename      = config.value(ARIdOptions::AUDIOFILE);
 
-	// Step 1: update selection and parse metafile
+	// Step 1: Parse metadata to acquire ToC
 
-	auto toc = std::unique_ptr<ToC>{};
+	auto toc = std::unique_ptr<ToC> {};
 
-	{
-		auto parser = ToCParser{};
-		auto toc_selection { create_selection(ARIdOptions::PARSERID, config) };
+	{ // scope
+
+		auto parser = ToCParser {};
+
+		const auto toc_selection {
+			create_selection(ARIdOptions::PARSERID, config)
+		};
+
 		if (toc_selection)
 		{
 			parser.set_selection(toc_selection.get());
@@ -188,9 +190,12 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 		toc = parser.parse(metafilename);
 	}
 
-	// Step 2: Optionally use audiofile and calculate ARId
+	if (!toc) { this->fatal_error("Could not acquire ToC."); }
 
-	std::unique_ptr<ARId> arid = nullptr;
+
+	// Step 2: Calculate ARId by optionally using the audiofile
+
+	auto arid = std::unique_ptr<ARId>{};
 
 	if (toc->complete())
 	{
@@ -200,7 +205,9 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 
 	} else
 	{
-		// Audio file is required
+		// Audio file is required to get the leadout
+
+		auto audiofilename = config.value(ARIdOptions::AUDIOFILE);
 
 		if (audiofilename.empty())
 		{
@@ -209,38 +216,41 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 			using calc::ToCFiles;
 
 			const auto& [ single, pw_dist, files ] = ToCFiles::get(*toc);
+
 			if (!single)
 			{
 				throw std::runtime_error("Could not calculate ARId from "
 						"audio input spanning more than 1 file.");
 			}
+			// Since we guarantee a single file, we can safely ignore pw_dist
 
 			audiofilename = ToCFiles::expand_path(metafilename, files.front());
 
-			ARCS_LOG_DEBUG << "Try to get size from file: " << audiofilename;
+			ARCS_LOG_DEBUG << "Try to get leadout from file: " << audiofilename;
 		}
 
-		auto audio_size = std::unique_ptr<AudioSize>{};
-
-		{
-			AudioInfo a;
+		{ // scope
+			auto a = AudioInfo {};
 			auto audio_sel { create_selection(ARIdOptions::READERID, config) };
 			if (audio_sel)
 			{
 				a.set_selection(audio_sel.get());
 			}
 
-			audio_size = a.size(audiofilename);
-		}
+			const auto audio_size = a.size(audiofilename);
 
-		arid = make_arid(*toc, *audio_size);
+			ARCS_LOG_DEBUG << "Got leadout: " << audio_size->frames();
+
+			arid = make_arid(*toc, *audio_size);
+		}
 	}
 
 	if (!arid) { this->fatal_error("Could not compute AccurateRip id."); }
 
-	// Build the result object
 
-	std::unique_ptr<ARIdLayout> layout;
+	// Step 3: Build the result object
+
+	auto layout = std::unique_ptr<ARIdLayout>{};
 
 	if (config.is_set(ARIdOptions::PROFILE))
 	{
@@ -268,8 +278,9 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 		);
 	}
 
-	auto id = RichARId{*arid, std::move(layout),
-		config.value(ARIdOptions::URLPREFIX)};
+	auto id = RichARId { *arid, std::move(layout),
+		config.value(ARIdOptions::URLPREFIX) };
+	layout = nullptr;
 
 	return std::make_pair(EXIT_SUCCESS,
 			std::make_unique<ResultObject<RichARId>>(std::move(id)));
