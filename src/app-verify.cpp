@@ -32,7 +32,7 @@
 #include <arcstk/verify.hpp>        // for Checksum, Checksums, ChecksumSource
 #endif
 #ifndef __LIBARCSTK_DBAR_HPP__
-#include <arcstk/dbar.hpp>          // for DBAR, DBARBuilder, DBARSource
+#include <arcstk/dbar.hpp>          // for DBAR, DBARSource
 #endif
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>       // for ARCS_LOG_DEBUG, ARCS_LOG_ERROR
@@ -80,7 +80,6 @@ using arcstk::ARId;
 using arcstk::Checksum;
 using arcstk::Checksums;
 using arcstk::ChecksumSource;
-using arcstk::DBARBuilder;
 using arcstk::DBARSource;
 using arcstk::Logging;
 using arcstk::AlbumVerifier;
@@ -970,6 +969,14 @@ void ColorizingVerifyTableCreator::register_decorators(TableComposer& c)
 				std::make_unique<MatchDecorator>(r_size,
 					Highlight::BOLD, colors_.get(DecorationType::MATCH),
 					Highlight::BOLD, colors_.get(DecorationType::MISMATCH) ));
+		}
+
+		if (ATTR::CHECKSUM_ARCS2 == field
+				|| ATTR::CHECKSUM_ARCS1 == field)
+		{
+			//c.register_to_field(i,
+			//	std::make_unique<MineDecorator>(r_size,
+			//		Highlight::NORMAL, colors_.get(DecorationType::MIINE) ));
 		}
 
 		++i;
