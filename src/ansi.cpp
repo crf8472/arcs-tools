@@ -79,6 +79,17 @@ Color get_color(const std::string& name)
 }
 
 
+bool is_foreground(const Color c)
+{
+	if (const auto v = std::underlying_type_t<Color>(c); v)
+	{
+		return v <= 39;
+	}
+
+	return false;
+};
+
+
 // Modifier
 
 

@@ -96,6 +96,16 @@ enum class Color : int
 Color get_color(const std::string& name);
 
 
+/**
+ * \brief TRUE iff color \c c is a foreground color.
+ *
+ * \param[in] c Color to test
+ *
+ * \return TRUE iff \c c is a foreground color, otherwise FALSE.
+ */
+bool is_foreground(const Color c);
+
+
 class Modifier;
 std::ostream& operator << (std::ostream& o, const Modifier& m);
 
