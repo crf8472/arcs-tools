@@ -17,6 +17,36 @@
 // TODO get_color()
 // TODO colored()
 
+TEST_CASE ( "is_foreground", "" )
+{
+	using arcsapp::ansi::Color;
+
+	SECTION ( "is correct" )
+	{
+		CHECK (		is_foreground(Color::FG_BLACK)   );
+		CHECK (		is_foreground(Color::FG_RED)     );
+		CHECK (		is_foreground(Color::FG_GREEN)   );
+		CHECK (		is_foreground(Color::FG_YELLOW)  );
+		CHECK (		is_foreground(Color::FG_BLUE)    );
+		CHECK (		is_foreground(Color::FG_MAGENTA) );
+		CHECK (		is_foreground(Color::FG_CYAN)    );
+		CHECK (		is_foreground(Color::FG_WHITE)   );
+		CHECK (		is_foreground(Color::FG_DEFAULT) );
+
+		CHECK ( not is_foreground(Color::BG_BLACK)   );
+		CHECK ( not is_foreground(Color::BG_RED)     );
+		CHECK ( not is_foreground(Color::BG_GREEN)   );
+		CHECK ( not is_foreground(Color::BG_YELLOW)  );
+		CHECK ( not is_foreground(Color::BG_BLUE)    );
+		CHECK ( not is_foreground(Color::BG_MAGENTA) );
+		CHECK ( not is_foreground(Color::BG_CYAN)    );
+		CHECK ( not is_foreground(Color::BG_WHITE)   );
+		CHECK ( not is_foreground(Color::BG_DEFAULT) );
+
+		CHECK ( not is_foreground(Color::NONE) );
+	}
+}
+
 TEST_CASE ( "Modifier", "[modifier]" )
 {
 	using arcsapp::ansi::Color;
