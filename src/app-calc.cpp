@@ -52,10 +52,6 @@
 #ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
 #include "tools-info.hpp"           // for AvailableFileReaders
 #endif
-//#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
-//#include "tools-table.hpp"          // for StringTableLayout,
-//									// TableComposer
-//#endif
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"               // for ResultObject, Result
 #endif
@@ -328,10 +324,6 @@ std::unique_ptr<Options> ARCalcConfigurator::do_configure_options(
 
 	if (options->is_set(CALC::SUMSONLY))
 	{
-		// TODO Does "sums only" also mean to skip id + url?
-		//options->unset(CALC::PRINTID);
-		//options->unset(CALC::PRINTURL);
-
 		options->set(CALC::NOTRACKS);
 		options->set(CALC::NOFILENAMES);
 		options->set(CALC::NOOFFSETS);
@@ -416,11 +408,8 @@ void CalcTableCreator::assertions(const InputTuple t) const
 	const auto toc       = std::get<3>(t);
 	const auto filenames = std::get<4>(t);
 
-	using calc::validate;
-	validate(checksums, toc, filenames);
-
-	using arid::validate;
-	validate(arid, checksums.size(), toc);
+	calc::validate(checksums, toc, filenames);
+	arid::validate(arid, checksums.size(), toc);
 }
 
 
