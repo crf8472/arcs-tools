@@ -124,17 +124,21 @@ ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 		return ColorRegistry{ /* default colors */ };
 	}
 
-	const std::string nv_sep = ":"; // name-value separator
+	const std::string r_sep = ":";  // record separator (name : value)
+	const std::string v_sep  = "+"; // value separator  (value, value)
 
 	ColorRegistry r;
 	r.clear(); // remove defaults, use only values from input string
 
 	input::parse_list(input, ',',
-			[&r,&nv_sep](const std::string& s) // parse a single TYPE:COLOR pair
+			[&r, &r_sep, &v_sep](const std::string& s)
 			{
-				const auto pos = s.find(nv_sep);
+				// parse a single TYPE:COLOR pair
 
-				if (pos == std::string::npos)
+				const auto colon = s.find(r_sep);
+				const auto plus  = s.find(v_sep);
+
+				if (colon == std::string::npos)
 				{
 					std::ostringstream msg;
 					msg << "Could not parse --colors input: '"
@@ -153,43 +157,48 @@ ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 					return str;
 				};
 
-				const auto type   { uppercase(s.substr(0, pos)) };
-				const auto colors { uppercase(s.substr(pos + nv_sep.length())) };
+				const auto type_str { uppercase(s.substr(0, colon)) };
+				auto color1 = std::string {};
+				auto color2 = std::string {};
+
+				if (plus == std::string::npos)
+				{
+					// Single color
+					color1 = uppercase(s.substr(colon + r_sep.length()));
+
+					ARCS_LOG(DEBUG1) << "Set colors for " << type_str << ": "
+						<< color1;
+				} else
+				{
+					const auto start { colon + r_sep.length() };
+
+					// Color pair
+					color1 = uppercase(s.substr(start, plus - start));
+					color2 = uppercase(s.substr(plus + v_sep.length()));
+
+					ARCS_LOG(DEBUG1) << "Set colors for " << type_str << ": "
+						<< color1 << ", " << color2;
+				}
 
 				using ansi::get_color;
 
-				const auto plus = colors.find("+");
-				if (plus != std::string::npos)
+				if (color2.empty())
 				{
-					// Color pair
+					const auto color { get_color(color1) };
 
-					const auto color_fg { colors.substr(0, plus)  };
-					const auto color_bg { colors.substr(plus + 1) };
-
-					ARCS_LOG(DEBUG1) << "For " << type << " set "
-							<< color_fg << " as foreground color";
-					ARCS_LOG(DEBUG1) << "For " << type << " set "
-							<< color_bg << " as background color";
-
-					r.set(get_decorationtype(type),
-						get_color(color_fg), get_color(color_bg));
-				} else
-				{
-					// Single color
-
-					if ("BG_" == colors.substr(0,3))
+					if (is_foreground(color))
 					{
-						ARCS_LOG(DEBUG1) << "For " << type << " set " << colors
-							<< " as background color";
-						r.set_bg(get_decorationtype(type), get_color(colors));
+						r.set_fg(get_decorationtype(type_str), color);
 					} else
 					{
-						ARCS_LOG(DEBUG1) << "For " << type << " set " << colors
-							<< " as foreground color";
-						r.set_fg(get_decorationtype(type), get_color(colors));
+						r.set_bg(get_decorationtype(type_str), color);
 					}
-				}
 
+				} else
+				{
+					r.set(get_decorationtype(type_str),
+						get_color(color1), get_color(color2));
+				}
 			});
 	return r;
 }
