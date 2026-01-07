@@ -141,6 +141,16 @@ std::unique_ptr<Options> ARIdConfigurator::do_configure_options(
 		options->set(ARIdOptions::DBID);
 		options->unset(ARIdOptions::FILENAME);
 	}
+
+	// No output attributes specified? => Print just the ID as the default
+
+	if(not (options->is_set(ARIdOptions::CDDBID)
+			|| options->is_set(ARIdOptions::DBID)
+			|| options->is_set(ARIdOptions::URL)))
+	{
+		options->set(ARIdOptions::ID);
+	}
+
 	return options;
 }
 
