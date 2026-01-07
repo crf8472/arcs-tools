@@ -60,6 +60,9 @@
 #include "tools-table.hpp"          // for StringTableLayout, CellDecorator
 									// TableComposer
 #endif
+#ifndef __ARCSTOOLS_TOOLS_VALIDATE_HPP__
+#include "tools-validate.hpp"       // for Validate
+#endif
 #ifndef __ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"               // for ResultObject, Result
 #endif
@@ -420,19 +423,58 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 
 void ARVerifyConfigurator::do_validate(const Options& options) const
 {
-	if (options.is_set(VERIFY::RESPONSEFILE)
-			and options.is_set(VERIFY::REFVALUES))
+	using Validation = valid::Validate<Options>;
+
+	const std::vector<Validation> validations =
 	{
-		throw ConfigurationException("Cannot process --refvalues along with "
-				" -r/--response, only one of these options is allowed");
+		Validation
+		{
+			"Use either dBAR file or reference values",
+			[](const Options& o)
+			{
+				return o.is_set(VERIFY::RESPONSEFILE)
+							|| o.is_set(VERIFY::REFVALUES);
+			},
+			"No reference values specified."
+			" One of --refvalues and -r/--response is required"
+		},
+		Validation
+		{
+			"Do not use both, dBAR file and reference values",
+			[](const Options& o)
+			{
+				return ! (o.is_set(VERIFY::RESPONSEFILE)
+							&& o.is_set(VERIFY::REFVALUES));
+			},
+			"Cannot process --refvalues along with -r/--response, "
+			"only one of these options is allowed"
+		}
+	};
+
+	for (const auto& validation : validations)
+	{
+		try
+		{
+			validation.perform(options);
+		} catch (const std::exception& e)
+		{
+			throw ConfigurationException(e.what());
+		}
 	}
 
-	if (!options.is_set(VERIFY::RESPONSEFILE)
-			and !options.is_set(VERIFY::REFVALUES))
-	{
-		throw ConfigurationException("No reference values specified."
-				" One of --refvalues and -r/--response is required");
-	}
+	// if (options.is_set(VERIFY::RESPONSEFILE)
+	// 		and options.is_set(VERIFY::REFVALUES))
+	// {
+	// 	throw ConfigurationException("Cannot process --refvalues along with "
+	// 			" -r/--response, only one of these options is allowed");
+	// }
+	//
+	// if (!options.is_set(VERIFY::RESPONSEFILE)
+	// 		and !options.is_set(VERIFY::REFVALUES))
+	// {
+	// 	throw ConfigurationException("No reference values specified."
+	// 			" One of --refvalues and -r/--response is required");
+	// }
 }
 
 
@@ -1182,48 +1224,47 @@ AddField<ATTR::THEIRS>::AddField(
 void validate(const Checksums& checksums, const ToC* toc,
 	const std::vector<std::string>& filenames,
 	const ChecksumSource& reference,
-	const VerificationResult* vresult, const int block)
+	const VerificationResult* /*vresult*/, const int /*block*/)
 {
 	calc::validate(checksums, toc, filenames);
 
-	if (!reference.size())
-	{
-		throw std::invalid_argument("Missing reference checksums, "
-				"nothing to print.");
-	}
+	{ //scope
+		using Validation = valid::Validate<ChecksumSource, Checksums>;
 
-	auto at_least_one_block_of_equal_size = bool { false };
-	for (auto i = std::size_t {0}; i < reference.size(); ++i)
-	{
-		if (reference.size(i) == checksums.size())
+		const std::vector<Validation> validations =
 		{
-			at_least_one_block_of_equal_size = true;
-			break;
+			Validation
+			{
+				"Reference source actually contains Checksums",
+				[](const ChecksumSource& s, const Checksums& /*c*/) noexcept
+				{
+					return s.size() > 0;
+				},
+				"Reference source does not contain any blocks",
+			},
+			Validation
+			{
+				"Reference source contains at least 1 block of same size",
+				[](const ChecksumSource& s, const Checksums& c) noexcept
+				{
+					for (auto i = std::size_t { 0 }; i < s.size(); ++i)
+					{
+						if (s.size(i) == c.size()) { return true; }
+					}
+
+					return false;
+				},
+				"Reference does not contain a blocks with the same number of"
+				"total tracks of the actual checksums",
+			}
+
+			// TODO reference should have at least one block with id == arid
+		};
+
+		for (const auto& validation : validations)
+		{
+			validation.perform(reference, checksums);
 		}
-	}
-
-	if (!at_least_one_block_of_equal_size)
-	{
-		throw std::invalid_argument("Mismatch: "
-				"There are " + std::to_string(checksums.size())
-				+ " local tracks to verify, but no block in reference "
-				" contains exactly this number of tracks");
-	}
-
-	// TODO reference should have at least one block with id == arid
-
-	if (!vresult)
-	{
-		throw std::invalid_argument("Missing match information, "
-				"nothing to print.");
-	}
-
-	if (block > vresult->total_blocks()) // block < 0 is ok (means: no block)
-	{
-		throw std::invalid_argument("Mismatch: "
-				"Match contains no block " + std::to_string(block)
-				+ " but contains only "
-				+ std::to_string(vresult->total_blocks()) + " blocks.");
 	}
 }
 

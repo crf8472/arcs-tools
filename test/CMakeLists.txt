@@ -39,6 +39,7 @@ list (APPEND TEST_SETS tools-fs    )
 list (APPEND TEST_SETS tools-info  )
 list (APPEND TEST_SETS tools-input )
 list (APPEND TEST_SETS tools-table )
+list (APPEND TEST_SETS tools-validate )
 
 ## --- Add common configuration for all testsuites (catch2 + project deps)
 

@@ -20,9 +20,12 @@
 #ifndef __LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
-
 #ifndef __LIBARCSTK_METADATA_HPP__
 #include <arcstk/metadata.hpp>    // for ToC
+#endif
+
+#ifndef __ARCSTOOLS_TOOLS_VALIDATE_HPP__
+#include "tools-validate.hpp"       // for Validate
 #endif
 
 namespace arcsapp
@@ -272,29 +275,44 @@ void validate(const ARId& arid, const std::size_t total_tracks, const ToC* toc)
 		//throw std::invalid_argument("AccurateRip id must not be empty");
 	}
 
-	using std::to_string;
+	using Validation  = valid::Validate<ARId, std::size_t, const ToC*>;
 
-	const auto arid_total_tracks = static_cast<std::size_t>(arid.track_count());
-
-	if (arid_total_tracks != total_tracks)
+	const std::vector<Validation> validations =
 	{
-		throw std::invalid_argument("Mismatch: "
-			"Checksums for " + to_string(total_tracks)
-			+ " files/tracks, but AccurateRip id specifies "
-			+ to_string(arid.track_count()) + " tracks.");
-	}
-
-	if (toc)
-	{
-		const auto toc_total_tracks = toc->total_tracks();
-
-		if (arid.track_count() != toc_total_tracks)
+		Validation
 		{
-			throw std::invalid_argument("Mismatch: "
-				"Checksums for " + to_string(toc_total_tracks)
-				+ " files/tracks, but AccurateRip id specifies "
-				+ to_string(arid.track_count()) + " tracks.");
+			"ARId must not be empty",
+			[](const ARId& a, const std::size_t, const ToC* /*t*/) noexcept
+			{
+				return not a.empty();
+			},
+			"ARId is unexpectedly empty"
+		},
+		Validation
+		{
+			"ARId has the declared number of tracks",
+			[](const ARId& a, const std::size_t s, const ToC* /*t*/) noexcept
+			{
+				return s == static_cast<std::size_t>(a.track_count());
+			},
+			"ARId specifies another number of tracks than declared"
+		},
+		Validation
+		{
+			"ARId has the number of tracks specified by ToC",
+			[](const ARId& a, const std::size_t /*s*/, const ToC* t) noexcept
+			{
+				if (!t) { return true; }
+
+				return a.track_count() == t->total_tracks();
+			},
+			"ARId mismatches ToC: different total tracks specified"
 		}
+	};
+
+	for (const auto& validation : validations)
+	{
+		validation.perform(arid, total_tracks, toc);
 	}
 }
 

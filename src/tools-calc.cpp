@@ -42,6 +42,9 @@
 #ifndef __ARCSTOOLS_TOOLS_FS_HPP__
 #include "tools-fs.hpp"             // for path, prepend_path
 #endif
+#ifndef __ARCSTOOLS_TOOLS_VALIDATE_HPP__
+#include "tools-validate.hpp"       // for Validate
+#endif
 
 namespace arcsapp
 {
@@ -379,43 +382,59 @@ std::string HexLayout::do_format(InputTuple t) const
 void validate(const Checksums& checksums, const ToC* toc,
 		const std::vector<std::string>& filenames)
 {
-	using std::to_string;
+	using filenames_t = std::vector<std::string>;
+	using Validation  = valid::Validate<Checksums, const ToC*, filenames_t>;
 
-	const auto total_tracks = checksums.size();
-
-	if (total_tracks == 0)
+	const std::vector<Validation> validations =
 	{
-		throw std::invalid_argument("Missing value: "
-				"Need some Checksums to print");
-	}
+		Validation
+		{
+			"Checksums contain actually values",
+			[](const Checksums& c, const ToC* /*t*/, const filenames_t& /*f*/)
+				noexcept
+			{
+				return c.size() > 0;
+			},
+			"Checksums object is missing values"
+		},
+		Validation
+		{
+			"Number of filenames is either 0, 1 or equal to Checksum's tracks",
+			[](const Checksums& c, const ToC* /*t*/, const filenames_t& f)
+				noexcept
+			{
+				return f.empty() || f.size() == 1 || f.size() == c.size();
+			},
+			"Checksums' total tracks and total number of filenames"
+			" are incoherent"
+		},
+		Validation
+		{
+			"Either ToC or set of filenames is present",
+			[](const Checksums& /*c*/, const ToC* t, const filenames_t& f)
+				noexcept
+			{
+				return t || not f.empty();
+			},
+			"Need either ToC data or filenames to print results"
+		},
+		Validation
+		{
+			"If a ToC is present, there is one Checksum for each track",
+			[](const Checksums& c, const ToC* t, const filenames_t& /*f*/)
+				noexcept
+			{
+				if (!t) { return true; }
 
-	if (!(filenames.empty()
-				|| filenames.size() == total_tracks || filenames.size() == 1))
-	{
-		throw std::invalid_argument("Mismatch: "
-				"Checksums for " + to_string(total_tracks)
-				+ " files/tracks, but " + to_string(filenames.size())
-				+ " files.");
-	}
+				return c.size() == static_cast<uint16_t>(t->total_tracks());
+			},
+			"Checksums' and ToC's total tracks are incoherent"
+		}
+	};
 
-	if (checksums.at(0).empty() || checksums.at(0).types().empty())
+	for (const auto& validation : validations)
 	{
-		throw std::invalid_argument("Missing value: "
-				"Checksums seem to hold no checksums");
-	}
-
-	if (!toc && filenames.empty())
-	{
-		throw std::invalid_argument("Missing value: "
-				"Need either ToC data or filenames to print results");
-	}
-
-	if (toc && static_cast<uint16_t>(toc->total_tracks()) != total_tracks)
-	{
-		throw std::invalid_argument("Mismatch: "
-				"Checksums for " + to_string(total_tracks)
-				+ " files/tracks, but ToC specifies "
-				+ to_string(toc->total_tracks()) + " tracks.");
+		validation.perform(checksums, toc, filenames);
 	}
 }
 

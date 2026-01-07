@@ -106,6 +106,7 @@ set (PRIVATE_HEADERS
 	${PROJECT_SOURCE_DIR}/tools-info.hpp
 	${PROJECT_SOURCE_DIR}/tools-input.hpp
 	${PROJECT_SOURCE_DIR}/tools-table.hpp
+	${PROJECT_SOURCE_DIR}/tools-validate.hpp
 	${PROJECT_SOURCE_DIR}/result.hpp
 	${PROJECT_SOURCE_DIR}/version.hpp
 )
