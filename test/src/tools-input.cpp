@@ -1,13 +1,12 @@
 #include "catch2/catch_test_macros.hpp"
 
-
 /**
  * \file
  *
  * \brief Fixtures for tools-input.hpp.
  */
 
-#ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
+#ifndef __ARCSTOOLS_TOOLS_INPUT_HPP__
 #include "tools-input.hpp"        // TO BE TESTED
 #endif
 
