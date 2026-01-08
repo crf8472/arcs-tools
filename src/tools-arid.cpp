@@ -217,6 +217,8 @@ std::string ARIdTableLayout::do_format(InputTuple t) const
 				{
 					value.replace(0, arid.prefix().length(), alt_prefix);
 					// FIXME If alt_prefix does not end with '/' ?
+					// FIXME If alt_prefix has a different length ?
+					// FIXME Do not do this when printing, do it in the app
 				}
 				break;
 			case ARID_FLAG::FILENAME:
