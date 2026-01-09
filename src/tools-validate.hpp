@@ -1,15 +1,16 @@
 #ifndef __ARCSTOOLS_TOOLS_VALIDATE_HPP__
 #define __ARCSTOOLS_TOOLS_VALIDATE_HPP__
+
 /**
  * \file
  *
- * \brief Validateing objects.
+ * \brief Validating objects.
  */
 
 #include <functional>             // for function
 
 #ifndef __LIBARCSTK_LOGGING_HPP__
-#include <arcstk/logging.hpp>       // for ARCS_LOG_DEBUG, ARCS_LOG_ERROR
+#include <arcstk/logging.hpp>     // for ARCS_LOG_DEBUG, ARCS_LOG_ERROR
 #endif
 
 namespace arcsapp
