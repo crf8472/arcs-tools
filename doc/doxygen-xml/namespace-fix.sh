@@ -8,7 +8,8 @@
 CLASSES=( 'VerifyTableCreator' 'VERIFY' )
 NS='arcsapp'
 
-PREFIX="generated-docs/mcss/xml/class${NS}_1_1v__1__0__0_1_1"
+## WORKING_DIRECTORY is generated-docs (DOC_GEN_DIR)
+PREFIX="xml/class${NS}_1_1v__1__0__0_1_1"
 
 for CLASS in ${CLASSES[@]}; do
 	FILE="${PREFIX}${CLASS}.xml"
