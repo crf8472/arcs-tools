@@ -271,7 +271,7 @@ public:
 	/**
 	 * \brief Set the specified flag to TRUE.
 	 *
-	 * \param[in] idx Index to set
+	 * \param[in] key Key to set to TRUE
 	 */
 	void set(const KEY key)
 	{
@@ -281,7 +281,7 @@ public:
 	/**
 	 * \brief Set the specified flag to FALSE.
 	 *
-	 * \param[in] idx Index to set
+	 * \param[in] key Key to set to FALSE
 	 */
 	void unset(const KEY key)
 	{
@@ -499,6 +499,8 @@ public:
 
 	/**
 	 * \brief Constructor to set all labels.
+	 *
+	 * \param[in] labels List of key-label pairs for initialization
 	 */
 	explicit LabelStore(const store_t& labels)
 		: labels_ { labels }

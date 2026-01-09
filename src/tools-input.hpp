@@ -233,6 +233,8 @@ class InputStringParser : public StringParser
 	/**
 	 * \brief Parsing result for non-empty input.
 	 *
+	 * \param[in] s String to parse
+	 *
 	 * \return Result instance for a non-empty input string
 	 *
 	 * \throws std::runtime_error If parsing fails

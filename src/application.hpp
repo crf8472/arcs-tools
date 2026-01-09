@@ -246,6 +246,8 @@ private:
 
 	/**
 	 * \brief Used in print_usage().
+	 *
+	 * \return Printable version of the call string without binary name
 	 */
 	virtual std::string do_call_syntax() const
 	= 0;

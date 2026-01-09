@@ -104,7 +104,7 @@ public:
 	 *
 	 * If this function does not throw, the validation is successful.
 	 *
-	 * \param[in] Ts Objects to validate
+	 * \param[in] ts Objects to validate
 	 */
 	void perform(const Ts&... ts) const
 	{
@@ -116,7 +116,7 @@ public:
 	/**
 	 * \brief Perform validation.
 	 *
-	 * \param[in] Ts Objects to validate
+	 * \param[in] ts Objects to validate
 	 *
 	 * \return TRUE if validation succeeds, otherwise FALSE.
 	 */

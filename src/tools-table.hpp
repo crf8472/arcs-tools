@@ -723,6 +723,11 @@ private:
 
 	/**
 	 * \brief Implements create_composer().
+	 *
+	 * \param[in] records     Total number of records
+	 * \param[in] field_types List of field types
+	 *
+	 * \return A TableComposer with the corresponding \c field_types
 	 */
 	virtual std::unique_ptr<TableComposer> do_build(
 		const std::size_t records,

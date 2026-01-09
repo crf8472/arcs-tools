@@ -264,6 +264,11 @@ private:
 
 	/**
 	 * \brief Called by their_checksum() on a match.
+	 *
+	 * \param[in] checksum Checksum to decorate
+	 * \param[in] record   Record index
+	 * \param[in] field    Field index
+	 * \param[in] c        TableComposer to use
 	 */
 	virtual void do_their_match(const Checksum& checksum, const int record,
 			const int field, TableComposer* c) const
@@ -271,6 +276,11 @@ private:
 
 	/**
 	 * \brief Called by their_checksum() on a mismatch.
+	 *
+	 * \param[in] checksum Checksum to decorate
+	 * \param[in] record   Record index
+	 * \param[in] field    Field index
+	 * \param[in] c        TableComposer to use
 	 */
 	virtual void do_their_mismatch(const Checksum& checksum, const int record,
 			const int field, TableComposer* c) const
