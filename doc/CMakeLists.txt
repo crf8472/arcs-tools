@@ -1,306 +1,225 @@
-## CMake file for building the documentation
+## CMake script for building the documentation
+##
+## vim:fdm=marker
+##
+## Prerequisites:
+## - target arcstools_create_log_dir
+##
+## Provides:
+## - targets: doc, arcstools_doc, arcstools_create_output_dir,
+##            arcstools_doc_generate_html, arcstools_doc_generate_pdf
 
 cmake_minimum_required (VERSION 3.12 )
+## --- Policies {{{1
 
 ## Support IN_LIST if() operator required by FindDoxygen.cmake
+## https://cmake.org/cmake/help/latest/policy/CMP0057.html
 cmake_policy (SET CMP0057 NEW )
+## 1}}}
 
-find_package (Doxygen )
-#find_package (Doxygen 1.9.1...<1.9.7 ) # 1.9.7 crashes m.css
-#find_package (Doxygen 1.8.15...1.8.20 ) # OK too
-
-message (STATUS
-	"Note: to build documentation do 'cmake --build . --target doc'" )
+message (STATUS "Build documentation" )
 
 
-## "Root directory for documentation config and sources" )
-set (PROJECT_DOC_DIR      ${CMAKE_CURRENT_SOURCE_DIR} )
+find_package (Doxygen ) ## must be >= 1.9.8, also ok: 1.8.15...1.8.20
 
 
-## --- Organize subdirectories and build directories
+## --- Some Variables {{{1
 
-## "Target directory for generated documentation"
-set (DOC_GEN_DIR          ${PROJECT_BINARY_DIR}/generated-docs )
-
-## Target directory for 'doc' target (to be provided to subdirectory scripts)
-set (DOC_BINARY_DIR       ${CMAKE_CURRENT_BINARY_DIR} )
-
-## "Target directory for configured documentation texts"
-set (DOC_TEXTS_GEN_DIR    ${DOC_BINARY_DIR}/texts )
-
-## Path to import documentation texts
-set (DOC_TEXTS_SOURCE_DIR ${PROJECT_DOC_DIR}/texts )
-
-
-## --- Organize documentation sources
+## Target directory for generated documentation
+set (DOC_GEN_DIR          "${PROJECT_BINARY_DIR}/generated-docs" )
 
 ## Construct comment for doc target
 set (DOC_COMMENT          "Build documentation for APIs" )
 
-## Deployed mainpage file
-set (DOC_MAINPAGE         ${DOC_TEXTS_GEN_DIR}/MAINPAGE.md )
-
 ## Define input for documentation
-set (DOC_SOURCES          ${INTERFACE_HEADERS} ${PRIVATE_HEADERS}
-						  ${DOC_MAINPAGE} )
+set (DOC_SOURCES          ${HEADER_FILES} ) ## FIXME empty
 
 ## Define the target name and location of the base Doxyfile to be included
-set (DOC_DOXYFILE_BASE    ${DOC_BINARY_DIR}/Doxyfile-base )
+set (DOC_DOXYFILE_BASE_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in" )
 
 ## Define the target name and location of the base Doxyfile to be included
-set (DOC_DOXYFILE_BASE_TEMPLATE ${PROJECT_DOC_DIR}/Doxyfile.in )
+set (DOC_DOXYFILE_BASE    "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-base" )
 
 
 
-## --- Generate documentation output directory
+## --- Add Default 'doc' Target {{{1
 
-add_custom_command (
-	OUTPUT  ${DOC_GEN_DIR}
-	COMMAND ${CMAKE_COMMAND}
-	ARGS    -E make_directory ${DOC_GEN_DIR} )
-
-
-add_custom_target (arcstools_create_output_dir DEPENDS ${DOC_GEN_DIR} )
-
-
-## --- Generate base doxyfile
-
-## Set CMake controlled values in the Doxyfile base template
-
-set (DOXYGEN_OUTPUT_DIRECTORY       "${DOC_GEN_DIR}/doxygen" )
-set (DOXYGEN_FILE_PATTERNS          "*.hpp *.md" )
-set (DOXYGEN_USE_MDFILE_AS_MAINPAGE "${DOC_MAINPAGE}" )
-set (DOXYGEN_STRIP_FROM_INC_PATH    "${PROJECT_LOCAL_INCLUDE_DIR}/" )
-set (DOXYGEN_STRIP_FROM_PATH        "${PROJECT_LOCAL_INCLUDE_DIR}/" )
-
-string (REPLACE ";" " " DOXYGEN_INPUT
-	"${PROJECT_LOCAL_INCLUDE_DIR}/;${DOC_TEXTS_GEN_DIR}/" )
-
-
-
-## --- Rule to build base Doxyfile
-
-configure_file ( ${DOC_DOXYFILE_BASE_TEMPLATE} ${DOC_DOXYFILE_BASE} @ONLY )
-
-
-
-## --- Generate static mainpage
-
-configure_file (${DOC_TEXTS_SOURCE_DIR}/MAINPAGE.md.in ${DOC_MAINPAGE} @ONLY )
-
-
-
-## --- Activate requested documentation targets
-
-## Add default doc target.
+add_custom_target (arcstools_doc )
+add_dependencies  (arcstools_doc arcstools_create_log_dir )
 ## Each documentation config in thirdparty/ may add its own concrete dependency
 ## target to 'doc' and do the concrete work.
 
-add_custom_target (arcstools_doc )
 
 
-## --- If some thirdparty documentation tool was requested, use it
+## --- Generate Documentation Output Directory {{{1
 
-list (APPEND GENERATORS MCSS RTD )
+add_custom_command (
+	OUTPUT  "${DOC_GEN_DIR}"
+	COMMAND "${CMAKE_COMMAND}"
+	ARGS    -E make_directory "${DOC_GEN_DIR}"
+	VERBATIM
+)
 
-foreach (GENERATOR IN ITEMS ${GENERATORS} )
-
-	if (USE_${GENERATOR} )
-
-		string (TOLOWER ${GENERATOR} GENERATOR_DIR )
-
-		list (APPEND LOAD_GENERATORS "${GENERATOR_DIR}" )
-	endif()
-
-endforeach()
-unset (GENERATOR )
-unset (GENERATOR_DIR )
+add_custom_target (arcstools_create_output_dir DEPENDS "${DOC_GEN_DIR}" )
 
 
-## --- Detect Doxygen version with duplication bug and setup deduplication
 
-## DOXYGEN_NEEDS_XML_DEDUP indicates that XML output requires post processing.
-## It also indicates that not only plain doxygen HTML is requested.
+## --- Define Variables for Doxygen {{{1
 
-if (LOAD_GENERATORS AND DOXYGEN_VERSION VERSION_GREATER_EQUAL 1.8.16
-                    AND DOXYGEN_VERSION VERSION_LESS_EQUAL    1.13.2 )
+## Set CMake controlled values in the Doxyfile base template.
+## Doxygen may *only* use theses variables prefixed by "DOXYGEN_" and
+## those from the root script prefixed by "PROJECT_".
 
-	## TODO Not sure which doxygen version fixes the "duplication bug"
-	## that was introduced in 1.8.16, but 1.13.2 seems to not contain it
-	## anymore.
-
-	set (DOXYGEN_NEEDS_XML_DEDUP TRUE ) ## Use this in subdirectories!
-endif()
+set (DOXYGEN_OUTPUT_DIRECTORY       "${DOC_GEN_DIR}/doxygen" )
+set (DOXYGEN_FILE_PATTERNS          "*.hpp *.md" )
+set (DOXYGEN_STRIP_FROM_INC_PATH    "${PROJECT_LOCAL_INCLUDE_DIR}/" )
+set (DOXYGEN_STRIP_FROM_PATH        "${PROJECT_LOCAL_INCLUDE_DIR}/" )
+set (DOXYGEN_INPUT                  "${PROJECT_LOCAL_INCLUDE_DIR}/" )
 
 
-## Note: DOXYGEN_NEEDS_XML_DEDUP must be set _before_ actually loading the
-## CMAKE scripts for generators with add_subdirectory()!
+
+## --- Provide Texts for Static Pages {{{1
+
+add_subdirectory (texts ) ## Will update DOXYGEN_* variables or add more
+
+
+
+## --- Setup Building Internal Docs if Requested (TODO broken) {{{1
+
+if (WITH_INTERNAL_DOCS )
+
+	message (STATUS "Will build documentation also for internal APIs" )
+
+	## passed to doxygen
+
+	set (DOXYGEN_INTERNAL_DOCS "YES" )
+
+	string (REPLACE ";" " " DOXYGEN_INPUT
+		"${DOXYGEN_INPUT};${PROJECT_SOURCE_DIR}/;${PROJECT_GEN_SOURCES_DIR}/" )
+
+	string (REPLACE ";" " " DOXYGEN_STRIP_FROM_INC_PATH
+		"${DOXYGEN_STRIP_FROM_INC_PATH}/;${PROJECT_SOURCE_DIR}/;${PROJECT_GEN_SOURCES_DIR}/" )
+
+	string (REPLACE ";" " " DOXYGEN_STRIP_FROM_PATH
+		"${DOXYGEN_STRIP_FROM_PATH}/;${PROJECT_SOURCE_DIR}/;${PROJECT_GEN_SOURCES_DIR}/" )
+
+	# commented out, no list of private headers available
+	#set (DOC_SOURCES ${DOC_SOURCES} ${PRIVATE_HEADERS} )
+
+	## not passed to doxygen, cmake only
+
+	set (DOC_COMMENT "${DOC_COMMENT} (also internal APIs)" )
+
+else ()
+
+	set (DOXYGEN_INTERNAL_DOCS "NO" )
+
+endif (WITH_INTERNAL_DOCS)
+
+
+
+## --- Configure Doxyfile-base {{{1
+
+## Normalize DOXYGEN_INPUT list
+string (REPLACE ";" " " DOXYGEN_INPUT "${DOXYGEN_INPUT}/" )
+
+configure_file ( "${DOC_DOXYFILE_BASE_TEMPLATE}" "${DOC_DOXYFILE_BASE}" @ONLY )
+
+
+
+## --- Populate List of Thirdparty Documentation Tools Requested {{{1
+
+get_filename_component (_fullpath "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH )
+
+if (USE_DOC_TOOL )
+	foreach (_generator IN LISTS USE_DOC_TOOL )
+
+		string (TOLOWER ${_generator} _generator_dir )
+
+		message (STATUS "Check path ${_fullpath}/thirdparty/${_generator_dir}")
+
+		if (EXISTS "${_fullpath}/thirdparty/${_generator_dir}" )
+
+			message (STATUS "Generate documentation by ${_generator_dir}" )
+
+			list (APPEND LOAD_GENERATORS "${_generator_dir}" )
+		else()
+
+			message (WARNING "DOC_TOOL \"${_generator}\" not found, ignore" )
+		endif()
+
+		unset (_generator_dir )
+	endforeach()
+	unset (_fullpath  )
+	unset (_generator )
+endif (USE_DOC_TOOL )
+
+
+## --- Declare doc targets for HTML and PDF {{{1
+
+## FIXME Activate only those targets whose format is actually requested
+
+add_custom_target (arcstools_doc_generate_html )
+add_dependencies  (arcstools_doc arcstools_doc_generate_html )
+
+add_custom_target (arcstools_doc_generate_pdf )
+add_dependencies  (arcstools_doc arcstools_doc_generate_pdf )
+
+
+
+## --- Provide Macro for Subdir CMake Scripts to Request Doxygen Runs {{{1
+## Note that this target can produce XML as well as HTML, depends on Doxyfile.
+
+function (add_doxygen_target DOXY_TARGET DOXYFILE INDEXFILE )
+
+	add_custom_target (${DOXY_TARGET} DEPENDS "${INDEXFILE}" )
+
+	add_dependencies  (${DOXY_TARGET}
+			arcstools_create_log_dir
+			arcstools_create_output_dir
+			arcstools_static_pages_files
+	)
+
+	## Produce INDEXFILE (either XML or HTML) by running doxygen
+	add_custom_command (
+		OUTPUT  "${INDEXFILE}"
+		DEPENDS "${DOC_DOXYFILE_BASE}" "${DOXYFILE}" ${DOC_SOURCES}
+		COMMAND Doxygen::doxygen
+		ARGS    "${DOXYFILE}"
+		WORKING_DIRECTORY "${DOC_GEN_DIR}"
+		COMMENT "Run doxygen for target ${DOXY_TARGET}"
+		VERBATIM
+	)
+endfunction()
+
+
+
+## --- Prepare Actual Generators or Stock HTML {{{1
 
 if (LOAD_GENERATORS )
 
 	## Configure virtual Python Sandbox
-	add_subdirectory ("thirdparty/python-virtualenv" EXCLUDE_FROM_ALL )
+	add_subdirectory (python-virtualenv EXCLUDE_FROM_ALL )
 	## Now, PYTHON_ENV_AVAILABLE is "YES"
+
+	## Each generator requires XML (FIXME: no, lualatex doesn't)
+	## TODO: Check: is doxygen-xml required by at least one generator?
+	add_subdirectory (doxygen-xml )
+	## Now, list DOXYGEN_XML_POSTPROCESSING_TASKS is provided (maybe empty)
+
+	foreach (_generator IN ITEMS ${LOAD_GENERATORS} )
+
+		add_subdirectory ("thirdparty/${_generator}" EXCLUDE_FROM_ALL )
+	endforeach()
+	unset (_generator )
+
+else() # If no Generators are Specified, Just Use Doxygen's Stock HTML
+
+	add_subdirectory (doxygen-html )
 endif()
+## 1}}}
 
-
-
-if (DOXYGEN_NEEDS_XML_DEDUP )
-
-	message (STATUS "Doxygen version requires index deduplication" )
-
-	## Setup deduplication script. We don't know whether it is actually
-	## used, but it's in place.
-
-	configure_file (
-		"${PROJECT_DOC_DIR}/thirdparty/doxygen/dedup_index.py"
-		"${DOC_BINARY_DIR}/dedup_index.py"
-		@ONLY
-	)
-
-	## In either case, we need python for deduplication. Either a virtualenv is
-	## setup for a generator (like m.css) or we try to use the systemwide
-	## python.
-
-	if (PYTHON_ENV_AVAILABLE )
-
-		add_requirements_target (arcstools_doxygen_requirements
-			"${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/doxygen/requirements.txt"
-		)
-
-	else()
-
-		find_package (Python3 COMPONENTS Interpreter Development REQUIRED )
-
-		set (PYTHON_CMD )
-
-	endif (PYTHON_ENV_AVAILABLE )
-else()
-	if (NOT LOAD_GENERATORS )
-		message (STATUS "No index deduplication since no generators requested" )
-	else()
-		message (STATUS "Doxygen version does not require index deduplication" )
-	endif()
-endif()
-
-
-
-## --- Provide macro for subdir CMake configs to request doxygen runs
-
-macro (add_doxygen_target DOXY_TARGET DOXYFILE INDEXFILE )
-
-	add_custom_command (
-		OUTPUT  ${INDEXFILE}
-		COMMAND Doxygen::doxygen ${DOXYFILE}
-		DEPENDS ${DOC_DOXYFILE_BASE} ${DOXYFILE} ${DOC_SOURCES}
-		WORKING_DIRECTORY ${DOC_GEN_DIR}
-		COMMENT "Run doxygen for target ${DOXY_TARGET}"
-		VERBATIM
-	)
-
-	## Handle possible deduplication requirement
-	if (DOXYGEN_NEEDS_XML_DEDUP )
-
-		## Setup doxygen run target
-		add_custom_target (${DOXY_TARGET}_run DEPENDS ${INDEXFILE} )
-		add_dependencies  (${DOXY_TARGET}_run
-			arcstools_create_log_dir arcstools_create_output_dir )
-
-		set (STAMP_FILE ${INDEXFILE}.deduplicated )
-
-		add_custom_command (
-			OUTPUT  ${STAMP_FILE}
-			COMMAND ${PYTHON_CMD}
-			ARGS    ${DOC_BINARY_DIR}/dedup_index.py ${INDEXFILE}
-			COMMAND ${CMAKE_COMMAND}
-			ARGS    -E touch ${STAMP_FILE}
-			DEPENDS ${INDEXFILE}
-			WORKING_DIRECTORY "${DOC_GEN_DIR}"
-			COMMENT "Remove duplicate compounds in ${INDEXFILE}"
-			VERBATIM
-		)
-
-		## Setup deduplication target
-		add_custom_target (${DOXY_TARGET}_dedup DEPENDS ${STAMP_FILE} )
-		add_dependencies  (${DOXY_TARGET}_dedup ${DOXY_TARGET}_run )
-		if (PYTHON_ENV_AVAILABLE )
-
-			add_dependencies  (${DOXY_TARGET}_dedup
-				arcstools_doxygen_requirements )
-		endif()
-
-		## Setup doxygen target
-		add_custom_target (${DOXY_TARGET} )
-		add_dependencies  (${DOXY_TARGET} ${DOXY_TARGET}_dedup )
-
-		unset (STAMPFILE )
-	else()
-
-		add_custom_target (${DOXY_TARGET} DEPENDS ${INDEXFILE} )
-		add_dependencies  (${DOXY_TARGET}
-			arcstools_create_log_dir arcstools_create_output_dir )
-	endif()
-endmacro()
-
-
-foreach (GENERATOR IN ITEMS ${LOAD_GENERATORS} )
-
-	## Subdir CMake can attach target "python-virtualenv" as requirement
-	add_subdirectory ("thirdparty/${GENERATOR}" EXCLUDE_FROM_ALL )
-endforeach()
-
-
-
-## --- If no generator is requested, just produce stock HTML
-
-if (NOT LOAD_GENERATORS )
-
-	message (STATUS "Will build documentation with pure doxygen (HTML)" )
-
-
-	## -- Target for output mainpage
-
-	set (DOC_OUTPUT_MAINPAGE ${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html )
-
-	add_custom_target (arcstools_doxygen_create_html
-		DEPENDS ${DOC_OUTPUT_MAINPAGE} )
-
-
-	## -- Load stylesheets if any
-
-	## Fallback in case subdirectory does not overwrite it
-	set (DOC_DOXYFILE_INPUT ${DOC_DOXYFILE_BASE} )
-
-	## Comment or uncomment this line to use a alternative layouts to the
-	## doxygen stock HTML layout. The subscope may re-set DOC_DOXYFILE_INPUT
-	## and add dependencies to target 'arcstools_doxygen_create_html'.
-	add_subdirectory ("thirdparty/doxygen-awesome-css" )
-
-	message (STATUS "Use doxygen file: ${DOC_DOXYFILE_INPUT}" )
-
-
-	## -- Add commands + organize targets
-
-	add_custom_command (
-		OUTPUT  ${DOC_OUTPUT_MAINPAGE}
-		COMMAND Doxygen::doxygen ${DOC_DOXYFILE_INPUT}
-		DEPENDS ${DOC_DOXYFILE_INPUT} ${DOC_SOURCES}
-		WORKING_DIRECTORY ${DOC_GEN_DIR}
-		COMMENT "Run doxygen to create HTML"
-		VERBATIM
-	)
-
-	add_dependencies  (arcstools_doxygen_create_html
-							arcstools_create_log_dir
-							arcstools_create_output_dir )
-
-	add_dependencies  (arcstools_doc arcstools_doxygen_create_html )
-
-endif()
-
-
-## --- If some parent defined a 'doc' target, otherwise define it autonomously
-
+## Add target 'doc' if it was not already added by submodules
 if (NOT TARGET doc)
 	add_custom_target (doc )
 endif()

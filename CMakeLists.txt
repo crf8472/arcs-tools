@@ -1,22 +1,27 @@
 ## Root CMake file for arcs-tools
+## vim:fdm=marker
 
 cmake_minimum_required (VERSION 3.15 )
+## --- Policies {{{1
 
 ## Set variables corresponding to unspecified versions to the empty string.
-## Required for specifying the project version along with the name in project()
+## Required for specifying the project version along with the name in project().
+## See: https://cmake.org/cmake/help/latest/policy/CMP0048.html
 cmake_policy (SET CMP0048 NEW )
+
+## 1}}}
 
 
 project (arcstk VERSION 0.1.3 LANGUAGES CXX )
 
+set (PROJECT_VERSION_SUFFIX "alpha.2" )
 
-## --- Setup Version Information
+
+## --- Setup Short Description, URL and Version Information {{{1
 
 set (PROJECT_BRIEF_DESC "Example Toolkit for libarcstk" )
 
 set (PROJECT_URL "https://github.com/crf8472/${PROJECT_NAME}/" )
-
-set (PROJECT_VERSION_SUFFIX "alpha.2" )
 
 set (PROJECT_DEFAULT_BUILD_TYPE "Release" )
 
@@ -35,7 +40,7 @@ message (STATUS "Building ${PROJECT_NAME} ${PROJECT_VERSION_STRING}" )
 
 
 
-## --- Setup Default Build Type
+## --- Setup Default Build Type {{{1
 
 if (NOT CMAKE_BUILD_TYPE )
 
@@ -49,15 +54,14 @@ message (STATUS "Build type: ${CMAKE_BUILD_TYPE}" )
 
 
 
-## --- Global settings
+## --- Trigger Configuration Step Whenever Git Index Changes {{{1
 
-## Trigger configuration phase whenever git index changes
 set_property (DIRECTORY APPEND
-	PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/.git/index )
+	PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/.git/index" )
 
-set (CMAKE_CXX_STANDARD 17 )
-set (CMAKE_CXX_STANDARD_REQUIRED ON )
-set (CMAKE_CXX_EXTENSIONS OFF ) ## use -std=c++17 instead of -std=gnu++17
+
+
+## --- CMake Modules Setup {{{1
 
 ## Tell find_package to first try locating libarcstk via system-installed
 ## .config file instead of project's FindLibarcstk.cmake module
@@ -69,62 +73,44 @@ message (STATUS "Changed CMAKE_MODULE_PATH to: ${CMAKE_MODULE_PATH}" )
 
 
 
-## --- Project Directory Layout
+## --- Project Directory Layout {{{1
+
+## Source directory for markdown files
+set (PROJECT_ROOT_DIR           "${CMAKE_CURRENT_SOURCE_DIR}" )
+
+## Root directory for sources
+set (PROJECT_SOURCE_DIR         "${CMAKE_CURRENT_SOURCE_DIR}/src" )
+
+## Root directory for public/exported headers
+set (PROJECT_LOCAL_INCLUDE_DIR  "${PROJECT_SOURCE_DIR}" )
+
+## Root directory for out-of-source build
+set (PROJECT_BINARY_DIR         "${CMAKE_CURRENT_BINARY_DIR}" )
+
+## Target directory for non-cmake logs
+set (PROJECT_LOG_DIR            "${PROJECT_BINARY_DIR}/log" )
+
+## Target directory for generated sources and configuration
+set (PROJECT_BUILD_SOURCE_DIR   "${PROJECT_BINARY_DIR}/generated-sources" )
 
 
-## "Root directory for sources"
-set (PROJECT_SOURCE_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/src" )
 
-## "Root directory for public/exported headers"
-set (PROJECT_LOCAL_INCLUDE_DIR "${PROJECT_SOURCE_DIR}" )
+## --- Create build-tree directories  {{{1
 
-## "Root directory for out-of-source build"
-set (PROJECT_BINARY_DIR       "${CMAKE_CURRENT_BINARY_DIR}" )
-
-## "Target directory for non-cmake logs"
-set (PROJECT_LOG_DIR          "${PROJECT_BINARY_DIR}/log" )
-
-## "Target directory for generated sources and configuration"
-set (PROJECT_BUILD_SOURCE_DIR "${PROJECT_BINARY_DIR}/generated-sources" )
-
-set (PRIVATE_HEADERS
-	${PROJECT_SOURCE_DIR}/ansi.hpp
-	${PROJECT_SOURCE_DIR}/app-calc.hpp
-	${PROJECT_SOURCE_DIR}/app-id.hpp
-	${PROJECT_SOURCE_DIR}/app-parse.hpp
-	${PROJECT_SOURCE_DIR}/app-verify.hpp
-	${PROJECT_SOURCE_DIR}/application.hpp
-	${PROJECT_SOURCE_DIR}/appregistry.hpp
-	${PROJECT_SOURCE_DIR}/clitokens.hpp
-	${PROJECT_SOURCE_DIR}/config.hpp
-	${PROJECT_SOURCE_DIR}/layouts.hpp
-	${PROJECT_SOURCE_DIR}/table.hpp
-	${PROJECT_SOURCE_DIR}/tools-arid.hpp
-	${PROJECT_SOURCE_DIR}/tools-calc.hpp
-	${PROJECT_SOURCE_DIR}/tools-dbar.hpp
-	${PROJECT_SOURCE_DIR}/tools-fs.hpp
-	${PROJECT_SOURCE_DIR}/tools-info.hpp
-	${PROJECT_SOURCE_DIR}/tools-input.hpp
-	${PROJECT_SOURCE_DIR}/tools-table.hpp
-	${PROJECT_SOURCE_DIR}/tools-validate.hpp
-	${PROJECT_SOURCE_DIR}/result.hpp
-	${PROJECT_SOURCE_DIR}/version.hpp
-)
-
-
-## --- Create Log directory
+## -- Log directory {{{2
 
 add_custom_command (
-	OUTPUT  ${PROJECT_LOG_DIR}
-	COMMAND ${CMAKE_COMMAND}
-	ARGS    -E make_directory ${PROJECT_LOG_DIR} )
+	OUTPUT  "${PROJECT_LOG_DIR}"
+	COMMAND "${CMAKE_COMMAND}"
+	ARGS    -E make_directory "${PROJECT_LOG_DIR}"
+	VERBATIM
+)
 
-add_custom_target (arcstools_create_log_dir ALL
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_LOG_DIR} )
+add_custom_target (arcstools_create_log_dir ALL DEPENDS "${PROJECT_LOG_DIR}" )
+##	TODO Remove: COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_LOG_DIR}" )
 
 
-
-## --- Update version.cpp with info from git
+## --- Update version.cpp with info from git {{{1
 
 find_package (Git QUIET REQUIRED )
 
@@ -164,41 +150,201 @@ endif()
 configure_file (${PROJECT_SOURCE_DIR}/version.cpp.in
 	${PROJECT_BUILD_SOURCE_DIR}/version.cpp
 	@ONLY )
+## 1}}}
+
+## Use this for all and everything, intentionally not target_properties
+set (CMAKE_CXX_STANDARD          17  )
+set (CMAKE_CXX_STANDARD_REQUIRED ON  )
+set (CMAKE_CXX_EXTENSIONS        OFF ) ## use -std=c++17 instead of -std=gnu++17
+
+## --- Define Project Target {{{1
+
+## -- Specify Headers {{{2
+
+## TODO Remove headers
+# set (PRIVATE_HEADERS
+# 	"${PROJECT_SOURCE_DIR}/ansi.hpp"
+# 	"${PROJECT_SOURCE_DIR}/app-calc.hpp"
+# 	"${PROJECT_SOURCE_DIR}/app-id.hpp"
+# 	"${PROJECT_SOURCE_DIR}/app-parse.hpp"
+# 	"${PROJECT_SOURCE_DIR}/app-verify.hpp"
+# 	"${PROJECT_SOURCE_DIR}/application.hpp"
+# 	"${PROJECT_SOURCE_DIR}/appregistry.hpp"
+# 	"${PROJECT_SOURCE_DIR}/clitokens.hpp"
+# 	"${PROJECT_SOURCE_DIR}/config.hpp"
+# 	"${PROJECT_SOURCE_DIR}/layouts.hpp"
+# 	"${PROJECT_SOURCE_DIR}/table.hpp"
+# 	"${PROJECT_SOURCE_DIR}/tools-arid.hpp"
+# 	"${PROJECT_SOURCE_DIR}/tools-calc.hpp"
+# 	"${PROJECT_SOURCE_DIR}/tools-dbar.hpp"
+# 	"${PROJECT_SOURCE_DIR}/tools-fs.hpp"
+# 	"${PROJECT_SOURCE_DIR}/tools-info.hpp"
+# 	"${PROJECT_SOURCE_DIR}/tools-input.hpp"
+# 	"${PROJECT_SOURCE_DIR}/tools-table.hpp"
+# 	"${PROJECT_SOURCE_DIR}/tools-validate.hpp"
+# 	"${PROJECT_SOURCE_DIR}/result.hpp"
+# 	"${PROJECT_SOURCE_DIR}/version.hpp"
+# )
 
 
-## --- Add and configure project target
+## -- Specify Sources {{{2
 
-## All objects, used as dependency in tests as well as in the application
 add_library (objects OBJECT
-	${PROJECT_SOURCE_DIR}/ansi.cpp
-	${PROJECT_SOURCE_DIR}/app-calc.cpp
-	${PROJECT_SOURCE_DIR}/app-id.cpp
-	${PROJECT_SOURCE_DIR}/app-parse.cpp
-	${PROJECT_SOURCE_DIR}/app-verify.cpp
-	${PROJECT_SOURCE_DIR}/application.cpp
-	${PROJECT_SOURCE_DIR}/appregistry.cpp
-	${PROJECT_SOURCE_DIR}/clitokens.cpp
-	${PROJECT_SOURCE_DIR}/config.cpp
-	${PROJECT_SOURCE_DIR}/layouts.cpp
-	${PROJECT_SOURCE_DIR}/table.cpp
-	${PROJECT_SOURCE_DIR}/tools-arid.cpp
-	${PROJECT_SOURCE_DIR}/tools-calc.cpp
-	${PROJECT_SOURCE_DIR}/tools-dbar.cpp
-	${PROJECT_SOURCE_DIR}/tools-fs.cpp
-	${PROJECT_SOURCE_DIR}/tools-info.cpp
-	${PROJECT_SOURCE_DIR}/tools-input.cpp
-	${PROJECT_SOURCE_DIR}/tools-table.cpp
-	${PROJECT_SOURCE_DIR}/result.cpp
-	${PROJECT_BUILD_SOURCE_DIR}/version.cpp )
+	"${PROJECT_SOURCE_DIR}/ansi.cpp"
+	"${PROJECT_SOURCE_DIR}/app-calc.cpp"
+	"${PROJECT_SOURCE_DIR}/app-id.cpp"
+	"${PROJECT_SOURCE_DIR}/app-parse.cpp"
+	"${PROJECT_SOURCE_DIR}/app-verify.cpp"
+	"${PROJECT_SOURCE_DIR}/application.cpp"
+	"${PROJECT_SOURCE_DIR}/appregistry.cpp"
+	"${PROJECT_SOURCE_DIR}/clitokens.cpp"
+	"${PROJECT_SOURCE_DIR}/config.cpp"
+	"${PROJECT_SOURCE_DIR}/layouts.cpp"
+	"${PROJECT_SOURCE_DIR}/table.cpp"
+	"${PROJECT_SOURCE_DIR}/tools-arid.cpp"
+	"${PROJECT_SOURCE_DIR}/tools-calc.cpp"
+	"${PROJECT_SOURCE_DIR}/tools-dbar.cpp"
+	"${PROJECT_SOURCE_DIR}/tools-fs.cpp"
+	"${PROJECT_SOURCE_DIR}/tools-info.cpp"
+	"${PROJECT_SOURCE_DIR}/tools-input.cpp"
+	"${PROJECT_SOURCE_DIR}/tools-table.cpp"
+	"${PROJECT_SOURCE_DIR}/result.cpp"
+	"${PROJECT_BUILD_SOURCE_DIR}/version.cpp"
+)
 
-target_include_directories (objects PRIVATE ${PROJECT_SOURCE_DIR} )
+target_include_directories (objects
+	PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}> )
 
-## Actual application binary
+
+## -- Configure Target {{{2
+
 add_executable (${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/main.cpp )
+
 target_link_libraries (${PROJECT_NAME} PRIVATE objects )
 
 
-## --- Dependencies with or without submodules
+## --- Compiler Specific Settings {{{1
+
+## -- Define Warning and Optimization Flags for g++ and clang++ {{{2
+
+## g++: Warnings
+set (PROJECT_CXX_GNU_FLAGS_WARNINGS
+	-Wall -Wextra -Wpedantic -Weffc++
+	-Wold-style-cast
+	-Wsuggest-override
+	-Wcast-align
+	-Wcast-qual
+	-Wctor-dtor-privacy
+	-Wdisabled-optimization
+	-Wformat=2
+	-Wlogical-op
+	-Wmissing-declarations
+	-Wmissing-include-dirs
+	-Wnoexcept
+	-Woverloaded-virtual
+	-Wredundant-decls
+	-Wshadow
+	-Wsign-conversion
+	-Wsign-promo
+	-Wstrict-null-sentinel
+	-Wstrict-overflow=3
+	-Wswitch-default
+	-Wundef
+	-Wuseless-cast
+	-Wzero-as-null-pointer-constant
+	)
+
+## g++: Optimize flags
+set (PROJECT_CXX_GNU_FLAGS_OPTIMIZE  -march=native -mtune=generic )
+
+
+## clang++: Warnings
+## Clang warnings are quite aggressive by default. Some of the g++ warnings are
+## either compatibility flags that do nothing or are activated by other meta
+## flags. Some are just on by default. The following list is intended to contain
+## only those flags that are off by default and no compatibility flags.
+set (PROJECT_CXX_CLANG_FLAGS_WARNINGS
+	-Wall -Wextra -Wpedantic -Weffc++
+	-Wold-style-cast
+	-Wcast-align
+	-Wcast-qual
+	-Wformat=2
+	-Wshadow
+	-Wsign-conversion
+	-Wundef
+	-Wunused
+	-Wzero-as-null-pointer-constant
+	# -- clang++ specific --
+	-Winconsistent-missing-destructor-override
+	)
+
+## clang++: Optimize flags
+set (PROJECT_CXX_CLANG_FLAGS_OPTIMIZE -march=native -mtune=generic )
+
+
+## -- Select Warning and Optimization Flags for Actual Compiler {{{2
+
+if (CMAKE_COMPILER_IS_GNUCXX ) ## for g++
+
+	message (STATUS "Select compile flags for g++" )
+
+	set (PROJECT_CXX_FLAGS_WARNINGS ${PROJECT_CXX_GNU_FLAGS_WARNINGS} )
+	set (PROJECT_CXX_FLAGS_OPTIMIZE ${PROJECT_CXX_GNU_FLAGS_OPTIMIZE} )
+
+elseif (CMAKE_CXX_COMPILER MATCHES ".*clang"       ## for clang
+		OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" )
+
+	message (STATUS "Select compile flags for clang++" )
+
+	set (PROJECT_CXX_FLAGS_WARNINGS ${PROJECT_CXX_CLANG_FLAGS_WARNINGS} )
+	set (PROJECT_CXX_FLAGS_OPTIMIZE ${PROJECT_CXX_CLANG_FLAGS_OPTIMIZE} )
+
+else()
+
+	message (WARNING "C++ Compiler seems to be neither g++ nor clang++" )
+	message (WARNING "No compile flags specified for the actual C++ compiler" )
+	message (WARNING "Try a generic compile without project specific flags" )
+
+endif()
+
+
+## -- Activate Compiler Warnings {{{2
+
+target_compile_options (objects         PRIVATE ${PROJECT_CXX_FLAGS_WARNINGS} )
+target_compile_options (${PROJECT_NAME} PRIVATE ${PROJECT_CXX_FLAGS_WARNINGS} )
+
+message (STATUS "Warning Flags: ${PROJECT_CXX_FLAGS_WARNINGS}" )
+
+
+## -- Manage Optimization Flags {{{2
+
+## - Optional: Activate Optimization Option (default ON for Release only) {{{3
+
+option (WITH_NATIVE "Use platform specific optimization on compiling" OFF )
+
+if (CMAKE_BUILD_TYPE STREQUAL "Release" )
+
+	set (WITH_NATIVE ON CACHE BOOL
+			"Release: Force platform specific optimization" FORCE )
+endif ()
+
+## - If Optimization Option Activated, Add Flags {{{3
+
+if (WITH_NATIVE )
+
+	message (STATUS "Build with platform specific optimization" )
+
+	target_compile_options (objects PRIVATE ${PROJECT_CXX_FLAGS_OPTIMIZE} )
+
+	target_compile_options (${PROJECT_NAME}
+		PRIVATE ${PROJECT_CXX_FLAGS_OPTIMIZE} )
+else()
+
+	message (STATUS "Build without platform specific optimization" )
+
+endif (WITH_NATIVE )
+
+## --- Setup Dependencies {{{1
 
 option (WITH_SUBMODULES "Compile libarcstk and libarcsdec as submodules" OFF )
 
@@ -259,10 +405,16 @@ if (TARGET libarcsdec::libarcsdec )
 else()
 	message (FATAL_ERROR "libarcsdec targets are not present" )
 endif()
+## 1}}}
+## --- Installation {{{1
 
+set (TOOL_NAMES ) ## tool names, used for installation + manpage generation
+list (APPEND TOOL_NAMES
+	${PROJECT_NAME}-calc
+	${PROJECT_NAME}-id
+	${PROJECT_NAME}-parse
+	${PROJECT_NAME}-verify )
 
-
-## --- Install executables
 
 if (NOT SKIP_INSTALL_ALL )
 
@@ -290,139 +442,10 @@ endif()
 
 
 
-## --- BUILD_TYPE specific settings
-
-option (WITH_NATIVE "Use platform specific optimization on compiling" OFF )
-
-if (CMAKE_BUILD_TYPE STREQUAL "Release" )
-
-	set (WITH_NATIVE ON CACHE BOOL
-			"Release: Force platform specific optimization" FORCE )
-endif ()
 
 
 
-## --- Compiler Specific Settings
-
-## g++: Warnings
-set (PROJECT_CXX_GNU_FLAGS_WARNINGS
-	-Wall -Wextra -Wpedantic -Weffc++
-	-Wold-style-cast
-	-Wsuggest-override
-	-Wcast-align
-	-Wcast-qual
-	-Wctor-dtor-privacy
-	-Wdisabled-optimization
-	-Wformat=2
-	-Wlogical-op
-	-Wmissing-declarations
-	-Wmissing-include-dirs
-	-Wnoexcept
-	-Woverloaded-virtual
-	-Wredundant-decls
-	-Wshadow
-	-Wsign-conversion
-	-Wsign-promo
-	-Wstrict-null-sentinel
-	-Wstrict-overflow=3
-	-Wswitch-default
-	-Wundef
-	-Wuseless-cast
-	-Wzero-as-null-pointer-constant
-	)
-
-## g++: Optimize flags
-set (PROJECT_CXX_GNU_FLAGS_OPTIMIZE  -march=native -mtune=generic )
-
-
-## clang++: Warnings
-## Clang warnings are quite aggressive by default. Some of the g++ warnings are
-## either compatibility flags that do nothing or are activated by other meta
-## flags. Some are just on by default. The following list is intended to contain
-## only those flags that are off by default and no compatibility flags.
-set (PROJECT_CXX_CLANG_FLAGS_WARNINGS
-	-Wall -Wextra -Wpedantic -Weffc++
-	-Wold-style-cast
-	-Wcast-align
-	-Wcast-qual
-	-Wformat=2
-	-Wshadow
-	-Wsign-conversion
-	-Wundef
-	-Wunused
-	-Wzero-as-null-pointer-constant
-	# -- clang++ specific --
-	-Winconsistent-missing-destructor-override
-	)
-
-## clang++: Optimize flags
-set (PROJECT_CXX_CLANG_FLAGS_OPTIMIZE -march=native -mtune=generic )
-
-
-## Compiler: apply specific flags
-
-if (CMAKE_COMPILER_IS_GNUCXX ) ## for g++
-
-	message (STATUS "Select compile flags for g++" )
-
-	set (PROJECT_CXX_FLAGS_WARNINGS ${PROJECT_CXX_GNU_FLAGS_WARNINGS} )
-	set (PROJECT_CXX_FLAGS_OPTIMIZE ${PROJECT_CXX_GNU_FLAGS_OPTIMIZE} )
-
-elseif (CMAKE_CXX_COMPILER MATCHES ".*clang"       ## for clang
-		OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" )
-
-	message (STATUS "Select compile flags for clang++" )
-
-	set (PROJECT_CXX_FLAGS_WARNINGS ${PROJECT_CXX_CLANG_FLAGS_WARNINGS} )
-	set (PROJECT_CXX_FLAGS_OPTIMIZE ${PROJECT_CXX_CLANG_FLAGS_OPTIMIZE} )
-
-else()
-
-	message (WARNING "C++ Compiler seems to be neither g++ nor clang++" )
-	message (WARNING "No compile flags specified for the actual C++ compiler" )
-	message (WARNING "Try a generic compile without project specific flags" )
-
-endif()
-
-
-## Compiler: Activate Warnings
-
-target_compile_options (objects         PRIVATE ${PROJECT_CXX_FLAGS_WARNINGS} )
-target_compile_options (${PROJECT_NAME} PRIVATE ${PROJECT_CXX_FLAGS_WARNINGS} )
-
-message (STATUS "Warning Flags: ${PROJECT_CXX_FLAGS_WARNINGS}" )
-
-
-## Compiler: Activate Optimizations (default ON for Release, otherwise OFF)
-
-if (WITH_NATIVE )
-
-	message (STATUS "Build with platform specific optimization" )
-
-	target_compile_options (objects PRIVATE ${PROJECT_CXX_FLAGS_OPTIMIZE} )
-
-	target_compile_options (${PROJECT_NAME}
-		PRIVATE ${PROJECT_CXX_FLAGS_OPTIMIZE} )
-else()
-
-	message (STATUS "Build without platform specific optimization" )
-
-endif (WITH_NATIVE )
-
-
-
-## --- Tool informations (for manpages and installing symlinks)
-
-set (TOOL_NAMES ) ## Iterable tool names, used for manpage generation
-list (APPEND TOOL_NAMES
-	${PROJECT_NAME}-calc
-	${PROJECT_NAME}-id
-	${PROJECT_NAME}-parse
-	${PROJECT_NAME}-verify )
-
-
-
-## --- Optional: Build tests, using Catch2 testing framework (default: OFF)
+## --- Optional: Build tests (default: OFF) {{{1
 
 option (WITH_TESTS "Build unit tests" OFF )
 
@@ -441,19 +464,38 @@ if (WITH_TESTS)
 endif (WITH_TESTS)
 
 
-## --- Optional: Build documentation (default: OFF)
 
-option (WITH_DOCS          "Build documentation for public API"     OFF )
-option (USE_MCSS           "Build documentation using m.css"        OFF )
+## --- Optional: Build documentation (default: OFF) {{{1
 
-## Process configuration for building the documentation
+option (WITH_DOCS          "Build documentation for public API"           OFF )
+option (USE_DOC_TOOL       "Build documentation using specified tool"     OFF )
+## TODO Remove the following line
+option (USE_MCSS           "Build documentation using m.css"              OFF )
+
+## -- Process configuration for building the documentation
 if (WITH_DOCS )
 
 	add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/doc )
+else ()
+
+	if (USE_DOC_TOOL )
+		message (FATAL_ERROR "-DWITH_DOCS=ON is required to set USE_DOC_TOOL." )
+	endif()
 endif (WITH_DOCS )
 
 
-## If on *nix, prepare man pages
+## -- For backwards compatibility
+if (USE_MCSS ) # TODO Remove that
+
+	if (NOT "MCSS" IN_LIST USE_DOC_TOOL )
+		list (APPEND USE_DOC_TOOL "MCSS" )
+	endif()
+	unset (USE_MCSS )
+	message (WARNING "Option USE_MCSS is deprecated and will be removed soon!"
+		" Use -DUSE_DOC_TOOL=MCSS instead." )
+endif()
+
+## --- UNIX man pages {{{1
 
 if (UNIX )
 

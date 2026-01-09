@@ -1,5 +1,3 @@
-# vim:set ft=conf
-
 ## Base configuration for doxygen.
 ##
 ## Activates only HTML output, deactives LaTeX.
@@ -47,8 +45,10 @@ WARN_LOGFILE           = @PROJECT_LOG_DIR@/Doxygen_Warnings.log
 WARN_NO_PARAMDOC       = YES
 
 INPUT                  = @DOXYGEN_INPUT@
+EXCLUDE                = build thirdparty
 FILE_PATTERNS          = @DOXYGEN_FILE_PATTERNS@
 EXCLUDE_PATTERNS       = *.cpp
+RECURSIVE              = YES
 
 USE_MDFILE_AS_MAINPAGE = @DOXYGEN_USE_MDFILE_AS_MAINPAGE@
 
@@ -59,4 +59,7 @@ VERBATIM_HEADERS       = NO
 GENERATE_LATEX         = NO
 
 GROUP_GRAPHS           = NO
+
+#HIDE_INLINE_NAMESPACES = YES
+## https://github.com/doxygen/doxygen/pull/10070
 

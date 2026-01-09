@@ -1,0 +1,137 @@
+  /* Custom m.css theme for arcs-tools. */
+
+:root {
+  /* Text properties */
+  --font: 'Source Sans Pro', sans-serif;
+  --code-font: 'Source Code Pro', monospace;
+  --font-size: 16px;
+  --code-font-size: 0.9em; /* *not* rem, so it follows surrounding font size */
+  --line-height: normal;
+  --paragraph-indent: 1.5rem;
+  --paragraph-align: justify;
+  --link-decoration: underline;
+  --link-decoration-nav: none;
+  --link-decoration-heading: none;
+  --nav-brand-case: uppercase;
+  --nav-menu-case: none;
+  --nav-heading-case: uppercase;
+  --nav-categories-case: lowercase;
+  --landing-header-case: lowercase;
+  --heading-font-weight: 600;
+
+  /* Shapes */
+  --border-radius: 0.2rem;
+
+  /* Basics */
+  --background-color: #3a4f05; /* custom */
+  --color: #d8cbc7; /* custom */
+  --line-color: #6f823d; /* custom */
+  --link-color: #8cc204; /* custom */
+  --link-active-color: #ff715b; /* custom */
+  --mark-color: #880000; /* custom */
+  --mark-background-color: #c7cf2f;
+  --code-color: #e6e6e6;
+  --code-inverted-color: rgba(230, 230, 230, 0.33);
+  --console-color: var(--code-color);
+  --console-inverted-color: var(--code-inverted-color);
+  /* This is simply color-picked --code-note-background-color on top of
+     --background-color */
+  --code-background-color: #344112; /* custom */
+  --code-note-background-color: rgba(34, 39, 46, 0.5);
+  --console-background-color: #1a1c1d;
+  --button-background-color: #22272e;
+
+  /* Header */
+  --header-border-width: 0 0 0.25rem 0;
+  --header-color: #ffffff;
+  --header-breadcrumb-color: #747474; /* same as --dim-color */
+  --header-background-color: #232c0d; /* custom */
+  --header-background-color-landing: rgba(58, 79, 05, 0.65); /* 3a4f05 */
+  --header-background-color-jumbo: rgba(132, 169, 28, 0.25); /* #84ad1c */
+  --header-link-color: #ffffff;
+  --header-link-active-color: #8cc204; /* custom */
+  --header-link-current-color: #f7b05b; /* custom */
+  --header-link-active-background-color: #445d07; /* custom */
+  --header-link-active-background-color-semi: rgba(41, 47, 55, 0.5);
+
+  /* Footer */
+  --footer-font-size: 0.85rem;
+  --footer-color: #d8cbc7; /* custom */
+  --footer-background-color: #6f823d; /* custom */
+  --footer-link-color: #8cc204; /* custom */
+  --footer-link-active-color: #ff715b; /* custom */
+
+  /* Cover image */
+  --cover-image-background-color: #0f1217;
+
+  /* Search (used only by m-documentation.css) */
+  --search-overlay-color: var(--header-background-color-landing);
+  --search-background-color: var(--header-background-color);
+
+  /* Article */
+  --article-header-color: #f0f0f0;
+  --article-footer-color: #c5c5c5;
+  --article-heading-color: #f7b05b; /* custom */
+  --article-heading-active-color: #ff715b; /* custom */
+
+  /* Right navigation panel */
+  --navpanel-link-color: #ffffff;
+  --navpanel-link-active-color: #a5c9ea;
+
+  /* Plots */
+  --plot-background-color: #34424d;
+  --plot-error-color: #ffffff;
+
+  /* Colored components */
+  --default-color: #dcdcdc;
+  --default-link-active-color: #a5c9ea;
+  --default-filled-color: #dcdcdc;
+  --default-filled-background-color: #b1740f;/* #9b9b22; \see \remark */ /* custom */
+  --default-filled-link-color: #5b9dd9;
+  --default-filled-link-active-color: #a5c9ea;
+
+  --primary-color: #a5c9ea;
+  --primary-link-active-color: #dcdcdc;
+  --primary-filled-color: #2f363f;
+  --primary-filled-background-color: #a5c2db;
+  --primary-filled-link-color: #2a75b6;
+  --primary-filled-link-active-color: #2f363f;
+
+  --success-color: #3bd267;
+  --success-link-active-color: #acecbe;
+  --success-filled-color: #acecbe;
+  --success-filled-background-color: #2a703f;
+  --success-filled-link-color: #3bd267;
+  --success-filled-link-active-color: #acecbe;
+
+  --warning-color: #c7cf2f;
+  --warning-link-active-color: #e9ecae;
+  --warning-filled-color: #e9ecae;
+  --warning-filled-background-color: #e8871e; /* #848fa5; \attention */ /* custom */
+  --warning-filled-link-color: #b8bf2b;
+  --warning-filled-link-active-color: #e9ecae;
+
+  --danger-color: #cd3431;
+  --danger-link-active-color: #ff9391;
+  --danger-filled-color: #ff9391; /* bug+warning text, warning headline */ /* custom */
+  --danger-filled-background-color: #b3001b; /* \bug \warning */ /* custom */
+  --danger-filled-link-color: #ffffff; /* bug headline */
+  --danger-filled-link-active-color: #ff715b; /* custom */
+
+  --info-color: #2f83cc;
+  --info-link-active-color: #5297d7;
+  --info-filled-color: #a5caeb;
+  --info-filled-background-color: #0d3064; /* \note #7cc1df; */ /* custom */
+  --info-filled-link-color: #5297d7;
+  --info-filled-link-active-color: #a5caeb;
+
+  --dim-color: #959595; /* custom */
+  --dim-link-color: #bcbcbc; /* custom */
+  --dim-link-active-color: #8cc204; /* custom */
+  --dim-filled-color: #959595; /* custom */
+  --dim-filled-background-color: #2d3236; /* custom */
+  --dim-filled-link-color: #acacac;
+  --dim-filled-link-active-color: #747474;
+  --dim-button-active-color: #acacac;
+}
+

@@ -1,14 +1,19 @@
-## CMake file for m.css
+## CMake file for building the documentation with m.css
+##
+## vim:fdm=marker
 ##
 ## Use HTML5/CSS3 from m.css for generating HTML from Doxygen XML output
 ##
-## Prerequisites from parent:
-## - Targets: 'doc'
-## - Variables: DOC_GEN_DIR, DOC_COMMENT, DOXYGEN_NEEDS_XML_DEDUP,
-##              DOXYGEN_VERSION (from find_package)
+## Prerequisites from PARENT:
+## - Targets:   'doc'
+## - Variables: DOC_COMMENT, DOC_DOXYFILE_BASE, DOC_GEN_DIR, DOC_SOURCES
 ##
 ## Provides:
-## - Targets: 'arcstools_mcss_doc'
+## - Targets: 'arcstools_mcss_generate_html'
+
+cmake_minimum_required (VERSION 3.10 )
+
+message (STATUS "Will build documentation with m.css" )
 
 if (WIN32 )
 
@@ -16,24 +21,18 @@ if (WIN32 )
 		"m.css support is currently not available for Windows" )
 endif()
 
-
-cmake_minimum_required (VERSION 3.10 )
-
-message (STATUS "Will build documentation with m.css" )
-
 find_package (Git REQUIRED )
 
 
-
-## --- Overwrite default values from parent
+## --- Overwrite Default Values From Parent {{{1
 
 set (DOXYGEN_OUTPUT_DIRECTORY "${DOC_GEN_DIR}/mcss" )
 set (DOC_COMMENT              "${DOC_COMMENT}, using m.css" )
 
-## --- Some variables
+## --- Some Variables {{{1
 
-set (OUTPUT_MAINPAGE   "${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html" )
-set (OUTPUT_INDEX      "${DOXYGEN_OUTPUT_DIRECTORY}/xml/index.xml" )
+set (INDEX_HTML        "${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html" )
+set (INDEX_XML         "${DOXYGEN_OUTPUT_DIRECTORY}/xml/index.xml" )
 set (DOXYFILE_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in" )
 set (DOXYFILE          "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile" )
 set (CONFPY            "${CMAKE_CURRENT_BINARY_DIR}/conf.py" )
@@ -41,18 +40,20 @@ set (CONFPY            "${CMAKE_CURRENT_BINARY_DIR}/conf.py" )
 set (MCSS_REPO_URL       "https://github.com/mosra/m.css.git" )
 set (MCSS_SCRIPT_RELPATH "documentation/doxygen.py" )
 ## Commented out:
-## Before commit 3f568563a8b70fc49a479250d51a2fdc71a66943:
+## Before m.css commit 3f568563a8b70fc49a479250d51a2fdc71a66943:
 ## set (MCSS_SCRIPT_RELPATH "doxygen/dox2html5.py" )
+## 1}}}
 
 
-add_custom_target (arcstools_mcss_doc DEPENDS ${OUTPUT_MAINPAGE} )
+add_custom_target (arcstools_mcss_generate_html DEPENDS "${INDEX_HTML}" )
+add_dependencies  (arcstools_doc_generate_html arcstools_mcss_generate_html )
 
 
-## --- Define m.css to be checked out/updated while configuring
+## --- Define m.css to be Checked out/Updated on Configure {{{1
 
-if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.11.0" )
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.11.0" )
 
-	## --- Use FetchContent if possible
+	## --- FetchContent {{{2
 
 	## This will NOT update the cloned m.css on build!
 
@@ -61,10 +62,10 @@ if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.11.0" )
 	FetchContent_Declare (m_css
 		GIT_REPOSITORY    "${MCSS_REPO_URL}"
 		#GIT_TAG          ... use always HEAD of default branch
-		UPDATE_COMMAND    ${GIT_EXECUTABLE} pull
+		UPDATE_COMMAND    "${GIT_EXECUTABLE}" pull
 	)
 
-	if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.14" )
+	if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.14" )
 
 		FetchContent_MakeAvailable (m_css )
 
@@ -73,20 +74,21 @@ if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.11.0" )
 		if (NOT m_css_POPULATED )
 
 			FetchContent_Populate (m_css )
-
-		endif (NOT m_css_POPULATED )
+		endif()
 	endif()
 
 	set (MCSS_SOURCE_DIR "${m_css_SOURCE_DIR}" )
-	set (MCSS_CMD "${m_css_SOURCE_DIR}/${MCSS_SCRIPT_RELPATH}" )
+	set (MCSS_CMD        "${m_css_SOURCE_DIR}/${MCSS_SCRIPT_RELPATH}" )
+	# 2}}}
+else()
 
-else() ## No FetchContent module available
+	## No FetchContent module available
 
-	## --- Define m.css as target (will be updated on build)
+	## --- ExternalProject (will be updated on build) {{{2
 
 	include (ExternalProject )
 
-	ExternalProject_Add (mcss_download
+	ExternalProject_Add (arcstools_mcss_download
 		GIT_REPOSITORY    ${MCSS_REPO_URL}
 		#GIT_TAG          ... use always HEAD of default branch
 		GIT_SHALLOW       true
@@ -94,7 +96,7 @@ else() ## No FetchContent module available
 		TIMEOUT           10
 		# DOWNLOAD_COMMAND use default
 		PATCH_COMMAND     ""
-		UPDATE_COMMAND    ${GIT_EXECUTABLE} pull
+		UPDATE_COMMAND    "${GIT_EXECUTABLE}" pull
 		CONFIGURE_COMMAND ""
 		BUILD_COMMAND     ""
 		INSTALL_COMMAND   ""
@@ -105,73 +107,90 @@ else() ## No FetchContent module available
 	ExternalProject_Get_Property (mcss_download SOURCE_DIR )
 
 	set (MCSS_SOURCE_DIR "${SOURCE_DIR}" )
-	set (MCSS_CMD "${SOURCE_DIR}/${MCSS_SCRIPT_RELPATH}" )
+	set (MCSS_CMD        "${SOURCE_DIR}/${MCSS_SCRIPT_RELPATH}" )
 
 	unset(SOURCE_DIR )
 
-	add_dependencies (arcstools_mcss_doc mcss_download )
+	add_dependencies (arcstools_mcss_generate_html arcstools_mcss_download )
+	# 2}}}
 endif()
 
 
 
-## Create Doxyfile for m.css
+## --- Create Doxyfile for m.css {{{1
 configure_file ("${DOXYFILE_TEMPLATE}"  "${DOXYFILE}"  @ONLY )
 
 
-## Create conf.py for m.css
-configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in"  "${CONFPY}"  @ONLY )
+## --- Create conf.py for m.css {{{1
+set (CONFPY_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in" )
+configure_file ("${CONFPY_SOURCE}" "${CONFPY}"  @ONLY )
+
+
+## --- Configure Custom Colors (commented out) {{{1
+#add_subdirectory (custom-colors )
+## TODO Activate this for custom colors in m.css
 
 
 
-## --- Set up python environment
+## --- Set up Python Environment {{{1
 
 add_requirements_target (arcstools_mcss_requirements
 	"${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt"
 )
 
-add_dependencies (arcstools_mcss_doc arcstools_mcss_requirements )
+add_dependencies (arcstools_mcss_generate_html
+	arcstools_mcss_requirements
+	arcstools_doxygen_provide_xml
+)
 
 
 
-## --- Build rule for running m.css
+## --- Target for Running m.css {{{1
 
-if (DOXYGEN_NEEDS_XML_DEDUP )
+set (MCSS_LOG_FILE "${PROJECT_LOG_DIR}/MCSS.log" )
+
+if (DOXYGEN_XML_POSTPROCESSING_TASKS )
 
 	## Doxygen needs to run separately from m.css since we want to post-process
 	## its XML output.
 
-	add_doxygen_target (arcstools_mcss_doxygen ${DOXYFILE} ${OUTPUT_INDEX} )
-
-	add_dependencies (arcstools_mcss_doc arcstools_mcss_doxygen )
+	add_doxygen_xml_target (arcstools_mcss_generate_xml
+		"${DOXYFILE}" "${INDEX_XML}" )
 
 	add_custom_command (
-		OUTPUT  "${OUTPUT_MAINPAGE}"
-		COMMAND "${PYTHON_CMD}" "${MCSS_CMD}" --no-doxygen "${CONFPY}"
-				2> "${PROJECT_LOG_DIR}/MCSS.log"
-		DEPENDS ${OUTPUT_INDEX} ${DOC_SOURCES}
+		OUTPUT  "${INDEX_HTML}"
+		DEPENDS "${INDEX_XML}" ${DOC_SOURCES}
+		COMMAND "${PYTHON_CMD}"
+		ARGS    "${MCSS_CMD}" --no-doxygen "${CONFPY}" 2> "${MCSS_LOG_FILE}"
 		WORKING_DIRECTORY "${DOC_GEN_DIR}"
 		COMMENT "${DOC_COMMENT}"
 		VERBATIM
 	)
 else()
 
-	add_dependencies (arcstools_mcss_doc
-		arcstools_create_output_dir arcstools_create_log_dir )
-
 	## Doxygen is called by m.css.
 
+	## Since we do not use add_doxygen_target, we have to take care for the
+	## dependencies manually
+	add_dependencies (arcstools_mcss_generate_html
+		## add deps from PARENT
+		arcstools_create_output_dir
+		arcstools_create_log_dir
+		arcstools_static_pages_files
+		## add deps from here
+		arcstools_mcss_requirements
+	)
+
 	add_custom_command (
-		OUTPUT  "${OUTPUT_MAINPAGE}"
-		COMMAND "${PYTHON_CMD}" "${MCSS_CMD}" "${CONFPY}"
-				2> "${PROJECT_LOG_DIR}/MCSS.log"
+		OUTPUT  "${INDEX_HTML}"
 		DEPENDS "${DOC_DOXYFILE_BASE}"
 				"${DOXYFILE}"
 				${DOC_SOURCES}
+		COMMAND "${PYTHON_CMD}"
+		ARGS    "${MCSS_CMD}" "${CONFPY}" 2> "${MCSS_LOG_FILE}"
 		WORKING_DIRECTORY "${DOC_GEN_DIR}"
 		COMMENT "${DOC_COMMENT}"
 		VERBATIM
 	)
 endif()
-
-add_dependencies (arcstools_doc arcstools_mcss_doc )
 
