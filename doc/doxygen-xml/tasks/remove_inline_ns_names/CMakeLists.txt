@@ -1,9 +1,5 @@
 ## CMake script for removing inline namespace names doxygen's class*.xml files
 ##
-## About the problem this task solves (duplicates in class list):
-## https://stackoverflow.com/a/79032607
-## https://github.com/JoergBrueggmann/duplicate-descriptions-doxygen
-##
 ## vim:fdm=marker
 
 cmake_minimum_required (VERSION 3.12 )
@@ -25,6 +21,20 @@ function (register_remove_inline_ns_names XML_INPUT_PATH )
 	#set (_tf     "F_00_01" )
 
 	set (_XML_CLASSFILES
+		## Namespaces
+		# "${XML_INPUT_PATH}/namespace${_v100}ansi.xml"
+		# "${XML_INPUT_PATH}/namespace${_v100}arid.xml"
+		# "${XML_INPUT_PATH}/namespace${_v100}calc.xml"
+		# "${XML_INPUT_PATH}/namespace${_v100}cli.xml"
+		# "${XML_INPUT_PATH}/namespace${_v100}dbar.xml"
+		# "${XML_INPUT_PATH}/namespace${_v100}details.xml"
+		# "${XML_INPUT_PATH}/namespace${_v100}file.xml"
+		# "${XML_INPUT_PATH}/namespace${_v100}info.xml"
+		# "${XML_INPUT_PATH}/namespace${_v100}input.xml"
+		# "${XML_INPUT_PATH}/namespace${_v100}table.xml"
+		# "${XML_INPUT_PATH}/namespace${_v100}valid.xml"
+		# "${XML_INPUT_PATH}/namespacearcsapp${_sep}v__1__0__0.xml"
+		# "${XML_INPUT_PATH}/namespacearcsapp.xml"
 		## Classes
 		## Listed in tab 'Classes':
 		# "${XML_INPUT_PATH}/class${_v100}ansi${_sep}Modifier.xml"

@@ -8,6 +8,9 @@
 ## or avoid this.
 ## https://github.com/doxygen/doxygen/issues/5914
 ## https://github.com/doxygen/doxygen/pull/10070
+##
+## https://stackoverflow.com/a/79032607
+## https://github.com/JoergBrueggmann/duplicate-descriptions-doxygen
 
 cmake_minimum_required (VERSION 3.12 )
 
