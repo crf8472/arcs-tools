@@ -15,8 +15,9 @@ namespace arcsapp
 {
 inline namespace v_1_0_0
 {
+
 /**
- * \brief ANSI color management.
+ * \brief ANSI color and SGR management.
  */
 namespace ansi
 {
