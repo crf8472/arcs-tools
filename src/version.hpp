@@ -14,6 +14,9 @@
  */
 namespace arcsapp
 {
+/**
+ * \brief arcstk API version 1.0.0.
+ */
 inline namespace v_1_0_0
 {
 
