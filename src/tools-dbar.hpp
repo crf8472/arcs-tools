@@ -1,6 +1,5 @@
 #ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
 #define __ARCSTOOLS_TOOLS_DBAR_HPP__
-
 /**
  * \file
  *
