@@ -233,12 +233,17 @@ constexpr OptionCode VERIFY::CONFIDENCE;
 OptionCode ARVerifyConfigurator::select_reference_source(const Configuration& c)
 	const
 {
+	const auto is_valid = [](const std::unique_ptr<ChecksumSource> s) -> bool
+	{
+		return s && s->size() > 0;// TODO && s.has_nonempty_blocks()
+	};
+
 	// TODO Just cache the size when parsing instead of querying for objects!
 	// Could be done by inspecting total_records_parsed() in apply_parsers()
 	// Empty input could be directly ignored instead of analyzed
 
 	if (const auto o = c.object_ptr<DBAR>(VERIFY::RESPONSEFILE);
-			o && o->size() > 0)
+			o && is_valid(std::make_unique<DBARSource>(o)))
 	{
 		ARCS_LOG(DEBUG1)<< "Reference source is a dBAR object of size "
 			<< o->size();
@@ -247,7 +252,7 @@ OptionCode ARVerifyConfigurator::select_reference_source(const Configuration& c)
 	}
 
 	if (const auto o = c.object_ptr<ChecksumValuesType>(VERIFY::REFVALUES);
-			o && !o->empty())
+			o && is_valid(std::make_unique<ChecksumValuesSource>(o)))
 	{
 		ARCS_LOG(DEBUG1) << "Reference source is a sequence of checksum values "
 			<< "of size " << o->size();
