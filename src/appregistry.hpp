@@ -142,18 +142,18 @@ public:
 	 */
 	static std::set<std::string> registered_names()
 	{
-		using std::begin;
-		using std::end;
-
 		auto* fmap { get_map() };
 		if (!fmap)
 		{
 			return std::set<std::string>{};
 		}
 
+		using std::cbegin;
+		using std::cend;
+
 		std::set<std::string> names{};
-		std::transform(begin(*fmap), end(*fmap),
-				std::inserter(names, begin(names)), RetrieveName());
+		std::transform(cbegin(*fmap), cend(*fmap),
+				std::inserter(names, cbegin(names)), RetrieveName());
 		return names;
 	}
 

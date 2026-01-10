@@ -77,8 +77,8 @@ using arid::RichARId;
 
 void ARIdConfigurator::do_flush_local_options(OptionRegistry& r) const
 {
-	using std::end;
-	r.insert(end(r),
+	using std::cend;
+	r.insert(cend(r),
 	{
 		// from FORMATBASE
 

@@ -508,10 +508,11 @@ public:
 	template <typename T>
 	auto object_ptr(const OptionCode& option) const -> const T*
 	{
-		auto p { objects_.find(option) };
+		const auto p { objects_.find(option) };
 
-		using std::end;
-		if (end(objects_) == p)
+		using std::cend;
+
+		if (cend(objects_) == p)
 		{
 			return nullptr;
 		}

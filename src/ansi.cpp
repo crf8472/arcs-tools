@@ -34,9 +34,9 @@ Highlight reset(const Highlight hl)
 		{ Highlight::BLINK,  Highlight::NOBLINK  }
 	};
 
-	using std::end;
+	using std::cend;
 
-	if (const auto r { highlights.find(hl) }; end(highlights) != r)
+	if (const auto r { highlights.find(hl) }; cend(highlights) != r)
 	{
 		return r->second;
 	}
@@ -69,8 +69,9 @@ Color get_color(const std::string& name)
 		{ "BG_DEFAULT", Color::BG_DEFAULT }
 	};
 
-	using std::end;
-	if (const auto& c = colors.find(name); c != end(colors))
+	using std::cend;
+
+	if (const auto& c = colors.find(name); c != cend(colors))
 	{
 		return c->second;
 	}

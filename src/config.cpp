@@ -91,8 +91,8 @@ Options::Options()
 
 bool Options::is_set(const OptionCode& option) const
 {
-	using std::end;
-	return options_.find(option) != end(options_);
+	using std::cend;
+	return options_.find(option) != cend(options_);
 }
 
 
@@ -120,11 +120,9 @@ void Options::set(const OptionCode& option, const std::string& value)
 
 void Options::unset(const OptionCode& option)
 {
-	const auto o { options_.find(option) };
+	using std::cend;
 
-	using std::end;
-
-	if (o != end(options_))
+	if (const auto o { options_.find(option) }; o != cend(options_))
 	{
 		options_.erase(o);
 	}
@@ -133,11 +131,9 @@ void Options::unset(const OptionCode& option)
 
 std::string Options::value(const OptionCode& option) const
 {
-	const auto o { options_.find(option) };
+	using std::cend;
 
-	using std::end;
-
-	if (o != end(options_))
+	if (const auto o { options_.find(option) }; o != cend(options_))
 	{
 		return o->second/* value */;
 	}
@@ -186,8 +182,8 @@ bool Options::empty() const
 
 bool contains(const arcsapp::OptionCode c, const arcsapp::OptionRegistry& r)
 {
-	using std::begin;
-	using std::end;
+	using std::cbegin;
+	using std::cend;
 	using std::find_if;
 
 	const auto code_equals =
@@ -196,7 +192,7 @@ bool contains(const arcsapp::OptionCode c, const arcsapp::OptionRegistry& r)
 			return p.first == c;
 		};
 
-	return find_if(begin(r), end(r), code_equals) != end(r);
+	return find_if(cbegin(r), cend(r), code_equals) != cend(r);
 }
 
 

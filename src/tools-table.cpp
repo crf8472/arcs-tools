@@ -149,10 +149,10 @@ const std::vector<ATTR>& TableComposer::fields() const
 
 bool TableComposer::has_field(const ATTR f) const
 {
-	using std::begin;
-	using std::end;
+	using std::cbegin;
+	using std::cend;
 	using std::find;
-	return find(begin(fields_), end(fields_), f) != end(fields_);
+	return find(cbegin(fields_), cend(fields_), f) != cend(fields_);
 }
 
 
@@ -488,7 +488,7 @@ TableComposerBuilder::TableComposerBuilder()
 void TableComposerBuilder::set_label(ATTR type,
 		const std::string& label)
 {
-	auto [ pos, success ] = labels_.insert(std::make_pair(type, label));
+	const auto [ pos, success ] = labels_.insert(std::make_pair(type, label));
 
 	if (!success)
 	{
@@ -503,10 +503,9 @@ void TableComposerBuilder::set_label(ATTR type,
 
 std::string TableComposerBuilder::label(ATTR type)
 {
-	using std::end;
+	using std::cend;
 
-	const auto it { labels_.find(type) };
-	if (it != end(labels_))
+	if (const auto it { labels_.find(type) }; it != cend(labels_))
 	{
 		return it->second;
 	}

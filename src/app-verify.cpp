@@ -154,8 +154,10 @@ ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 				const auto uppercase = [](std::string str) -> std::string
 				{
 					using std::begin;
-					using std::end;
-					std::transform(begin(str), end(str), begin(str),
+					using std::cbegin;
+					using std::cend;
+
+					std::transform(cbegin(str), cend(str), begin(str),
 						[](unsigned char c) { return std::toupper(c); });
 					return str;
 				};
@@ -226,9 +228,9 @@ constexpr OptionCode VERIFY::NOOUTPUT;
 void ARVerifyConfigurator::do_flush_local_options(OptionRegistry& r) const
 {
 	using cli::OP_VALUE;
-	using std::end;
+	using std::cend;
 
-	r.insert(end(r),
+	r.insert(cend(r),
 	{
 		// from FORMATBASE
 
@@ -590,11 +592,10 @@ void VerifyTableCreator::populate_result_creators(
 	// do not repeat the find mechanism
 	const auto required = [](const std::vector<ATTR>& fields, const ATTR f)
 			{
-				// TODO cbegi, cend
-				using std::begin;
-				using std::end;
+				using std::cbegin;
+				using std::cend;
 				using std::find;
-				return find(begin(fields), end(fields), f) != end(fields);
+				return find(cbegin(fields), cend(fields), f) != cend(fields);
 			};
 
 	// do not repeat populating the THEIRS fields
@@ -900,15 +901,15 @@ ColorRegistry::ColorRegistry()
 
 bool ColorRegistry::has(DecorationType d) const
 {
-	using std::end;
-	return colors_.find(d) != end(colors_);
+	using std::cend;
+	return colors_.find(d) != cend(colors_);
 }
 
 
 std::pair<ansi::Color,ansi::Color> ColorRegistry::get(DecorationType d) const
 {
-	using std::end;
-	if (const auto c = colors_.find(d); c != end(colors_))
+	using std::cend;
+	if (const auto c = colors_.find(d); c != cend(colors_))
 	{
 		return c->second;
 	}
@@ -931,8 +932,9 @@ ansi::Color ColorRegistry::get_bg(DecorationType d) const
 
 void ColorRegistry::set_fg(DecorationType d, ansi::Color c)
 {
-	using std::end;
-	if (const auto p = colors_.find(d); p != end(colors_))
+	using std::cend;
+
+	if (const auto p = colors_.find(d); p != cend(colors_))
 	{
 		p->second.first = c;
 	} else
@@ -944,8 +946,9 @@ void ColorRegistry::set_fg(DecorationType d, ansi::Color c)
 
 void ColorRegistry::set_bg(DecorationType d, ansi::Color c)
 {
-	using std::end;
-	if (const auto p = colors_.find(d); p != end(colors_))
+	using std::cend;
+
+	if (const auto p = colors_.find(d); p != cend(colors_))
 	{
 		p->second.second = c;
 	} else
@@ -957,7 +960,9 @@ void ColorRegistry::set_bg(DecorationType d, ansi::Color c)
 
 void ColorRegistry::set(DecorationType d, ansi::Color fg, ansi::Color bg)
 {
-	if (const auto p = colors_.find(d); p != end(colors_))
+	using std::cend;
+
+	if (const auto p = colors_.find(d); p != cend(colors_))
 	{
 		p->second.first  = fg;
 		p->second.second = bg;

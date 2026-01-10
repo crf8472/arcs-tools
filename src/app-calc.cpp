@@ -165,8 +165,8 @@ std::unique_ptr<Options> ARCalcConfiguratorBase::configure_calcbase_options(
 
 void ARCalcConfigurator::do_flush_local_options(OptionRegistry& r) const
 {
-	using std::end;
-	r.insert(end(r),
+	using std::cend;
+	r.insert(cend(r),
 	{
 		// from FORMATBASE
 
@@ -382,6 +382,7 @@ void CalcTableCreator::populate_result_creators(
 				using std::cbegin;
 				using std::cend;
 				using std::find;
+
 				return find(cbegin(fields), cend(fields), f) != cend(fields);
 			};
 

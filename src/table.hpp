@@ -114,15 +114,17 @@ inline std::string to_sep_list(const Container c, const std::string delim,
 
 	if (c.size() > 1)
 	{
-		using std::begin;
+		using std::cbegin;
+		using std::crbegin;
 
-		std::transform(begin(c), --c.rbegin().base(),
+		std::transform(cbegin(c), --c.crbegin().base(),
 			std::ostream_iterator<std::string>(list_stream, delim.c_str()), f);
 
-		list_stream << f(*c.rbegin());
+		//list_stream << f(*c.rbegin());
+		list_stream << f(*crbegin(c));
 	} else
 	{
-		list_stream << f(*begin(c));
+		list_stream << f(*cbegin(c));
 	}
 
 	return list_stream.str();

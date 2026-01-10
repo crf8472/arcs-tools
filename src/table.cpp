@@ -39,17 +39,17 @@ std::string trim(std::string s)
 {
 	static const auto whitespace = [](int c) { return !std::isspace(c); };
 
-	using std::begin;
-	using std::end;
+	using std::cbegin;
+	using std::cend;
 
 	// left
-	s.erase(begin(s), std::find_if(begin(s), end(s), whitespace));
+	s.erase(cbegin(s), std::find_if(cbegin(s), cend(s), whitespace));
 
-	using std::rbegin;
-	using std::rend;
+	using std::crbegin;
+	using std::crend;
 
 	// right
-	s.erase(std::find_if(rbegin(s), rend(s), whitespace).base(), end(s));
+	s.erase(std::find_if(crbegin(s), crend(s), whitespace).base(), cend(s));
 
 	return s;
 }
@@ -126,13 +126,13 @@ void insert_or_resize(std::vector<T>& v, const std::size_t elements,
 		v.resize(elements);
 	} else
 	{
-		using std::begin;
-		using std::end;
+		using std::cbegin;
+		using std::cend;
 
 		const auto exceeds { static_cast<std::size_t>(after_pos) >= v.size() };
 
 		// Step to the nearest: 'row' or to last element
-		const auto pos { exceeds ? end(v) : begin(v) += after_pos };
+		const auto pos { exceeds ? cend(v) : cbegin(v) += after_pos };
 
 		// Actual amount of rows to insert
 		auto amount { elements };
@@ -625,17 +625,17 @@ std::vector<std::string> DefaultSplitter::do_split(
 
 	auto parts = std::vector<std::string>{};
 
-	using std::begin;
-	using std::end;
+	using std::cbegin;
+	using std::cend;
 
-	std::for_each(begin(delimited), end(delimited),
+	std::for_each(cbegin(delimited), cend(delimited),
 		[&parts, max_len](std::string s)
 		{
 			// Split every substring that is still too long
 			if (s.length() > max_len)
 			{
-				auto splitted { details::split(s, max_len) };
-				parts.insert(end(parts), begin(splitted), end(splitted));
+				const auto splitted { details::split(s, max_len) };
+				parts.insert(cend(parts), cbegin(splitted), cend(splitted));
 			} else
 			{
 				parts.push_back(s);
