@@ -274,7 +274,8 @@ ChecksumValuesType ChecksumValuesParser::do_parse_nonempty(
 				[](const std::string& s) -> uint32_t
 				{
 					return std::stoul(s, nullptr, 16);
-				});
+				},
+				counter());
 }
 
 

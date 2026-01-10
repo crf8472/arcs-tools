@@ -21,30 +21,37 @@ TEST_CASE ( "parse_list_to_objects()", "[parse_list_to_objects]" )
 	SECTION ("Parse non-empty lists of hex values successfully")
 	{
 		const auto list1 { "0x98B10E0F,0x475F57E9,0x7304F1C4" };
+		auto count = int {};
+		auto& count_ref = count;
 
 		const auto res1 { parse_list_to_objects<uint32_t>(list1, ',',
 				[](const std::string& s) -> uint32_t
 				{
 					return std::stoul(s, nullptr, 16);
-				}) };
+				},
+				count_ref) };
 
 		CHECK ( 3 == res1.size() );
+		CHECK ( 3 == count );
 		CHECK ( 0x98B10E0F == res1[0] );
 		CHECK ( 0x475F57E9 == res1[1] );
 		CHECK ( 0x7304F1C4 == res1[2] );
 
-		const auto list2 { "98B10E0F,475F57E9,7304F1C4" };
+		const auto list2 { "98B10E0F,475F57E9,7304F1C4,F00345CC" };
 
 		const auto res2 { parse_list_to_objects<uint32_t>(list2, ',',
 				[](const std::string& s) -> uint32_t
 				{
 					return std::stoul(s, nullptr, 16);
-				}) };
+				},
+				count) };
 
-		CHECK ( 3 == res2.size() );
+		CHECK ( 4 == res2.size() );
+		CHECK ( 4 == count );
 		CHECK ( 0x98B10E0F == res2[0] );
 		CHECK ( 0x475F57E9 == res2[1] );
 		CHECK ( 0x7304F1C4 == res2[2] );
+		CHECK ( 0xF00345CC == res2[3] );
 	}
 
 }
@@ -75,9 +82,13 @@ TEST_CASE ( "ChecksumValuesParser", "[checksumvaluesparser]" )
 
 		const auto output = parser.parse(input); // std::any
 
-		//CHECK ( output.size() == 1 );
-		//CHECK ( output.at( 1) == 0xB89992E5 );
-		//CHECK ( output.at(15) == 0x58FC3C3E );
+		CHECK ( 15 == parser.total_records_parsed() );
+
+		const auto typed_output = std::any_cast<ChecksumValuesType>(output);
+
+		CHECK ( typed_output.size() == 15 );
+		CHECK ( typed_output.at( 0) == 0xB89992E5 );
+		CHECK ( typed_output.at(14) == 0x58FC3C3E );
 	}
 }
 

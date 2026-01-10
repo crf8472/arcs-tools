@@ -312,6 +312,7 @@ std::unique_ptr<Configuration> Configurator::create(
 	auto config = std::make_unique<Configuration>(std::move(options));
 
 	apply_parsers(*config);
+	do_postprocess(*config);
 	do_validate(*config);
 
 	return config;
@@ -322,18 +323,24 @@ void Configurator::apply_parsers(Configuration& config) const
 {
 	// Parse input strings to objects
 
-	for (const auto& [option, load] : do_parser_list())
+	for (const auto& [option, load_parser ] : do_parser_list())
 	{
 		if (config.is_set(option))
 		{
 			ARCS_LOG_DEBUG << "Parse input string for option " << option;
 
-			config.put(option, load()->parse(config.value(option)));
+			config.put(option, load_parser()->parse(config.value(option)));
 
 			ARCS_LOG_DEBUG << "Successfully parsed input string for option "
 				<< option;
 		}
 	}
+}
+
+
+void Configurator::do_postprocess(Configuration& /*c*/) const
+{
+	// Default implementation does nothing
 }
 
 

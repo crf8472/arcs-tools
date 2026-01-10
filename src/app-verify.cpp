@@ -133,8 +133,9 @@ ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 	ColorRegistry r;
 	r.clear(); // remove defaults, use only values from input string
 
+	auto count = counter();
 	input::parse_list(input, ',',
-			[&r, &r_sep, &v_sep](const std::string& s)
+			[&r, &r_sep, &v_sep, &count](const std::string& s)
 			{
 				// parse a single TYPE:COLOR pair
 
@@ -185,6 +186,8 @@ ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 						<< color1 << ", " << color2;
 				}
 
+				++count;
+
 				using ansi::get_color;
 
 				if (color2.empty())
@@ -220,9 +223,35 @@ constexpr OptionCode VERIFY::REFVALUES;
 constexpr OptionCode VERIFY::PRINTALL;
 constexpr OptionCode VERIFY::BOOLEAN;
 constexpr OptionCode VERIFY::NOOUTPUT;
+constexpr OptionCode VERIFY::COLORED;
+constexpr OptionCode VERIFY::CONFIDENCE;
 
 
 // ARVerifyConfigurator
+
+
+OptionCode ARVerifyConfigurator::select_reference_source(const Configuration& c)
+	const
+{
+	// TODO Just cache the size when parsing instead of querying for objects!
+	// Could be done by inspecting total_records_parsed() in apply_parsers()
+	// Empty input could be directly ignored instead of analyzed
+
+	if (const auto o = c.object_ptr<DBAR>(VERIFY::RESPONSEFILE);
+			o && o->size() > 0)
+	{
+		return VERIFY::RESPONSEFILE;
+	}
+
+	if (const auto o = c.object_ptr<ChecksumValuesType>(VERIFY::REFVALUES);
+			o && !o->empty())
+	{
+		return VERIFY::REFVALUES;
+	}
+
+	throw ConfigurationException("Input of either a non-empty dBAR object"
+			" or a non-empty list of reference checksums is required");
+}
 
 
 void ARVerifyConfigurator::do_flush_local_options(OptionRegistry& r) const
@@ -377,6 +406,8 @@ std::unique_ptr<Options> ARVerifyConfigurator::do_configure_options(
 	if (not voptions->is_set(VERIFY::NOALBUM)
 		and voptions->value(VERIFY::METAFILE).empty())
 	{
+		// TODO
+
 		// Album requires dedicated first + last track.
 		// If no ToC is passed, an album can only be verified when passed a
 		// single file for each track.
@@ -464,20 +495,6 @@ void ARVerifyConfigurator::do_validate(const Options& options) const
 			throw ConfigurationException(e.what());
 		}
 	}
-
-	// if (options.is_set(VERIFY::RESPONSEFILE)
-	// 		and options.is_set(VERIFY::REFVALUES))
-	// {
-	// 	throw ConfigurationException("Cannot process --refvalues along with "
-	// 			" -r/--response, only one of these options is allowed");
-	// }
-	//
-	// if (!options.is_set(VERIFY::RESPONSEFILE)
-	// 		and !options.is_set(VERIFY::REFVALUES))
-	// {
-	// 	throw ConfigurationException("No reference values specified."
-	// 			" One of --refvalues and -r/--response is required");
-	// }
 }
 
 
@@ -491,6 +508,13 @@ OptionParsers ARVerifyConfigurator::do_parser_list() const
 		{ VERIFY::COLORED,
 			[]{ return std::make_unique<ColorSpecParser>(); } }
 	};
+}
+
+
+void ARVerifyConfigurator::do_postprocess(Configuration& c) const
+{
+	const auto ref_source { select_reference_source(c) };
+	c.put(VERIFY::REFSOURCE, ref_source);
 }
 
 
@@ -1098,48 +1122,6 @@ void ColorizingVerifyTableCreator::set_color_bg(DecorationType d, Color c)
 }
 
 
-// select_reference_source
-
-
-/**
- * \internal
- *
- * \brief Worker: Select preferred input and create reference object from it.
- *
- * Prefer any non-empty DBAR object over any standalone ARCS values.
- *
- * \param[in] dBAR      DBAR object
- * \param[in] refvalues Reference ARCSs object
- *
- * \return The reference source for the verification
- */
-std::unique_ptr<const ChecksumSource> select_reference_source(const DBAR& dBAR,
-		const ChecksumValuesType& refvalues);
-
-std::unique_ptr<const ChecksumSource> select_reference_source(const DBAR& dBAR,
-		const ChecksumValuesType& refvalues)
-{
-	std::unique_ptr<const ChecksumSource> ref_src;
-
-	if (dBAR.size() > 0) // For any non-empty DBAR, prefer DBAR over values
-	{
-		ref_src = std::make_unique<DBARSource>(&dBAR);
-	} else
-	{
-		if (!refvalues.empty())
-		{
-			ref_src = std::make_unique<ChecksumValuesSource>(&refvalues);
-		} else
-		{
-			ref_src = std::make_unique<EmptyChecksumSource>();
-			// TODO Why proceed? Just throw
-		}
-	}
-
-	return ref_src;
-}
-
-
 // AddField
 
 
@@ -1424,6 +1406,29 @@ void ARVerifyApplication::log_matching_files(const Checksums& checksums,
 }
 
 
+std::unique_ptr<ChecksumSource> ARVerifyApplication::get_reference_source(
+		const Configuration& c) const
+{
+	const auto option { c.object<OptionCode>(VERIFY::REFSOURCE) };
+
+	if (VERIFY::RESPONSEFILE == option)
+	{
+		using arcstk::DBARSource;
+
+		return std::make_unique<DBARSource>(
+					c.object_ptr<DBAR>(VERIFY::RESPONSEFILE));
+	}
+
+	if (VERIFY::REFVALUES == option)
+	{
+		return std::make_unique<ChecksumValuesSource>(
+					c.object_ptr<ChecksumValuesType>(VERIFY::REFVALUES));
+	}
+
+	return nullptr;
+}
+
+
 std::string ARVerifyApplication::do_name() const
 {
 	return "verify";
@@ -1446,34 +1451,51 @@ std::unique_ptr<Configurator> ARVerifyApplication::do_create_configurator()
 auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	-> std::pair<int, std::unique_ptr<Result>>
 {
-	const auto ref1 = config.object<DBAR>(VERIFY::RESPONSEFILE);
-	const auto ref2 = config.object<ChecksumValuesType>(VERIFY::REFVALUES);
+	const auto ref_source { get_reference_source(config) };
 
-	const auto ref_source { select_reference_source(ref1, ref2) };
+	// Validations for selected reference source
+
+	using Validation = valid::Validate<Configuration, ChecksumSource>;
+
+	Validation // 1
+	{
+		"Reference values must not be empty",
+		[](const Configuration& /*c*/, const ChecksumSource& s)
+		{
+			return s.size() > 0; // TODO && s.has_nonempty_blocks()
+		},
+		"Verification requires non-empty input of reference values."
+
+	}.perform(config, *ref_source);
+
+	Validation // 2
+	{
+		// If no ToC is available, an album can only be verified when passed
+		// its audio input as a single file for each track. Exclusively in this
+		// case, it is allowed to have no offsets. (Also a single track album
+		// needs an offset for its track.)
+
+		"If album requested but no metafile passed, number of input files "
+		"must match number of reference values",
+		[](const Configuration& c, const ChecksumSource& s)
+		{
+			if (!c.is_set(VERIFY::NOALBUM) && c.value(VERIFY::METAFILE).empty())
+			{
+				for (auto i = std::size_t { 0 }; i < s.size(); ++i)
+				{
+					if (c.arguments()->size() == s.size(i)) { return true; }
+				}
+				return false;
+			}
+			return true;
+		},
+		"Album requested, but number of AccurateRip "
+		"references does not match number of input audio files."
+
+	}.perform(config, *ref_source);
 
 	ARCS_LOG_DEBUG << "Reference checksum source contains "
 		<< ref_source->size() << "blocks of checksums";
-
-	// Album calculation is requested but no metafile is passed
-
-	if (not config.is_set(VERIFY::NOALBUM)
-		and config.value(VERIFY::METAFILE).empty())
-	{
-		// If no ToC is available, an album can only be verified when passed
-		// its audio input as a single file for each track. Only in this case,
-		// we do not need the offsets. (Also a single track album needs an
-		// offset for its track.)
-
-		// This means we must ensure that the total number of reference track
-		// checksums is equal to the total number of input track files.
-
-		if (!ref_source->size()
-				|| ref_source->size(0) != config.arguments()->size())
-		{
-			this->fatal_error("Album requested, but number of AccurateRip "
-					"references does not match number of input audio files.");
-		}
-	}
 
 	// Configure selections (e.g. --reader and --parser)
 

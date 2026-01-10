@@ -449,6 +449,14 @@ private:
 	virtual OptionParsers do_parser_list() const;
 
 	/**
+	 * \brief Hook: modify the Configuration after parsing the options but
+	 * befor the final validation.
+	 *
+	 * \param[in] configuration Configuration to work with
+	 */
+	virtual void do_postprocess(Configuration& configuration) const;
+
+	/**
 	 * \brief Hook: called by create() to validate configuration.
 	 *
 	 * The default implementation does not perform any checks.

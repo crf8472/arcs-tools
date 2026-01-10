@@ -142,28 +142,31 @@ void parse_list(const std::string& list, const char delim,
  *
  * \tparam T Type of requested objects
  *
- * \param[in] list         Input string to parse as a list
- * \param[in] delim        Delimiter for list entries
- * \param[in] convert_func Function to convert std::string to T
+ * \param[in]  list         Input string to parse as a list
+ * \param[in]  delim        Delimiter for list entries
+ * \param[in]  convert_func Function to convert std::string to T
+ * \param[out] count        Total number of list entries parsed
  *
  * \return Sequence of input values converted from strings
  */
 template <typename T>
 inline std::vector<T> parse_list_to_objects(const std::string& list,
 		const char delim,
-		const std::function<T(const std::string& s)>& convert_func)
+		const std::function<T(const std::string& s)>& convert_func,
+		int& count)
 {
 	auto results = std::vector<T> {};
 	// TODO reserve default?
 
 	ARCS_LOG(DEBUG2) << "Split input string by delimiter '" << delim << "'";
 
-	auto counter = int { 0 };
+	count = 0;
 	parse_list(list, delim,
-			[&convert_func, &results, &counter](const std::string& s)
+			[&convert_func, &results, &count](const std::string& s)
 			{
+				++count;
 				ARCS_LOG(DEBUG1) << "Parse input string part "
-					<< std::setw(2) << ++counter
+					<< std::setw(2) << count
 					<< ": '"
 					<< s
 					<< "'";
@@ -242,6 +245,11 @@ class InputStringParser : public StringParser
 	virtual auto do_parse_nonempty(const std::string& s) const -> T
 	= 0;
 
+	/**
+	 * \brief Internal counter for parsed units.
+	 */
+	mutable int count_;
+
 	// StringParser
 
 	std::any do_parse(const std::string& s) const final
@@ -252,6 +260,49 @@ class InputStringParser : public StringParser
 		}
 
 		return this->do_parse_nonempty(s);
+	}
+
+protected:
+
+	/**
+	 * \brief Increase record counter.
+	 *
+	 * To be called in do_parse_nonempty() whenever a record is finished.
+	 */
+	void record_done()
+	{
+		++this->count_;
+	}
+
+	/**
+	 * \brief Reference to counter.
+	 *
+	 * Can be used for output parameters like in input::parse_list_to_objects().
+	 */
+	int& counter() const
+	{
+		return this->count_;
+	}
+
+public:
+
+	/**
+	 * \brief Default constructor.
+	 */
+	InputStringParser()
+		: count_ { 0 }
+	{
+		// empty
+	}
+
+	/**
+	 * \brief Total number of syntactic units seen in the last call of parse().
+	 *
+	 * \return Total number of syntactic units parsed.
+	 */
+	int total_records_parsed() const
+	{
+		return this->counter();
 	}
 };
 

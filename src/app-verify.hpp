@@ -65,6 +65,7 @@ using arcstk::VerificationResult;
 // arcsapp
 using table::CellDecorator;
 using table::TableComposer;
+using input::ChecksumValuesType;
 using input::InputStringParser;
 
 
@@ -96,6 +97,8 @@ class VERIFY final : public CALCBASE
 
 public:
 
+	// cli options
+
 	static constexpr OptionCode NOFIRST      = BASE +  0; // 20
 	static constexpr OptionCode NOLAST       = BASE +  1;
 	static constexpr OptionCode NOALBUM      = BASE +  2;
@@ -106,6 +109,10 @@ public:
 	static constexpr OptionCode NOOUTPUT     = BASE +  7;
 	static constexpr OptionCode COLORED      = BASE +  8;
 	static constexpr OptionCode CONFIDENCE   = BASE +  9; // 29
+
+	// internal options
+
+	static constexpr OptionCode REFSOURCE    = BASE + 10; // 30
 };
 
 
@@ -122,6 +129,21 @@ public:
 
 private:
 
+	/**
+	 * \brief Worker: Select reference input and create object from it.
+	 *
+	 * Find out which of the actually possible reference input is non-empty.
+	 *
+	 * Multiple non-empty reference input is ruled out by option-level
+	 * validation. However, the single non-empty input source has to be
+	 * identified.
+	 *
+	 * \param[in] c Configuration to select from
+	 *
+	 * \return OptionCode of the actual input
+	 */
+	OptionCode select_reference_source(const Configuration& c) const;
+
 	// Configurator
 
 	void do_flush_local_options(OptionRegistry& r) const final;
@@ -132,6 +154,8 @@ private:
 	void do_validate(const Options& o) const final;
 
 	OptionParsers do_parser_list() const final;
+
+	void do_postprocess(Configuration& /*c*/) const final;
 
 	void do_validate(const Configuration& c) const final;
 };
@@ -732,6 +756,15 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 		const VerificationResult& vresult, const int block,
 		const bool version = true) const;
 
+	/**
+	 * \brief Get reference values from Configuration.
+	 *
+	 * \param[in] c Configuration object to use
+	 *
+	 * \return Source for reference checksums
+	 */
+	std::unique_ptr<ChecksumSource> get_reference_source(const Configuration& c)
+		const;
 
 	// ARCalcApplicationBase
 
