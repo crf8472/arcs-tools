@@ -240,12 +240,18 @@ OptionCode ARVerifyConfigurator::select_reference_source(const Configuration& c)
 	if (const auto o = c.object_ptr<DBAR>(VERIFY::RESPONSEFILE);
 			o && o->size() > 0)
 	{
+		ARCS_LOG(DEBUG1)<< "Reference source is a dBAR object of size "
+			<< o->size();
+
 		return VERIFY::RESPONSEFILE;
 	}
 
 	if (const auto o = c.object_ptr<ChecksumValuesType>(VERIFY::REFVALUES);
 			o && !o->empty())
 	{
+		ARCS_LOG(DEBUG1) << "Reference source is a sequence of checksum values "
+			<< "of size " << o->size();
+
 		return VERIFY::REFVALUES;
 	}
 
@@ -513,6 +519,7 @@ OptionParsers ARVerifyConfigurator::do_parser_list() const
 
 void ARVerifyConfigurator::do_postprocess(Configuration& c) const
 {
+	// Pre-select the reference source to use
 	const auto ref_source { select_reference_source(c) };
 	c.put(VERIFY::REFSOURCE, ref_source);
 }
@@ -520,14 +527,20 @@ void ARVerifyConfigurator::do_postprocess(Configuration& c) const
 
 void ARVerifyConfigurator::do_validate(const Configuration& c) const
 {
-	// No reference checksums at all? => Error
+	using Validation = valid::Validate<Configuration>;
 
-	if (c.object<DBAR>(VERIFY::RESPONSEFILE).size() == 0
-		&& c.object<ChecksumValuesType>(VERIFY::REFVALUES).empty())
+	Validation
 	{
-		throw std::runtime_error(
-				"No reference checksums for verification available.");
-	}
+		"Provide non-empty reference source",
+		[](const Configuration& config)
+		{
+			const auto* const ref_source {
+					config.object_ptr<OptionCode>(VERIFY::REFSOURCE) };
+
+			return ref_source && OPTION::NONE != *ref_source;
+		},
+		"No reference checksums for verification available."
+	}.perform(c);
 }
 
 
