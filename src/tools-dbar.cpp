@@ -61,7 +61,7 @@ using arcsapp::arid::ARIdTableLayout;
 PrintParseHandler::PrintParseHandler()
 	: block_counter_  { 0 }
 	, track_          { 0 }
-	, arid_layout_    { std::make_unique<ARIdTableLayout>(false, false, false,
+	, arid_layout_    { std::make_unique<ARIdTableLayout>(false, true, false,
 							false, false, false, false, false) }
 	, triplet_layout_ { std::make_unique<DBARTripletLayout>() }
 {
@@ -127,8 +127,8 @@ void PrintParseHandler::do_start_block()
 {
 	++block_counter_;
 
-	std::ostringstream ss;
-	ss << "---------- Block " << std::dec << block_counter_ << " : ";
+	auto ss = std::ostringstream {};
+	ss << "---------- Block " << std::dec << block_counter_ << ": ";
 	this->print(ss.str());
 }
 
@@ -137,11 +137,16 @@ void PrintParseHandler::do_header(const uint8_t track_count,
 		const uint32_t disc_id1, const uint32_t disc_id2,
 		const uint32_t cddb_id)
 {
-	ARId id(track_count, disc_id1, disc_id2, cddb_id);
+	const auto id  = ARId { track_count, disc_id1, disc_id2, cddb_id };
+	const auto str = arid_layout()->format(id, std::string{/*empty*/});
 
-	auto str = arid_layout()->format(id, std::string{});
-	str += '\n';
-	this->print(str);
+	if (!str.empty())
+	{
+		this->print(str);
+	} else
+	{
+		this->print("\n");
+	}
 }
 
 
@@ -149,9 +154,10 @@ void PrintParseHandler::do_triplet(const uint32_t arcs,
 		const uint8_t confidence, const uint32_t frame450_arcs)
 {
 	++track_;
-	const DBARTriplet triplet(arcs, confidence, frame450_arcs);
 
-	auto str = triplet_layout()->format(track_, triplet);
+	const auto triplet = DBARTriplet { arcs, confidence, frame450_arcs };
+	const auto str     = triplet_layout()->format(track_, triplet);
+
 	this->print(str);
 }
 
@@ -164,8 +170,8 @@ void PrintParseHandler::do_end_block()
 
 void PrintParseHandler::do_end_input()
 {
-	std::ostringstream ss;
-	ss << "========== Blocks: " << std::dec << block_counter_ << '\n';
+	auto ss = std::ostringstream {};
+	ss << "========== Parsed Blocks: " << std::dec << block_counter_ << '\n';
 	this->print(ss.str());
 }
 
@@ -180,14 +186,13 @@ std::string DBARTripletLayout::do_format(InputTuple t) const
 	const auto track   = std::get<0>(t);
 	const auto triplet = std::get<1>(t);
 
-	auto hex = calc::HexLayout {};
-
-	const int width_arcs = 8;
-	const int width_conf = 2;
-
+	// TODO can be static / configurable whatever
+	const auto width_arcs = int { 8 };
+	const auto width_conf = int { 2 };
 	const auto unparsed_value = std::string { "????????" };
+	const auto hex = calc::HexLayout {};
 
-	std::ostringstream out;
+	auto out = std::ostringstream {};
 
 	// TODO Make label configurable
 	out << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
