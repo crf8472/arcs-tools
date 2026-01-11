@@ -1260,8 +1260,8 @@ void validate(const Checksums& checksums, const ToC* toc,
 
 					return false;
 				},
-				"Reference does not contain a blocks with the same number of"
-				"total tracks of the actual checksums",
+				"Reference does not contain a source with the same number of "
+				"total tracks like the actual checksums",
 			}
 
 			// TODO reference should have at least one block with id == arid
