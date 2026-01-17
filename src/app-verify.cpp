@@ -111,29 +111,37 @@ using table::TableComposer;
 // ColorSpecParser
 
 
+ColorSpecParser::ColorSpecParser()
+	: registry_ {/*empty*/}
+{
+	// empty
+}
+
+
 std::string ColorSpecParser::start_message() const
 {
 	return "List of output color requests";
 }
 
 
-ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
+void ColorSpecParser::do_parse_nonempty(const std::string& input) const
 {
 	using cli::CallSyntaxException;
 	using cli::OP_VALUE;
 
 	if (input == OP_VALUE::USE_DEFAULT)
 	{
-		return ColorRegistry{ /* default colors */ };
+		return; /* default colors */
 	}
 
-	const std::string r_sep = ":";  // record separator (name : value)
-	const std::string v_sep  = "+"; // value separator  (value, value)
+	const std::string r_sep = ":"; // record separator (name : value)
+	const std::string v_sep = "+"; // value separator  (value, value)
 
-	ColorRegistry r;
-	r.clear(); // remove defaults, use only values from input string
+	const auto r = std::addressof(registry_);
+	r->clear(); // remove defaults, use only values from input string
 
 	auto count = counter();
+
 	input::parse_list(input, ',',
 			[&r, &r_sep, &v_sep, &count](const std::string& s)
 			{
@@ -196,19 +204,24 @@ ColorRegistry ColorSpecParser::do_parse_nonempty(const std::string& input) const
 
 					if (is_foreground(color))
 					{
-						r.set_fg(get_decorationtype(type_str), color);
+						r->set_fg(get_decorationtype(type_str), color);
 					} else
 					{
-						r.set_bg(get_decorationtype(type_str), color);
+						r->set_bg(get_decorationtype(type_str), color);
 					}
 
 				} else
 				{
-					r.set(get_decorationtype(type_str),
+					r->set(get_decorationtype(type_str),
 						get_color(color1), get_color(color2));
 				}
 			});
-	return r;
+}
+
+
+ColorRegistry ColorSpecParser::provide_object() const
+{
+	return registry_;
 }
 
 
@@ -233,7 +246,7 @@ constexpr OptionCode VERIFY::CONFIDENCE;
 OptionCode ARVerifyConfigurator::select_reference_source(const Configuration& c)
 	const
 {
-	const auto is_valid = [](const std::unique_ptr<ChecksumSource> s) -> bool
+	const auto is_valid = [](const ChecksumSource* s) -> bool
 	{
 		return s && s->size() > 0;// TODO && s.has_nonempty_blocks()
 	};
@@ -243,7 +256,7 @@ OptionCode ARVerifyConfigurator::select_reference_source(const Configuration& c)
 	// Empty input could be directly ignored instead of analyzed
 
 	if (const auto o = c.object_ptr<DBAR>(VERIFY::RESPONSEFILE);
-			o && is_valid(std::make_unique<DBARSource>(o)))
+			o && is_valid(std::make_unique<DBARSource>(o).get()))
 	{
 		ARCS_LOG(DEBUG1)<< "Reference source is a dBAR object of size "
 			<< o->size();
@@ -251,8 +264,8 @@ OptionCode ARVerifyConfigurator::select_reference_source(const Configuration& c)
 		return VERIFY::RESPONSEFILE;
 	}
 
-	if (const auto o = c.object_ptr<ChecksumValuesType>(VERIFY::REFVALUES);
-			o && is_valid(std::make_unique<ChecksumValuesSource>(o)))
+	if (const auto o = c.object_ptr<ChecksumValuesSource>(VERIFY::REFVALUES);
+			o && is_valid(o))
 	{
 		ARCS_LOG(DEBUG1) << "Reference source is a sequence of checksum values "
 			<< "of size " << o->size();
@@ -1440,7 +1453,7 @@ std::unique_ptr<ChecksumSource> ARVerifyApplication::get_reference_source(
 	if (VERIFY::REFVALUES == option)
 	{
 		return std::make_unique<ChecksumValuesSource>(
-					c.object_ptr<ChecksumValuesType>(VERIFY::REFVALUES));
+					c.object<ChecksumValuesSource>(VERIFY::REFVALUES));
 	}
 
 	return nullptr;

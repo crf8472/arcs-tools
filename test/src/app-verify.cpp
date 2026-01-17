@@ -189,6 +189,8 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 	SECTION ("Configuration is loaded with correct color string")
 	{
 		using arcstk::Checksum;
+		using arcsapp::ChecksumValuesType;
+		using arcsapp::input::ChecksumValuesSource;
 
 		const int argc = 4;
 		const char* argv[] = { "arcstk-verify",
@@ -219,8 +221,8 @@ TEST_CASE ( "ARVerifyConfigurator", "[ARVerifyConfigurator]" )
 				config->object<ColorRegistry>(VERIFY::COLORED).get(
 					DecorationType::MISMATCH).first );
 
-		CHECK ( std::vector<uint32_t>{ 1, 2, 3 } ==
-				config->object<std::vector<uint32_t>>(VERIFY::REFVALUES) );
+		CHECK ( ChecksumValuesType{ 1, 2, 3 } ==
+				config->object<ChecksumValuesSource>(VERIFY::REFVALUES).values() );
 	}
 }
 

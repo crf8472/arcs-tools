@@ -61,6 +61,7 @@ TEST_CASE ( "ChecksumValuesParser", "[checksumvaluesparser]" )
 {
 	using arcsapp::input::ChecksumValuesParser;
 	using arcsapp::input::ChecksumValuesType;
+	using arcsapp::input::ChecksumValuesSource;
 
 	const auto parser = ChecksumValuesParser {};
 
@@ -84,7 +85,8 @@ TEST_CASE ( "ChecksumValuesParser", "[checksumvaluesparser]" )
 
 		CHECK ( 15 == parser.total_records_parsed() );
 
-		const auto typed_output = std::any_cast<ChecksumValuesType>(output);
+		const auto typed_output =
+			std::any_cast<ChecksumValuesSource>(output).values();
 
 		CHECK ( typed_output.size() == 15 );
 		CHECK ( typed_output.at( 0) == 0xB89992E5 );

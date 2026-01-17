@@ -69,23 +69,6 @@ using input::ChecksumValuesType;
 using input::InputStringParser;
 
 
-class ColorRegistry;
-
-/**
- * \brief Parser for a color specification.
- *
- * Accepts a comma-separated list of colon-separated name-value pairs. The name
- * is the name of a DecorationType. The value is a color specification, which is
- * either a single color name or a pair of color names separated by '+' (plus).
- */
-class ColorSpecParser final : public InputStringParser<ColorRegistry>
-{
-	std::string start_message() const final;
-
-	ColorRegistry do_parse_nonempty(const std::string& s) const final;
-};
-
-
 /**
  * \brief Configuration options for ARVerifyApplications.
  *
@@ -578,6 +561,29 @@ public:
 	 * \brief Delete all colors.
 	 */
 	void clear();
+};
+
+
+/**
+ * \brief Parser for a color specification.
+ *
+ * Accepts a comma-separated list of colon-separated name-value pairs. The name
+ * is the name of a DecorationType. The value is a color specification, which is
+ * either a single color name or a pair of color names separated by '+' (plus).
+ */
+class ColorSpecParser final : public InputStringParser<ColorRegistry>
+{
+	mutable ColorRegistry registry_;
+
+	std::string start_message() const final;
+
+	void do_parse_nonempty(const std::string& s) const final;
+
+	ColorRegistry provide_object() const final;
+
+public:
+
+	ColorSpecParser();
 };
 
 

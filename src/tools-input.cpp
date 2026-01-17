@@ -214,6 +214,13 @@ std::any StringParser::parse(const std::string& s) const
 // DBARParser
 
 
+DBARParser::DBARParser()
+	: result_ {/*empty*/}
+{
+	// empty
+}
+
+
 DBAR DBARParser::load_data(const std::string& responsefile) const
 {
 	using cli::CallSyntaxException;
@@ -244,19 +251,32 @@ std::string DBARParser::start_message() const
 }
 
 
-DBAR DBARParser::do_parse_empty() const
+void DBARParser::do_parse_empty() const
 {
-	return this->load_data("");
+	result_ = load_data("");
 }
 
 
-DBAR DBARParser::do_parse_nonempty(const std::string& s) const
+void DBARParser::do_parse_nonempty(const std::string& s) const
 {
-	return this->load_data(s);
+	result_ = load_data(s);
+}
+
+
+DBAR DBARParser::provide_object() const
+{
+	return result_;
 }
 
 
 // ChecksumValuesParser
+
+
+ChecksumValuesParser::ChecksumValuesParser()
+	: values_ {/*empty*/}
+{
+	// empty
+}
 
 
 std::string ChecksumValuesParser::start_message() const
@@ -265,10 +285,10 @@ std::string ChecksumValuesParser::start_message() const
 }
 
 
-ChecksumValuesType ChecksumValuesParser::do_parse_nonempty(
+void ChecksumValuesParser::do_parse_nonempty(
 		const std::string& checksum_list) const
 {
-	return input::parse_list_to_objects<uint32_t>(
+	values_ = input::parse_list_to_objects<uint32_t>(
 				checksum_list,
 				',',
 				[](const std::string& s) -> uint32_t
@@ -279,7 +299,27 @@ ChecksumValuesType ChecksumValuesParser::do_parse_nonempty(
 }
 
 
+ChecksumValuesSource ChecksumValuesParser::provide_object() const
+{
+	return values_;
+}
+
+
 // ChecksumValuesSource
+
+
+ChecksumValuesSource::ChecksumValuesSource(const ChecksumValuesType& values)
+	: reference_source_ { values }
+{
+	// empty
+}
+
+
+ChecksumValuesSource::ChecksumValuesSource()
+	: reference_source_ {/*empty*/}
+{
+	// empty
+}
 
 
 ARId ChecksumValuesSource::do_id(const ChecksumSource::size_type /*block_idx*/)
@@ -293,7 +333,7 @@ Checksum ChecksumValuesSource::do_checksum(
 		const ChecksumSource::size_type /*block_idx*/,
 		const ChecksumSource::size_type track_idx) const
 {
-	return source()->at(track_idx);
+	return reference_source_.at(track_idx);
 }
 
 
@@ -301,7 +341,7 @@ const uint32_t& ChecksumValuesSource::do_arcs_value(
 		const ChecksumSource::size_type /*block_idx*/,
 		const ChecksumSource::size_type track_idx) const
 {
-	return source()->at(track_idx);
+	return reference_source_.at(track_idx);
 }
 
 
@@ -331,7 +371,7 @@ std::size_t ChecksumValuesSource::do_size(
 				+ to_string(block_idx));
 	}
 
-	return source()->size();
+	return reference_source_.size();
 }
 
 
@@ -344,6 +384,12 @@ std::size_t ChecksumValuesSource::do_size() const
 std::unique_ptr<ChecksumSource> ChecksumValuesSource::do_clone() const
 {
 	return std::make_unique<ChecksumValuesSource>(*this);
+}
+
+
+ChecksumValuesType ChecksumValuesSource::values() const
+{
+	return reference_source_;
 }
 
 

@@ -214,9 +214,10 @@ public:
 /**
  * \brief Abstract base class for for option value string parsers.
  *
- * \tparam T Result type
+ * \tparam T Parsing result type
+ * \tparam R Returned object type
  */
-template <typename T>
+template <typename T, typename R=T>
 class InputStringParser : public StringParser
 {
 	/**
@@ -227,10 +228,9 @@ class InputStringParser : public StringParser
 	 *
 	 * \return Result instance for an empty input string
 	 */
-	virtual auto do_parse_empty() const -> T
+	virtual void do_parse_empty() const
 	{
 		ARCS_LOG(DEBUG1) << "Empty parser input, return default object";
-		return T { /* empty */ }; // TODO Use declval?
 	}
 
 	/**
@@ -242,7 +242,15 @@ class InputStringParser : public StringParser
 	 *
 	 * \throws std::runtime_error If parsing fails
 	 */
-	virtual auto do_parse_nonempty(const std::string& s) const -> T
+	virtual void do_parse_nonempty(const std::string& s) const
+	= 0;
+
+	/**
+	 * \brief Provide the result object as a std::any.
+	 *
+	 * \return Parsing result wrapped in a std::any.
+	 */
+	virtual auto provide_object() const -> R
 	= 0;
 
 	/**
@@ -256,10 +264,13 @@ class InputStringParser : public StringParser
 	{
 		if (s.empty())
 		{
-			return this->do_parse_empty();
+			this->do_parse_empty();
+		} else
+		{
+			this->do_parse_nonempty(s);
 		}
 
-		return this->do_parse_nonempty(s);
+		return provide_object();
 	}
 
 protected:
@@ -285,6 +296,11 @@ protected:
 	}
 
 public:
+
+	/**
+	 * \brief Result type provided by this parser.
+	 */
+	using result_type = T;
 
 	/**
 	 * \brief Default constructor.
@@ -315,6 +331,11 @@ public:
 class DBARParser final : public InputStringParser<DBAR>
 {
 	/**
+	 * \brief Internal parsing result.
+	 */
+	mutable DBAR result_;
+
+	/**
 	 * \brief Load DBAR from file or from stdin.
 	 *
 	 * In case the filename is empty, input is expected from stdin.
@@ -327,9 +348,15 @@ class DBARParser final : public InputStringParser<DBAR>
 
 	std::string start_message() const final;
 
-	DBAR do_parse_empty() const final;
+	void do_parse_empty() const final;
 
-	DBAR do_parse_nonempty(const std::string& s) const final;
+	void do_parse_nonempty(const std::string& s) const final;
+
+	DBAR provide_object() const final;
+
+public:
+
+	DBARParser();
 };
 
 
@@ -340,26 +367,12 @@ using ChecksumValuesType = std::vector<uint32_t>;
 
 
 /**
- * \brief Parser for a list of ARCS values.
- *
- * Accepts a comma-separated list of 32 bit hexadecimal values as input.
- * Does not support blocks, i.e. all input values are considered as part of
- * block 0. The class is therefore only suitable to represent a single sequence
- * of contiguous tracks of a single album.
- */
-class ChecksumValuesParser final : public InputStringParser<ChecksumValuesType>
-{
-	std::string start_message() const final;
-
-	ChecksumValuesType do_parse_nonempty(const std::string& s) const final;
-};
-
-
-/**
  * \brief Compatibility wrapper for a list of ARCS values.
  */
-class ChecksumValuesSource final : public ChecksumSourceOf<ChecksumValuesType>
+class ChecksumValuesSource final : public ChecksumSource
 {
+	ChecksumValuesType reference_source_;
+
 	ARId do_id(const ChecksumSource::size_type block_idx) const final;
 	Checksum do_checksum(const ChecksumSource::size_type block_idx,
 			const ChecksumSource::size_type idx) const final;
@@ -376,8 +389,52 @@ class ChecksumValuesSource final : public ChecksumSourceOf<ChecksumValuesType>
 
 public:
 
-	using ChecksumSourceOf::ChecksumSourceOf;
-	using ChecksumSourceOf::operator=;
+	/**
+	 * \brief Converting constructor for ChecksumValuesType.
+	 *
+	 * \param[in] values Checksum values
+	 */
+	ChecksumValuesSource(const ChecksumValuesType& values);
+
+	/**
+	 * \brief Default constructor.
+	 */
+	ChecksumValuesSource();
+
+	/**
+	 * \brief Checksum values.
+	 *
+	 * \return The checksum values as parsed.
+	 */
+	ChecksumValuesType values() const;
+
+	using ChecksumSource::ChecksumSource;
+	using ChecksumSource::operator=;
+};
+
+
+/**
+ * \brief Parser for a list of ARCS values.
+ *
+ * Accepts a comma-separated list of 32 bit hexadecimal values as input.
+ * Does not support blocks, i.e. all input values are considered as part of
+ * block 0. The class is therefore only suitable to represent a single sequence
+ * of contiguous tracks of a single album.
+ */
+class ChecksumValuesParser final :
+			public InputStringParser<ChecksumValuesType, ChecksumValuesSource>
+{
+	mutable ChecksumValuesSource values_;
+
+	std::string start_message() const final;
+
+	void do_parse_nonempty(const std::string& s) const final;
+
+	ChecksumValuesSource provide_object() const final;
+
+public:
+
+	ChecksumValuesParser();
 };
 
 
