@@ -11,9 +11,9 @@
 #endif
 
 
-TEST_CASE ( "DBARTripletLayout", "[artripletlayout]" )
+TEST_CASE ( "TextDecoratedTripletLayout", "[textdecoratedtripletlayout]" )
 {
-	using arcsapp::dbar::DBARTripletLayout;
+	using arcsapp::dbar::TextDecoratedTripletLayout;
 
 	using arcstk::DBARTriplet;
 
@@ -23,7 +23,7 @@ TEST_CASE ( "DBARTripletLayout", "[artripletlayout]" )
 	REQUIRE ( t.confidence() == 24 );
 	REQUIRE ( t.frame450_arcs() == 0x12345678u );
 
-	DBARTripletLayout lyt;
+	TextDecoratedTripletLayout lyt;
 
 	CHECK ( not lyt.format(8, t).empty() );
 }

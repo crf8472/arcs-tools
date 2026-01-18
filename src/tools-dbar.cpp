@@ -55,15 +55,281 @@ using arcstk::parse_stream;
 using arcsapp::arid::ARIdTableLayout;
 
 
+// DBAROutputFormat
+
+
+DBAROutputFormat::DBAROutputFormat()
+	: block_counter_  { 0 }
+	, track_counter_  { 0 }
+	, arid_layout_    { std::make_unique<ARIdTableLayout>(false, true, false,
+							false, false, false, false, false) }
+	, triplet_layout_ { std::make_unique<TextDecoratedTripletLayout>() }
+{
+	// empty
+}
+
+
+std::ostringstream DBAROutputFormat::create_stream() const
+{
+	return std::ostringstream {/*default*/};
+}
+
+
+ARIdLayout* DBAROutputFormat::arid_layout()
+{
+	return arid_layout_.get();
+}
+
+
+DBARTripletLayout* DBAROutputFormat::triplet_layout()
+{
+	return triplet_layout_.get();
+}
+
+
+std::string DBAROutputFormat::start_input() const
+{
+	block_counter_ = 0;
+
+	return do_start_input();
+}
+
+
+std::string DBAROutputFormat::start_block() const
+{
+	++block_counter_;
+	track_counter_ = 0;
+
+	return do_start_block();
+}
+
+
+std::string DBAROutputFormat::header(const uint8_t track_count,
+		const uint32_t id1,
+		const uint32_t id2,
+		const uint32_t cddb_id) const
+{
+	return do_header(track_count, id1, id2, cddb_id);
+}
+
+
+std::string DBAROutputFormat::triplet(const uint32_t arcs,
+		const uint8_t confidence,
+		const uint32_t frame450_arcs) const
+{
+	++track_counter_;
+
+	return do_triplet(arcs, confidence, frame450_arcs);
+}
+
+
+std::string DBAROutputFormat::end_block() const
+{
+	return do_end_block();
+}
+
+
+std::string DBAROutputFormat::end_input() const
+{
+	return do_end_input();
+}
+
+
+unsigned DBAROutputFormat::block_counter() const
+{
+	return block_counter_;
+}
+
+
+unsigned DBAROutputFormat::track_counter() const
+{
+	return track_counter_;
+}
+
+
+void DBAROutputFormat::set_arid_layout(
+		std::unique_ptr<ARIdLayout> format)
+{
+	arid_layout_ = std::move(format);
+}
+
+
+const ARIdLayout& DBAROutputFormat::arid_layout() const
+{
+	return *arid_layout_;
+}
+
+
+void DBAROutputFormat::set_triplet_layout(
+		std::unique_ptr<DBARTripletLayout> format)
+{
+	triplet_layout_ = std::move(format);
+}
+
+
+const DBARTripletLayout& DBAROutputFormat::triplet_layout() const
+{
+	return *triplet_layout_;
+}
+
+
+// TextDecoratedTripletLayout
+
+
+TextDecoratedTripletLayout::TextDecoratedTripletLayout()
+	: width_arcs_     { 8 }
+	, width_conf_     { 2 }
+	, unparsed_value_ { "????????" }
+	, with_label_     { true }
+{
+	// empty
+}
+
+
+void TextDecoratedTripletLayout::set_width_arcs(const int width)
+{
+	width_arcs_ = width;
+}
+
+
+int TextDecoratedTripletLayout::width_arcs() const
+{
+	return width_arcs_;
+}
+
+
+void TextDecoratedTripletLayout::set_width_conf(const int width)
+{
+	width_conf_ = width;
+}
+
+
+int TextDecoratedTripletLayout::width_conf() const
+{
+	return width_conf_;
+}
+
+
+void TextDecoratedTripletLayout::set_unparsed_value_symbol(const std::string& s)
+{
+	unparsed_value_ = s;
+}
+
+
+std::string TextDecoratedTripletLayout::set_unparsed_value_symbol() const
+{
+	return unparsed_value_;
+}
+
+
+void TextDecoratedTripletLayout::set_with_label(const bool flag)
+{
+	with_label_ = flag;
+}
+
+
+bool TextDecoratedTripletLayout::with_label() const
+{
+	return with_label_;
+}
+
+
+std::string TextDecoratedTripletLayout::do_format(InputTuple t) const
+{
+	using arcstk::Checksum;
+
+	const auto track   = std::get<0>(t);
+	const auto triplet = std::get<1>(t);
+
+	auto out = std::ostringstream {};
+
+	if (with_label())
+	{
+		const auto label = std::string { "Track" };
+
+		out << label << " " << std::setw(2) << std::setfill('0') << track
+			<< ": ";
+	}
+
+	const auto hex = calc::HexLayout {/*default*/};
+
+	out << std::setw(width_arcs())
+			<< hex.format(Checksum { triplet.arcs() }, width_arcs());
+
+	out << " ";
+
+	out << "(";
+	out << std::setw(width_conf()) << std::setfill('0')
+			<< triplet.confidence();
+	out << ") ";
+
+	out << std::setw(width_arcs())
+			<< hex.format(Checksum { triplet.frame450_arcs() }, width_arcs());
+
+	out << '\n';
+
+	return out.str();
+}
+
+
+// TextDecoratedFormat
+
+
+std::string TextDecoratedFormat::do_start_input() const
+{
+	return std::string {/*empty*/};
+}
+
+
+std::string TextDecoratedFormat::do_start_block() const
+{
+	auto ss { create_stream() };
+	ss << "---------- Block " << std::dec << block_counter() << ": ";
+	return ss.str();
+}
+
+
+std::string TextDecoratedFormat::do_header(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const
+{
+	const auto id  = ARId { track_count, id1, id2, cddb_id };
+
+	return arid_layout().format(id, std::string{/*no alt prefix*/});
+}
+
+
+std::string TextDecoratedFormat::do_triplet(const uint32_t arcs,
+			const uint8_t confidence,
+			const uint32_t frame450_arcs) const
+{
+	const auto triplet = DBARTriplet { arcs, confidence, frame450_arcs };
+
+	return triplet_layout().format(track_counter(), triplet);
+}
+
+
+std::string TextDecoratedFormat::do_end_block() const
+{
+	return std::string {/*empty*/};
+}
+
+
+std::string TextDecoratedFormat::do_end_input() const
+{
+	auto ss { create_stream() };
+	ss << "========== Parsed Blocks: " << std::dec << block_counter() << '\n';
+	return ss.str();
+}
+
+
+
 // PrintParseHandler
 
 
 PrintParseHandler::PrintParseHandler()
-	: block_counter_  { 0 }
-	, track_          { 0 }
-	, arid_layout_    { std::make_unique<ARIdTableLayout>(false, true, false,
-							false, false, false, false, false) }
-	, triplet_layout_ { std::make_unique<DBARTripletLayout>() }
+	: format_         { std::make_unique<TextDecoratedFormat>() }
 {
 	// empty
 }
@@ -73,63 +339,42 @@ PrintParseHandler::~PrintParseHandler() noexcept
 = default;
 
 
-void PrintParseHandler::set_arid_layout(
-		std::unique_ptr<ARIdLayout> format)
+void PrintParseHandler::set_format(std::unique_ptr<DBAROutputFormat> format)
 {
-	arid_layout_ = std::move(format);
+	format_ = std::move(format);
 }
 
 
-const ARIdLayout& PrintParseHandler::arid_layout() const
+const DBAROutputFormat& PrintParseHandler::format() const
 {
-	return *arid_layout_;
+	return *format_;
 }
 
 
-void PrintParseHandler::set_triplet_layout(
-		std::unique_ptr<DBARTripletLayout> format)
+DBAROutputFormat* PrintParseHandler::format()
 {
-	triplet_layout_ = std::move(format);
+	return format_.get();
 }
 
 
 void PrintParseHandler::print(const std::string& str) const
 {
-	Output::instance().output(str);
-}
-
-
-const DBARTripletLayout& PrintParseHandler::triplet_layout() const
-{
-	return *triplet_layout_;
-}
-
-
-ARIdLayout* PrintParseHandler::arid_layout()
-{
-	return arid_layout_.get();
-}
-
-
-DBARTripletLayout* PrintParseHandler::triplet_layout()
-{
-	return triplet_layout_.get();
+	if (!str.empty())
+	{
+		Output::instance().output(str);
+	}
 }
 
 
 void PrintParseHandler::do_start_input()
 {
-	// empty
+	this->print(format()->start_input());
 }
 
 
 void PrintParseHandler::do_start_block()
 {
-	++block_counter_;
-
-	auto ss = std::ostringstream {};
-	ss << "---------- Block " << std::dec << block_counter_ << ": ";
-	this->print(ss.str());
+	this->print(format()->start_block());
 }
 
 
@@ -137,82 +382,26 @@ void PrintParseHandler::do_header(const uint8_t track_count,
 		const uint32_t disc_id1, const uint32_t disc_id2,
 		const uint32_t cddb_id)
 {
-	const auto id  = ARId { track_count, disc_id1, disc_id2, cddb_id };
-	const auto str = arid_layout()->format(id, std::string{/*empty*/});
-
-	if (!str.empty())
-	{
-		this->print(str);
-	} else
-	{
-		this->print("\n");
-	}
+	this->print(format()->header(track_count, disc_id1, disc_id2, cddb_id));
 }
 
 
 void PrintParseHandler::do_triplet(const uint32_t arcs,
 		const uint8_t confidence, const uint32_t frame450_arcs)
 {
-	++track_;
-
-	const auto triplet = DBARTriplet { arcs, confidence, frame450_arcs };
-	const auto str     = triplet_layout()->format(track_, triplet);
-
-	this->print(str);
+	this->print(format()->triplet(arcs, confidence, frame450_arcs));
 }
 
 
 void PrintParseHandler::do_end_block()
 {
-	track_ = 0;
+	this->print(format()->end_block());
 }
 
 
 void PrintParseHandler::do_end_input()
 {
-	auto ss = std::ostringstream {};
-	ss << "========== Parsed Blocks: " << std::dec << block_counter_ << '\n';
-	this->print(ss.str());
-}
-
-
-// DBARTripletLayout
-
-
-std::string DBARTripletLayout::do_format(InputTuple t) const
-{
-	using arcstk::Checksum;
-
-	const auto track   = std::get<0>(t);
-	const auto triplet = std::get<1>(t);
-
-	// TODO can be static / configurable whatever
-	const auto width_arcs = int { 8 };
-	const auto width_conf = int { 2 };
-	const auto unparsed_value = std::string { "????????" };
-	const auto hex = calc::HexLayout {};
-
-	auto out = std::ostringstream {};
-
-	// TODO Make label configurable
-	out << "Track " << std::setw(2) << std::setfill('0') << track << ": ";
-
-	out << std::setw(width_arcs)
-			<< hex.format(Checksum { triplet.arcs() }, width_arcs);
-
-	out << " ";
-
-	out << "(";
-	out << std::setw(width_conf) << std::setfill('0')
-			<< triplet.confidence();
-	out << ") ";
-
-	out << std::setw(width_arcs)
-			<< hex.format(Checksum { triplet.frame450_arcs() }, width_arcs);
-
-	out << '\n';
-
-	return out.str();
+	this->print(format()->end_input());
 }
 
 } // namespace dbar

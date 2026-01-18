@@ -38,8 +38,6 @@ class ARIdLayout;
 namespace dbar
 {
 
-class DBARTripletLayout;
-
 // libarcstk
 using arcstk::DBAR;
 using arcstk::ParseHandler;
@@ -50,23 +48,114 @@ using arcsapp::arid::ARIdLayout;
 
 
 /**
- * \brief ParseHandler that just prints the parsed content immediately.
- *
- * Printing is performed to Output by default.
+ * \brief Interface for formatting DBARTriplets.
  */
-class PrintParseHandler final : public ParseHandler
+using DBARTripletLayout = Layout<std::string, unsigned, arcstk::DBARTriplet>;
+
+
+/**
+ * \brief Output format for DBARs.
+ *
+ * This format is intended for "direct" output via PrintParseHandler. Each
+ * entity is formatted and printed as passed without aggregation or caching.
+ *
+ * \see PrintParseHandler
+ */
+class DBAROutputFormat
 {
+	virtual std::string do_start_input() const = 0;
+
+	virtual std::string do_start_block() const = 0;
+
+	virtual std::string do_header(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const = 0;
+
+	virtual std::string do_triplet(const uint32_t arcs,
+			const uint8_t confidence,
+			const uint32_t frame450_arcs) const = 0;
+
+	virtual std::string do_end_block() const = 0;
+
+	virtual std::string do_end_input() const = 0;
+
+	/**
+	 * \brief Internal block counter.
+	 */
+	mutable unsigned block_counter_;
+
+	/**
+	 * \brief Internal track counter.
+	 */
+	mutable unsigned track_counter_;
+
+	/**
+	 * \brief Internal layout used for printing the ARIds.
+	 */
+	std::unique_ptr<ARIdLayout> arid_layout_;
+
+	/**
+	 * \brief Internal layout used for printing the triplets.
+	 */
+	std::unique_ptr<DBARTripletLayout> triplet_layout_;
+
+protected:
+
+	/**
+	 * \brief Create ostringstream for output.
+	 */
+	std::ostringstream create_stream() const;
+
+	/**
+	 * \brief Non-const-access to the print layout for subclasses.
+	 *
+	 * \return The print layout used
+	 */
+	ARIdLayout* arid_layout();
+
+	/**
+	 * \brief Non-const-access to the print layout for subclasses.
+	 *
+	 * \return The print layout used
+	 */
+	DBARTripletLayout* triplet_layout();
+
 public:
 
 	/**
-	 * \brief Constructor for printing to output.
+	 * \brief Default constructor.
 	 */
-	PrintParseHandler();
+	DBAROutputFormat();
+
+	virtual ~DBAROutputFormat() noexcept = default;
+
+	std::string start_input() const;
+
+	std::string start_block() const;
+
+	std::string header(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const;
+
+	std::string triplet(const uint32_t arcs,
+			const uint8_t confidence,
+			const uint32_t frame450_arcs) const;
+
+	std::string end_block() const;
+
+	std::string end_input() const;
 
 	/**
-	 * \brief Virtual default destructor.
+	 * \brief Current block counter value.
 	 */
-	~PrintParseHandler() noexcept;
+	unsigned block_counter() const;
+
+	/**
+	 * \brief Current track counter value.
+	 */
+	unsigned track_counter() const;
 
 	/**
 	 * \brief Sets the layout for printing ARIds.
@@ -95,6 +184,165 @@ public:
 	 * \return The print layout used for track information
 	 */
 	const DBARTripletLayout& triplet_layout() const;
+};
+
+
+/**
+ * \brief Interface for formatting DBARTriplet instances for output.
+ */
+class TextDecoratedTripletLayout final : public DBARTripletLayout
+{
+public:
+
+	using DBARTripletLayout::Layout;
+
+	/**
+	 * \brief Default constructor.
+	 */
+	TextDecoratedTripletLayout();
+
+	/**
+	 * \brief Set printing width for ARCS value in chars.
+	 *
+	 * \param[in] width Number of chars
+	 */
+	void set_width_arcs(const int width);
+
+	/**
+	 * \brief Return printing width for ARCS values.
+	 *
+	 * \return Number of chars for printed ARCS values
+	 */
+	int width_arcs() const;
+
+	/**
+	 * \brief Set printing width for confidence value in chars.
+	 *
+	 * \param[in] width Number of chars
+	 */
+	void set_width_conf(const int width);
+
+	/**
+	 * \brief Return printing width for confidence values.
+	 *
+	 * \return Number of chars for printed confidence values
+	 */
+	int width_conf() const;
+
+	/**
+	 * \brief Set symbol to print for unparsed values.
+	 *
+	 * \param[in] s Symbol for unparsed values
+	 */
+	void set_unparsed_value_symbol(const std::string& s);
+
+	/**
+	 * \brief Return symbol for unparsed values.
+	 *
+	 * \return Symbol for unparsed values.
+	 */
+	std::string set_unparsed_value_symbol() const;
+
+	/**
+	 * \brief Activate label.
+	 *
+	 * \param[in] flag TRUE activates label printing
+	 */
+	void set_with_label(const bool flag);
+
+	/**
+	 * \brief Return whether label printing is activated.
+	 *
+	 * \return TRUE iff label printing is activated, otherwise FALSE.
+	 */
+	bool with_label() const;
+
+private:
+
+	/**
+	 * \brief Internal width for ARCS.
+	 */
+	int width_arcs_;
+
+	/**
+	 * \brief Internal width for confidence.
+	 */
+	int width_conf_;
+
+	/**
+	 * \brief Internal symbol for unparsed values.
+	 */
+	std::string unparsed_value_;
+
+	/**
+	 * \brief Internal flag for printing labels.
+	 */
+	bool with_label_;
+
+	// TODO checksum_layout_
+
+	// no assertions()
+
+	std::string do_format(InputTuple t) const override;
+};
+
+
+/**
+ * \brief Implements format 'text_decorated'.
+ */
+class TextDecoratedFormat final : public DBAROutputFormat
+{
+	std::string do_start_input() const final;
+
+	std::string do_start_block() const final;
+
+	std::string do_header(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const final;
+
+	std::string do_triplet(const uint32_t arcs,
+			const uint8_t confidence,
+			const uint32_t frame450_arcs) const final;
+
+	std::string do_end_block() const final;
+
+	std::string do_end_input() const final;
+};
+
+
+/**
+ * \brief ParseHandler that just prints the parsed content immediately.
+ *
+ * Printing is performed to Output by default.
+ */
+class PrintParseHandler final : public ParseHandler
+{
+public:
+
+	/**
+	 * \brief Constructor for printing to output.
+	 */
+	PrintParseHandler();
+
+	/**
+	 * \brief Virtual default destructor.
+	 */
+	~PrintParseHandler() noexcept;
+
+	/**
+	 * \brief Sets the layout for printing ARIds.
+	 *
+	 * \param[in] layout The print layout to use
+	 */
+	void set_format(std::unique_ptr<DBAROutputFormat> format);
+
+	/**
+	 * \brief Read-access to the print layout used for ARIds.
+	 *
+	 * \return The print layout used for ARIds
+	 */
+	const DBAROutputFormat& format() const;
 
 	/**
 	 * \brief Specify a file as print target.
@@ -106,18 +354,11 @@ public:
 protected:
 
 	/**
-	 * \brief Non-const-access to the print layout for subclasses.
+	 * \brief Non-const-access to the output format for subclasses.
 	 *
-	 * \return The print layout used
+	 * \return The output format used
 	 */
-	ARIdLayout* arid_layout();
-
-	/**
-	 * \brief Non-const-access to the print layout for subclasses.
-	 *
-	 * \return The print layout used
-	 */
-	DBARTripletLayout* triplet_layout();
+	DBAROutputFormat* format();
 
 	/**
 	 * \brief Print the string.
@@ -146,47 +387,9 @@ private:
 	void do_end_input() final;
 
 	/**
-	 * \brief Internal block counter.
+	 * \brief Internal output format.
 	 */
-	uint32_t block_counter_;
-
-	/**
-	 * \brief Internal track counter.
-	 */
-	int track_;
-
-	/**
-	 * \brief Internal layout used for printing the ARIds.
-	 */
-	std::unique_ptr<ARIdLayout> arid_layout_;
-
-	/**
-	 * \brief Internal layout used for printing the triplets.
-	 */
-	std::unique_ptr<DBARTripletLayout> triplet_layout_;
-};
-
-
-/**
- * \brief Interface for formatting DBARTriplets.
- */
-using TripletLayout = Layout<std::string, int, arcstk::DBARTriplet>;
-
-
-/**
- * \brief Interface for formatting DBARTriplet instances for output.
- */
-class DBARTripletLayout : public TripletLayout
-{
-public:
-
-	using TripletLayout::Layout;
-
-private:
-
-	// no assertions()
-
-	std::string do_format(InputTuple t) const override;
+	std::unique_ptr<DBAROutputFormat> format_;
 };
 
 } // namespace dbar
