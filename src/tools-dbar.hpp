@@ -70,11 +70,11 @@ class DBAROutputFormat
 	virtual std::string do_header(const uint8_t track_count,
 			const uint32_t id1,
 			const uint32_t id2,
-			const uint32_t cddb_id) const = 0;
+			const uint32_t cddb_id) const;
 
 	virtual std::string do_triplet(const uint32_t arcs,
 			const uint8_t confidence,
-			const uint32_t frame450_arcs) const = 0;
+			const uint32_t frame450_arcs) const;
 
 	virtual std::string do_end_block() const = 0;
 
@@ -112,14 +112,14 @@ protected:
 	 *
 	 * \return The print layout used
 	 */
-	ARIdLayout* arid_layout();
+	ARIdLayout* arid_layout_ptr() const;
 
 	/**
 	 * \brief Non-const-access to the print layout for subclasses.
 	 *
 	 * \return The print layout used
 	 */
-	DBARTripletLayout* triplet_layout();
+	DBARTripletLayout* triplet_layout_ptr() const;
 
 public:
 
@@ -128,23 +128,70 @@ public:
 	 */
 	DBAROutputFormat();
 
+	/**
+	 * \brief Constructor with layouts.
+	 *
+	 * \param[in] arid_layout    Layout for ARIds
+	 * \param[in] triplet_layout Layout for DBAR triplets
+	 */
+	DBAROutputFormat(std::unique_ptr<ARIdLayout> arid_layout,
+			std::unique_ptr<DBARTripletLayout> triplet_layout);
+
+	/**
+	 * \brief Virtual default destructor.
+	 */
 	virtual ~DBAROutputFormat() noexcept = default;
 
+	/**
+	 * \brief String to print on start_input.
+	 *
+	 * \return String to print on start_input
+	 */
 	std::string start_input() const;
 
+	/**
+	 * \brief String to print on start_block.
+	 *
+	 * \return String to print on start_block
+	 */
 	std::string start_block() const;
 
+	/**
+	 * \brief Print block header.
+	 *
+	 * \param[in] track_count Total number of tracks
+	 * \param[in] id1         Disc id1
+	 * \param[in] id2         Disc id2
+	 * \param[in] cddb_id     CDDB id
+	 */
 	std::string header(const uint8_t track_count,
 			const uint32_t id1,
 			const uint32_t id2,
 			const uint32_t cddb_id) const;
 
+	/**
+	 * \brief Print triplet.
+	 *
+	 * \param[in] arcs          ARCS value
+	 * \param[in] confidence    Confidence
+	 * \param[in] frame450_arcs ARCS value for frame 450
+	 */
 	std::string triplet(const uint32_t arcs,
 			const uint8_t confidence,
 			const uint32_t frame450_arcs) const;
 
+	/**
+	 * \brief String to print on end_block.
+	 *
+	 * \return String to print on end_block
+	 */
 	std::string end_block() const;
 
+	/**
+	 * \brief String to print on end_input.
+	 *
+	 * \return String to print on end_input
+	 */
 	std::string end_input() const;
 
 	/**
@@ -188,7 +235,7 @@ public:
 
 
 /**
- * \brief Interface for formatting DBARTriplet instances for output.
+ * \brief Implements 'text_decorated' for triplets.
  */
 class TextDecoratedTripletLayout final : public DBARTripletLayout
 {
@@ -296,18 +343,57 @@ class TextDecoratedFormat final : public DBAROutputFormat
 
 	std::string do_start_block() const final;
 
+	// do_header() from DBAROutputFormat
+
+	// do_triplet() from DBAROutputFormat
+
+	std::string do_end_block() const final;
+
+	std::string do_end_input() const final;
+};
+
+
+/**
+ * \brief Implements 'yaml' for triplets.
+ */
+class YamlTripletLayout final : public DBARTripletLayout
+{
+	// no assertions()
+
+	std::string do_format(InputTuple t) const override;
+
+public:
+
+	using DBARTripletLayout::Layout;
+};
+
+
+/**
+ * \brief Implements format 'yaml'.
+ */
+class YamlFormat final : public DBAROutputFormat
+{
+	std::string do_start_input() const final;
+
+	std::string do_start_block() const final;
+
 	std::string do_header(const uint8_t track_count,
 			const uint32_t id1,
 			const uint32_t id2,
 			const uint32_t cddb_id) const final;
 
-	std::string do_triplet(const uint32_t arcs,
-			const uint8_t confidence,
-			const uint32_t frame450_arcs) const final;
+	// do_triplet() from DBAROutputFormat
 
 	std::string do_end_block() const final;
 
 	std::string do_end_input() const final;
+
+public:
+
+	/**
+	 * \brief Default constructor.
+	 */
+	YamlFormat();
 };
 
 

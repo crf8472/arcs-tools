@@ -58,14 +58,59 @@ using arcsapp::arid::ARIdTableLayout;
 // DBAROutputFormat
 
 
-DBAROutputFormat::DBAROutputFormat()
+DBAROutputFormat::DBAROutputFormat(std::unique_ptr<ARIdLayout> arid_layout,
+			std::unique_ptr<DBARTripletLayout> triplet_layout)
 	: block_counter_  { 0 }
 	, track_counter_  { 0 }
-	, arid_layout_    { std::make_unique<ARIdTableLayout>(false, true, false,
-							false, false, false, false, false) }
-	, triplet_layout_ { std::make_unique<TextDecoratedTripletLayout>() }
+	, arid_layout_    { std::move(arid_layout)    }
+	, triplet_layout_ { std::move(triplet_layout) }
 {
 	// empty
+}
+
+
+DBAROutputFormat::DBAROutputFormat()
+	: DBAROutputFormat(
+		std::make_unique<ARIdTableLayout>(
+			false, true, false, false, false, false, false, false),
+		std::make_unique<TextDecoratedTripletLayout>())
+{
+	// empty
+}
+
+
+std::string DBAROutputFormat::do_header(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const
+{
+	const auto id = ARId { track_count, id1, id2, cddb_id };
+
+	if (!arid_layout_ptr())
+	{
+		using std::to_string;
+		return to_string(id);
+	}
+
+	return arid_layout().format(id, std::string{/*no alt prefix*/});
+}
+
+
+std::string DBAROutputFormat::do_triplet(const uint32_t arcs,
+			const uint8_t confidence,
+			const uint32_t frame450_arcs) const
+{
+	const auto triplet = DBARTriplet { arcs, confidence, frame450_arcs };
+
+	if (!triplet_layout_ptr())
+	{
+		using std::to_string;
+		return to_string(triplet.arcs())
+			+ ", " + to_string(triplet.confidence())
+			+ ", " + to_string(triplet.frame450_arcs());
+	}
+
+	return triplet_layout().format(track_counter(), triplet);
 }
 
 
@@ -75,13 +120,13 @@ std::ostringstream DBAROutputFormat::create_stream() const
 }
 
 
-ARIdLayout* DBAROutputFormat::arid_layout()
+ARIdLayout* DBAROutputFormat::arid_layout_ptr() const
 {
 	return arid_layout_.get();
 }
 
 
-DBARTripletLayout* DBAROutputFormat::triplet_layout()
+DBARTripletLayout* DBAROutputFormat::triplet_layout_ptr() const
 {
 	return triplet_layout_.get();
 }
@@ -289,27 +334,6 @@ std::string TextDecoratedFormat::do_start_block() const
 }
 
 
-std::string TextDecoratedFormat::do_header(const uint8_t track_count,
-			const uint32_t id1,
-			const uint32_t id2,
-			const uint32_t cddb_id) const
-{
-	const auto id  = ARId { track_count, id1, id2, cddb_id };
-
-	return arid_layout().format(id, std::string{/*no alt prefix*/});
-}
-
-
-std::string TextDecoratedFormat::do_triplet(const uint32_t arcs,
-			const uint8_t confidence,
-			const uint32_t frame450_arcs) const
-{
-	const auto triplet = DBARTriplet { arcs, confidence, frame450_arcs };
-
-	return triplet_layout().format(track_counter(), triplet);
-}
-
-
 std::string TextDecoratedFormat::do_end_block() const
 {
 	return std::string {/*empty*/};
@@ -321,6 +345,70 @@ std::string TextDecoratedFormat::do_end_input() const
 	auto ss { create_stream() };
 	ss << "========== Parsed Blocks: " << std::dec << block_counter() << '\n';
 	return ss.str();
+}
+
+
+// YamlTripletLayout
+
+
+std::string YamlTripletLayout::do_format(InputTuple t) const
+{
+	using arcstk::Checksum;
+
+	//const auto track   = std::get<0>(t);
+	const auto triplet = std::get<1>(t);
+
+	using std::to_string;
+	return "      - {arcs: " + to_string(Checksum { triplet.arcs() })
+		+ ", confidence: "  + to_string(triplet.confidence())
+		+ ", f450arcs: "    + to_string(Checksum { triplet.frame450_arcs() })
+		+ "}\n";
+}
+
+
+// YamlFormat
+
+
+YamlFormat::YamlFormat()
+	: DBAROutputFormat(nullptr, std::make_unique<YamlTripletLayout>())
+{
+	// empty
+}
+
+
+std::string YamlFormat::do_start_input() const
+{
+	return "---\ndbar:\n";
+}
+
+
+std::string YamlFormat::do_start_block() const
+{
+	return "  - ";
+}
+
+
+std::string YamlFormat::do_header(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const
+{
+	const auto id  = ARId { track_count, id1, id2, cddb_id };
+
+	using std::to_string;
+	return "id: " + to_string(id) + "\n    tracks:\n";
+}
+
+
+std::string YamlFormat::do_end_block() const
+{
+	return std::string {/*empty*/};
+}
+
+
+std::string YamlFormat::do_end_input() const
+{
+	return std::string {/*empty*/};
 }
 
 

@@ -6,6 +6,7 @@
  * \brief Implements symbols from app-parse.hpp.
  */
 
+#include "clitokens.hpp"
 #ifndef __ARCSTOOLS_APPPARSE_HPP__
 #include "app-parse.hpp"
 #endif
@@ -27,6 +28,9 @@
 #ifndef __ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"              // for DefaultConfigurator
 #endif
+#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
+#include "tools-arid.hpp"          // for ARIdLayout
+#endif
 #ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
 #include "tools-dbar.hpp"          // for PrintParseHandler, DBARTripletLayout
 #endif
@@ -47,6 +51,37 @@ using dbar::PrintParseHandler;
 using input::read_from_stdin;
 
 
+// ARParseConfigurator
+
+
+void ARParseConfigurator::do_flush_local_options(OptionRegistry& r) const
+{
+	using cli::OP_VALUE;
+
+	using std::cend;
+	r.insert(cend(r),
+	{
+		{ ARParseOptions::FORMAT,
+		{ "format", true, OP_VALUE::USE_DEFAULT, "Specify output format" }},
+	});
+}
+
+
+std::unique_ptr<Options> ARParseConfigurator::do_configure_options(
+			std::unique_ptr<Options> options) const
+{
+	using cli::OP_VALUE;
+
+	if (!options->is_set(ARParseOptions::FORMAT)
+			|| options->value(ARParseOptions::FORMAT) == OP_VALUE::USE_DEFAULT)
+	{
+		options->set(ARParseOptions::FORMAT, "text_decorated");
+	}
+
+	return options;
+}
+
+
 // ARParseApplication
 
 
@@ -64,13 +99,20 @@ std::string ARParseApplication::do_call_syntax() const
 
 std::unique_ptr<Configurator> ARParseApplication::do_create_configurator() const
 {
-	return std::make_unique<DefaultConfigurator>();
+	return std::make_unique<ARParseConfigurator>();
 }
 
 
 int ARParseApplication::do_run(const Configuration& config)
 {
 	auto printer = PrintParseHandler {};
+
+	if ("yaml" == config.value(ARParseOptions::FORMAT))
+	{
+		auto format = std::make_unique<dbar::YamlFormat>();
+		printer.set_format(std::move(format));
+	}
+
 	const auto arguments = config.arguments();
 
 	// read from file(s)

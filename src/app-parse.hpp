@@ -15,7 +15,10 @@
 
 
 #ifndef __ARCSTOOLS_APPLICATION_HPP__
-#include "application.hpp"     // for Application
+#include "application.hpp"  // for Application
+#endif
+#ifndef __ARCSTOOLS_CONFIG_HPP__
+#include "config.hpp"       // for Configurator, OptionCode
 #endif
 
 namespace arcsapp
@@ -28,6 +31,46 @@ class Application;
 class Configurator;
 class Options;
 class Result;
+
+
+/**
+ * \brief Configuration options for ARParseApplications.
+ */
+class ARParseOptions final : private OPTION
+{
+	//static constexpr OptionCode BASE      = 0;
+
+	static constexpr auto& BASE = OPTION::SUBCLASS_BASE;
+
+public:
+
+	static constexpr OptionCode FORMAT    = BASE +  0; // 7
+	static constexpr OptionCode F_DETAILS = BASE +  1;
+};
+
+
+/**
+ * \brief Configurator for ARParseApplication instances.
+ */
+class ARParseConfigurator final : public Configurator
+{
+public:
+
+	using Configurator::Configurator;
+
+private:
+
+	void do_flush_local_options(OptionRegistry& r) const final;
+
+	std::unique_ptr<Options> do_configure_options(
+			std::unique_ptr<Options> options) const final;
+
+	// void do_validate(const Options& options) const;
+
+	// OptionParsers do_parser_list() const;
+
+	// void do_validate(const Configuration& configuration) const;
+};
 
 
 /**
