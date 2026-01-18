@@ -98,7 +98,7 @@ Color get_color(const std::string& name);
 
 
 /**
- * \brief TRUE iff color \c c is a foreground color.
+ * \brief TRUE iff color \c c is a foreground color, otherwise FALSE.
  *
  * \param[in] c Color to test
  *

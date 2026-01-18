@@ -221,7 +221,7 @@ DBARParser::DBARParser()
 }
 
 
-DBAR DBARParser::load_data(const std::string& responsefile) const
+DBAR DBARParser::load_data(const std::string& dbar_file) const
 {
 	using cli::CallSyntaxException;
 
@@ -229,11 +229,12 @@ DBAR DBARParser::load_data(const std::string& responsefile) const
 
 	try
 	{
-		if (!responsefile.empty())
+		if (!dbar_file.empty())
 		{
-			arcstk::parse_file(responsefile, &builder, nullptr);
+			arcstk::parse_file(dbar_file, &builder, nullptr);
 		} else
 		{
+			// TODO Maximum should be configurable
 			read_from_stdin(1024, &builder, nullptr);
 		}
 	} catch (const std::exception& e)
@@ -290,7 +291,7 @@ void ChecksumValuesParser::do_parse_nonempty(
 {
 	values_ = input::parse_list_to_objects<uint32_t>(
 				checksum_list,
-				',',
+				',' /*delimiter for values*/,
 				[](const std::string& s) -> uint32_t
 				{
 					return std::stoul(s, nullptr, 16);

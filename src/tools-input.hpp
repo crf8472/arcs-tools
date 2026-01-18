@@ -270,7 +270,7 @@ class InputStringParser : public StringParser
 			this->do_parse_nonempty(s);
 		}
 
-		return provide_object();
+		return this->provide_object();
 	}
 
 protected:
@@ -356,6 +356,9 @@ class DBARParser final : public InputStringParser<DBAR>
 
 public:
 
+	/**
+	 * \brief Default constructor.
+	 */
 	DBARParser();
 };
 
@@ -424,6 +427,9 @@ public:
 class ChecksumValuesParser final :
 			public InputStringParser<ChecksumValuesType, ChecksumValuesSource>
 {
+	/**
+	 * \brief Internal store for parsed values.
+	 */
 	mutable ChecksumValuesSource values_;
 
 	std::string start_message() const final;
@@ -434,6 +440,9 @@ class ChecksumValuesParser final :
 
 public:
 
+	/**
+	 * \brief Default constructor.
+	 */
 	ChecksumValuesParser();
 };
 
