@@ -174,7 +174,7 @@ using OptionRegistry = std::vector<std::pair<OptionCode, Option>>;
 
 
 /**
- * \brief Parse the command line input.
+ * \brief Parse options and arguments of the command line input.
  */
 namespace cli
 {

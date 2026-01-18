@@ -28,7 +28,7 @@ inline namespace v_1_0_0
 {
 
 /**
- * \brief Tools for parsing and managing input.
+ * \brief Tools for parsing complex option values and arguments.
  */
 namespace input
 {
