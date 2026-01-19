@@ -111,7 +111,15 @@ int ARParseApplication::do_run(const Configuration& config)
 	{
 		auto format = std::make_unique<dbar::YamlFormat>();
 		printer.set_format(std::move(format));
-	}
+	} else
+	if ("json" == config.value(ARParseOptions::FORMAT))
+	{
+		auto format = std::make_unique<dbar::JsonFormat>();
+		printer.set_format(std::move(format));
+	} else
+	{
+		// TODO CallSyntaxException
+	};
 
 	const auto arguments = config.arguments();
 

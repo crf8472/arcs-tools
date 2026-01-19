@@ -84,15 +84,7 @@ std::string DBAROutputFormat::do_header(const uint8_t track_count,
 			const uint32_t id2,
 			const uint32_t cddb_id) const
 {
-	const auto id = ARId { track_count, id1, id2, cddb_id };
-
-	if (!arid_layout_ptr())
-	{
-		using std::to_string;
-		return to_string(id);
-	}
-
-	return arid_layout().format(id, std::string{/*no alt prefix*/});
+	return default_header(track_count, id1, id2, cddb_id);
 }
 
 
@@ -100,17 +92,7 @@ std::string DBAROutputFormat::do_triplet(const uint32_t arcs,
 			const uint8_t confidence,
 			const uint32_t frame450_arcs) const
 {
-	const auto triplet = DBARTriplet { arcs, confidence, frame450_arcs };
-
-	if (!triplet_layout_ptr())
-	{
-		using std::to_string;
-		return to_string(triplet.arcs())
-			+ ", " + to_string(triplet.confidence())
-			+ ", " + to_string(triplet.frame450_arcs());
-	}
-
-	return triplet_layout().format(track_counter(), triplet);
+	return default_triplet(arcs, confidence, frame450_arcs);
 }
 
 
@@ -126,9 +108,44 @@ ARIdLayout* DBAROutputFormat::arid_layout_ptr() const
 }
 
 
+std::string DBAROutputFormat::default_header(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const
+{
+	const auto id = ARId { track_count, id1, id2, cddb_id };
+
+	if (!arid_layout_ptr())
+	{
+		using std::to_string;
+		return to_string(id);
+	}
+
+	return arid_layout().format(id, std::string{/*no alt prefix*/});
+}
+
+
 DBARTripletLayout* DBAROutputFormat::triplet_layout_ptr() const
 {
 	return triplet_layout_.get();
+}
+
+
+std::string DBAROutputFormat::default_triplet(const uint32_t arcs,
+			const uint8_t confidence,
+			const uint32_t frame450_arcs) const
+{
+	const auto triplet = DBARTriplet { arcs, confidence, frame450_arcs };
+
+	if (!triplet_layout_ptr())
+	{
+		using std::to_string;
+		return to_string(triplet.arcs())
+			+ ", " + to_string(triplet.confidence())
+			+ ", " + to_string(triplet.frame450_arcs());
+	}
+
+	return triplet_layout().format(track_counter(), triplet);
 }
 
 
@@ -158,6 +175,12 @@ std::string DBAROutputFormat::header(const uint8_t track_count,
 }
 
 
+std::string DBAROutputFormat::start_triplets() const
+{
+	return do_start_triplets();
+}
+
+
 std::string DBAROutputFormat::triplet(const uint32_t arcs,
 		const uint8_t confidence,
 		const uint32_t frame450_arcs) const
@@ -165,6 +188,12 @@ std::string DBAROutputFormat::triplet(const uint32_t arcs,
 	++track_counter_;
 
 	return do_triplet(arcs, confidence, frame450_arcs);
+}
+
+
+std::string DBAROutputFormat::end_triplets() const
+{
+	return do_end_triplets();
 }
 
 
@@ -334,6 +363,18 @@ std::string TextDecoratedFormat::do_start_block() const
 }
 
 
+std::string TextDecoratedFormat::do_start_triplets() const
+{
+	return std::string{/*empty*/};
+}
+
+
+std::string TextDecoratedFormat::do_end_triplets() const
+{
+	return std::string{/*empty*/};
+}
+
+
 std::string TextDecoratedFormat::do_end_block() const
 {
 	return std::string {/*empty*/};
@@ -400,6 +441,18 @@ std::string YamlFormat::do_header(const uint8_t track_count,
 }
 
 
+std::string YamlFormat::do_start_triplets() const
+{
+	return std::string{/*empty*/};
+}
+
+
+std::string YamlFormat::do_end_triplets() const
+{
+	return std::string{/*empty*/};
+}
+
+
 std::string YamlFormat::do_end_block() const
 {
 	return std::string {/*empty*/};
@@ -411,6 +464,105 @@ std::string YamlFormat::do_end_input() const
 	return std::string {/*empty*/};
 }
 
+
+// JsonTripletLayout
+
+
+std::string JsonTripletLayout::do_format(InputTuple t) const
+{
+	using arcstk::Checksum;
+
+	//const auto track   = std::get<0>(t);
+	const auto triplet = std::get<1>(t);
+
+	using std::to_string;
+	return "      { \"arcs\": \""   + to_string(Checksum { triplet.arcs() })
+		+ "\", \"confidence\": \""  + to_string(triplet.confidence())
+		+ "\", \"f450arcs\": \""    + to_string(Checksum { triplet.frame450_arcs() })
+		+ "\" }";
+}
+
+
+// JsonFormat
+
+
+JsonFormat::JsonFormat()
+	: DBAROutputFormat(nullptr, std::make_unique<JsonTripletLayout>())
+	, block_counter_   { 0 }
+	, triplet_counter_ { 0 }
+{
+	// empty
+}
+
+
+std::string JsonFormat::do_start_input() const
+{
+	return "{\n\"dbar\": [\n";
+}
+
+
+std::string JsonFormat::do_start_block() const
+{
+	++block_counter_;
+
+	static const auto start_block = std::string { "  {\n" };
+
+	if (2 <= block_counter_)
+	{
+		return ",\n" + start_block;
+	}
+
+	return start_block;
+}
+
+
+std::string JsonFormat::do_header(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const
+{
+	const auto id  = ARId { track_count, id1, id2, cddb_id };
+
+	using std::to_string;
+	return "    \"id\": \"" + to_string(id) + "\",\n";
+}
+
+
+std::string JsonFormat::do_start_triplets() const
+{
+	triplet_counter_ = 0;
+	return "    \"tracks\": [\n";
+}
+
+
+std::string JsonFormat::do_triplet(const uint32_t arcs,
+			const uint8_t confidence,
+			const uint32_t frame450_arcs) const
+{
+	++triplet_counter_;
+
+	const auto str = default_triplet(arcs, confidence, frame450_arcs);
+
+	return (2 <= triplet_counter_ && !str.empty()) ? ",\n" + str : str;
+}
+
+
+std::string JsonFormat::do_end_triplets() const
+{
+	return "\n    ]\n";
+}
+
+
+std::string JsonFormat::do_end_block() const
+{
+	return "  }";
+}
+
+
+std::string JsonFormat::do_end_input() const
+{
+	return "\n]\n}\n";
+}
 
 
 // PrintParseHandler
@@ -474,10 +626,22 @@ void PrintParseHandler::do_header(const uint8_t track_count,
 }
 
 
+void PrintParseHandler::do_start_triplets()
+{
+	this->print(format()->start_triplets());
+}
+
+
 void PrintParseHandler::do_triplet(const uint32_t arcs,
 		const uint8_t confidence, const uint32_t frame450_arcs)
 {
 	this->print(format()->triplet(arcs, confidence, frame450_arcs));
+}
+
+
+void PrintParseHandler::do_end_triplets()
+{
+	this->print(format()->end_triplets());
 }
 
 

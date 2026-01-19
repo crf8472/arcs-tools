@@ -72,9 +72,13 @@ class DBAROutputFormat
 			const uint32_t id2,
 			const uint32_t cddb_id) const;
 
+	virtual std::string do_start_triplets() const = 0;
+
 	virtual std::string do_triplet(const uint32_t arcs,
 			const uint8_t confidence,
 			const uint32_t frame450_arcs) const;
+
+	virtual std::string do_end_triplets() const = 0;
 
 	virtual std::string do_end_block() const = 0;
 
@@ -114,12 +118,21 @@ protected:
 	 */
 	ARIdLayout* arid_layout_ptr() const;
 
+	std::string default_header(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const;
+
 	/**
 	 * \brief Non-const-access to the print layout for subclasses.
 	 *
 	 * \return The print layout used
 	 */
 	DBARTripletLayout* triplet_layout_ptr() const;
+
+	std::string default_triplet(const uint32_t arcs,
+			const uint8_t confidence,
+			const uint32_t frame450_arcs) const;
 
 public:
 
@@ -170,6 +183,13 @@ public:
 			const uint32_t cddb_id) const;
 
 	/**
+	 * \brief Starting a sequence of triplets.
+	 *
+	 * \return String to print on start_triplets
+	 */
+	std::string start_triplets() const;
+
+	/**
 	 * \brief Print triplet.
 	 *
 	 * \param[in] arcs          ARCS value
@@ -179,6 +199,13 @@ public:
 	std::string triplet(const uint32_t arcs,
 			const uint8_t confidence,
 			const uint32_t frame450_arcs) const;
+
+	/**
+	 * \brief Ending a sequence of triplets.
+	 *
+	 * \return String to print on end_triplets
+	 */
+	std::string end_triplets() const;
 
 	/**
 	 * \brief String to print on end_block.
@@ -345,7 +372,11 @@ class TextDecoratedFormat final : public DBAROutputFormat
 
 	// do_header() from DBAROutputFormat
 
+	std::string do_start_triplets() const final;
+
 	// do_triplet() from DBAROutputFormat
+
+	std::string do_end_triplets() const final;
 
 	std::string do_end_block() const final;
 
@@ -382,7 +413,11 @@ class YamlFormat final : public DBAROutputFormat
 			const uint32_t id2,
 			const uint32_t cddb_id) const final;
 
+	std::string do_start_triplets() const final;
+
 	// do_triplet() from DBAROutputFormat
+
+	std::string do_end_triplets() const final;
 
 	std::string do_end_block() const final;
 
@@ -394,6 +429,60 @@ public:
 	 * \brief Default constructor.
 	 */
 	YamlFormat();
+};
+
+
+/**
+ * \brief Implements 'yaml' for triplets.
+ */
+class JsonTripletLayout final : public DBARTripletLayout
+{
+	// no assertions()
+
+	std::string do_format(InputTuple t) const override;
+
+public:
+
+	using DBARTripletLayout::Layout;
+};
+
+
+/**
+ * \brief Implements format 'yaml'.
+ */
+class JsonFormat final : public DBAROutputFormat
+{
+	std::string do_start_input() const final;
+
+	std::string do_start_block() const final;
+
+	std::string do_header(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const final;
+
+	std::string do_start_triplets() const final;
+
+	std::string do_triplet(const uint32_t arcs,
+			const uint8_t confidence,
+			const uint32_t frame450_arcs) const final;
+
+	std::string do_end_triplets() const final;
+
+	std::string do_end_block() const final;
+
+	std::string do_end_input() const final;
+
+	mutable int block_counter_;
+
+	mutable int triplet_counter_;
+
+public:
+
+	/**
+	 * \brief Default constructor.
+	 */
+	JsonFormat();
 };
 
 
@@ -464,9 +553,13 @@ private:
 			const uint32_t id2,
 			const uint32_t cddb_id) final;
 
+	void do_start_triplets() final;
+
 	void do_triplet(const uint32_t arcs,
 			const uint8_t confidence,
 			const uint32_t frame450_arcs) final;
+
+	void do_end_triplets() final;
 
 	void do_end_block() final;
 
