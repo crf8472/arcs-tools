@@ -26,8 +26,13 @@ inline namespace v_1_0_0
 /**
  * \brief Type for a sequence of boolean flags.
  */
-using flags_t = uint32_t;
-// TODO this should be a bitfield or vector<bool>
+using flags_t = uint32_t; // TODO this should be a bitfield or vector<bool>
+
+
+/**
+ * \brief Empty string instance.
+ */
+static const auto EmptyString = std::string {/*empty*/};
 
 
 namespace details
@@ -160,6 +165,16 @@ private:
 class Flags final
 {
 public:
+
+	/**
+	 * \brief Value for flags_t to represent all flags are TRUE.
+	 */
+	static constexpr flags_t ALL_TRUE  = 0xFFFFFFFF;
+
+	/**
+	 * \brief Value for flags_t to represent all flags are FALSE.
+	 */
+	static constexpr flags_t ALL_FALSE = 0x00000000;
 
 	/**
 	 * \brief Constructor.
@@ -486,7 +501,7 @@ public:
 	/**
 	 * \brief Internal store type.
 	 */
-	using store_t = std::map<KEY, std::string>;
+	using store_t = std::map<const KEY, std::string>;
 
 	/**
 	 * \brief Default constructor.
@@ -541,14 +556,14 @@ public:
 	 *
 	 * \return The label for \c key
 	 */
-	std::string label(const KEY key) const
+	const std::string& label(const KEY key) const
 	{
 		const auto label_ptr { labels_.find(key) };
 
 		using std::cend;
 		if (cend(labels_) == label_ptr)
 		{
-			return std::string{};
+			return EmptyString;
 		}
 
 		return label_ptr->second;

@@ -134,6 +134,8 @@ protected:
 			const uint8_t confidence,
 			const uint32_t frame450_arcs) const;
 
+	const std::string& empty_string() const;
+
 public:
 
 	/**
@@ -262,10 +264,30 @@ public:
 
 
 /**
+ * \brief Labels of DBARTripletLayout
+ */
+enum class DBAR_TRIPLET_LABEL : int
+{
+	TRIPLET    = 0,
+	DELIM1     = 1,
+	DELIM2     = 2,
+	DELIM3     = 3,
+	DELIM4     = 4,
+	UNPARSED   = 5
+};
+
+
+/**
  * \brief Implements 'text_decorated' for triplets.
  */
-class TextDecoratedTripletLayout final : public DBARTripletLayout
+class TextDecoratedTripletLayout final : public LabelStore<DBAR_TRIPLET_LABEL>
+									  , public PropertyStore<DBAR_TRIPLET_LABEL>
+									  , public DBARTripletLayout
 {
+	// no assertions()
+
+	std::string do_format(InputTuple t) const override;
+
 public:
 
 	using DBARTripletLayout::Layout;
@@ -275,12 +297,9 @@ public:
 	 */
 	TextDecoratedTripletLayout();
 
-	/**
-	 * \brief Set printing width for ARCS value in chars.
-	 *
-	 * \param[in] width Number of chars
-	 */
-	void set_width_arcs(const int width);
+	TextDecoratedTripletLayout(
+			const LabelStore<DBAR_TRIPLET_LABEL>::store_t labels,
+			const flags_t properties);
 
 	/**
 	 * \brief Return printing width for ARCS values.
@@ -290,87 +309,40 @@ public:
 	int width_arcs() const;
 
 	/**
-	 * \brief Set printing width for confidence value in chars.
-	 *
-	 * \param[in] width Number of chars
-	 */
-	void set_width_conf(const int width);
-
-	/**
 	 * \brief Return printing width for confidence values.
 	 *
 	 * \return Number of chars for printed confidence values
 	 */
 	int width_conf() const;
+};
 
-	/**
-	 * \brief Set symbol to print for unparsed values.
-	 *
-	 * \param[in] s Symbol for unparsed values
-	 */
-	void set_unparsed_value_symbol(const std::string& s);
 
-	/**
-	 * \brief Return symbol for unparsed values.
-	 *
-	 * \return Symbol for unparsed values.
-	 */
-	std::string set_unparsed_value_symbol() const;
-
-	/**
-	 * \brief Activate label.
-	 *
-	 * \param[in] flag TRUE activates label printing
-	 */
-	void set_with_label(const bool flag);
-
-	/**
-	 * \brief Return whether label printing is activated.
-	 *
-	 * \return TRUE iff label printing is activated, otherwise FALSE.
-	 */
-	bool with_label() const;
-
-private:
-
-	/**
-	 * \brief Internal width for ARCS.
-	 */
-	int width_arcs_;
-
-	/**
-	 * \brief Internal width for confidence.
-	 */
-	int width_conf_;
-
-	/**
-	 * \brief Internal symbol for unparsed values.
-	 */
-	std::string unparsed_value_;
-
-	/**
-	 * \brief Internal flag for printing labels.
-	 */
-	bool with_label_;
-
-	// TODO checksum_layout_
-
-	// no assertions()
-
-	std::string do_format(InputTuple t) const override;
+/**
+ * \brief Labels of DBARTripletLayout
+ */
+enum class DBAR_LABEL : int
+{
+	BLOCK      = 0,
+	DELIM1     = 1,  // between labels and field values
+	DELIM2     = 2   // after header
 };
 
 
 /**
  * \brief Implements format 'text_decorated'.
  */
-class TextDecoratedFormat final : public DBAROutputFormat
+class TextDecoratedFormat final : public LabelStore<DBAR_LABEL>
+								, public PropertyStore<DBAR_LABEL>
+								, public DBAROutputFormat
 {
 	std::string do_start_input() const final;
 
 	std::string do_start_block() const final;
 
-	// do_header() from DBAROutputFormat
+	std::string do_header(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const final;
 
 	std::string do_start_triplets() const final;
 
@@ -381,6 +353,15 @@ class TextDecoratedFormat final : public DBAROutputFormat
 	std::string do_end_block() const final;
 
 	std::string do_end_input() const final;
+
+public:
+
+	TextDecoratedFormat();
+
+	TextDecoratedFormat(const LabelStore::store_t labels,
+			const flags_t properties,
+			std::unique_ptr<ARIdLayout> arid_layout,
+			std::unique_ptr<DBARTripletLayout> triplet_layout);
 };
 
 

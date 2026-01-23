@@ -6,7 +6,6 @@
  * \brief Implements symbols from app-parse.hpp.
  */
 
-#include "clitokens.hpp"
 #ifndef __ARCSTOOLS_APPPARSE_HPP__
 #include "app-parse.hpp"
 #endif
@@ -47,6 +46,7 @@ const auto parse = RegisterApplicationType<ARParseApplication>("parse");
 }
 
 // arcsapp
+using dbar::DBAROutputFormat;
 using dbar::PrintParseHandler;
 using input::read_from_stdin;
 
@@ -107,19 +107,68 @@ int ARParseApplication::do_run(const Configuration& config)
 {
 	auto printer = PrintParseHandler {};
 
+	auto format  = std::unique_ptr<DBAROutputFormat> {};
+
+	using dbar::DBAR_LABEL;
+	using dbar::DBAR_TRIPLET_LABEL;
+
 	if ("yaml" == config.value(ARParseOptions::FORMAT))
 	{
-		auto format = std::make_unique<dbar::YamlFormat>();
-		printer.set_format(std::move(format));
+		using dbar::YamlFormat;
+		format = std::make_unique<YamlFormat>();
 	} else
 	if ("json" == config.value(ARParseOptions::FORMAT))
 	{
-		auto format = std::make_unique<dbar::JsonFormat>();
-		printer.set_format(std::move(format));
+		using dbar::JsonFormat;
+		format = std::make_unique<JsonFormat>();
+	} else
+	if ("text" == config.value(ARParseOptions::FORMAT))
+	{
+		// only text, no labels, no delimiters except newlines
+
+		using dbar::TextDecoratedFormat;
+		using dbar::TextDecoratedTripletLayout;
+		using details::flag_operand;
+
+		format = std::make_unique<TextDecoratedFormat>(
+				LabelStore<DBAR_LABEL>::store_t
+				{
+					{ DBAR_LABEL::DELIM2, "\n" },
+				},
+				Flags::ALL_FALSE | flag_operand(DBAR_LABEL::DELIM2, true),
+				nullptr, /* no ARIdLayout required */
+				std::make_unique<TextDecoratedTripletLayout>(
+					LabelStore<DBAR_TRIPLET_LABEL>::store_t
+					{
+						{ DBAR_TRIPLET_LABEL::DELIM4, "\n" }
+					},
+					Flags::ALL_FALSE
+						| flag_operand(DBAR_TRIPLET_LABEL::DELIM4, true)
+				)
+		);
+	} else
+	if ("raw" == config.value(ARParseOptions::FORMAT))
+	{
+		// only text, no labels, no delimiters
+
+		using dbar::TextDecoratedFormat;
+		using dbar::TextDecoratedTripletLayout;
+
+		format = std::make_unique<TextDecoratedFormat>(
+				LabelStore<DBAR_LABEL>::store_t { /* none */ },
+				Flags::ALL_FALSE,
+				nullptr, /* no ARIdLayout required */
+				std::make_unique<TextDecoratedTripletLayout>(
+					LabelStore<DBAR_TRIPLET_LABEL>::store_t { /* none */ },
+					Flags::ALL_FALSE
+				)
+		);
 	} else
 	{
 		// TODO CallSyntaxException
 	};
+
+	printer.set_format(std::move(format));
 
 	const auto arguments = config.arguments();
 

@@ -55,6 +55,40 @@ using arcstk::parse_stream;
 using arcsapp::arid::ARIdTableLayout;
 
 
+namespace details
+{
+
+/**
+ * \brief Evaluate a string with placeholders.
+ *
+ * Replace placeholder \c ph in string \c s by a \c number, filled up to fixed
+ * width \c width with character \c c.
+ */
+std::string evaluate(std::string s, const std::string& ph,
+		const long unsigned number, const long unsigned width, const char c);
+
+std::string evaluate(std::string s, const std::string& ph,
+		const long unsigned number, const long unsigned width, const char c)
+{
+	if (auto pos = s.find(ph, 0); pos != std::string::npos)
+	{
+		using std::to_string;
+		auto n_str = to_string(number);
+
+		if (const auto len = n_str.length(); width > len)
+		{
+			n_str = std::string(width - len, c) + n_str;
+		}
+
+		s.replace(pos, ph.length(), n_str);
+	}
+
+	return s;
+}
+
+} // namespace details
+
+
 // DBAROutputFormat
 
 
@@ -247,100 +281,100 @@ const DBARTripletLayout& DBAROutputFormat::triplet_layout() const
 }
 
 
+const std::string& DBAROutputFormat::empty_string() const
+{
+	return EmptyString;
+}
+
+
 // TextDecoratedTripletLayout
 
 
-TextDecoratedTripletLayout::TextDecoratedTripletLayout()
-	: width_arcs_     { 8 }
-	, width_conf_     { 2 }
-	, unparsed_value_ { "????????" }
-	, with_label_     { true }
+TextDecoratedTripletLayout::TextDecoratedTripletLayout(
+		const LabelStore<DBAR_TRIPLET_LABEL>::store_t labels,
+		const flags_t properties)
+	: LabelStore    { labels }
+	, PropertyStore { properties }
 {
 	// empty
 }
 
 
-void TextDecoratedTripletLayout::set_width_arcs(const int width)
+TextDecoratedTripletLayout::TextDecoratedTripletLayout()
+	: TextDecoratedTripletLayout (
+		{
+			{ DBAR_TRIPLET_LABEL::TRIPLET,  "Track $TRACK" },
+			{ DBAR_TRIPLET_LABEL::DELIM1,   ": " },
+			{ DBAR_TRIPLET_LABEL::DELIM2,   " (" },
+			{ DBAR_TRIPLET_LABEL::DELIM3,   ") " },
+			{ DBAR_TRIPLET_LABEL::DELIM4,   "\n" },
+			{ DBAR_TRIPLET_LABEL::UNPARSED, "????????" }
+		},
+		Flags::ALL_TRUE
+	)
 {
-	width_arcs_ = width;
+	// empty
 }
 
 
 int TextDecoratedTripletLayout::width_arcs() const
 {
-	return width_arcs_;
-}
-
-
-void TextDecoratedTripletLayout::set_width_conf(const int width)
-{
-	width_conf_ = width;
+	return 8;
 }
 
 
 int TextDecoratedTripletLayout::width_conf() const
 {
-	return width_conf_;
-}
-
-
-void TextDecoratedTripletLayout::set_unparsed_value_symbol(const std::string& s)
-{
-	unparsed_value_ = s;
-}
-
-
-std::string TextDecoratedTripletLayout::set_unparsed_value_symbol() const
-{
-	return unparsed_value_;
-}
-
-
-void TextDecoratedTripletLayout::set_with_label(const bool flag)
-{
-	with_label_ = flag;
-}
-
-
-bool TextDecoratedTripletLayout::with_label() const
-{
-	return with_label_;
+	return 2;
 }
 
 
 std::string TextDecoratedTripletLayout::do_format(InputTuple t) const
 {
-	using arcstk::Checksum;
-
-	const auto track   = std::get<0>(t);
-	const auto triplet = std::get<1>(t);
+	const auto& track   = std::get<0>(t);
+	const auto& triplet = std::get<1>(t);
 
 	auto out = std::ostringstream {};
 
-	if (with_label())
-	{
-		const auto label = std::string { "Track" };
+	// Print optional label for triplet on the left
 
-		out << label << " " << std::setw(2) << std::setfill('0') << track
-			<< ": ";
+	if (has_property(DBAR_TRIPLET_LABEL::TRIPLET))
+	{
+		out << details::evaluate(label(DBAR_TRIPLET_LABEL::TRIPLET), "$TRACK",
+				track, 2, '0')
+			<< label(DBAR_TRIPLET_LABEL::DELIM1);
 	}
 
-	const auto hex = calc::HexLayout {/*default*/};
+	// TODO configurable? However, do not create this on every call
+	const auto hex   = calc::HexLayout {/*default*/};
+	const auto width { width_arcs() };
 
-	out << std::setw(width_arcs())
-			<< hex.format(Checksum { triplet.arcs() }, width_arcs());
+	using arcstk::Checksum;
 
-	out << " ";
+	// print a formatted ARCS
+	const auto out_ = [&hex,&width,&out](const Checksum& c)
+		{
+			out << std::setw(width) << hex.format(c, width);
+		};
 
-	out << "(";
-	out << std::setw(width_conf()) << std::setfill('0')
-			<< triplet.confidence();
-	out << ") ";
+	const auto delim = [&](const DBAR_TRIPLET_LABEL p)
+		{
+			out << (has_property(p) ? label(p) : " ");
+		};
 
-	out << std::setw(width_arcs())
-			<< hex.format(Checksum { triplet.frame450_arcs() }, width_arcs());
 
-	out << '\n';
+	out_(triplet.arcs());
+
+	delim(DBAR_TRIPLET_LABEL::DELIM2);
+
+	out << std::setw(width_conf()) << std::setfill('0') << triplet.confidence();
+
+	delim(DBAR_TRIPLET_LABEL::DELIM3);
+
+	out_(triplet.frame450_arcs());
+
+	delim(DBAR_TRIPLET_LABEL::DELIM4);
+	// FIXME Should not be part of TripletLayout
 
 	return out.str();
 }
@@ -349,43 +383,98 @@ std::string TextDecoratedTripletLayout::do_format(InputTuple t) const
 // TextDecoratedFormat
 
 
+TextDecoratedFormat::TextDecoratedFormat()
+	: TextDecoratedFormat(
+		{
+			{ DBAR_LABEL::BLOCK,  "---------- Block $BLOCK" },
+			{ DBAR_LABEL::DELIM1, ": " }
+		},
+		Flags::ALL_TRUE,
+		std::make_unique<ARIdTableLayout>( /* print only ID */
+			false, true, false, false, false, false, false, false),
+		std::make_unique<TextDecoratedTripletLayout>(/* default */))
+{
+	// empty
+}
+
+
+TextDecoratedFormat::TextDecoratedFormat(const LabelStore::store_t labels,
+		const flags_t properties, std::unique_ptr<ARIdLayout> arid_layout,
+		std::unique_ptr<DBARTripletLayout> triplet_layout)
+	: LabelStore       { labels }
+	, PropertyStore    { properties }
+	, DBAROutputFormat { std::move(arid_layout), std::move(triplet_layout) }
+{
+	// empty
+}
+
+
 std::string TextDecoratedFormat::do_start_input() const
 {
-	return std::string {/*empty*/};
+	return empty_string();
 }
 
 
 std::string TextDecoratedFormat::do_start_block() const
 {
-	auto ss { create_stream() };
-	ss << "---------- Block " << std::dec << block_counter() << ": ";
-	return ss.str();
+	if (has_property(DBAR_LABEL::BLOCK))
+	{
+		return details::evaluate(label(DBAR_LABEL::BLOCK), "$BLOCK",
+				block_counter(), 0/*no fixed width*/, ' ')
+			+ label(DBAR_LABEL::DELIM1);
+	}
+
+	return empty_string();
+}
+
+
+std::string TextDecoratedFormat::do_header(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const
+{
+	const auto id = ARId { track_count, id1, id2, cddb_id };
+
+	if (!arid_layout_ptr())
+	{
+		using std::to_string;
+
+		if (has_property(DBAR_LABEL::DELIM2))
+		{
+			return to_string(id) + label(DBAR_LABEL::DELIM2);
+		}
+
+		return to_string(id) + " ";
+	}
+
+	return arid_layout().format(id, std::string{/*no alt prefix*/});
 }
 
 
 std::string TextDecoratedFormat::do_start_triplets() const
 {
-	return std::string{/*empty*/};
+	return empty_string();
 }
 
 
 std::string TextDecoratedFormat::do_end_triplets() const
 {
-	return std::string{/*empty*/};
+	return empty_string();
 }
 
 
 std::string TextDecoratedFormat::do_end_block() const
 {
-	return std::string {/*empty*/};
+	return empty_string();
 }
 
 
 std::string TextDecoratedFormat::do_end_input() const
 {
-	auto ss { create_stream() };
-	ss << "========== Parsed Blocks: " << std::dec << block_counter() << '\n';
-	return ss.str();
+	// auto ss { create_stream() };
+	// ss << "========== Parsed Blocks: " << std::dec << block_counter() << '\n';
+	// return ss.str();
+	return empty_string();
 }
 
 
@@ -443,25 +532,25 @@ std::string YamlFormat::do_header(const uint8_t track_count,
 
 std::string YamlFormat::do_start_triplets() const
 {
-	return std::string{/*empty*/};
+	return empty_string();
 }
 
 
 std::string YamlFormat::do_end_triplets() const
 {
-	return std::string{/*empty*/};
+	return empty_string();
 }
 
 
 std::string YamlFormat::do_end_block() const
 {
-	return std::string {/*empty*/};
+	return empty_string();
 }
 
 
 std::string YamlFormat::do_end_input() const
 {
-	return std::string {/*empty*/};
+	return empty_string();
 }
 
 
@@ -569,7 +658,7 @@ std::string JsonFormat::do_end_input() const
 
 
 PrintParseHandler::PrintParseHandler()
-	: format_         { std::make_unique<TextDecoratedFormat>() }
+	: format_ { std::make_unique<TextDecoratedFormat>() }
 {
 	// empty
 }
@@ -655,6 +744,7 @@ void PrintParseHandler::do_end_input()
 {
 	this->print(format()->end_input());
 }
+
 
 } // namespace dbar
 } // namespace v_1_0_0

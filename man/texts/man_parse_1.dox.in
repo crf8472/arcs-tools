@@ -25,9 +25,9 @@ the response.
 \subsection calc_output Options for output
 
 \par --format=FORMAT
-Specify output format where FORMAT is one of { json, text_decorated, yaml } from
-which text_decorated is the default. If omitted or specified without a value,
-the default value is applied.
+Specify output format where FORMAT is one of { json, text, text_decorated, raw,
+yaml } from which text_decorated is the default. If omitted or specified without
+a value, the default value is applied.
 
 \copydoc inc_helpopt
 

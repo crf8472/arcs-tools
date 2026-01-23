@@ -25,7 +25,7 @@
 #endif
 
 #ifndef __ARCSTOOLS_TOOLS_VALIDATE_HPP__
-#include "tools-validate.hpp"       // for Validate
+#include "tools-validate.hpp"     // for Validate
 #endif
 
 namespace arcsapp
@@ -84,7 +84,7 @@ std::ostream& operator << (std::ostream& o, const RichARId& a)
 
 
 ARIdLayout::ARIdLayout()
-	: PropertyStore { 0xFFFFFFFF } // all flags true
+	: PropertyStore { Flags::ALL_TRUE }
 	, field_labels_ { true }
 {
 	// empty
@@ -95,7 +95,7 @@ ARIdLayout::ARIdLayout(const bool labels, const bool id, const bool url,
 		const bool filename, const bool track_count, const bool disc_id_1,
 		const bool disc_id_2, const bool cddb_id)
 	: PropertyStore {
-			static_cast<uint32_t>(0)
+			Flags::ALL_FALSE
 			| details::flag_operand(ARID_FLAG::ID,       id)
 			| details::flag_operand(ARID_FLAG::URL,      url)
 			| details::flag_operand(ARID_FLAG::FILENAME, filename)
