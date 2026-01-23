@@ -156,7 +156,7 @@ private:
 	 *
 	 * Order matches definition order in ARID_FLAG.
 	 */
-	std::array<std::string, 7> labels_
+	std::array<std::string, 7> labels_ // TODO LabelStore
 	{
 		"ID",
 		"URL",
