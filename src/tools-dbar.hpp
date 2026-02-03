@@ -108,6 +108,8 @@ protected:
 
 	/**
 	 * \brief Create ostringstream for output.
+	 *
+	 * \return Stringstream for output
 	 */
 	std::ostringstream create_stream() const;
 
@@ -118,6 +120,18 @@ protected:
 	 */
 	ARIdLayout* arid_layout_ptr() const;
 
+	/**
+	 * \brief Default method to create a header representation.
+	 *
+	 * Default implementation for do_header().
+	 *
+	 * \param[in] track_count Total number of tracks
+	 * \param[in] id1         Disc id1
+	 * \param[in] id2         Disc id2
+	 * \param[in] cddb_id     CDDB id
+	 *
+	 * \return String representation of the header
+	 */
 	std::string default_header(const uint8_t track_count,
 			const uint32_t id1,
 			const uint32_t id2,
@@ -130,10 +144,26 @@ protected:
 	 */
 	DBARTripletLayout* triplet_layout_ptr() const;
 
+	/**
+	 * \brief Default method to create a triplet representation.
+	 *
+	 * Default implementatio for do_triplet().
+	 *
+	 * \param[in] arcs          ARCS value
+	 * \param[in] confidence    Confidence
+	 * \param[in] frame450_arcs ARCS value for frame 450
+	 *
+	 * \return String representation of the triplet
+	 */
 	std::string default_triplet(const uint32_t arcs,
 			const uint8_t confidence,
 			const uint32_t frame450_arcs) const;
 
+	/**
+	 * \brief Re-usable empty string.
+	 *
+	 * \return Reference to an empty string
+	 */
 	const std::string& empty_string() const;
 
 public:
@@ -178,6 +208,8 @@ public:
 	 * \param[in] id1         Disc id1
 	 * \param[in] id2         Disc id2
 	 * \param[in] cddb_id     CDDB id
+	 *
+	 * \return String representation of the header
 	 */
 	std::string header(const uint8_t track_count,
 			const uint32_t id1,
@@ -197,6 +229,8 @@ public:
 	 * \param[in] arcs          ARCS value
 	 * \param[in] confidence    Confidence
 	 * \param[in] frame450_arcs ARCS value for frame 450
+	 *
+	 * \return String representation of the triplet
 	 */
 	std::string triplet(const uint32_t arcs,
 			const uint8_t confidence,
@@ -225,11 +259,15 @@ public:
 
 	/**
 	 * \brief Current block counter value.
+	 *
+	 * \return Current block counter value
 	 */
 	unsigned block_counter() const;
 
 	/**
 	 * \brief Current track counter value.
+	 *
+	 * \return Current track counter value
 	 */
 	unsigned track_counter() const;
 
@@ -297,6 +335,12 @@ public:
 	 */
 	TextDecoratedTripletLayout();
 
+	/**
+	 * \brief Constructor with labels and properties.
+	 *
+	 * \param[in] labels     Labels for text output
+	 * \param[in] properties Properties for text output
+	 */
 	TextDecoratedTripletLayout(
 			const LabelStore<DBAR_TRIPLET_LABEL>::store_t labels,
 			const flags_t properties);
@@ -356,8 +400,19 @@ class TextDecoratedFormat final : public LabelStore<DBAR_LABEL>
 
 public:
 
+	/**
+	 * \brief Constructor.
+	 */
 	TextDecoratedFormat();
 
+	/**
+	 * \brief Constructor with labels, properties and layouts.
+	 *
+	 * \param[in] labels         Labels for text output
+	 * \param[in] properties     Properties for text output
+	 * \param[in] arid_layout    ARId Layout
+	 * \param[in] triplet_layout Triplet Layout
+	 */
 	TextDecoratedFormat(const LabelStore::store_t labels,
 			const flags_t properties,
 			std::unique_ptr<ARIdLayout> arid_layout,
@@ -414,7 +469,7 @@ public:
 
 
 /**
- * \brief Implements 'yaml' for triplets.
+ * \brief Implements 'json' for triplets.
  */
 class JsonTripletLayout final : public DBARTripletLayout
 {
@@ -429,7 +484,7 @@ public:
 
 
 /**
- * \brief Implements format 'yaml'.
+ * \brief Implements format 'json'.
  */
 class JsonFormat final : public DBAROutputFormat
 {
