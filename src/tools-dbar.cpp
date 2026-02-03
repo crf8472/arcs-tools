@@ -186,6 +186,7 @@ std::string DBAROutputFormat::default_triplet(const uint32_t arcs,
 std::string DBAROutputFormat::start_input() const
 {
 	block_counter_ = 0;
+	track_counter_ = 0;
 
 	return do_start_input();
 }
