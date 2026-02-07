@@ -109,8 +109,8 @@ int ARParseApplication::do_run(const Configuration& config)
 
 	auto format  = std::unique_ptr<DBAROutputFormat> {};
 
-	using dbar::DBAR_LABEL;
-	using dbar::DBAR_TRIPLET_LABEL;
+	using dbar::DBAR_DELIM;
+	using dbar::DBAR_TRIPLET_DELIM;
 
 	if ("yaml" == config.value(ARParseOptions::FORMAT))
 	{
@@ -131,19 +131,19 @@ int ARParseApplication::do_run(const Configuration& config)
 		using details::flag_operand;
 
 		format = std::make_unique<TextDecoratedFormat>(
-				LabelStore<DBAR_LABEL>::store_t
+				LabelStore<DBAR_DELIM>::store_t
 				{
-					{ DBAR_LABEL::DELIM2, "\n" },
+					{ DBAR_DELIM::DELIM2, "\n" },
 				},
-				Flags::ALL_FALSE | flag_operand(DBAR_LABEL::DELIM2, true),
+				Flags::ALL_FALSE | flag_operand(DBAR_DELIM::DELIM2, true),
 				nullptr, /* no ARIdLayout required */
 				std::make_unique<TextDecoratedTripletLayout>(
-					LabelStore<DBAR_TRIPLET_LABEL>::store_t
+					LabelStore<DBAR_TRIPLET_DELIM>::store_t
 					{
-						{ DBAR_TRIPLET_LABEL::DELIM4, "\n" }
+						{ DBAR_TRIPLET_DELIM::DELIM4, "\n" }
 					},
 					Flags::ALL_FALSE
-						| flag_operand(DBAR_TRIPLET_LABEL::DELIM4, true)
+						| flag_operand(DBAR_TRIPLET_DELIM::DELIM4, true)
 				)
 		);
 	} else
@@ -155,11 +155,11 @@ int ARParseApplication::do_run(const Configuration& config)
 		using dbar::TextDecoratedTripletLayout;
 
 		format = std::make_unique<TextDecoratedFormat>(
-				LabelStore<DBAR_LABEL>::store_t { /* none */ },
+				LabelStore<DBAR_DELIM>::store_t { /* none */ },
 				Flags::ALL_FALSE,
 				nullptr, /* no ARIdLayout required */
 				std::make_unique<TextDecoratedTripletLayout>(
-					LabelStore<DBAR_TRIPLET_LABEL>::store_t { /* none */ },
+					LabelStore<DBAR_TRIPLET_DELIM>::store_t { /* none */ },
 					Flags::ALL_FALSE
 				)
 		);

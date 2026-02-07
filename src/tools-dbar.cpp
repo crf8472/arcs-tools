@@ -105,9 +105,9 @@ DBAROutputFormat::DBAROutputFormat(std::unique_ptr<ARIdLayout> arid_layout,
 
 DBAROutputFormat::DBAROutputFormat()
 	: DBAROutputFormat(
-		std::make_unique<ARIdTableLayout>(
+		std::make_unique<ARIdTableLayout>( /* print only ID */
 			false, true, false, false, false, false, false, false),
-		std::make_unique<TextDecoratedTripletLayout>())
+		std::make_unique<TextDecoratedTripletLayout>(/* default */))
 {
 	// empty
 }
@@ -292,7 +292,7 @@ const std::string& DBAROutputFormat::empty_string() const
 
 
 TextDecoratedTripletLayout::TextDecoratedTripletLayout(
-		const LabelStore<DBAR_TRIPLET_LABEL>::store_t labels,
+		const LabelStore<DBAR_TRIPLET_DELIM>::store_t labels,
 		const flags_t properties)
 	: LabelStore    { labels }
 	, PropertyStore { properties }
@@ -304,12 +304,12 @@ TextDecoratedTripletLayout::TextDecoratedTripletLayout(
 TextDecoratedTripletLayout::TextDecoratedTripletLayout()
 	: TextDecoratedTripletLayout (
 		{
-			{ DBAR_TRIPLET_LABEL::TRIPLET,  "Track $TRACK" },
-			{ DBAR_TRIPLET_LABEL::DELIM1,   ": " },
-			{ DBAR_TRIPLET_LABEL::DELIM2,   " (" },
-			{ DBAR_TRIPLET_LABEL::DELIM3,   ") " },
-			{ DBAR_TRIPLET_LABEL::DELIM4,   "\n" },
-			{ DBAR_TRIPLET_LABEL::UNPARSED, "????????" }
+			{ DBAR_TRIPLET_DELIM::TRIPLET,  "Track $TRACK" },
+			{ DBAR_TRIPLET_DELIM::DELIM1,   ": " },
+			{ DBAR_TRIPLET_DELIM::DELIM2,   " (" },
+			{ DBAR_TRIPLET_DELIM::DELIM3,   ") " },
+			{ DBAR_TRIPLET_DELIM::DELIM4,   "\n" },
+			{ DBAR_TRIPLET_DELIM::UNPARSED, "????????" }
 		},
 		Flags::ALL_TRUE
 	)
@@ -339,11 +339,11 @@ std::string TextDecoratedTripletLayout::do_format(InputTuple t) const
 
 	// Print optional label for triplet on the left
 
-	if (has_property(DBAR_TRIPLET_LABEL::TRIPLET))
+	if (has_property(DBAR_TRIPLET_DELIM::TRIPLET))
 	{
-		out << details::evaluate(label(DBAR_TRIPLET_LABEL::TRIPLET), "$TRACK",
+		out << details::evaluate(label(DBAR_TRIPLET_DELIM::TRIPLET), "$TRACK",
 				track, 2, '0')
-			<< label(DBAR_TRIPLET_LABEL::DELIM1);
+			<< label(DBAR_TRIPLET_DELIM::DELIM1);
 	}
 
 	// TODO configurable? However, do not create this on every call
@@ -358,7 +358,7 @@ std::string TextDecoratedTripletLayout::do_format(InputTuple t) const
 			out << std::setw(width) << hex.format(c, width);
 		};
 
-	const auto delim = [&](const DBAR_TRIPLET_LABEL p)
+	const auto delim = [&](const DBAR_TRIPLET_DELIM p)
 		{
 			out << (has_property(p) ? label(p) : " ");
 		};
@@ -366,15 +366,15 @@ std::string TextDecoratedTripletLayout::do_format(InputTuple t) const
 
 	out_(triplet.arcs());
 
-	delim(DBAR_TRIPLET_LABEL::DELIM2);
+	delim(DBAR_TRIPLET_DELIM::DELIM2);
 
 	out << std::setw(width_conf()) << std::setfill('0') << triplet.confidence();
 
-	delim(DBAR_TRIPLET_LABEL::DELIM3);
+	delim(DBAR_TRIPLET_DELIM::DELIM3);
 
 	out_(triplet.frame450_arcs());
 
-	delim(DBAR_TRIPLET_LABEL::DELIM4);
+	delim(DBAR_TRIPLET_DELIM::DELIM4);
 	// FIXME Should not be part of TripletLayout
 
 	return out.str();
@@ -387,8 +387,8 @@ std::string TextDecoratedTripletLayout::do_format(InputTuple t) const
 TextDecoratedFormat::TextDecoratedFormat()
 	: TextDecoratedFormat(
 		{
-			{ DBAR_LABEL::BLOCK,  "---------- Block $BLOCK" },
-			{ DBAR_LABEL::DELIM1, ": " }
+			{ DBAR_DELIM::BLOCK,  "---------- Block $BLOCK" },
+			{ DBAR_DELIM::DELIM1, ": " }
 		},
 		Flags::ALL_TRUE,
 		std::make_unique<ARIdTableLayout>( /* print only ID */
@@ -418,11 +418,11 @@ std::string TextDecoratedFormat::do_start_input() const
 
 std::string TextDecoratedFormat::do_start_block() const
 {
-	if (has_property(DBAR_LABEL::BLOCK))
+	if (has_property(DBAR_DELIM::BLOCK))
 	{
-		return details::evaluate(label(DBAR_LABEL::BLOCK), "$BLOCK",
+		return details::evaluate(label(DBAR_DELIM::BLOCK), "$BLOCK",
 				block_counter(), 0/*no fixed width*/, ' ')
-			+ label(DBAR_LABEL::DELIM1);
+			+ label(DBAR_DELIM::DELIM1);
 	}
 
 	return empty_string();
@@ -440,9 +440,9 @@ std::string TextDecoratedFormat::do_header(const uint8_t track_count,
 	{
 		using std::to_string;
 
-		if (has_property(DBAR_LABEL::DELIM2))
+		if (has_property(DBAR_DELIM::DELIM2))
 		{
-			return to_string(id) + label(DBAR_LABEL::DELIM2);
+			return to_string(id) + label(DBAR_DELIM::DELIM2);
 		}
 
 		return to_string(id) + " ";
@@ -479,6 +479,40 @@ std::string TextDecoratedFormat::do_end_input() const
 }
 
 
+// LabelledDBAROutputFormat
+
+
+LabelledDBAROutputFormat::LabelledDBAROutputFormat(
+		const LabelStore::store_t labels,
+		std::unique_ptr<ARIdLayout> arid_layout,
+		std::unique_ptr<DBARTripletLayout> triplet_layout)
+	: DBAROutputFormat { std::move(arid_layout), std::move(triplet_layout) }
+	, LabelStore { labels }
+{
+	// empty
+}
+
+
+LabelledDBAROutputFormat::LabelledDBAROutputFormat(
+		std::unique_ptr<ARIdLayout> arid_layout,
+		std::unique_ptr<DBARTripletLayout> triplet_layout)
+	: LabelledDBAROutputFormat {
+		{
+			{ DBAR_LABEL::DBAR,   "dbar"          },
+			{ DBAR_LABEL::ID,     "id"            },
+			{ DBAR_LABEL::TRACKS, "tracks"        },
+			{ DBAR_LABEL::ARCS,   "arcs"          },
+			{ DBAR_LABEL::CONF,   "conf"          },
+			{ DBAR_LABEL::F450,   "frame450_arcs" }
+		},
+		std::move(arid_layout),
+		std::move(triplet_layout)
+	}
+{
+	// empty
+}
+
+
 // YamlTripletLayout
 
 
@@ -501,7 +535,7 @@ std::string YamlTripletLayout::do_format(InputTuple t) const
 
 
 YamlFormat::YamlFormat()
-	: DBAROutputFormat(nullptr, std::make_unique<YamlTripletLayout>())
+	: LabelledDBAROutputFormat(nullptr, std::make_unique<YamlTripletLayout>())
 {
 	// empty
 }

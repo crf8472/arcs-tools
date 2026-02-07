@@ -304,7 +304,7 @@ public:
 /**
  * \brief Labels of DBARTripletLayout
  */
-enum class DBAR_TRIPLET_LABEL : int
+enum class DBAR_TRIPLET_DELIM : int
 {
 	TRIPLET    = 0,
 	DELIM1     = 1,
@@ -318,8 +318,8 @@ enum class DBAR_TRIPLET_LABEL : int
 /**
  * \brief Implements 'text_decorated' for triplets.
  */
-class TextDecoratedTripletLayout final : public LabelStore<DBAR_TRIPLET_LABEL>
-									  , public PropertyStore<DBAR_TRIPLET_LABEL>
+class TextDecoratedTripletLayout final : public LabelStore<DBAR_TRIPLET_DELIM>
+									  , public PropertyStore<DBAR_TRIPLET_DELIM>
 									  , public DBARTripletLayout
 {
 	// no assertions()
@@ -342,7 +342,7 @@ public:
 	 * \param[in] properties Properties for text output
 	 */
 	TextDecoratedTripletLayout(
-			const LabelStore<DBAR_TRIPLET_LABEL>::store_t labels,
+			const LabelStore<DBAR_TRIPLET_DELIM>::store_t labels,
 			const flags_t properties);
 
 	/**
@@ -362,9 +362,9 @@ public:
 
 
 /**
- * \brief Labels of DBARTripletLayout
+ * \brief Labels of DBAROutputFormat
  */
-enum class DBAR_LABEL : int
+enum class DBAR_DELIM : int
 {
 	BLOCK      = 0,
 	DELIM1     = 1,  // between labels and field values
@@ -375,8 +375,8 @@ enum class DBAR_LABEL : int
 /**
  * \brief Implements format 'text_decorated'.
  */
-class TextDecoratedFormat final : public LabelStore<DBAR_LABEL>
-								, public PropertyStore<DBAR_LABEL>
+class TextDecoratedFormat final : public LabelStore<DBAR_DELIM>
+								, public PropertyStore<DBAR_DELIM>
 								, public DBAROutputFormat
 {
 	std::string do_start_input() const final;
@@ -421,6 +421,45 @@ public:
 
 
 /**
+ * \brief Labels for some DBAR output formats.
+ */
+enum class DBAR_LABEL : int
+{
+	DBAR   = 0,
+	ID     = 1,
+	TRACKS = 2,
+	ARCS   = 3,
+	CONF   = 4,
+	F450   = 5
+};
+
+// TODO Labels for
+// dbar
+// id
+// tracks
+// arcs
+// confidence
+// frame450arcs
+
+/**
+ * \brief A DBAROutputFormat with default labels.
+ */
+class LabelledDBAROutputFormat  : public DBAROutputFormat
+								, public LabelStore<DBAR_LABEL>
+{
+protected:
+
+	LabelledDBAROutputFormat(
+			std::unique_ptr<ARIdLayout> arid_layout,
+			std::unique_ptr<DBARTripletLayout> triplet_layout);
+
+	LabelledDBAROutputFormat(const LabelStore::store_t labels,
+			std::unique_ptr<ARIdLayout> arid_layout,
+			std::unique_ptr<DBARTripletLayout> triplet_layout);
+};
+
+
+/**
  * \brief Implements 'yaml' for triplets.
  */
 class YamlTripletLayout final : public DBARTripletLayout
@@ -438,7 +477,7 @@ public:
 /**
  * \brief Implements format 'yaml'.
  */
-class YamlFormat final : public DBAROutputFormat
+class YamlFormat final : public LabelledDBAROutputFormat
 {
 	std::string do_start_input() const final;
 
