@@ -48,12 +48,6 @@ using arcsapp::arid::ARIdLayout;
 
 
 /**
- * \brief Interface for formatting DBARTriplets.
- */
-using DBARTripletLayout = Layout<std::string, unsigned, arcstk::DBARTriplet>;
-
-
-/**
  * \brief Output format for DBARs.
  *
  * This format is intended for "direct" output via PrintParseHandler. Each
@@ -84,6 +78,8 @@ class DBAROutputFormat
 
 	virtual std::string do_end_input() const = 0;
 
+	virtual std::string do_name() const = 0;
+
 	/**
 	 * \brief Internal block counter.
 	 */
@@ -99,26 +95,7 @@ class DBAROutputFormat
 	 */
 	std::unique_ptr<ARIdLayout> arid_layout_;
 
-	/**
-	 * \brief Internal layout used for printing the triplets.
-	 */
-	std::unique_ptr<DBARTripletLayout> triplet_layout_;
-
 protected:
-
-	/**
-	 * \brief Create ostringstream for output.
-	 *
-	 * \return Stringstream for output
-	 */
-	std::ostringstream create_stream() const;
-
-	/**
-	 * \brief Non-const-access to the print layout for subclasses.
-	 *
-	 * \return The print layout used
-	 */
-	ARIdLayout* arid_layout_ptr() const;
 
 	/**
 	 * \brief Default method to create a header representation.
@@ -138,26 +115,33 @@ protected:
 			const uint32_t cddb_id) const;
 
 	/**
-	 * \brief Non-const-access to the print layout for subclasses.
-	 *
-	 * \return The print layout used
-	 */
-	DBARTripletLayout* triplet_layout_ptr() const;
-
-	/**
 	 * \brief Default method to create a triplet representation.
 	 *
-	 * Default implementatio for do_triplet().
+	 * Default implementation for do_triplet().
 	 *
 	 * \param[in] arcs          ARCS value
 	 * \param[in] confidence    Confidence
 	 * \param[in] frame450_arcs ARCS value for frame 450
 	 *
-	 * \return String representation of the triplet
+	 * \return String representation of a triplet
 	 */
 	std::string default_triplet(const uint32_t arcs,
 			const uint8_t confidence,
 			const uint32_t frame450_arcs) const;
+
+	/**
+	 * \brief Create ostringstream for output.
+	 *
+	 * \return Stringstream for output
+	 */
+	std::ostringstream create_stream() const;
+
+	/**
+	 * \brief Non-const-access to the print layout for subclasses.
+	 *
+	 * \return The print layout used
+	 */
+	ARIdLayout* arid_layout_ptr() const;
 
 	/**
 	 * \brief Re-usable empty string.
@@ -179,8 +163,7 @@ public:
 	 * \param[in] arid_layout    Layout for ARIds
 	 * \param[in] triplet_layout Layout for DBAR triplets
 	 */
-	DBAROutputFormat(std::unique_ptr<ARIdLayout> arid_layout,
-			std::unique_ptr<DBARTripletLayout> triplet_layout);
+	DBAROutputFormat(std::unique_ptr<ARIdLayout> arid_layout);
 
 	/**
 	 * \brief Virtual default destructor.
@@ -258,6 +241,13 @@ public:
 	std::string end_input() const;
 
 	/**
+	 * \brief Name of the format.
+	 *
+	 * \return Name of the format.
+	 */
+	std::string name() const;
+
+	/**
 	 * \brief Current block counter value.
 	 *
 	 * \return Current block counter value
@@ -284,144 +274,11 @@ public:
 	 * \return The print layout used for ARIds
 	 */
 	const ARIdLayout& arid_layout() const;
-
-	/**
-	 * \brief Sets the layout for printing track information.
-	 *
-	 * \param[in] layout The print layout to use
-	 */
-	void set_triplet_layout(std::unique_ptr<DBARTripletLayout> layout);
-
-	/**
-	 * \brief Read-access to the print layout used for track information.
-	 *
-	 * \return The print layout used for track information
-	 */
-	const DBARTripletLayout& triplet_layout() const;
 };
 
 
 /**
- * \brief Labels of DBARTripletLayout
- */
-enum class DBAR_TRIPLET_DELIM : int
-{
-	TRIPLET    = 0,
-	DELIM1     = 1,
-	DELIM2     = 2,
-	DELIM3     = 3,
-	DELIM4     = 4,
-	UNPARSED   = 5
-};
-
-
-/**
- * \brief Implements 'text_decorated' for triplets.
- */
-class TextDecoratedTripletLayout final : public LabelStore<DBAR_TRIPLET_DELIM>
-									  , public PropertyStore<DBAR_TRIPLET_DELIM>
-									  , public DBARTripletLayout
-{
-	// no assertions()
-
-	std::string do_format(InputTuple t) const override;
-
-public:
-
-	using DBARTripletLayout::Layout;
-
-	/**
-	 * \brief Default constructor.
-	 */
-	TextDecoratedTripletLayout();
-
-	/**
-	 * \brief Constructor with labels and properties.
-	 *
-	 * \param[in] labels     Labels for text output
-	 * \param[in] properties Properties for text output
-	 */
-	TextDecoratedTripletLayout(
-			const LabelStore<DBAR_TRIPLET_DELIM>::store_t labels,
-			const flags_t properties);
-
-	/**
-	 * \brief Return printing width for ARCS values.
-	 *
-	 * \return Number of chars for printed ARCS values
-	 */
-	int width_arcs() const;
-
-	/**
-	 * \brief Return printing width for confidence values.
-	 *
-	 * \return Number of chars for printed confidence values
-	 */
-	int width_conf() const;
-};
-
-
-/**
- * \brief Labels of DBAROutputFormat
- */
-enum class DBAR_DELIM : int
-{
-	BLOCK      = 0,
-	DELIM1     = 1,  // between labels and field values
-	DELIM2     = 2   // after header
-};
-
-
-/**
- * \brief Implements format 'text_decorated'.
- */
-class TextDecoratedFormat final : public LabelStore<DBAR_DELIM>
-								, public PropertyStore<DBAR_DELIM>
-								, public DBAROutputFormat
-{
-	std::string do_start_input() const final;
-
-	std::string do_start_block() const final;
-
-	std::string do_header(const uint8_t track_count,
-			const uint32_t id1,
-			const uint32_t id2,
-			const uint32_t cddb_id) const final;
-
-	std::string do_start_triplets() const final;
-
-	// do_triplet() from DBAROutputFormat
-
-	std::string do_end_triplets() const final;
-
-	std::string do_end_block() const final;
-
-	std::string do_end_input() const final;
-
-public:
-
-	/**
-	 * \brief Constructor.
-	 */
-	TextDecoratedFormat();
-
-	/**
-	 * \brief Constructor with labels, properties and layouts.
-	 *
-	 * \param[in] labels         Labels for text output
-	 * \param[in] properties     Properties for text output
-	 * \param[in] arid_layout    ARId Layout
-	 * \param[in] triplet_layout Triplet Layout
-	 */
-	TextDecoratedFormat(const LabelStore::store_t labels,
-			const flags_t properties,
-			std::unique_ptr<ARIdLayout> arid_layout,
-			std::unique_ptr<DBARTripletLayout> triplet_layout);
-};
-
-
-/**
- * \brief Labels for some DBAR output formats.
+ * \brief Labels for DBAROutputFormat.
  */
 enum class DBAR_LABEL : int
 {
@@ -433,99 +290,56 @@ enum class DBAR_LABEL : int
 	F450   = 5
 };
 
-// TODO Labels for
-// dbar
-// id
-// tracks
-// arcs
-// confidence
-// frame450arcs
 
 /**
- * \brief A DBAROutputFormat with default labels.
+ * \brief Delimiters for DBAROutputFormat.
  */
-class LabelledDBAROutputFormat  : public DBAROutputFormat
-								, public LabelStore<DBAR_LABEL>
+enum class DBAR_DELIM : int
 {
-protected:
-
-	LabelledDBAROutputFormat(
-			std::unique_ptr<ARIdLayout> arid_layout,
-			std::unique_ptr<DBARTripletLayout> triplet_layout);
-
-	LabelledDBAROutputFormat(const LabelStore::store_t labels,
-			std::unique_ptr<ARIdLayout> arid_layout,
-			std::unique_ptr<DBARTripletLayout> triplet_layout);
+	UNPARSED     =  0,
+	DOC_START    =  1,
+	DOC_END      =  2,
+	DBAR_START   =  3,
+	DBAR_END     =  4,
+	BLOCK_START  =  5,
+	BLOCK_END    =  6,
+	HEADER_START =  7,
+	HEADER_END   =  8,
+	TRACKS_START =  9,
+	TRACKS_END   = 10,
+	TRACK_START  = 11,
+	TRACK_END    = 12,
+	LABEL_DELIM  = 13,
+	PROP_DELIM   = 14,
+	BLOCK_DELIM  = 15,
+	NAME_DELIM   = 16,
+	VAL_DELIM    = 17,
+	ELEM_DELIM   = 18
 };
 
 
 /**
- * \brief Implements 'yaml' for triplets.
+ * \brief For TextDecoratedFormat.
  */
-class YamlTripletLayout final : public DBARTripletLayout
+enum class DBAR_TEXT : int
 {
-	// no assertions()
-
-	std::string do_format(InputTuple t) const override;
-
-public:
-
-	using DBARTripletLayout::Layout;
+	UNPARSED,
+	DELIM1,
+	DELIM2,
+	DELIM3,
+	DELIM4,
+	DELIM5,
+	BLOCK,
+	TRIPLET
 };
 
 
 /**
- * \brief Implements format 'yaml'.
+ * \brief Implements formats 'text_decorated', 'text' and 'raw'.
  */
-class YamlFormat final : public LabelledDBAROutputFormat
-{
-	std::string do_start_input() const final;
-
-	std::string do_start_block() const final;
-
-	std::string do_header(const uint8_t track_count,
-			const uint32_t id1,
-			const uint32_t id2,
-			const uint32_t cddb_id) const final;
-
-	std::string do_start_triplets() const final;
-
-	// do_triplet() from DBAROutputFormat
-
-	std::string do_end_triplets() const final;
-
-	std::string do_end_block() const final;
-
-	std::string do_end_input() const final;
-
-public:
-
-	/**
-	 * \brief Default constructor.
-	 */
-	YamlFormat();
-};
-
-
-/**
- * \brief Implements 'json' for triplets.
- */
-class JsonTripletLayout final : public DBARTripletLayout
-{
-	// no assertions()
-
-	std::string do_format(InputTuple t) const override;
-
-public:
-
-	using DBARTripletLayout::Layout;
-};
-
-
-/**
- * \brief Implements format 'json'.
- */
-class JsonFormat final : public DBAROutputFormat
+class TextDecoratedFormat final : public LabelStore<DBAR_TEXT>
+								, public PropertyStore<DBAR_TEXT>
+								, public DBAROutputFormat
 {
 	std::string do_start_input() const final;
 
@@ -548,9 +362,124 @@ class JsonFormat final : public DBAROutputFormat
 
 	std::string do_end_input() const final;
 
-	mutable int block_counter_;
+	std::string do_name() const final;
 
-	mutable int triplet_counter_;
+public:
+
+	/**
+	 * \brief Constructor.
+	 */
+	TextDecoratedFormat();
+
+	/**
+	 * \brief Constructor with labels, properties and layouts.
+	 *
+	 * \param[in] labels         Labels for text output
+	 * \param[in] properties     Properties for text output
+	 * \param[in] arid_layout    ARId Layout
+	 */
+	TextDecoratedFormat(const LabelStore::store_t labels,
+			const flags_t properties,
+			std::unique_ptr<ARIdLayout> arid_layout);
+};
+
+
+/**
+ * \brief Abstract base class for formats 'yaml' and 'json'.
+ */
+class LabelledDBAROutputFormat  : public DBAROutputFormat
+								, public PropertyStore<DBAR_DELIM>
+{
+	/**
+	 * \brief Internal label store.
+	 */
+	LabelStore<DBAR_LABEL> labels_;
+
+	/**
+	 * \brief Internal delim store.
+	 */
+	LabelStore<DBAR_DELIM> delims_;
+
+	/**
+	 * \brief Current indent level.
+	 */
+	mutable std::string::size_type indent_;
+
+	/**
+	 * \brief Amount of incrementing or decrementing the current indent.
+	 */
+	unsigned indent_step_;
+
+
+	std::string do_start_input() const override;
+
+	std::string do_start_block() const override;
+
+	std::string do_header(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const override;
+
+	std::string do_start_triplets() const override;
+
+	std::string do_triplet(const uint32_t arcs,
+			const uint8_t confidence,
+			const uint32_t frame450_arcs) const override;
+
+	std::string do_end_triplets() const override;
+
+	std::string do_end_block() const override;
+
+	std::string do_end_input() const override;
+
+	// do_name() = 0
+
+protected:
+
+	LabelledDBAROutputFormat(const LabelStore<DBAR_LABEL>::store_t& labels,
+			const LabelStore<DBAR_DELIM>::store_t& delims,
+			const flags_t properties,
+			std::unique_ptr<ARIdLayout> arid_layout);
+
+	LabelledDBAROutputFormat(const LabelStore<DBAR_DELIM>::store_t& delims,
+			const flags_t properties);
+
+	std::string label(const DBAR_LABEL& label) const;
+
+	std::string value(const std::string& s) const;
+
+	std::string delim(const DBAR_DELIM& delim) const;
+
+	std::string indent() const;
+
+	int inc_indent() const;
+
+	int dec_indent() const;
+};
+
+
+/**
+ * \brief Implements format 'yaml'.
+ */
+class YamlFormat final : public LabelledDBAROutputFormat
+{
+	std::string do_name() const final;
+
+public:
+
+	/**
+	 * \brief Default constructor.
+	 */
+	YamlFormat();
+};
+
+
+/**
+ * \brief Implements format 'json'.
+ */
+class JsonFormat final : public LabelledDBAROutputFormat
+{
+	std::string do_name() const final;
 
 public:
 

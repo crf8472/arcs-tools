@@ -105,12 +105,7 @@ std::unique_ptr<Configurator> ARParseApplication::do_create_configurator() const
 
 int ARParseApplication::do_run(const Configuration& config)
 {
-	auto printer = PrintParseHandler {};
-
-	auto format  = std::unique_ptr<DBAROutputFormat> {};
-
-	using dbar::DBAR_DELIM;
-	using dbar::DBAR_TRIPLET_DELIM;
+	auto format = std::unique_ptr<DBAROutputFormat> {};
 
 	if ("yaml" == config.value(ARParseOptions::FORMAT))
 	{
@@ -126,48 +121,45 @@ int ARParseApplication::do_run(const Configuration& config)
 	{
 		// only text, no labels, no delimiters except newlines
 
+		using dbar::DBAR_TEXT;
 		using dbar::TextDecoratedFormat;
-		using dbar::TextDecoratedTripletLayout;
 		using details::flag_operand;
 
 		format = std::make_unique<TextDecoratedFormat>(
-				LabelStore<DBAR_DELIM>::store_t
+				LabelStore<DBAR_TEXT>::store_t
 				{
-					{ DBAR_DELIM::DELIM2, "\n" },
+					{ DBAR_TEXT::DELIM2, "\n" },
+					{ DBAR_TEXT::DELIM5, "\n" }
 				},
-				Flags::ALL_FALSE | flag_operand(DBAR_DELIM::DELIM2, true),
-				nullptr, /* no ARIdLayout required */
-				std::make_unique<TextDecoratedTripletLayout>(
-					LabelStore<DBAR_TRIPLET_DELIM>::store_t
-					{
-						{ DBAR_TRIPLET_DELIM::DELIM4, "\n" }
-					},
-					Flags::ALL_FALSE
-						| flag_operand(DBAR_TRIPLET_DELIM::DELIM4, true)
-				)
+				Flags::ALL_FALSE | flag_operand(DBAR_TEXT::DELIM2, true)
+								 | flag_operand(DBAR_TEXT::DELIM5, true),
+				nullptr /* no ARIdLayout required */
 		);
 	} else
 	if ("raw" == config.value(ARParseOptions::FORMAT))
 	{
 		// only text, no labels, no delimiters
 
+		using dbar::DBAR_TEXT;
 		using dbar::TextDecoratedFormat;
-		using dbar::TextDecoratedTripletLayout;
 
 		format = std::make_unique<TextDecoratedFormat>(
-				LabelStore<DBAR_DELIM>::store_t { /* none */ },
+				LabelStore<DBAR_TEXT>::store_t { /* none */ },
 				Flags::ALL_FALSE,
-				nullptr, /* no ARIdLayout required */
-				std::make_unique<TextDecoratedTripletLayout>(
-					LabelStore<DBAR_TRIPLET_DELIM>::store_t { /* none */ },
-					Flags::ALL_FALSE
-				)
+				nullptr /* no ARIdLayout required */
 		);
+	} else
+	if ("text_decorated" == config.value(ARParseOptions::FORMAT))
+	{
+		using dbar::TextDecoratedFormat;
+
+		format = std::make_unique<TextDecoratedFormat>();
 	} else
 	{
 		// TODO CallSyntaxException
 	};
 
+	auto printer = PrintParseHandler {};
 	printer.set_format(std::move(format));
 
 	const auto arguments = config.arguments();

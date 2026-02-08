@@ -13,18 +13,18 @@
 
 TEST_CASE ( "TextDecoratedTripletLayout", "[textdecoratedtripletlayout]" )
 {
-	using arcsapp::dbar::TextDecoratedTripletLayout;
-
-	using arcstk::DBARTriplet;
-
-	auto t = DBARTriplet { 0xFFAABBCC, 24, 0x12345678 };
-
-	REQUIRE ( t.arcs() == 0xFFAABBCCu );
-	REQUIRE ( t.confidence() == 24 );
-	REQUIRE ( t.frame450_arcs() == 0x12345678u );
-
-	TextDecoratedTripletLayout lyt;
-
-	CHECK ( not lyt.format(8, t).empty() );
+	// using arcsapp::dbar::TextDecoratedTripletLayout;
+	//
+	// using arcstk::DBARTriplet;
+	//
+	// auto t = DBARTriplet { 0xFFAABBCC, 24, 0x12345678 };
+	//
+	// REQUIRE ( t.arcs() == 0xFFAABBCCu );
+	// REQUIRE ( t.confidence() == 24 );
+	// REQUIRE ( t.frame450_arcs() == 0x12345678u );
+	//
+	// TextDecoratedTripletLayout lyt;
+	//
+	// CHECK ( not lyt.format(8, t).empty() );
 }
 
