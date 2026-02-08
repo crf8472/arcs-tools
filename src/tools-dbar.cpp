@@ -608,9 +608,9 @@ std::string LabelledDBAROutputFormat::do_triplet(const uint32_t arcs,
 
 	auto str = empty_string();
 
-	if (has_property(DBAR_DELIM::ELEM_DELIM) && 2 <= track_counter())
+	if (has_property(DBAR_DELIM::TRACK_DELIM) && 2 <= track_counter())
 	{
-		str += delim(DBAR_DELIM::ELEM_DELIM);
+		str += delim(DBAR_DELIM::TRACK_DELIM);
 	}
 
 	str += "\n" + indent();
@@ -714,26 +714,26 @@ YamlFormat::YamlFormat()
 			//{ DBAR_DELIM::DBAR_END,     ""   }, // not required
 			{ DBAR_DELIM::BLOCK_START,  "- "   },
 			//{ DBAR_DELIM::BLOCK_END,    ""   }, // not required
+			//{ DBAR_DELIM::BLOCK_DELIM,  ""   }, // not required
 			//{ DBAR_DELIM::HEADER_START, ""   }, // not required
 			//{ DBAR_DELIM::HEADER_END,   ""   }, // not required
 			//{ DBAR_DELIM::TRACKS_START, ""   }, // not required
 			//{ DBAR_DELIM::TRACKS_END,   ""   }, // not required
 			{ DBAR_DELIM::TRACK_START,  "- { " },
 			{ DBAR_DELIM::TRACK_END,    " }"   },
-			{ DBAR_DELIM::LABEL_DELIM,  ": "   },
 			{ DBAR_DELIM::PROP_DELIM,   ", "   },
-			//{ DBAR_DELIM::BLOCK_DELIM,  ""   }, // not required
+			//{ DBAR_DELIM::TRACK_DELIM,   ""   } // not required
+			{ DBAR_DELIM::LABEL_DELIM,  ": "   },
 			//{ DBAR_DELIM::NAME_DELIM,   ""   }, // not required
-			{ DBAR_DELIM::VAL_DELIM,    "\""   },
-			//{ DBAR_DELIM::ELEM_DELIM,   ""   } // not required
+			{ DBAR_DELIM::VAL_DELIM,    "\""   }
 		},
 		Flags::ALL_FALSE | details::flag_operand(DBAR_DELIM::DOC_START,   true)
 						 | details::flag_operand(DBAR_DELIM::DBAR_START,  true)
 						 | details::flag_operand(DBAR_DELIM::BLOCK_START, true)
 						 | details::flag_operand(DBAR_DELIM::TRACK_START, true)
 						 | details::flag_operand(DBAR_DELIM::TRACK_END,   true)
-						 | details::flag_operand(DBAR_DELIM::LABEL_DELIM, true)
 						 | details::flag_operand(DBAR_DELIM::PROP_DELIM,  true)
+						 | details::flag_operand(DBAR_DELIM::LABEL_DELIM, true)
 						 | details::flag_operand(DBAR_DELIM::VAL_DELIM,   true)
 	}
 {
@@ -760,6 +760,7 @@ JsonFormat::JsonFormat()
 			{ DBAR_DELIM::DBAR_END,     "]"   },
 			{ DBAR_DELIM::BLOCK_START,  "{"   },
 			{ DBAR_DELIM::BLOCK_END,    "}"   },
+			{ DBAR_DELIM::BLOCK_DELIM,  ","   },
 			{ DBAR_DELIM::HEADER_START, " "   },
 			{ DBAR_DELIM::HEADER_END,   ","   },
 			{ DBAR_DELIM::TRACKS_END,   "]"   },
@@ -767,12 +768,11 @@ JsonFormat::JsonFormat()
 			{ DBAR_DELIM::TRACKS_END,   "]"   },
 			{ DBAR_DELIM::TRACK_START,  "{ "  },
 			{ DBAR_DELIM::TRACK_END,    " }"  },
-			{ DBAR_DELIM::LABEL_DELIM,  ": "  },
 			{ DBAR_DELIM::PROP_DELIM,   ", "  },
-			{ DBAR_DELIM::BLOCK_DELIM,  ","   },
+			{ DBAR_DELIM::TRACK_DELIM,  ","   },
+			{ DBAR_DELIM::LABEL_DELIM,  ": "  },
 			{ DBAR_DELIM::NAME_DELIM,   "\""  },
-			{ DBAR_DELIM::VAL_DELIM,    "\""  },
-			{ DBAR_DELIM::ELEM_DELIM,   ","   }
+			{ DBAR_DELIM::VAL_DELIM,    "\""  }
 		},
 		Flags::ALL_TRUE
 	}
