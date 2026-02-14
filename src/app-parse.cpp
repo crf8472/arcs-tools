@@ -31,7 +31,7 @@
 #include "tools-arid.hpp"          // for ARIdLayout
 #endif
 #ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
-#include "tools-dbar.hpp"          // for PrintParseHandler, DBARTripletLayout
+#include "tools-dbar.hpp"          // for PrintParseHandler, DBAROutputFormat
 #endif
 
 namespace arcsapp
@@ -105,6 +105,9 @@ std::unique_ptr<Configurator> ARParseApplication::do_create_configurator() const
 
 int ARParseApplication::do_run(const Configuration& config)
 {
+	using dbar::DBAR_DELIM;
+	using delimiters = LabelStore<DBAR_DELIM>::store_t;
+
 	auto format = std::unique_ptr<DBAROutputFormat> {};
 
 	if ("yaml" == config.value(ARParseOptions::FORMAT))
@@ -117,38 +120,42 @@ int ARParseApplication::do_run(const Configuration& config)
 	} else
 	if ("text_decorated" == config.value(ARParseOptions::FORMAT))
 	{
-		format = std::make_unique<dbar::TextDecoratedFormat>();
+		// only text, no labels, no delimiters except space and newline
+
+		format = std::make_unique<dbar::TextDecoratedFormat>(
+				delimiters
+				{
+					{ DBAR_DELIM::UNPARSED,     "????????" },
+					{ DBAR_DELIM::BLOCK_START,  "---------- Block $BLOCK: " },
+					{ DBAR_DELIM::HEADER_END,   ":\n" },
+					{ DBAR_DELIM::TRACK_START,  "Track $TRACK: " },
+					{ DBAR_DELIM::TRACK_END,     "\n"  },
+					{ DBAR_DELIM::PROP_DELIM1,   " ("  },
+					{ DBAR_DELIM::PROP_DELIM2,   ") "  },
+				}
+		);
 	} else
 	if ("text" == config.value(ARParseOptions::FORMAT))
 	{
 		// only text, no labels, no delimiters except space and newline
 
-		using dbar::DBAR_DELIM;
-		using details::flag_operand;
-
 		format = std::make_unique<dbar::TextDecoratedFormat>(
-				LabelStore<DBAR_DELIM>::store_t
+				delimiters
 				{
-					{ DBAR_DELIM::HEADER_END, "\n" }, // after id
-					{ DBAR_DELIM::TRACK_END,  "\n" }  // after track
-				},
-				Flags::ALL_FALSE | flag_operand(DBAR_DELIM::HEADER_END, true)
-								 | flag_operand(DBAR_DELIM::TRACK_END,  true),
-				nullptr /* no ARIdLayout required */
+					{ DBAR_DELIM::UNPARSED,   "????????" },
+					{ DBAR_DELIM::HEADER_END, "\n" },
+					{ DBAR_DELIM::TRACK_END,  "\n" }
+				}
 		);
 	} else
 	if ("raw" == config.value(ARParseOptions::FORMAT))
 	{
 		// only text, no labels, 1 space as delimiter
 
-		format = std::make_unique<dbar::TextDecoratedFormat>(
-				LabelStore<dbar::DBAR_DELIM>::store_t { /* no delims */ },
-				Flags::ALL_FALSE /* everything deactivated */,
-				nullptr /* no ARIdLayout */
-		);
+		format = std::make_unique<dbar::TextDecoratedFormat>();
 	} else
 	{
-		// TODO CallSyntaxException
+		// TODO Unknown format name
 	};
 
 	auto printer = PrintParseHandler {};

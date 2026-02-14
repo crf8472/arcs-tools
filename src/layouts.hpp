@@ -12,8 +12,10 @@
  * also be used to construct new layouts.
  */
 
+#include <algorithm>              // for transform
 #include <cstdint>                // for uint32_t
 #include <map>                    // for map
+#include <set>                    // for set
 #include <string>                 // for string
 #include <tuple>                  // for tuple, make_tuple
 #include <type_traits>            // for underlying_type_t
@@ -278,7 +280,7 @@ public:
 	 * Default-initializes internal flags.
 	 */
 	FlagStore()
-		: flags_ {/*default*/}
+		: flags_ { /*default*/ }
 	{
 		/* empty */
 	}
@@ -499,9 +501,14 @@ class LabelStore
 public:
 
 	/**
+	 * \brief Internal key type.
+	 */
+	using key_t = KEY;
+
+	/**
 	 * \brief Internal store type.
 	 */
-	using store_t = std::map<const KEY, std::string>;
+	using store_t = std::map<const key_t, std::string>;
 
 	/**
 	 * \brief Default constructor.
@@ -544,7 +551,7 @@ public:
 	 * \param[in] key   The key to set a label for
 	 * \param[in] label The label to set for \c key
 	 */
-	void set_label(const KEY key, const std::string& label)
+	void set_label(const key_t key, const std::string& label)
 	{
 		labels_.insert_or_assign(key, label);
 	}
@@ -556,7 +563,7 @@ public:
 	 *
 	 * \return The label for \c key
 	 */
-	const std::string& label(const KEY key) const
+	const std::string& label(const key_t key) const
 	{
 		const auto label_ptr { labels_.find(key) };
 
@@ -576,6 +583,34 @@ private:
 	 */
 	store_t labels_;
 };
+
+
+/**
+ * \brief Get the set of keys as flags for a corresponding FlagStore.
+ *
+ * \tparam S Store type
+ *
+ * \param[in] labels Instance of a store_t to get keys from
+ *
+ * \return FlagStore flags which are TRUE excatly for the existing KEYs
+ */
+template<typename S>
+flags_t existing_flags(const S& labels)
+{
+	using std::cbegin;
+	using std::cend;
+
+	auto flags = flags_t { Flags::ALL_FALSE };
+
+	std::for_each(cbegin(labels), cend(labels),
+		[&flags](const auto& pair)
+		{
+			return flags |= details::flag_operand(pair.first, true);
+		}
+	);
+
+	return flags;
+}
 
 } // namespace v_1_0_0
 } // namespace arcsapp

@@ -26,11 +26,13 @@ inline namespace v_1_0_0
 {
 
 // forward declarations
+
 namespace arid
 {
 class Application;
 class ARIdLayout;
 }
+
 
 /**
  * \brief Tools and helpers for DBAR input.
@@ -57,6 +59,8 @@ using arcsapp::arid::ARIdLayout;
  */
 class DBAROutputFormat
 {
+	// arcstk::ParseHandler
+
 	virtual std::string do_start_input() const = 0;
 
 	virtual std::string do_start_block() const = 0;
@@ -64,19 +68,21 @@ class DBAROutputFormat
 	virtual std::string do_header(const uint8_t track_count,
 			const uint32_t id1,
 			const uint32_t id2,
-			const uint32_t cddb_id) const;
+			const uint32_t cddb_id) const = 0;
 
 	virtual std::string do_start_triplets() const = 0;
 
 	virtual std::string do_triplet(const uint32_t arcs,
 			const uint8_t confidence,
-			const uint32_t frame450_arcs) const;
+			const uint32_t frame450_arcs) const = 0;
 
 	virtual std::string do_end_triplets() const = 0;
 
 	virtual std::string do_end_block() const = 0;
 
 	virtual std::string do_end_input() const = 0;
+
+	//
 
 	virtual std::string do_name() const = 0;
 
@@ -109,10 +115,37 @@ protected:
 	 *
 	 * \return String representation of the header
 	 */
-	std::string default_header(const uint8_t track_count,
+	std::string default_id(const uint8_t track_count,
 			const uint32_t id1,
 			const uint32_t id2,
 			const uint32_t cddb_id) const;
+
+	/**
+	 * \brief Default method to create an ARCS.
+	 *
+	 * \param[in] number ARCS value from parser
+	 *
+	 * \return String representation of the parsed ARCS
+	 */
+	std::string default_arcs(const uint32_t number) const;
+
+	/**
+	 * \brief Default method to create a confidence value.
+	 *
+	 * \param[in] number Confidence value from parser
+	 *
+	 * \return String representation of the parsed value
+	 */
+	std::string default_confidence(const unsigned number) const;
+
+	/**
+	 * \brief Default method to create the ARCS of frame 450.
+	 *
+	 * \param[in] number ARCS value from parser
+	 *
+	 * \return String representation of the parsed ARCS
+	 */
+	std::string default_f450_arcs(const uint32_t number) const;
 
 	/**
 	 * \brief Default method to create a triplet representation.
@@ -278,21 +311,22 @@ public:
 
 
 /**
- * \brief Labels for DBAROutputFormat.
+ * \brief Data entities of a DBAR object.
  */
-enum class DBAR_LABEL : int
+enum class DBAR_ENTITY : int
 {
 	DBAR   = 0,
 	ID     = 1,
 	TRACKS = 2,
-	ARCS   = 3,
-	CONF   = 4,
-	F450   = 5
+	TRACK  = 3,
+	ARCS   = 4,
+	CONF   = 5,
+	F450   = 6
 };
 
 
 /**
- * \brief Delimiters for DBAROutputFormat.
+ * \brief Delimiters for syntactic elements of a DBAR.
  */
 enum class DBAR_DELIM : int
 {
@@ -320,11 +354,83 @@ enum class DBAR_DELIM : int
 
 
 /**
+ * \brief Abstract base class for formatting DBAR objects.
+ */
+class DBARBaseFormat : public DBAROutputFormat
+					 , public LabelStore<DBAR_DELIM>
+{
+	std::string do_start_input() const override;
+
+	std::string do_start_block() const override;
+
+	std::string do_header(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const override;
+
+	std::string do_start_triplets() const override;
+
+	std::string do_triplet(const uint32_t arcs,
+			const uint8_t confidence,
+			const uint32_t frame450_arcs) const override;
+
+	std::string do_end_triplets() const override;
+
+	std::string do_end_block() const override;
+
+	std::string do_end_input() const override;
+
+	// do_name
+
+	virtual std::string do_id(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const;
+
+	virtual std::string do_arcs(const uint32_t number) const;
+
+	virtual std::string do_confidence(const unsigned number) const;
+
+	virtual std::string do_f450_arcs(const uint32_t number) const;
+
+public:
+
+	DBARBaseFormat(const LabelStore::store_t& labels,
+			std::unique_ptr<ARIdLayout> arid_layout);
+
+	DBARBaseFormat(const LabelStore::store_t& labels);
+
+	DBARBaseFormat();
+};
+
+
+// template <typename E>
+// class ConfigurableLabelStore : public LabelStore<E>
+// 							 , public PropertyStore<E>
+// {
+// public:
+//
+// 	ConfigurableLabelStore(const typename LabelStore<E>::store_t& labels)
+// 		: LabelStore<E>    { labels }
+// 	{
+// 		// empty
+// 	}
+//
+// 	ConfigurableLabelStore(const typename LabelStore<E>::store_t& labels,
+// 			const flags_t properties)
+// 		: LabelStore<E>    { labels }
+// 		, PropertyStore<E> { properties }
+// 	{
+// 		// empty
+// 	}
+// };
+
+
+/**
  * \brief Implements formats 'text_decorated', 'text' and 'raw'.
  */
-class TextDecoratedFormat final : public LabelStore<DBAR_DELIM>
+class TextDecoratedFormat final : public DBARBaseFormat
 								, public PropertyStore<DBAR_DELIM>
-								, public DBAROutputFormat
 {
 	std::string do_start_input() const final;
 
@@ -352,20 +458,42 @@ class TextDecoratedFormat final : public LabelStore<DBAR_DELIM>
 public:
 
 	/**
-	 * \brief Constructor.
-	 */
-	TextDecoratedFormat();
-
-	/**
-	 * \brief Constructor with labels, properties and layouts.
+	 * \brief Constructor with labels, properties and layout.
 	 *
 	 * \param[in] labels         Labels for text output
 	 * \param[in] properties     Properties for text output
 	 * \param[in] arid_layout    ARId Layout
 	 */
-	TextDecoratedFormat(const LabelStore::store_t labels,
+	TextDecoratedFormat(const LabelStore::store_t& labels,
 			const flags_t properties,
 			std::unique_ptr<ARIdLayout> arid_layout);
+
+	/**
+	 * \brief Constructor with labels and layout.
+	 *
+	 * All properties represented by a key in \c labels are set to TRUE.
+	 *
+	 * \param[in] labels         Labels for text output
+	 * \param[in] arid_layout    ARId Layout
+	 */
+	TextDecoratedFormat(const LabelStore::store_t& labels,
+		std::unique_ptr<ARIdLayout> arid_layout);
+
+
+	/**
+	 * \brief Constructor with labels and layout.
+	 *
+	 * All properties represented by a key in \c labels are set to TRUE, no
+	 * ARIDLayout is used.
+	 *
+	 * \param[in] labels         Labels for text output
+	 */
+	TextDecoratedFormat(const LabelStore::store_t& labels);
+
+	/**
+	 * \brief Constructor.
+	 */
+	TextDecoratedFormat();
 };
 
 
@@ -378,7 +506,7 @@ class LabelledDBAROutputFormat  : public DBAROutputFormat
 	/**
 	 * \brief Internal label store.
 	 */
-	LabelStore<DBAR_LABEL> labels_;
+	LabelStore<DBAR_ENTITY> labels_;
 
 	/**
 	 * \brief Internal delim store.
@@ -421,7 +549,7 @@ class LabelledDBAROutputFormat  : public DBAROutputFormat
 
 protected:
 
-	LabelledDBAROutputFormat(const LabelStore<DBAR_LABEL>::store_t& labels,
+	LabelledDBAROutputFormat(const LabelStore<DBAR_ENTITY>::store_t& labels,
 			const LabelStore<DBAR_DELIM>::store_t& delims,
 			const flags_t properties,
 			std::unique_ptr<ARIdLayout> arid_layout);
@@ -429,7 +557,7 @@ protected:
 	LabelledDBAROutputFormat(const LabelStore<DBAR_DELIM>::store_t& delims,
 			const flags_t properties);
 
-	std::string label(const DBAR_LABEL& label) const;
+	std::string label(const DBAR_ENTITY& label) const;
 
 	std::string value(const std::string& s) const;
 

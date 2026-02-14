@@ -178,24 +178,7 @@ std::string DBAROutputFormat::name() const
 }
 
 
-std::string DBAROutputFormat::do_header(const uint8_t track_count,
-			const uint32_t id1,
-			const uint32_t id2,
-			const uint32_t cddb_id) const
-{
-	return default_header(track_count, id1, id2, cddb_id);
-}
-
-
-std::string DBAROutputFormat::do_triplet(const uint32_t arcs,
-			const uint8_t confidence,
-			const uint32_t frame450_arcs) const
-{
-	return default_triplet(arcs, confidence, frame450_arcs);
-}
-
-
-std::string DBAROutputFormat::default_header(const uint8_t track_count,
+std::string DBAROutputFormat::default_id(const uint8_t track_count,
 			const uint32_t id1,
 			const uint32_t id2,
 			const uint32_t cddb_id) const
@@ -212,16 +195,23 @@ std::string DBAROutputFormat::default_header(const uint8_t track_count,
 }
 
 
-std::string DBAROutputFormat::default_triplet(const uint32_t arcs,
-			const uint8_t confidence,
-			const uint32_t frame450_arcs) const
+std::string DBAROutputFormat::default_arcs(const uint32_t number) const
 {
-	const auto triplet = DBARTriplet { arcs, confidence, frame450_arcs };
-
 	using std::to_string;
-	return to_string(triplet.arcs())
-			+ ", " + to_string(triplet.confidence())
-			+ ", " + to_string(triplet.frame450_arcs());
+	return to_string(arcstk::Checksum { number });
+}
+
+
+std::string DBAROutputFormat::default_confidence(const unsigned number) const
+{
+	using std::to_string;
+	return to_string(number);
+}
+
+
+std::string DBAROutputFormat::default_f450_arcs(const uint32_t number) const
+{
+	return default_arcs(number);
 }
 
 
@@ -268,47 +258,140 @@ const std::string& DBAROutputFormat::empty_string() const
 }
 
 
-// TextDecoratedFormat
+// DBARBaseFormat
 
 
-TextDecoratedFormat::TextDecoratedFormat()
-	: TextDecoratedFormat(
-		{
-			{ DBAR_DELIM::UNPARSED,     "????????" },
-			//{ DBAR_DELIM::DOC_START,    ""   },
-			//{ DBAR_DELIM::DOC_END,      ""   },
-			//{ DBAR_DELIM::DBAR_START,   ""   },
-			//{ DBAR_DELIM::DBAR_END,     ""   },
-			{ DBAR_DELIM::BLOCK_START,  "---------- Block $BLOCK: " },
-			//{ DBAR_DELIM::BLOCK_END,    ""    },
-			//{ DBAR_DELIM::BLOCK_DELIM,  ""    },
-			//{ DBAR_DELIM::HEADER_START, " "   },
-			{ DBAR_DELIM::HEADER_END,   ":\n" },
-			//{ DBAR_DELIM::TRACKS_END,   ""    },
-			//{ DBAR_DELIM::TRACKS_START, ""    },
-			//{ DBAR_DELIM::TRACKS_END,   "\n"  },
-			{ DBAR_DELIM::TRACK_START,  "Track $TRACK: " },
-			{ DBAR_DELIM::TRACK_END,     "\n"  },
-			{ DBAR_DELIM::PROP_DELIM1,   " ("  },
-			{ DBAR_DELIM::PROP_DELIM2,   ") "  },
-			//{ DBAR_DELIM::TRACK_DELIM,  ""  },
-			//{ DBAR_DELIM::LABEL_DELIM,  ""  },
-			//{ DBAR_DELIM::NAME_DELIM,   ""  },
-			//{ DBAR_DELIM::VAL_DELIM,    ""  }
-		},
-		Flags::ALL_TRUE,
-		std::make_unique<ARIdTableLayout>( /* print only ID */
-			false, true, false, false, false, false, false, false))
+DBARBaseFormat::DBARBaseFormat(const LabelStore::store_t& labels,
+		std::unique_ptr<ARIdLayout> arid_layout)
+	: DBAROutputFormat { std::move(arid_layout) }
+	, LabelStore { labels }
 {
 	// empty
 }
 
 
-TextDecoratedFormat::TextDecoratedFormat(const LabelStore::store_t labels,
+DBARBaseFormat::DBARBaseFormat(const LabelStore::store_t& labels)
+	: DBARBaseFormat { labels, nullptr }
+{
+	// empty
+}
+
+
+DBARBaseFormat::DBARBaseFormat()
+{
+	// empty
+}
+
+
+std::string DBARBaseFormat::do_start_input() const
+{
+	return empty_string();
+}
+
+
+std::string DBARBaseFormat::do_start_block() const
+{
+	return empty_string();
+}
+
+
+std::string DBARBaseFormat::do_header(const uint8_t track_count,
+		const uint32_t id1,
+		const uint32_t id2,
+		const uint32_t cddb_id) const
+{
+	return do_id(track_count, id1, id2, cddb_id);
+}
+
+
+std::string DBARBaseFormat::do_start_triplets() const
+{
+	return empty_string();
+}
+
+
+std::string DBARBaseFormat::do_triplet(const uint32_t arcs,
+		const uint8_t confidence,
+		const uint32_t frame450_arcs) const
+{
+	return empty_string();
+}
+
+
+std::string DBARBaseFormat::do_end_triplets() const
+{
+	return empty_string();
+}
+
+
+std::string DBARBaseFormat::do_end_block() const
+{
+	return empty_string();
+}
+
+
+std::string DBARBaseFormat::do_end_input() const
+{
+	return empty_string();
+}
+
+
+std::string DBARBaseFormat::do_id(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const
+{
+	return default_id(track_count, id1, id2, cddb_id);
+}
+
+
+std::string DBARBaseFormat::do_arcs(const uint32_t number) const
+{
+	return default_arcs(number);
+}
+
+
+std::string DBARBaseFormat::do_confidence(const unsigned number) const
+{
+	return default_confidence(number);
+}
+
+
+std::string DBARBaseFormat::do_f450_arcs(const uint32_t number) const
+{
+	return default_arcs(number);
+}
+
+
+// TextDecoratedFormat
+
+
+TextDecoratedFormat::TextDecoratedFormat(const LabelStore::store_t& labels,
 		const flags_t properties, std::unique_ptr<ARIdLayout> arid_layout)
-	: LabelStore       { labels }
-	, PropertyStore    { properties }
-	, DBAROutputFormat { std::move(arid_layout) }
+	: DBARBaseFormat { labels, std::move(arid_layout) }
+	, PropertyStore  { properties }
+{
+	// empty
+}
+
+
+TextDecoratedFormat::TextDecoratedFormat(const LabelStore::store_t& labels,
+		std::unique_ptr<ARIdLayout> arid_layout)
+	: TextDecoratedFormat { labels, existing_flags(labels),
+		std::move(arid_layout) }
+{
+	// empty
+}
+
+
+TextDecoratedFormat::TextDecoratedFormat(const LabelStore::store_t& labels)
+	: TextDecoratedFormat { labels, nullptr }
+{
+	// empty
+}
+
+
+TextDecoratedFormat::TextDecoratedFormat()
 {
 	// empty
 }
@@ -337,21 +420,23 @@ std::string TextDecoratedFormat::do_header(const uint8_t track_count,
 			const uint32_t id2,
 			const uint32_t cddb_id) const
 {
-	const auto id = ARId { track_count, id1, id2, cddb_id };
+	const auto arid = default_id(track_count, id1, id2, cddb_id);
 
-	if (!arid_layout_ptr())
+	auto header = empty_string();
+
+	if (has_property(DBAR_DELIM::HEADER_START))
 	{
-		using std::to_string;
-
-		if (has_property(DBAR_DELIM::HEADER_END))
-		{
-			return to_string(id) + label(DBAR_DELIM::HEADER_END);
-		}
-
-		return to_string(id) + " ";
+		header += label(DBAR_DELIM::HEADER_START);
 	}
 
-	return arid_layout().format(id, empty_string()/*no alt prefix*/);
+	header += arid;
+
+	if (has_property(DBAR_DELIM::HEADER_END))
+	{
+		header += label(DBAR_DELIM::HEADER_END);
+	}
+
+	return header;
 }
 
 
@@ -445,7 +530,7 @@ std::string TextDecoratedFormat::do_name() const
 
 
 LabelledDBAROutputFormat::LabelledDBAROutputFormat(
-		const LabelStore<DBAR_LABEL>::store_t& labels,
+		const LabelStore<DBAR_ENTITY>::store_t& labels,
 		const LabelStore<DBAR_DELIM>::store_t& delims,
 		const flags_t properties,
 		std::unique_ptr<ARIdLayout> arid_layout)
@@ -465,12 +550,12 @@ LabelledDBAROutputFormat::LabelledDBAROutputFormat(
 		const flags_t properties)
 	: LabelledDBAROutputFormat {
 		{
-			{ DBAR_LABEL::DBAR,   "dbar"          },
-			{ DBAR_LABEL::ID,     "id"            },
-			{ DBAR_LABEL::TRACKS, "tracks"        },
-			{ DBAR_LABEL::ARCS,   "arcs"          },
-			{ DBAR_LABEL::CONF,   "conf"          },
-			{ DBAR_LABEL::F450,   "frame450_arcs" }
+			{ DBAR_ENTITY::DBAR,   "dbar"          },
+			{ DBAR_ENTITY::ID,     "id"            },
+			{ DBAR_ENTITY::TRACKS, "tracks"        },
+			{ DBAR_ENTITY::ARCS,   "arcs"          },
+			{ DBAR_ENTITY::CONF,   "conf"          },
+			{ DBAR_ENTITY::F450,   "frame450_arcs" }
 		},
 		delims,
 		properties,
@@ -482,15 +567,15 @@ LabelledDBAROutputFormat::LabelledDBAROutputFormat(
 }
 
 
-std::string LabelledDBAROutputFormat::label(const DBAR_LABEL& label) const
+std::string LabelledDBAROutputFormat::label(const DBAR_ENTITY& entity) const
 {
 	if (has_property(DBAR_DELIM::NAME_DELIM))
 	{
-		return delim(DBAR_DELIM::NAME_DELIM) + labels_.label(label)
+		return delim(DBAR_DELIM::NAME_DELIM) + labels_.label(entity)
 			+ delim(DBAR_DELIM::NAME_DELIM);
 	}
 
-	return labels_.label(label);
+	return labels_.label(entity);
 }
 
 
@@ -535,7 +620,7 @@ std::string LabelledDBAROutputFormat::do_start_input() const
 {
 	const auto doc_start = std::string {
 			delim(DBAR_DELIM::DOC_START) + "\n"
-			+ label(DBAR_LABEL::DBAR) + delim(DBAR_DELIM::LABEL_DELIM)
+			+ label(DBAR_ENTITY::DBAR) + delim(DBAR_DELIM::LABEL_DELIM)
 	};
 
 	if (has_property(DBAR_DELIM::DBAR_START))
@@ -574,12 +659,12 @@ std::string LabelledDBAROutputFormat::do_header(const uint8_t track_count,
 			const uint32_t id2,
 			const uint32_t cddb_id) const
 {
-	const auto arid = ARId { track_count, id1, id2, cddb_id };
+	const auto arid = default_id(track_count, id1, id2, cddb_id);
 
 	using std::to_string;
 
-	auto header = label(DBAR_LABEL::ID) + delim(DBAR_DELIM::LABEL_DELIM)
-		+ value(to_string(arid));
+	auto header = label(DBAR_ENTITY::ID) + delim(DBAR_DELIM::LABEL_DELIM)
+		+ value(arid);
 
 	if (has_property(DBAR_DELIM::HEADER_START))
 	{
@@ -597,7 +682,7 @@ std::string LabelledDBAROutputFormat::do_header(const uint8_t track_count,
 
 std::string LabelledDBAROutputFormat::do_start_triplets() const
 {
-	auto tracks_start = indent() + label(DBAR_LABEL::TRACKS)
+	auto tracks_start = indent() + label(DBAR_ENTITY::TRACKS)
 		+ delim(DBAR_DELIM::LABEL_DELIM);
 
 	if (has_property(DBAR_DELIM::TRACKS_START))
@@ -635,13 +720,13 @@ std::string LabelledDBAROutputFormat::do_triplet(const uint32_t arcs,
 		using std::to_string;
 		using arcstk::Checksum;
 
-		str += label(DBAR_LABEL::ARCS) + delim(DBAR_DELIM::LABEL_DELIM)
+		str += label(DBAR_ENTITY::ARCS) + delim(DBAR_DELIM::LABEL_DELIM)
 			+ value(to_string(Checksum { triplet.arcs() }))
 			+ delim(DBAR_DELIM::PROP_DELIM1)
-			+ label(DBAR_LABEL::CONF) + delim(DBAR_DELIM::LABEL_DELIM)
+			+ label(DBAR_ENTITY::CONF) + delim(DBAR_DELIM::LABEL_DELIM)
 			+ value(to_string(triplet.confidence()))
 			+ delim(DBAR_DELIM::PROP_DELIM1)
-			+ label(DBAR_LABEL::F450) + delim(DBAR_DELIM::LABEL_DELIM)
+			+ label(DBAR_ENTITY::F450) + delim(DBAR_DELIM::LABEL_DELIM)
 			+ value(to_string(Checksum { triplet.frame450_arcs() }));
 	}
 
@@ -720,23 +805,13 @@ YamlFormat::YamlFormat()
 		{
 			{ DBAR_DELIM::UNPARSED,     "????????" },
 			{ DBAR_DELIM::DOC_START,    "---"  },
-			//{ DBAR_DELIM::DOC_END,      ""   }, // not required
-			{ DBAR_DELIM::DBAR_START,   ""     }, // enforce newline
-			//{ DBAR_DELIM::DBAR_END,     ""   }, // not required
+			{ DBAR_DELIM::DBAR_START,   ""     }, // to enforce newline
 			{ DBAR_DELIM::BLOCK_START,  "- "   },
-			//{ DBAR_DELIM::BLOCK_END,    ""   }, // not required
-			//{ DBAR_DELIM::BLOCK_DELIM,  ""   }, // not required
-			//{ DBAR_DELIM::HEADER_START, ""   }, // not required
-			//{ DBAR_DELIM::HEADER_END,   ""   }, // not required
-			//{ DBAR_DELIM::TRACKS_START, ""   }, // not required
-			//{ DBAR_DELIM::TRACKS_END,   ""   }, // not required
 			{ DBAR_DELIM::TRACK_START,  "- { " },
 			{ DBAR_DELIM::TRACK_END,    " }"   },
 			{ DBAR_DELIM::PROP_DELIM1,  ", "   },
 			{ DBAR_DELIM::PROP_DELIM2,  ", "   },
-			//{ DBAR_DELIM::TRACK_DELIM,   ""   } // not required
 			{ DBAR_DELIM::LABEL_DELIM,  ": "   },
-			//{ DBAR_DELIM::NAME_DELIM,   ""   }, // not required
 			{ DBAR_DELIM::VAL_DELIM,    "\""   }
 		},
 		Flags::ALL_FALSE | details::flag_operand(DBAR_DELIM::DOC_START,   true)
