@@ -296,49 +296,34 @@ enum class DBAR_LABEL : int
  */
 enum class DBAR_DELIM : int
 {
-	UNPARSED     =  0,
-	DOC_START    =  1,
-	DOC_END      =  2,
-	DBAR_START   =  3,
-	DBAR_END     =  4,
-	BLOCK_START  =  5,
-	BLOCK_END    =  6,
-	BLOCK_DELIM  =  7,
-	HEADER_START =  8,
-	HEADER_END   =  9,
-	TRACKS_START = 10,
-	TRACKS_END   = 11,
-	TRACK_START  = 12,
-	TRACK_END    = 13,
-	PROP_DELIM   = 14,
-	TRACK_DELIM  = 15,
-	LABEL_DELIM  = 16,
-	NAME_DELIM   = 17,
-	VAL_DELIM    = 18,
-};
-
-
-/**
- * \brief For TextDecoratedFormat.
- */
-enum class DBAR_TEXT : int
-{
-	UNPARSED,
-	DELIM1,
-	DELIM2,
-	DELIM3,
-	DELIM4,
-	DELIM5,
-	BLOCK,
-	TRIPLET
+	UNPARSED     =  0,  /* unparsed value */
+	DOC_START    =  1,  /* on document start */
+	DOC_END      =  2,  /* on document end */
+	DBAR_START   =  3,  /* on DBAR object start */
+	DBAR_END     =  4,  /* on DBAR object end */
+	BLOCK_START  =  5,  /* start of a block */
+	BLOCK_END    =  6,  /* end of a block */
+	BLOCK_DELIM  =  7,  /* between two blocks */
+	HEADER_START =  8,  /* start of a header */
+	HEADER_END   =  9,  /* end of a header */
+	TRACKS_START = 10,  /* start of a list of tracks/triplets */
+	TRACKS_END   = 11,  /* end of a list of tracks/triplets */
+	TRACK_START  = 12,  /* start of a triplet */
+	TRACK_END    = 13,  /* end of a triplet */
+	PROP_DELIM1  = 14,  /* between first and second element of a triplet */
+	PROP_DELIM2  = 15,  /* between second and third element of a triplet */
+	TRACK_DELIM  = 16,  /* between triplets */
+	LABEL_DELIM  = 17,  /* between a label and a value */
+	NAME_DELIM   = 18,  /* start/end delimiters for a name */
+	VAL_DELIM    = 19   /* start/end delimiters for a value */
 };
 
 
 /**
  * \brief Implements formats 'text_decorated', 'text' and 'raw'.
  */
-class TextDecoratedFormat final : public LabelStore<DBAR_TEXT>
-								, public PropertyStore<DBAR_TEXT>
+class TextDecoratedFormat final : public LabelStore<DBAR_DELIM>
+								, public PropertyStore<DBAR_DELIM>
 								, public DBAROutputFormat
 {
 	std::string do_start_input() const final;

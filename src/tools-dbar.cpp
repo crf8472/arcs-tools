@@ -274,14 +274,27 @@ const std::string& DBAROutputFormat::empty_string() const
 TextDecoratedFormat::TextDecoratedFormat()
 	: TextDecoratedFormat(
 		{
-			{ DBAR_TEXT::UNPARSED, "????????" },
-			{ DBAR_TEXT::DELIM1,   ": "  },
-			{ DBAR_TEXT::DELIM2,   ":\n" },
-			{ DBAR_TEXT::DELIM3,   " ("  },
-			{ DBAR_TEXT::DELIM4,   ") "  },
-			{ DBAR_TEXT::DELIM5,   "\n"  },
-			{ DBAR_TEXT::BLOCK,    "---------- Block $BLOCK" },
-			{ DBAR_TEXT::TRIPLET,  "Track $TRACK" }
+			{ DBAR_DELIM::UNPARSED,     "????????" },
+			//{ DBAR_DELIM::DOC_START,    ""   },
+			//{ DBAR_DELIM::DOC_END,      ""   },
+			//{ DBAR_DELIM::DBAR_START,   ""   },
+			//{ DBAR_DELIM::DBAR_END,     ""   },
+			{ DBAR_DELIM::BLOCK_START,  "---------- Block $BLOCK: " },
+			//{ DBAR_DELIM::BLOCK_END,    ""    },
+			//{ DBAR_DELIM::BLOCK_DELIM,  ""    },
+			//{ DBAR_DELIM::HEADER_START, " "   },
+			{ DBAR_DELIM::HEADER_END,   ":\n" },
+			//{ DBAR_DELIM::TRACKS_END,   ""    },
+			//{ DBAR_DELIM::TRACKS_START, ""    },
+			//{ DBAR_DELIM::TRACKS_END,   "\n"  },
+			{ DBAR_DELIM::TRACK_START,  "Track $TRACK: " },
+			{ DBAR_DELIM::TRACK_END,     "\n"  },
+			{ DBAR_DELIM::PROP_DELIM1,   " ("  },
+			{ DBAR_DELIM::PROP_DELIM2,   ") "  },
+			//{ DBAR_DELIM::TRACK_DELIM,  ""  },
+			//{ DBAR_DELIM::LABEL_DELIM,  ""  },
+			//{ DBAR_DELIM::NAME_DELIM,   ""  },
+			//{ DBAR_DELIM::VAL_DELIM,    ""  }
 		},
 		Flags::ALL_TRUE,
 		std::make_unique<ARIdTableLayout>( /* print only ID */
@@ -309,11 +322,10 @@ std::string TextDecoratedFormat::do_start_input() const
 
 std::string TextDecoratedFormat::do_start_block() const
 {
-	if (has_property(DBAR_TEXT::BLOCK))
+	if (has_property(DBAR_DELIM::BLOCK_START))
 	{
-		return details::evaluate(label(DBAR_TEXT::BLOCK), "$BLOCK",
-				block_counter(), 0/*no fixed width*/, ' ')
-			+ label(DBAR_TEXT::DELIM1);
+		return details::evaluate(label(DBAR_DELIM::BLOCK_START), "$BLOCK",
+				block_counter(), 0/*no fixed width*/, ' ');
 	}
 
 	return empty_string();
@@ -331,9 +343,9 @@ std::string TextDecoratedFormat::do_header(const uint8_t track_count,
 	{
 		using std::to_string;
 
-		if (has_property(DBAR_TEXT::DELIM2))
+		if (has_property(DBAR_DELIM::HEADER_END))
 		{
-			return to_string(id) + label(DBAR_TEXT::DELIM2);
+			return to_string(id) + label(DBAR_DELIM::HEADER_END);
 		}
 
 		return to_string(id) + " ";
@@ -360,11 +372,10 @@ std::string TextDecoratedFormat::do_triplet(const uint32_t arcs,
 
 	// Print optional label for triplet on the left
 
-	if (has_property(DBAR_TEXT::TRIPLET))
+	if (has_property(DBAR_DELIM::TRACK_START))
 	{
-		out << details::evaluate(label(DBAR_TEXT::TRIPLET), "$TRACK",
-				track, 2, '0')
-			<< label(DBAR_TEXT::DELIM1);
+		out << details::evaluate(label(DBAR_DELIM::TRACK_START), "$TRACK",
+				track, 2, '0');
 	}
 
 	// TODO configurable? However, do not create this on every call
@@ -381,23 +392,23 @@ std::string TextDecoratedFormat::do_triplet(const uint32_t arcs,
 			out << std::setw(width_arcs) << hex.format(c, width_arcs);
 		};
 
-	const auto delim = [&](const DBAR_TEXT p)
+	const auto delim = [&](const DBAR_DELIM d)
 		{
-			out << (has_property(p) ? label(p) : " ");
+			out << (has_property(d) ? label(d) : " ");
 		};
 
 
 	out_(triplet.arcs());
 
-	delim(DBAR_TEXT::DELIM3);
+	delim(DBAR_DELIM::PROP_DELIM1);
 
 	out << std::setw(width_conf) << std::setfill('0') << triplet.confidence();
 
-	delim(DBAR_TEXT::DELIM4);
+	delim(DBAR_DELIM::PROP_DELIM2);
 
 	out_(triplet.frame450_arcs());
 
-	delim(DBAR_TEXT::DELIM5);
+	delim(DBAR_DELIM::TRACK_END);
 
 	return out.str();
 }
@@ -626,10 +637,10 @@ std::string LabelledDBAROutputFormat::do_triplet(const uint32_t arcs,
 
 		str += label(DBAR_LABEL::ARCS) + delim(DBAR_DELIM::LABEL_DELIM)
 			+ value(to_string(Checksum { triplet.arcs() }))
-			+ delim(DBAR_DELIM::PROP_DELIM)
+			+ delim(DBAR_DELIM::PROP_DELIM1)
 			+ label(DBAR_LABEL::CONF) + delim(DBAR_DELIM::LABEL_DELIM)
 			+ value(to_string(triplet.confidence()))
-			+ delim(DBAR_DELIM::PROP_DELIM)
+			+ delim(DBAR_DELIM::PROP_DELIM1)
 			+ label(DBAR_LABEL::F450) + delim(DBAR_DELIM::LABEL_DELIM)
 			+ value(to_string(Checksum { triplet.frame450_arcs() }));
 	}
@@ -721,7 +732,8 @@ YamlFormat::YamlFormat()
 			//{ DBAR_DELIM::TRACKS_END,   ""   }, // not required
 			{ DBAR_DELIM::TRACK_START,  "- { " },
 			{ DBAR_DELIM::TRACK_END,    " }"   },
-			{ DBAR_DELIM::PROP_DELIM,   ", "   },
+			{ DBAR_DELIM::PROP_DELIM1,  ", "   },
+			{ DBAR_DELIM::PROP_DELIM2,  ", "   },
 			//{ DBAR_DELIM::TRACK_DELIM,   ""   } // not required
 			{ DBAR_DELIM::LABEL_DELIM,  ": "   },
 			//{ DBAR_DELIM::NAME_DELIM,   ""   }, // not required
@@ -732,7 +744,8 @@ YamlFormat::YamlFormat()
 						 | details::flag_operand(DBAR_DELIM::BLOCK_START, true)
 						 | details::flag_operand(DBAR_DELIM::TRACK_START, true)
 						 | details::flag_operand(DBAR_DELIM::TRACK_END,   true)
-						 | details::flag_operand(DBAR_DELIM::PROP_DELIM,  true)
+						 | details::flag_operand(DBAR_DELIM::PROP_DELIM1, true)
+						 | details::flag_operand(DBAR_DELIM::PROP_DELIM2, true)
 						 | details::flag_operand(DBAR_DELIM::LABEL_DELIM, true)
 						 | details::flag_operand(DBAR_DELIM::VAL_DELIM,   true)
 	}
@@ -768,7 +781,8 @@ JsonFormat::JsonFormat()
 			{ DBAR_DELIM::TRACKS_END,   "]"   },
 			{ DBAR_DELIM::TRACK_START,  "{ "  },
 			{ DBAR_DELIM::TRACK_END,    " }"  },
-			{ DBAR_DELIM::PROP_DELIM,   ", "  },
+			{ DBAR_DELIM::PROP_DELIM1,  ", "  },
+			{ DBAR_DELIM::PROP_DELIM1,  ", "  },
 			{ DBAR_DELIM::TRACK_DELIM,  ","   },
 			{ DBAR_DELIM::LABEL_DELIM,  ": "  },
 			{ DBAR_DELIM::NAME_DELIM,   "\""  },

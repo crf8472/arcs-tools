@@ -109,51 +109,43 @@ int ARParseApplication::do_run(const Configuration& config)
 
 	if ("yaml" == config.value(ARParseOptions::FORMAT))
 	{
-		using dbar::YamlFormat;
-		format = std::make_unique<YamlFormat>();
+		format = std::make_unique<dbar::YamlFormat>();
 	} else
 	if ("json" == config.value(ARParseOptions::FORMAT))
 	{
-		using dbar::JsonFormat;
-		format = std::make_unique<JsonFormat>();
+		format = std::make_unique<dbar::JsonFormat>();
+	} else
+	if ("text_decorated" == config.value(ARParseOptions::FORMAT))
+	{
+		format = std::make_unique<dbar::TextDecoratedFormat>();
 	} else
 	if ("text" == config.value(ARParseOptions::FORMAT))
 	{
-		// only text, no labels, no delimiters except newlines
+		// only text, no labels, no delimiters except space and newline
 
-		using dbar::DBAR_TEXT;
-		using dbar::TextDecoratedFormat;
+		using dbar::DBAR_DELIM;
 		using details::flag_operand;
 
-		format = std::make_unique<TextDecoratedFormat>(
-				LabelStore<DBAR_TEXT>::store_t
+		format = std::make_unique<dbar::TextDecoratedFormat>(
+				LabelStore<DBAR_DELIM>::store_t
 				{
-					{ DBAR_TEXT::DELIM2, "\n" },
-					{ DBAR_TEXT::DELIM5, "\n" }
+					{ DBAR_DELIM::HEADER_END, "\n" }, // after id
+					{ DBAR_DELIM::TRACK_END,  "\n" }  // after track
 				},
-				Flags::ALL_FALSE | flag_operand(DBAR_TEXT::DELIM2, true)
-								 | flag_operand(DBAR_TEXT::DELIM5, true),
+				Flags::ALL_FALSE | flag_operand(DBAR_DELIM::HEADER_END, true)
+								 | flag_operand(DBAR_DELIM::TRACK_END,  true),
 				nullptr /* no ARIdLayout required */
 		);
 	} else
 	if ("raw" == config.value(ARParseOptions::FORMAT))
 	{
-		// only text, no labels, no delimiters
+		// only text, no labels, 1 space as delimiter
 
-		using dbar::DBAR_TEXT;
-		using dbar::TextDecoratedFormat;
-
-		format = std::make_unique<TextDecoratedFormat>(
-				LabelStore<DBAR_TEXT>::store_t { /* none */ },
-				Flags::ALL_FALSE,
-				nullptr /* no ARIdLayout required */
+		format = std::make_unique<dbar::TextDecoratedFormat>(
+				LabelStore<dbar::DBAR_DELIM>::store_t { /* no delims */ },
+				Flags::ALL_FALSE /* everything deactivated */,
+				nullptr /* no ARIdLayout */
 		);
-	} else
-	if ("text_decorated" == config.value(ARParseOptions::FORMAT))
-	{
-		using dbar::TextDecoratedFormat;
-
-		format = std::make_unique<TextDecoratedFormat>();
 	} else
 	{
 		// TODO CallSyntaxException
