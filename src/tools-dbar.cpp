@@ -339,7 +339,7 @@ std::string TextDecoratedFormat::do_header(const uint8_t track_count,
 		return to_string(id) + " ";
 	}
 
-	return arid_layout().format(id, std::string {/*no alt prefix*/});
+	return arid_layout().format(id, empty_string()/*no alt prefix*/);
 }
 
 
