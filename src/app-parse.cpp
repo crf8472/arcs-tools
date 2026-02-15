@@ -72,6 +72,7 @@ std::unique_ptr<Options> ARParseConfigurator::do_configure_options(
 {
 	using cli::OP_VALUE;
 
+	// Define 'text_decorated' as default
 	if (!options->is_set(ARParseOptions::FORMAT)
 			|| options->value(ARParseOptions::FORMAT) == OP_VALUE::USE_DEFAULT)
 	{
@@ -108,19 +109,20 @@ int ARParseApplication::do_run(const Configuration& config)
 	using dbar::DBAR_DELIM;
 	using delimiters = LabelStore<DBAR_DELIM>::store_t;
 
+	const auto format_name = config.value(ARParseOptions::FORMAT);
 	auto format = std::unique_ptr<DBAROutputFormat> {};
 
-	if ("yaml" == config.value(ARParseOptions::FORMAT))
+	if ("yaml" == format_name || "yml" == format_name)
 	{
 		format = std::make_unique<dbar::YamlFormat>();
 	} else
-	if ("json" == config.value(ARParseOptions::FORMAT))
+	if ("json" == format_name)
 	{
 		format = std::make_unique<dbar::JsonFormat>();
 	} else
-	if ("text_decorated" == config.value(ARParseOptions::FORMAT))
+	if ("text_decorated" == format_name)
 	{
-		// only text, no labels, no delimiters except space and newline
+		// to be read by a human: text with newlines + formatting
 
 		format = std::make_unique<dbar::TextDecoratedFormat>(
 				delimiters
@@ -135,7 +137,7 @@ int ARParseApplication::do_run(const Configuration& config)
 				}
 		);
 	} else
-	if ("text" == config.value(ARParseOptions::FORMAT))
+	if ("text" == format_name)
 	{
 		// only text, no labels, no delimiters except space and newline
 
@@ -148,14 +150,17 @@ int ARParseApplication::do_run(const Configuration& config)
 				}
 		);
 	} else
-	if ("raw" == config.value(ARParseOptions::FORMAT))
+	if ("raw" == format_name)
 	{
 		// only text, no labels, 1 space as delimiter
 
 		format = std::make_unique<dbar::TextDecoratedFormat>();
 	} else
 	{
-		// TODO Unknown format name
+		// TODO Implement a parser for format names and throw from there
+		throw cli::CallSyntaxException { "Unknown format: '" +  format_name
+			+ "'" };
+		//return EXIT_FAILURE;
 	};
 
 	auto printer = PrintParseHandler {};
