@@ -331,12 +331,12 @@ std::string DBARBaseFormat::do_start_input() const
 
 	if (has_property(DBAR_DELIM::DOC_START))
 	{
-		doc_start += delim(DBAR_DELIM::DOC_START) + "\n";
+		doc_start += delim(DBAR_DELIM::DOC_START);
 	}
 
 	if (has_property(DBAR_DELIM::DBAR_START))
 	{
-		return doc_start + delim(DBAR_DELIM::DBAR_START) + "\n";
+		return doc_start + delim(DBAR_DELIM::DBAR_START);
 	}
 
 	return doc_start;
@@ -347,23 +347,18 @@ std::string DBARBaseFormat::do_end_input() const
 {
 	auto doc_end = empty_string();
 
-	// Add missing newline after last block
-	if (has_property(DBAR_DELIM::BLOCK_DELIM) && block_counter() > 0)
-	{
-		doc_end += "\n";
-	}
-
 	if (has_property(DBAR_DELIM::DBAR_END))
 	{
-		doc_end += delim(DBAR_DELIM::DBAR_END) + "\n";
+		doc_end += details::evaluate(label(DBAR_DELIM::DBAR_END), "$BLOCKS",
+						block_counter(), 0/*no fixed width*/, ' ');
 	}
 
 	if (has_property(DBAR_DELIM::DOC_END))
 	{
-		doc_end += delim(DBAR_DELIM::DOC_END) + "\n";
+		doc_end += delim(DBAR_DELIM::DOC_END);
 	}
 
-	return doc_end /*+ "\n"*/;
+	return doc_end;
 }
 
 
@@ -373,10 +368,10 @@ std::string DBARBaseFormat::do_start_block() const
 
 	auto block_start = empty_string();
 
-	// Add missing newline after previous block
+	// Add missing delimiter after previous block
 	if (has_property(DBAR_DELIM::BLOCK_DELIM) && 2 <= block_counter())
 	{
-		block_start += delim(DBAR_DELIM::BLOCK_DELIM) + "\n";
+		block_start += delim(DBAR_DELIM::BLOCK_DELIM);
 	}
 
 	if (has_property(DBAR_DELIM::BLOCK_START))
@@ -430,18 +425,10 @@ std::string DBARBaseFormat::do_end_triplets() const
 
 	if (has_property(DBAR_DELIM::TRACKS_END))
 	{
-		const auto tracks_end = indent() + delim(DBAR_DELIM::TRACKS_END) + "\n";
-
-		// Add missing newline after last track
-		if (has_property(DBAR_DELIM::TRACK_DELIM) && track_counter() > 0)
-		{
-			return "\n" + tracks_end;
-		}
-
-		return tracks_end;
+		return delim(DBAR_DELIM::TRACKS_END);
 	}
 
-	return "\n";
+	return empty_string();
 }
 
 
@@ -462,7 +449,7 @@ std::string DBARBaseFormat::do_header(const uint8_t track_count,
 		header += delim(DBAR_DELIM::HEADER_END);
 	}
 
-	return header + "\n";
+	return header;
 }
 
 
@@ -470,42 +457,36 @@ std::string DBARBaseFormat::do_triplet(const uint32_t arcs,
 		const uint8_t confidence,
 		const uint32_t frame450_arcs) const
 {
-	// FIXME do_triplet
-	const auto triplet = DBARTriplet { arcs, confidence, frame450_arcs };
-
-	auto str = empty_string();
+	auto ss = std::ostringstream {};
 
 	// Add missing newline after previous track
 	if (has_property(DBAR_DELIM::TRACK_DELIM) && 2 <= track_counter())
 	{
-		str += delim(DBAR_DELIM::TRACK_DELIM);
+		ss << delim(DBAR_DELIM::TRACK_DELIM);
 	}
 
-	str += indent();
+	ss << indent();
 
 	if (has_property(DBAR_DELIM::TRACK_START))
 	{
-		str += details::evaluate(label(DBAR_DELIM::TRACK_START), "$TRACK",
+		ss << details::evaluate(label(DBAR_DELIM::TRACK_START), "$TRACK",
 				track_counter(), 2, '0');
 	}
 
-	{
-		using std::to_string;
-		using arcstk::Checksum;
+	const auto triplet = DBARTriplet { arcs, confidence, frame450_arcs };
 
-		str += do_arcs(triplet.arcs())
-			+  delim(DBAR_DELIM::PROP_DELIM1)
-			+  do_confidence(triplet.confidence())
-			+  delim(DBAR_DELIM::PROP_DELIM2)
-			+  do_f450_arcs(triplet.frame450_arcs());
-	}
+	ss << do_arcs(triplet.arcs());
+	ss << delim(DBAR_DELIM::PROP_DELIM1);
+	ss << do_confidence(triplet.confidence());
+	ss << delim(DBAR_DELIM::PROP_DELIM2);
+	ss << do_f450_arcs(triplet.frame450_arcs());
 
 	if (has_property(DBAR_DELIM::TRACK_END))
 	{
-		str += delim(DBAR_DELIM::TRACK_END);
+		ss << delim(DBAR_DELIM::TRACK_END);
 	}
 
-	return str;
+	return ss.str();
 }
 
 
@@ -568,14 +549,23 @@ TextDecoratedFormat::TextDecoratedFormat(const LabelStore::store_t& delims,
 
 
 TextDecoratedFormat::TextDecoratedFormat(const LabelStore::store_t& delims)
-	: DBARBaseFormat { delims, 0, 0 }
+	: TextDecoratedFormat { delims, nullptr }
 {
 	// empty
 }
 
 
 TextDecoratedFormat::TextDecoratedFormat()
-	: TextDecoratedFormat { {/*no labels*/} }
+	: TextDecoratedFormat {
+		{   /* only text, no labels, no delimiters except space and newline */
+			{ DBAR_DELIM::UNPARSED,     "????????" },
+			{ DBAR_DELIM::BLOCK_END,    "\n" },
+			{ DBAR_DELIM::HEADER_END,   "\n" },
+			{ DBAR_DELIM::TRACK_DELIM,  "\n" },
+			{ DBAR_DELIM::PROP_DELIM1,  " "  },
+			{ DBAR_DELIM::PROP_DELIM2,  " "  },
+		}
+	}
 {
 	// empty
 }
@@ -658,14 +648,14 @@ std::string LabelledDBAROutputFormat::do_delim(const DBAR_DELIM delim) const
 
 	// Intercept DBAR_START (precedes sequence of blocks), and TRACKS_START
 	// (precedes sequence of triplets). Both are labelled but not handled by
-	// a virtual member function (as do_id() e.g.).
+	// a virtual member function (as do_id() e.g.) that could add the label.
 	switch (delim)
 	{
-		case DBAR_DELIM::DBAR_START:
+		case DBAR_DELIM::DBAR_START: // sequence of blocks
 			str += label(DBAR_ENTITY::DBAR)
 					+ DBARBaseFormat::label(DBAR_DELIM::LABEL_DELIM);
 			break;
-		case DBAR_DELIM::TRACKS_START:
+		case DBAR_DELIM::TRACKS_START: // sequence of tracks
 			str += label(DBAR_ENTITY::TRACKS)
 					+ DBARBaseFormat::label(DBAR_DELIM::LABEL_DELIM);
 			break;
@@ -719,17 +709,20 @@ YamlFormat::YamlFormat()
 	: LabelledDBAROutputFormat{
 		{
 			{ DBAR_DELIM::UNPARSED,     "????????" },
-			{ DBAR_DELIM::DOC_START,    "---"  },
-			{ DBAR_DELIM::DBAR_START,   ""     }, // to enforce newline
-			{ DBAR_DELIM::BLOCK_START,  "- "   },
-			{ DBAR_DELIM::TRACKS_START, "\n"   }, // automatic label, TODO pp
-			{ DBAR_DELIM::TRACK_START,  "- { " },
-			{ DBAR_DELIM::TRACK_END,    " }"   },
-			{ DBAR_DELIM::PROP_DELIM1,  ", "   },
-			{ DBAR_DELIM::PROP_DELIM2,  ", "   },
-			{ DBAR_DELIM::TRACK_DELIM,  "\n"   }, // TODO pretty printing
-			{ DBAR_DELIM::LABEL_DELIM,  ": "   },
-			{ DBAR_DELIM::VAL_DELIM,    "\""   }
+			{ DBAR_DELIM::DOC_START,    "---\n" },
+			{ DBAR_DELIM::DOC_END,      "\n"    },
+			{ DBAR_DELIM::DBAR_START,   "\n"    },
+			{ DBAR_DELIM::BLOCK_START,  "- "    },
+			{ DBAR_DELIM::BLOCK_DELIM,  "\n"    },
+			{ DBAR_DELIM::HEADER_END,   "\n"    },
+			{ DBAR_DELIM::TRACKS_START, "\n"    },
+			{ DBAR_DELIM::TRACK_START,  "- { "  },
+			{ DBAR_DELIM::TRACK_END,    " }"    },
+			{ DBAR_DELIM::PROP_DELIM1,  ", "    },
+			{ DBAR_DELIM::PROP_DELIM2,  ", "    },
+			{ DBAR_DELIM::TRACK_DELIM,  "\n"    },
+			{ DBAR_DELIM::LABEL_DELIM,  ": "    },
+			{ DBAR_DELIM::VAL_DELIM,    "\""    }
 		}
 	}
 {
@@ -750,22 +743,22 @@ JsonFormat::JsonFormat()
 	: LabelledDBAROutputFormat{
 		{
 			{ DBAR_DELIM::UNPARSED,     "????????" },
-			{ DBAR_DELIM::DOC_START,    "{"   },
-			{ DBAR_DELIM::DOC_END,      "}"   },
-			{ DBAR_DELIM::DBAR_START,   "["   },
-			{ DBAR_DELIM::DBAR_END,     "]"   },
+			{ DBAR_DELIM::DOC_START,    "{\n" },
+			{ DBAR_DELIM::DOC_END,      "}\n" },
+			{ DBAR_DELIM::DBAR_START,   "[\n" },
+			{ DBAR_DELIM::DBAR_END,     "]\n" },
 			{ DBAR_DELIM::BLOCK_START,  "{"   },
 			{ DBAR_DELIM::BLOCK_END,    "}"   },
-			{ DBAR_DELIM::BLOCK_DELIM,  ","   },
+			{ DBAR_DELIM::BLOCK_DELIM,  ",\n" },
 			{ DBAR_DELIM::HEADER_START, " "   },
-			{ DBAR_DELIM::HEADER_END,   ","   },
-			{ DBAR_DELIM::TRACKS_START, "[\n" }, // TODO pretty printing
-			{ DBAR_DELIM::TRACKS_END,   "]"   },
+			{ DBAR_DELIM::HEADER_END,   ",\n" },
+			{ DBAR_DELIM::TRACKS_START, "[\n" },
+			{ DBAR_DELIM::TRACKS_END,   "]\n" },
 			{ DBAR_DELIM::TRACK_START,  "{ "  },
 			{ DBAR_DELIM::TRACK_END,    " }"  },
 			{ DBAR_DELIM::PROP_DELIM1,  ", "  },
 			{ DBAR_DELIM::PROP_DELIM2,  ", "  },
-			{ DBAR_DELIM::TRACK_DELIM,  ",\n" }, // TODO pretty printing
+			{ DBAR_DELIM::TRACK_DELIM,  ",\n" },
 			{ DBAR_DELIM::LABEL_DELIM,  ": "  },
 			{ DBAR_DELIM::NAME_DELIM,   "\""  },
 			{ DBAR_DELIM::VAL_DELIM,    "\""  }

@@ -189,7 +189,6 @@ public:
 	 * \brief Constructor with layouts.
 	 *
 	 * \param[in] arid_layout    Layout for ARIds
-	 * \param[in] triplet_layout Layout for DBAR triplets
 	 */
 	explicit DBAROutputFormat(std::unique_ptr<ARIdLayout> arid_layout);
 
@@ -587,10 +586,10 @@ protected:
 	/**
 	 * \brief Constructor with labels, delimiters, properties and layout.
 	 *
-	 * \param[in] labels         Labels for text output
-	 * \param[in] delimiter      Delimiters for text output
-	 * \param[in] properties     Properties for text output
-	 * \param[in] arid_layout    ARId Layout
+	 * \param[in] labels      Labels for text output
+	 * \param[in] delims      Delimiters for text output
+	 * \param[in] properties  Properties for text output
+	 * \param[in] arid_layout ARId Layout
 	 */
 	LabelledDBAROutputFormat(const LabelStore<DBAR_ENTITY>::store_t& labels,
 			const LabelStore<DBAR_DELIM>::store_t& delims,
@@ -602,7 +601,7 @@ protected:
 	 *
 	 * Uses no ARIdLayout and default labels.
 	 *
-	 * \param[in] delimiter      Delimiters for text output
+	 * \param[in] delims Delimiters for text output
 	 */
 	explicit LabelledDBAROutputFormat(
 			const LabelStore<DBAR_DELIM>::store_t& delims);
@@ -679,16 +678,16 @@ public:
 	~PrintParseHandler() noexcept;
 
 	/**
-	 * \brief Sets the layout for printing ARIds.
+	 * \brief Sets the format for printing DBAR objects.
 	 *
-	 * \param[in] layout The print layout to use
+	 * \param[in] format The print format to use for DBAR objects
 	 */
 	void set_format(std::unique_ptr<DBAROutputFormat> format);
 
 	/**
-	 * \brief Read-access to the print layout used for ARIds.
+	 * \brief Read-access to the print format used for DBAR objects.
 	 *
-	 * \return The print layout used for ARIds
+	 * \return The print format used for DBAR objects
 	 */
 	const DBAROutputFormat& format() const;
 

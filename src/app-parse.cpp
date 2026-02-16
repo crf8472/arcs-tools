@@ -122,51 +122,62 @@ int ARParseApplication::do_run(const Configuration& config)
 	} else
 	if ("text_decorated" == format_name)
 	{
-		// to be read by a human: text with newlines + formatting
+		// to be read by a human: text with newlines + some decoration
 
 		format = std::make_unique<dbar::TextDecoratedFormat>(
-				delimiters
-				{
-					{ DBAR_DELIM::UNPARSED,     "????????" },
-					{ DBAR_DELIM::BLOCK_START,  "---------- Block $BLOCK: " },
-					{ DBAR_DELIM::HEADER_END,   ":" },
-					{ DBAR_DELIM::TRACK_START,  "Track $TRACK: " },
-					{ DBAR_DELIM::TRACK_DELIM,  "\n" }, // TODO pretty printing
-					{ DBAR_DELIM::PROP_DELIM1,  " ("  },
-					{ DBAR_DELIM::PROP_DELIM2,  ") "  },
-				}
+			delimiters
+			{
+				{ DBAR_DELIM::UNPARSED,    "????????" },
+				{ DBAR_DELIM::BLOCK_START, "---------- Block $BLOCK: " },
+				{ DBAR_DELIM::BLOCK_END,   "\n" },
+				{ DBAR_DELIM::HEADER_END,  "\n" },
+				{ DBAR_DELIM::TRACK_START, "Track $TRACK: " },
+				{ DBAR_DELIM::TRACK_DELIM, "\n" },
+				{ DBAR_DELIM::PROP_DELIM1, " (" },
+				{ DBAR_DELIM::PROP_DELIM2, ") " },
+				{ DBAR_DELIM::DBAR_END, "========== Parsed Blocks: $BLOCKS\n" }
+			}
 		);
 	} else
 	if ("text" == format_name)
 	{
-		// only text, no labels, no delimiters except space and newline
-
-		format = std::make_unique<dbar::TextDecoratedFormat>(
-				delimiters
-				{
-					{ DBAR_DELIM::UNPARSED,   "????????" },
-					{ DBAR_DELIM::HEADER_END, "\n" },
-					{ DBAR_DELIM::TRACK_END,  "\n" }
-				}
-		);
+		// default text format of PrintParseHandler
 	} else
 	if ("raw" == format_name)
 	{
-		// only text, no labels, 1 space as delimiter
+		// only text, no labels, single blank as delimiter
 
-		format = std::make_unique<dbar::TextDecoratedFormat>();
+		const auto blank = std::string { " " };
+
+		format = std::make_unique<dbar::TextDecoratedFormat>(
+			delimiters
+			{
+				{ DBAR_DELIM::UNPARSED,    "????????" },
+				{ DBAR_DELIM::DOC_END,     "\n"  },
+				{ DBAR_DELIM::HEADER_END,  blank },
+				{ DBAR_DELIM::BLOCK_DELIM, blank },
+				{ DBAR_DELIM::TRACK_DELIM, blank },
+				{ DBAR_DELIM::PROP_DELIM1, blank },
+				{ DBAR_DELIM::PROP_DELIM2, blank }
+			}
+		);
 	} else
 	{
 		// TODO Implement a parser for format names and throw from there
 		throw cli::CallSyntaxException { "Unknown format: '" +  format_name
 			+ "'" };
-		//return EXIT_FAILURE;
 	};
 
-	auto printer = PrintParseHandler {};
-	printer.set_format(std::move(format));
 
-	const auto arguments = config.arguments();
+	auto printer = PrintParseHandler { /* default format: 'text' */ };
+
+	if (format)
+	{
+		printer.set_format(std::move(format));
+	} // else: use default format of PrintParseHandler
+
+
+	const auto arguments { config.arguments() };
 
 	// read from file(s)
 	if (arguments && !arguments->empty())
