@@ -322,9 +322,79 @@ std::string DBARBaseFormat::do_start_input() const
 }
 
 
-std::string DBARBaseFormat::do_start_block() const
+std::string DBARBaseFormat::do_end_input() const
 {
 	return empty_string();
+}
+
+
+std::string DBARBaseFormat::do_start_block() const
+{
+	inc_indent();
+
+	auto block_start = empty_string();
+
+	if (has_property(DBAR_DELIM::BLOCK_DELIM) && 2 <= block_counter())
+	{
+		block_start += delim(DBAR_DELIM::BLOCK_DELIM) + "\n";
+	}
+
+	if (has_property(DBAR_DELIM::BLOCK_START))
+	{
+		block_start += indent() +
+				details::evaluate(label(DBAR_DELIM::BLOCK_START), "$BLOCK",
+						block_counter(), 0/*no fixed width*/, ' ');
+	}
+
+	inc_indent();
+
+	return block_start;
+}
+
+
+std::string DBARBaseFormat::do_end_block() const
+{
+	dec_indent();
+
+	auto block_end = empty_string();
+
+	if (has_property(DBAR_DELIM::BLOCK_END))
+	{
+		block_end = indent() + delim(DBAR_DELIM::BLOCK_END);
+	}
+
+	dec_indent();
+
+	return block_end;
+}
+
+
+std::string DBARBaseFormat::do_start_triplets() const
+{
+	auto tracks_start = empty_string();
+
+	if (has_property(DBAR_DELIM::TRACKS_START))
+	{
+		tracks_start += indent() + delim(DBAR_DELIM::TRACKS_START);
+	}
+
+	inc_indent();
+
+	return tracks_start;
+}
+
+
+std::string DBARBaseFormat::do_end_triplets() const
+{
+	dec_indent();
+
+	if (has_property(DBAR_DELIM::TRACKS_END))
+	{
+		// TODO Add first \n  only if track_counter() > 0
+		return "\n" + indent() + delim(DBAR_DELIM::TRACKS_END) + "\n";
+	}
+
+	return "\n";
 }
 
 
@@ -346,21 +416,6 @@ std::string DBARBaseFormat::do_header(const uint8_t track_count,
 	}
 
 	return header + "\n";
-}
-
-
-std::string DBARBaseFormat::do_start_triplets() const
-{
-	auto tracks_start = empty_string();
-
-	if (has_property(DBAR_DELIM::TRACKS_START))
-	{
-		tracks_start += indent() + delim(DBAR_DELIM::TRACKS_START);
-	}
-
-	inc_indent();
-
-	return tracks_start;
 }
 
 
@@ -403,32 +458,6 @@ std::string DBARBaseFormat::do_triplet(const uint32_t arcs,
 	}
 
 	return str;
-}
-
-
-std::string DBARBaseFormat::do_end_triplets() const
-{
-	dec_indent();
-
-	if (has_property(DBAR_DELIM::TRACKS_END))
-	{
-		// TODO Add first \n  only if track_counter() > 0
-		return "\n" + indent() + delim(DBAR_DELIM::TRACKS_END) + "\n";
-	}
-
-	return "\n";
-}
-
-
-std::string DBARBaseFormat::do_end_block() const
-{
-	return empty_string();
-}
-
-
-std::string DBARBaseFormat::do_end_input() const
-{
-	return empty_string();
 }
 
 
@@ -500,18 +529,6 @@ TextDecoratedFormat::TextDecoratedFormat(const LabelStore::store_t& labels)
 TextDecoratedFormat::TextDecoratedFormat()
 {
 	// empty
-}
-
-
-std::string TextDecoratedFormat::do_start_block() const
-{
-	if (has_property(DBAR_DELIM::BLOCK_START))
-	{
-		return details::evaluate(label(DBAR_DELIM::BLOCK_START), "$BLOCK",
-				block_counter(), 0/*no fixed width*/, ' ');
-	}
-
-	return empty_string();
 }
 
 
@@ -630,45 +647,6 @@ std::string LabelledDBAROutputFormat::do_start_input() const
 	}
 
 	return doc_start;
-}
-
-
-std::string LabelledDBAROutputFormat::do_start_block() const
-{
-	inc_indent();
-
-	auto block_start = empty_string();
-
-	if (has_property(DBAR_DELIM::BLOCK_DELIM) && 2 <= block_counter())
-	{
-		block_start += delim(DBAR_DELIM::BLOCK_DELIM) + "\n";
-	}
-
-	if (has_property(DBAR_DELIM::BLOCK_START))
-	{
-		block_start += indent() + delim(DBAR_DELIM::BLOCK_START);
-	}
-
-	inc_indent();
-
-	return block_start;
-}
-
-
-std::string LabelledDBAROutputFormat::do_end_block() const
-{
-	dec_indent();
-
-	auto block_end = empty_string();
-
-	if (has_property(DBAR_DELIM::BLOCK_END))
-	{
-		block_end = indent() + delim(DBAR_DELIM::BLOCK_END);
-	}
-
-	dec_indent();
-
-	return block_end;
 }
 
 

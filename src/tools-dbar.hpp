@@ -374,24 +374,24 @@ class DBARBaseFormat : public DBAROutputFormat
 
 	std::string do_start_input() const override;
 
+	std::string do_end_input() const override;
+
 	std::string do_start_block() const override;
+
+	std::string do_end_block() const override;
+
+	std::string do_start_triplets() const override;
+
+	std::string do_end_triplets() const override;
 
 	std::string do_header(const uint8_t track_count,
 			const uint32_t id1,
 			const uint32_t id2,
 			const uint32_t cddb_id) const override;
 
-	std::string do_start_triplets() const override;
-
 	std::string do_triplet(const uint32_t arcs,
 			const uint8_t confidence,
 			const uint32_t frame450_arcs) const override;
-
-	std::string do_end_triplets() const override;
-
-	std::string do_end_block() const override;
-
-	std::string do_end_input() const override;
 
 	// do_name
 
@@ -492,8 +492,6 @@ class TextDecoratedFormat final : public DBARBaseFormat
 {
 	// DBAROutputFormat
 
-	std::string do_start_block() const final;
-
 	std::string do_end_input() const final;
 
 	std::string do_name() const final;
@@ -553,14 +551,6 @@ class LabelledDBAROutputFormat : public DBARBaseFormat
 	// DBAROutputFormat
 
 	std::string do_start_input() const override;
-
-	std::string do_start_block() const override;
-
-	//std::string do_start_triplets() const override;
-
-	//std::string do_end_triplets() const override;
-
-	std::string do_end_block() const override;
 
 	std::string do_end_input() const override;
 
