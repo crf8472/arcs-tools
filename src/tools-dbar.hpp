@@ -492,8 +492,6 @@ class TextDecoratedFormat final : public DBARBaseFormat
 {
 	// DBAROutputFormat
 
-	std::string do_end_input() const final;
-
 	std::string do_name() const final;
 
 public:
@@ -549,10 +547,6 @@ class LabelledDBAROutputFormat : public DBARBaseFormat
 	LabelStore<DBAR_ENTITY> labels_;
 
 	// DBAROutputFormat
-
-	std::string do_start_input() const override;
-
-	std::string do_end_input() const override;
 
 	// do_name() = 0
 

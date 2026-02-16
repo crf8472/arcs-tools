@@ -318,13 +318,43 @@ int DBARBaseFormat::dec_indent() const
 
 std::string DBARBaseFormat::do_start_input() const
 {
-	return empty_string();
+	auto doc_start = empty_string();
+
+	if (has_property(DBAR_DELIM::DOC_START))
+	{
+		doc_start += delim(DBAR_DELIM::DOC_START) + "\n";
+	}
+
+	if (has_property(DBAR_DELIM::DBAR_START))
+	{
+		return doc_start + delim(DBAR_DELIM::DBAR_START) + "\n";
+	}
+
+	return doc_start;
 }
 
 
 std::string DBARBaseFormat::do_end_input() const
 {
-	return empty_string();
+	auto doc_end = empty_string();
+
+	// Add missing newline after last block
+	if (has_property(DBAR_DELIM::BLOCK_DELIM) && block_counter() > 0)
+	{
+		doc_end += "\n";
+	}
+
+	if (has_property(DBAR_DELIM::DBAR_END))
+	{
+		doc_end += delim(DBAR_DELIM::DBAR_END) + "\n";
+	}
+
+	if (has_property(DBAR_DELIM::DOC_END))
+	{
+		doc_end += delim(DBAR_DELIM::DOC_END) + "\n";
+	}
+
+	return doc_end /*+ "\n"*/;
 }
 
 
@@ -334,6 +364,7 @@ std::string DBARBaseFormat::do_start_block() const
 
 	auto block_start = empty_string();
 
+	// Add missing newline after previous block
 	if (has_property(DBAR_DELIM::BLOCK_DELIM) && 2 <= block_counter())
 	{
 		block_start += delim(DBAR_DELIM::BLOCK_DELIM) + "\n";
@@ -390,8 +421,15 @@ std::string DBARBaseFormat::do_end_triplets() const
 
 	if (has_property(DBAR_DELIM::TRACKS_END))
 	{
-		// TODO Add first \n  only if track_counter() > 0
-		return "\n" + indent() + delim(DBAR_DELIM::TRACKS_END) + "\n";
+		const auto tracks_end = indent() + delim(DBAR_DELIM::TRACKS_END) + "\n";
+
+		// Add missing newline after last track
+		if (has_property(DBAR_DELIM::TRACK_DELIM) && track_counter() > 0)
+		{
+			return "\n" + tracks_end;
+		}
+
+		return tracks_end;
 	}
 
 	return "\n";
@@ -423,10 +461,12 @@ std::string DBARBaseFormat::do_triplet(const uint32_t arcs,
 		const uint8_t confidence,
 		const uint32_t frame450_arcs) const
 {
+	// FIXME do_triplet
 	const auto triplet = DBARTriplet { arcs, confidence, frame450_arcs };
 
 	auto str = empty_string();
 
+	// Add missing newline after previous track
 	if (has_property(DBAR_DELIM::TRACK_DELIM) && 2 <= track_counter())
 	{
 		str += delim(DBAR_DELIM::TRACK_DELIM);
@@ -436,7 +476,6 @@ std::string DBARBaseFormat::do_triplet(const uint32_t arcs,
 
 	if (has_property(DBAR_DELIM::TRACK_START))
 	{
-		//str += delim(DBAR_DELIM::TRACK_START);
 		str += details::evaluate(label(DBAR_DELIM::TRACK_START), "$TRACK",
 				track_counter(), 2, '0');
 	}
@@ -532,68 +571,6 @@ TextDecoratedFormat::TextDecoratedFormat()
 }
 
 
-// std::string TextDecoratedFormat::do_triplet(const uint32_t arcs,
-// 			const uint8_t confidence,
-// 			const uint32_t frame450_arcs) const
-// {
-// 	const auto track = track_counter();
-// 	const auto triplet = DBARTriplet { arcs, confidence, frame450_arcs };
-//
-// 	auto out = std::ostringstream {};
-//
-// 	// Print optional label for triplet on the left
-//
-// 	if (has_property(DBAR_DELIM::TRACK_START))
-// 	{
-// 		out << details::evaluate(label(DBAR_DELIM::TRACK_START), "$TRACK",
-// 				track, 2, '0');
-// 	}
-//
-// 	// TODO configurable? However, do not create this on every call
-// 	const auto hex = calc::HexLayout {/*default*/};
-//
-// 	const auto width_arcs { 8 };
-// 	const auto width_conf { 2 };
-//
-// 	using arcstk::Checksum;
-//
-// 	// print a formatted ARCS
-// 	const auto out_ = [&hex,&width_arcs,&out](const Checksum& c)
-// 		{
-// 			out << std::setw(width_arcs) << hex.format(c, width_arcs);
-// 		};
-//
-// 	const auto delim = [&](const DBAR_DELIM d)
-// 		{
-// 			out << (has_property(d) ? label(d) : " ");
-// 		};
-//
-//
-// 	out_(triplet.arcs());
-//
-// 	delim(DBAR_DELIM::PROP_DELIM1);
-//
-// 	out << std::setw(width_conf) << std::setfill('0') << triplet.confidence();
-//
-// 	delim(DBAR_DELIM::PROP_DELIM2);
-//
-// 	out_(triplet.frame450_arcs());
-//
-// 	delim(DBAR_DELIM::TRACK_END);
-//
-// 	return out.str();
-// }
-
-
-std::string TextDecoratedFormat::do_end_input() const
-{
-	// auto ss { create_stream() };
-	// ss << "========== Parsed Blocks: " << std::dec << block_counter() << '\n';
-	// return ss.str();
-	return empty_string();
-}
-
-
 std::string TextDecoratedFormat::do_name() const
 {
 	return "text_decorated";
@@ -634,45 +611,6 @@ LabelledDBAROutputFormat::LabelledDBAROutputFormat(
 }
 
 
-std::string LabelledDBAROutputFormat::do_start_input() const
-{
-	const auto doc_start = std::string {
-			delim(DBAR_DELIM::DOC_START) + "\n"
-			+ label(DBAR_ENTITY::DBAR) + delim(DBAR_DELIM::LABEL_DELIM)
-	};
-
-	if (has_property(DBAR_DELIM::DBAR_START))
-	{
-		return doc_start + delim(DBAR_DELIM::DBAR_START) + "\n";
-	}
-
-	return doc_start;
-}
-
-
-std::string LabelledDBAROutputFormat::do_end_input() const
-{
-	auto doc_end = empty_string();
-
-	if (has_property(DBAR_DELIM::BLOCK_DELIM))
-	{
-		doc_end += "\n";
-	}
-
-	if (has_property(DBAR_DELIM::DBAR_END))
-	{
-		doc_end += delim(DBAR_DELIM::DBAR_END) + "\n";
-	}
-
-	if (has_property(DBAR_DELIM::DOC_END))
-	{
-		doc_end += delim(DBAR_DELIM::DOC_END) + "\n";
-	}
-
-	return doc_end + "\n";
-}
-
-
 std::string LabelledDBAROutputFormat::do_id(const uint8_t track_count,
 			const uint32_t id1,
 			const uint32_t id2,
@@ -706,11 +644,17 @@ std::string LabelledDBAROutputFormat::do_f450_arcs(const uint32_t number) const
 
 std::string LabelledDBAROutputFormat::do_delim(const DBAR_DELIM delim) const
 {
-	//const auto d = DBARBaseFormat::label(delim);
 	auto str = std::string {};
 
+	// Intercept DBAR_START (precedes sequence of blocks), and TRACKS_START
+	// (precedes sequence of triplets). Both are labelled but not handled by
+	// a virtual member function (as do_id() e.g.).
 	switch (delim)
 	{
+		case DBAR_DELIM::DBAR_START:
+			str += label(DBAR_ENTITY::DBAR)
+					+ DBARBaseFormat::label(DBAR_DELIM::LABEL_DELIM);
+			break;
 		case DBAR_DELIM::TRACKS_START:
 			str += label(DBAR_ENTITY::TRACKS)
 					+ DBARBaseFormat::label(DBAR_DELIM::LABEL_DELIM);
