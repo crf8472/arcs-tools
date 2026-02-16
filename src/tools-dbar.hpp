@@ -186,17 +186,17 @@ protected:
 public:
 
 	/**
-	 * \brief Default constructor.
-	 */
-	DBAROutputFormat();
-
-	/**
 	 * \brief Constructor with layouts.
 	 *
 	 * \param[in] arid_layout    Layout for ARIds
 	 * \param[in] triplet_layout Layout for DBAR triplets
 	 */
-	DBAROutputFormat(std::unique_ptr<ARIdLayout> arid_layout);
+	explicit DBAROutputFormat(std::unique_ptr<ARIdLayout> arid_layout);
+
+	/**
+	 * \brief Default constructor.
+	 */
+	DBAROutputFormat();
 
 	/**
 	 * \brief Virtual default destructor.
@@ -358,7 +358,20 @@ enum class DBAR_DELIM : int
  */
 class DBARBaseFormat : public DBAROutputFormat
 					 , public LabelStore<DBAR_DELIM>
+					 , public PropertyStore<DBAR_DELIM>
 {
+	/**
+	 * \brief Current indent level.
+	 */
+	mutable std::string::size_type indent_;
+
+	/**
+	 * \brief Amount of incrementing or decrementing the current indent.
+	 */
+	unsigned indent_step_;
+
+	// arcstk::ParseHandler
+
 	std::string do_start_input() const override;
 
 	std::string do_start_block() const override;
@@ -393,63 +406,93 @@ class DBARBaseFormat : public DBAROutputFormat
 
 	virtual std::string do_f450_arcs(const uint32_t number) const;
 
+	virtual std::string do_delim(const DBAR_DELIM delim) const;
+
+protected:
+
+	/**
+	 * \brief Current indent.
+	 *
+	 * \return Indent string with current indent width
+	 */
+	std::string indent() const;
+
+	/**
+	 * \brief Increase indent by 1 step.
+	 *
+	 * \return New current indent
+	 */
+	int inc_indent() const;
+
+	/**
+	 * \brief Decrease indent by 1 step.
+	 *
+	 * \return New current indent
+	 */
+	int dec_indent() const;
+
 public:
 
+	/**
+	 * \brief Constructor with labels, properties and layout.
+	 *
+	 * \param[in] labels         Labels for text output
+	 * \param[in] properties     Properties for text output
+	 * \param[in] arid_layout    ARId Layout
+	 */
+	DBARBaseFormat(const LabelStore::store_t& labels, const flags_t properties,
+			std::unique_ptr<ARIdLayout> arid_layout);
+
+	/**
+	 * \brief Constructor with labels and layout.
+	 *
+	 * All properties represented by a key in \c labels are set to TRUE.
+	 *
+	 * \param[in] labels         Labels for text output
+	 * \param[in] arid_layout    ARId Layout
+	 */
 	DBARBaseFormat(const LabelStore::store_t& labels,
 			std::unique_ptr<ARIdLayout> arid_layout);
 
-	DBARBaseFormat(const LabelStore::store_t& labels);
+	/**
+	 * \brief Constructor with labels.
+	 *
+	 * All properties represented by a key in \c labels are set to TRUE, no
+	 * ARIDLayout is used.
+	 *
+	 * \param[in] labels         Labels for text output
+	 */
+	explicit DBARBaseFormat(const LabelStore::store_t& labels);
 
+	/**
+	 * \brief Constructor.
+	 *
+	 * Enable parameterless constructors in subclasses.
+	 */
 	DBARBaseFormat();
+
+	/**
+	 * \brief Get delimiter.
+	 *
+	 * Note: this is just an alias for the inherited function
+	 * LabelStore<DBAR_DELIM>::label(const DBAR_DELIM).
+	 *
+	 * \param[in] delim Delimiter symbol
+	 *
+	 * \return Delimiter string for symbol
+	 */
+	std::string delim(const DBAR_DELIM delim) const;
 };
-
-
-// template <typename E>
-// class ConfigurableLabelStore : public LabelStore<E>
-// 							 , public PropertyStore<E>
-// {
-// public:
-//
-// 	ConfigurableLabelStore(const typename LabelStore<E>::store_t& labels)
-// 		: LabelStore<E>    { labels }
-// 	{
-// 		// empty
-// 	}
-//
-// 	ConfigurableLabelStore(const typename LabelStore<E>::store_t& labels,
-// 			const flags_t properties)
-// 		: LabelStore<E>    { labels }
-// 		, PropertyStore<E> { properties }
-// 	{
-// 		// empty
-// 	}
-// };
 
 
 /**
  * \brief Implements formats 'text_decorated', 'text' and 'raw'.
  */
 class TextDecoratedFormat final : public DBARBaseFormat
-								, public PropertyStore<DBAR_DELIM>
 {
-	std::string do_start_input() const final;
+	// DBAROutputFormat
 
 	std::string do_start_block() const final;
-
-	std::string do_header(const uint8_t track_count,
-			const uint32_t id1,
-			const uint32_t id2,
-			const uint32_t cddb_id) const final;
-
-	std::string do_start_triplets() const final;
-
-	std::string do_triplet(const uint32_t arcs,
-			const uint8_t confidence,
-			const uint32_t frame450_arcs) const final;
-
-	std::string do_end_triplets() const final;
-
-	std::string do_end_block() const final;
 
 	std::string do_end_input() const final;
 
@@ -481,14 +524,14 @@ public:
 
 
 	/**
-	 * \brief Constructor with labels and layout.
+	 * \brief Constructor with labels.
 	 *
 	 * All properties represented by a key in \c labels are set to TRUE, no
 	 * ARIDLayout is used.
 	 *
 	 * \param[in] labels         Labels for text output
 	 */
-	TextDecoratedFormat(const LabelStore::store_t& labels);
+	explicit TextDecoratedFormat(const LabelStore::store_t& labels);
 
 	/**
 	 * \brief Constructor.
@@ -500,46 +543,22 @@ public:
 /**
  * \brief Abstract base class for formats 'yaml' and 'json'.
  */
-class LabelledDBAROutputFormat  : public DBAROutputFormat
-								, public PropertyStore<DBAR_DELIM>
+class LabelledDBAROutputFormat : public DBARBaseFormat
 {
 	/**
 	 * \brief Internal label store.
 	 */
 	LabelStore<DBAR_ENTITY> labels_;
 
-	/**
-	 * \brief Internal delim store.
-	 */
-	LabelStore<DBAR_DELIM> delims_;
-
-	/**
-	 * \brief Current indent level.
-	 */
-	mutable std::string::size_type indent_;
-
-	/**
-	 * \brief Amount of incrementing or decrementing the current indent.
-	 */
-	unsigned indent_step_;
-
+	// DBAROutputFormat
 
 	std::string do_start_input() const override;
 
 	std::string do_start_block() const override;
 
-	std::string do_header(const uint8_t track_count,
-			const uint32_t id1,
-			const uint32_t id2,
-			const uint32_t cddb_id) const override;
+	//std::string do_start_triplets() const override;
 
-	std::string do_start_triplets() const override;
-
-	std::string do_triplet(const uint32_t arcs,
-			const uint8_t confidence,
-			const uint32_t frame450_arcs) const override;
-
-	std::string do_end_triplets() const override;
+	//std::string do_end_triplets() const override;
 
 	std::string do_end_block() const override;
 
@@ -547,27 +566,69 @@ class LabelledDBAROutputFormat  : public DBAROutputFormat
 
 	// do_name() = 0
 
+	// DBARBaseFormat
+
+	std::string do_id(const uint8_t track_count,
+			const uint32_t id1,
+			const uint32_t id2,
+			const uint32_t cddb_id) const override;
+
+	std::string do_arcs(const uint32_t number) const override;
+
+	std::string do_confidence(const unsigned number) const override;
+
+	std::string do_f450_arcs(const uint32_t number) const override;
+
+	std::string do_delim(const DBAR_DELIM delim) const override;
+
+	//
+
+	virtual std::string do_label(const DBAR_ENTITY& label) const;
+
+	virtual std::string do_value(const std::string& s) const;
+
 protected:
 
+	/**
+	 * \brief Constructor with labels, delimiters, properties and layout.
+	 *
+	 * \param[in] labels         Labels for text output
+	 * \param[in] delimiter      Delimiters for text output
+	 * \param[in] properties     Properties for text output
+	 * \param[in] arid_layout    ARId Layout
+	 */
 	LabelledDBAROutputFormat(const LabelStore<DBAR_ENTITY>::store_t& labels,
 			const LabelStore<DBAR_DELIM>::store_t& delims,
 			const flags_t properties,
 			std::unique_ptr<ARIdLayout> arid_layout);
 
-	LabelledDBAROutputFormat(const LabelStore<DBAR_DELIM>::store_t& delims,
-			const flags_t properties);
+	/**
+	 * \brief Constructor with delimiters.
+	 *
+	 * Uses no ARIdLayout and default labels.
+	 *
+	 * \param[in] delimiter      Delimiters for text output
+	 */
+	explicit LabelledDBAROutputFormat(
+			const LabelStore<DBAR_DELIM>::store_t& delims);
 
-	std::string label(const DBAR_ENTITY& label) const;
+	/**
+	 * \brief Get label for entity.
+	 *
+	 * \param[in] entity Entitiy to get label for
+	 *
+	 * \return Printable label for \c entity
+	 */
+	std::string label(const DBAR_ENTITY& entity) const;
 
+	/**
+	 * \brief Format \c s for a value.
+	 *
+	 * \param[in] s String to format as value
+	 *
+	 * \return Printable value representing s
+	 */
 	std::string value(const std::string& s) const;
-
-	std::string delim(const DBAR_DELIM& delim) const;
-
-	std::string indent() const;
-
-	int inc_indent() const;
-
-	int dec_indent() const;
 };
 
 

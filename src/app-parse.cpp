@@ -129,11 +129,11 @@ int ARParseApplication::do_run(const Configuration& config)
 				{
 					{ DBAR_DELIM::UNPARSED,     "????????" },
 					{ DBAR_DELIM::BLOCK_START,  "---------- Block $BLOCK: " },
-					{ DBAR_DELIM::HEADER_END,   ":\n" },
+					{ DBAR_DELIM::HEADER_END,   ":" },
 					{ DBAR_DELIM::TRACK_START,  "Track $TRACK: " },
-					{ DBAR_DELIM::TRACK_END,     "\n"  },
-					{ DBAR_DELIM::PROP_DELIM1,   " ("  },
-					{ DBAR_DELIM::PROP_DELIM2,   ") "  },
+					{ DBAR_DELIM::TRACK_DELIM,  "\n" }, // TODO pretty printing
+					{ DBAR_DELIM::PROP_DELIM1,  " ("  },
+					{ DBAR_DELIM::PROP_DELIM2,  ") "  },
 				}
 		);
 	} else
