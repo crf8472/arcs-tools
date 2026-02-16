@@ -436,23 +436,31 @@ public:
 	/**
 	 * \brief Constructor with labels, properties and layout.
 	 *
-	 * \param[in] labels         Labels for text output
-	 * \param[in] properties     Properties for text output
-	 * \param[in] arid_layout    ARId Layout
+	 * \param[in] labels       Labels for text output
+	 * \param[in] properties   Properties for text output
+	 * \param[in] arid_layout  ARId Layout
+	 * \param[in] indent_start Initial indent
+	 * \param[in] indent_step  Size of a single indentation step
 	 */
 	DBARBaseFormat(const LabelStore::store_t& labels, const flags_t properties,
-			std::unique_ptr<ARIdLayout> arid_layout);
+			std::unique_ptr<ARIdLayout> arid_layout,
+			const std::string::size_type indent_start,
+			const unsigned indent_step);
 
 	/**
 	 * \brief Constructor with labels and layout.
 	 *
 	 * All properties represented by a key in \c labels are set to TRUE.
 	 *
-	 * \param[in] labels         Labels for text output
-	 * \param[in] arid_layout    ARId Layout
+	 * \param[in] labels       Labels for text output
+	 * \param[in] arid_layout  ARId Layout
+	 * \param[in] indent_start Initial indent
+	 * \param[in] indent_step  Size of a single indentation step
 	 */
 	DBARBaseFormat(const LabelStore::store_t& labels,
-			std::unique_ptr<ARIdLayout> arid_layout);
+			std::unique_ptr<ARIdLayout> arid_layout,
+			const std::string::size_type indent_start,
+			const unsigned indent_step);
 
 	/**
 	 * \brief Constructor with labels.
@@ -460,9 +468,13 @@ public:
 	 * All properties represented by a key in \c labels are set to TRUE, no
 	 * ARIDLayout is used.
 	 *
-	 * \param[in] labels         Labels for text output
+	 * \param[in] labels       Labels for text output
+	 * \param[in] indent_start Initial indent
+	 * \param[in] indent_step  Size of a single indentation step
 	 */
-	explicit DBARBaseFormat(const LabelStore::store_t& labels);
+	explicit DBARBaseFormat(const LabelStore::store_t& labels,
+			const std::string::size_type indent_start,
+			const unsigned indent_step);
 
 	/**
 	 * \brief Constructor.
@@ -497,37 +509,36 @@ class TextDecoratedFormat final : public DBARBaseFormat
 public:
 
 	/**
-	 * \brief Constructor with labels, properties and layout.
+	 * \brief Constructor with delimiters, properties and layout.
 	 *
-	 * \param[in] labels         Labels for text output
-	 * \param[in] properties     Properties for text output
-	 * \param[in] arid_layout    ARId Layout
+	 * \param[in] delims      Delimiters for text output
+	 * \param[in] properties  Properties for text output
+	 * \param[in] arid_layout ARId Layout
 	 */
-	TextDecoratedFormat(const LabelStore::store_t& labels,
+	TextDecoratedFormat(const LabelStore::store_t& delims,
 			const flags_t properties,
 			std::unique_ptr<ARIdLayout> arid_layout);
 
 	/**
-	 * \brief Constructor with labels and layout.
+	 * \brief Constructor with delimiters and layout.
 	 *
-	 * All properties represented by a key in \c labels are set to TRUE.
+	 * All properties represented by a key in \c delims are set to TRUE.
 	 *
-	 * \param[in] labels         Labels for text output
-	 * \param[in] arid_layout    ARId Layout
+	 * \param[in] delims      Delimiters for text output
+	 * \param[in] arid_layout ARId Layout
 	 */
-	TextDecoratedFormat(const LabelStore::store_t& labels,
+	TextDecoratedFormat(const LabelStore::store_t& delims,
 		std::unique_ptr<ARIdLayout> arid_layout);
 
-
 	/**
-	 * \brief Constructor with labels.
+	 * \brief Constructor with delimiters.
 	 *
-	 * All properties represented by a key in \c labels are set to TRUE, no
+	 * All properties represented by a key in \c delims are set to TRUE, no
 	 * ARIDLayout is used.
 	 *
-	 * \param[in] labels         Labels for text output
+	 * \param[in] delims Delimiters for text output
 	 */
-	explicit TextDecoratedFormat(const LabelStore::store_t& labels);
+	explicit TextDecoratedFormat(const LabelStore::store_t& delims);
 
 	/**
 	 * \brief Constructor.

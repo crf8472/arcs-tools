@@ -263,34 +263,43 @@ const std::string& DBAROutputFormat::empty_string() const
 
 
 DBARBaseFormat::DBARBaseFormat(const LabelStore::store_t& labels,
-		const flags_t properties, std::unique_ptr<ARIdLayout> arid_layout)
+		const flags_t properties, std::unique_ptr<ARIdLayout> arid_layout,
+		const std::string::size_type indent_start, const unsigned indent_step)
 	: DBAROutputFormat { std::move(arid_layout) }
 	, LabelStore       { labels }
 	, PropertyStore    { properties }
-	, indent_          { 0 }
-	, indent_step_     { 2 }
+	, indent_          { indent_start }
+	, indent_step_     { indent_step }
 {
 	// empty
 }
 
 
 DBARBaseFormat::DBARBaseFormat(const LabelStore::store_t& labels,
-		std::unique_ptr<ARIdLayout> arid_layout)
-	: DBARBaseFormat { labels, existing_flags(labels), std::move(arid_layout) }
+		std::unique_ptr<ARIdLayout> arid_layout,
+		const std::string::size_type indent_start, const unsigned indent_step)
+	: DBARBaseFormat { labels, existing_flags(labels), std::move(arid_layout),
+		indent_start, indent_step }
 {
 	// empty
 }
 
 
-DBARBaseFormat::DBARBaseFormat(const LabelStore::store_t& labels)
-	: DBARBaseFormat { labels, nullptr }
+DBARBaseFormat::DBARBaseFormat(const LabelStore::store_t& labels,
+		const std::string::size_type indent_start, const unsigned indent_step)
+	: DBARBaseFormat { labels, nullptr, indent_start, indent_step }
 {
 	// empty
 }
 
 
 DBARBaseFormat::DBARBaseFormat()
-	: DBARBaseFormat { {/*empty*/}, nullptr }
+	: DBARBaseFormat {
+		{/*empty*/}, // no labels
+		nullptr, // no layout for ARId
+		0 /* start with no indent */,
+		2 /* indent by 2 chars */
+	}
 {
 	// empty
 }
@@ -542,30 +551,31 @@ std::string DBARBaseFormat::delim(const DBAR_DELIM delim) const
 // TextDecoratedFormat
 
 
-TextDecoratedFormat::TextDecoratedFormat(const LabelStore::store_t& labels,
+TextDecoratedFormat::TextDecoratedFormat(const LabelStore::store_t& delims,
 		const flags_t properties, std::unique_ptr<ARIdLayout> arid_layout)
-	: DBARBaseFormat { labels, properties, std::move(arid_layout) }
+	: DBARBaseFormat { delims, properties, std::move(arid_layout), 0, 0 }
 {
 	// empty
 }
 
 
-TextDecoratedFormat::TextDecoratedFormat(const LabelStore::store_t& labels,
+TextDecoratedFormat::TextDecoratedFormat(const LabelStore::store_t& delims,
 		std::unique_ptr<ARIdLayout> arid_layout)
-	: DBARBaseFormat { labels, std::move(arid_layout) }
+	: DBARBaseFormat { delims, std::move(arid_layout), 0, 0 }
 {
 	// empty
 }
 
 
-TextDecoratedFormat::TextDecoratedFormat(const LabelStore::store_t& labels)
-	: DBARBaseFormat { labels }
+TextDecoratedFormat::TextDecoratedFormat(const LabelStore::store_t& delims)
+	: DBARBaseFormat { delims, 0, 0 }
 {
 	// empty
 }
 
 
 TextDecoratedFormat::TextDecoratedFormat()
+	: TextDecoratedFormat { {/*no labels*/} }
 {
 	// empty
 }
@@ -585,7 +595,7 @@ LabelledDBAROutputFormat::LabelledDBAROutputFormat(
 		const LabelStore<DBAR_DELIM>::store_t& delims,
 		const flags_t properties,
 		std::unique_ptr<ARIdLayout> arid_layout)
-	: DBARBaseFormat { delims, properties, std::move(arid_layout) }
+	: DBARBaseFormat { delims, properties, std::move(arid_layout), 0, 2 }
 	, labels_        { labels }
 {
 	// empty
@@ -594,7 +604,7 @@ LabelledDBAROutputFormat::LabelledDBAROutputFormat(
 
 LabelledDBAROutputFormat::LabelledDBAROutputFormat(
 		const LabelStore<DBAR_DELIM>::store_t& delims)
-	: DBARBaseFormat { delims }
+	: DBARBaseFormat { delims, 0, 2 }
 	, labels_        {
 		{
 			/* default labels */
