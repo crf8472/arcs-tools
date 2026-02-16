@@ -222,11 +222,6 @@ class InputStringParser : public StringParser
 {
 	/**
 	 * \brief Parsing result for empty input.
-	 *
-	 * Default implementation returns an instance created by default
-	 * constructor.
-	 *
-	 * \return Result instance for an empty input string
 	 */
 	virtual void do_parse_empty() const
 	{
@@ -237,8 +232,6 @@ class InputStringParser : public StringParser
 	 * \brief Parsing result for non-empty input.
 	 *
 	 * \param[in] s String to parse
-	 *
-	 * \return Result instance for a non-empty input string
 	 *
 	 * \throws std::runtime_error If parsing fails
 	 */
@@ -289,6 +282,8 @@ protected:
 	 * \brief Reference to counter.
 	 *
 	 * Can be used for output parameters like in input::parse_list_to_objects().
+	 *
+	 * \return Counter
 	 */
 	int& counter() const
 	{
