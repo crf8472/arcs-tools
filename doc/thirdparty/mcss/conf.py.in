@@ -7,14 +7,14 @@ DOXYFILE = 'Doxyfile'
 MAIN_PROJECT_URL = "@PROJECT_URL@/"
 
 LINKS_NAVBAR1    = [
-    ("Modules", 'modules', []),
-    ("Pages",   'pages',   [])
+#    ("Modules", 'modules', []),
+    (None,   'pages',   [])
 ]
 
 LINKS_NAVBAR2    = [
-    ("Namespaces", 'namespaces', []),
-    ("Classes",    'annotated',  []),
-    ("Files",      'files',      []),
+    (None, 'namespaces', []),
+    (None, 'annotated',  []),
+    (None, 'files',      []),
 ]
 
 ## custom, not m.css
