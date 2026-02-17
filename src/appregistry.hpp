@@ -27,9 +27,6 @@ namespace arcsapp
 inline namespace v_1_0_0
 {
 
-/**
- * \brief Implementation details of arcsapp 1.0.0.
- */
 namespace details
 {
 

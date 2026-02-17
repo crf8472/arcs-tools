@@ -4,7 +4,7 @@
 /**
  * \file
  *
- * \brief Provide version and name information for arcs-tools.
+ * \brief Version and name information for arcs-tools.
  */
 
 #include <string>
@@ -14,19 +14,12 @@
  */
 namespace arcsapp
 {
+
 /**
  * \brief arcstk API version 1.0.0.
  */
 inline namespace v_1_0_0
 {
-
-/**
- * \defgroup version Version information
- *
- * \brief Access version information and check version
- *
- * @{
- */
 
 /**
  * \brief Name of the binary
@@ -63,13 +56,12 @@ extern const std::string ARCSTOOLS_VERSION;
  */
 extern const std::string ARCSTOOLS_GIT_VERSION;
 
-/** @} */
 
 
 /**
  * \internal
  *
- * \brief Namespace for implementation details.
+ * \brief Implementation details of arcsapp 1.0.0.
  */
 namespace details
 { // empty

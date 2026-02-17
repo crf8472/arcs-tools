@@ -52,9 +52,6 @@ namespace arid {
 	class RichARId;
 }
 
-/**
- * \brief Construct a table of strings.
- */
 namespace table
 {
 
