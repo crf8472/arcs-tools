@@ -14,6 +14,13 @@ add_custom_target (arcstools_doxygen_generate_xml )
 add_custom_target (arcstools_doxygen_provide_xml )
 add_dependencies (arcstools_doxygen_provide_xml arcstools_doxygen_generate_xml )
 
+## FIXME Remove this when MCSS build is fixed
+# add_custom_command (TARGET arcstools_doxygen_generate_xml POST_BUILD
+# 	COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/namespace-fix.sh
+# 	WORKING_DIRECTORY "${DOC_GEN_DIR}/mcss"
+# 	COMMENT "Apply namespace fix"
+# 	VERBATIM
+# )
 
 ## --- Check for required Postprocessing Tasks {{{1
 
@@ -21,6 +28,8 @@ if (DOXYGEN_VERSION VERSION_GREATER_EQUAL 1.8.16 )
 
 	list (APPEND XML_POSTPROC_TASKS "dedup_index" )
 	list (APPEND XML_POSTPROC_TASKS "remove_inline_ns_names" )
+	list (APPEND XML_POSTPROC_TASKS "add_inline_ns" )
+	list (APPEND XML_POSTPROC_TASKS "add_inline_ns_names" )
 endif()
 ## 1}}}
 ## --- List of Postprocessing Tasks To Be Visible to Generators {{{1
