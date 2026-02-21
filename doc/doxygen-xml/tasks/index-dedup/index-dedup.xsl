@@ -48,8 +48,8 @@
 </xsl:template>
 
 
-<!-- Remove each compound with a refid that previously occurred. -->
-<!-- The method is called "Muenchian grouping".      -->
+<!-- Remove each compound with a refid that previously occurred by -->
+<!-- "Muenchian grouping".                                         -->
 
 <xsl:template match="compound[
 	not(generate-id() = generate-id(key('keyCompoundById', @refid)[1]))]">
