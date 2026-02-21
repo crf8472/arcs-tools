@@ -6,9 +6,8 @@
 
 <!-- Each compound with a given refid occurs twice: once for arcstk::Class  -->
 <!-- and a second time for inline namespace as arcstk::v_1_0_0::Class while -->
-<!-- the content of these compounds is identical. This script respects the  -->
-<!-- first occurrence for each refid and removes all following duplicates.  -->
-<!-- Thus, the version without the inline namespace is kept.                -->
+<!-- the content of these compounds is identical.                           -->
+<!-- The version containing the inline namespace is kept.                   -->
 
 <!-- Required for doxygen >= 1.8.16.                                        -->
 
@@ -23,7 +22,8 @@
 
 <xsl:key name="keyCompoundById" match="compound" use="@refid"/>
 
-<!-- Just copy everything -->
+
+<!-- Default: Just copy everything -->
 
 <xsl:template match="node()|@*">
 	<xsl:copy>
@@ -31,11 +31,29 @@
 	</xsl:copy>
 </xsl:template>
 
-<!-- Remove any compound with the same refid, keep the last occurrence. -->
-<!-- This is called "Muenchian grouping". -->
+
+<!-- Add version namespace just everywhere. -->
+<!-- Thus we will not have to care about accessing a preceding sibling. -->
+
+<xsl:template match="compound/name[not(contains(text(), '::v_1_0_0'))
+	and contains(text(), '::')]">
+
+	<xsl:element name="name">
+		<xsl:value-of select="concat(
+			substring-before(text(), '::'),
+			'::v_1_0_0::',
+			substring-after(text(), '::'))"/>
+	</xsl:element>
+
+</xsl:template>
+
+
+<!-- Remove each compound with a refid that previously occurred. -->
+<!-- The method is called "Muenchian grouping".      -->
 
 <xsl:template match="compound[
-	not(generate-id() = generate-id(key('keyCompoundById', @refid)[1])) ]">
+	not(generate-id() = generate-id(key('keyCompoundById', @refid)[1]))]">
+	<!-- remove current -->
 </xsl:template>
 
 </xsl:transform>
