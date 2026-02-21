@@ -1,4 +1,4 @@
-## CMake script for deduplicating doxygen's index.xml
+## CMake script for removing the version namespace in doxygen's index.xml
 ##
 ## vim:fdm=marker
 
@@ -14,11 +14,11 @@
 
 cmake_minimum_required (VERSION 3.12 )
 
-function (register_dedup_index XML_INPUT_PATH )
+function (register_index-remove_vns XML_INPUT_PATH )
 
-	message (STATUS "Doxygen Task: doxygen requires index deduplication" )
+	message (STATUS "Doxygen Task: Remove version namespaces in index.xml" )
 
-	add_doxygen_xslt_task ("dedup_index" "${XML_INPUT_PATH}/index.xml" )
+	add_doxygen_xslt_task ("index-remove_vns" "${XML_INPUT_PATH}/index.xml" )
 
 endfunction()
 
