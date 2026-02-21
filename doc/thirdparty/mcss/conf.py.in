@@ -17,6 +17,9 @@ LINKS_NAVBAR2    = [
     (None, 'files',      []),
 ]
 
+## Expand version namespace and show class list
+CLASS_INDEX_EXPAND_LEVELS = 2
+
 ## custom, not m.css
 my_CUSTOM_STYLESHEET = '@CUSTOM_STYLESHEET@'
 
