@@ -18,7 +18,7 @@
 #include <vector>        // for vector
 
 #ifndef __LIBARCSTK_VERIFY_HPP__
-#include <arcstk/verify.hpp>     // for ChecksumSource, ChecksumSourceOf
+#include <arcstk/verify.hpp>     // for ChecksumSource
 #endif
 #ifndef __LIBARCSTK_DBAR_HPP__
 #include <arcstk/dbar.hpp>       // for DBAR
@@ -57,7 +57,6 @@ class Result;
 using arcstk::Checksum;
 using arcstk::Checksums;
 using arcstk::ChecksumSource;
-using arcstk::ChecksumSourceOf;
 using arcstk::DBAR;
 using arcstk::ToC;
 using arcstk::VerificationResult;

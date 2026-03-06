@@ -767,7 +767,6 @@ using arcstk::ARId;
 using arcstk::Checksum;
 using arcstk::Checksums;
 using arcstk::ChecksumSource;
-using arcstk::ChecksumSourceOf;
 using arcstk::VerificationResult;
 using arcstk::ToC;
 

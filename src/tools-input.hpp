@@ -16,7 +16,7 @@
 #include <arcstk/dbar.hpp>        // for DBAR, ParseHandler, ParseErrorHandler
 #endif
 #ifndef __LIBARCSTK_VERIFY_HPP__
-#include <arcstk/verify.hpp>      // for ChecksumSource, ChecksumSourceOf
+#include <arcstk/verify.hpp>      // for ChecksumSource
 #endif
 #ifndef __LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>     // for ARCS_LOG,...
@@ -36,7 +36,6 @@ namespace input
 using arcstk::ARId;
 using arcstk::Checksum;
 using arcstk::ChecksumSource;
-using arcstk::ChecksumSourceOf;
 using arcstk::DBAR;
 
 
