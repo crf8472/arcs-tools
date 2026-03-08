@@ -49,6 +49,9 @@ using arcstk::ARId;
 using arcstk::Checksums;
 using arcstk::ToC;
 
+// libarcsdec
+using arcsdec::select::FileReaderSelection;
+
 // arcsapp
 using table::ATTR;
 using table::FieldCreator;
@@ -295,7 +298,7 @@ protected:
 	 *
 	 * \return Selection according to input or nullptr
 	 */
-	std::unique_ptr<arcsdec::FileReaderSelection> create_selection(
+	std::unique_ptr<FileReaderSelection> create_selection(
 			const OptionCode&    request,
 			const Configuration& config) const;
 };
@@ -327,8 +330,8 @@ public:
 		const bool first_file_is_first_track,
 		const bool last_file_is_last_track,
 		const std::vector<arcstk::checksum::type>& types,
-		arcsdec::FileReaderSelection* audio_selection,
-		arcsdec::FileReaderSelection* toc_selection);
+		FileReaderSelection* audio_selection,
+		FileReaderSelection* toc_selection);
 
 private:
 

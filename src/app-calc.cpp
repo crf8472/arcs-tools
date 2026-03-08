@@ -521,16 +521,15 @@ std::pair<int, std::unique_ptr<Result>> ARCalcApplicationBase::run_calculation(
 }
 
 
-std::unique_ptr<arcsdec::FileReaderSelection>
+std::unique_ptr<FileReaderSelection>
 	ARCalcApplicationBase::create_selection(const OptionCode& request,
 		const Configuration& config) const
 {
 	if (config.is_set(request))
 	{
-		using arcsdec::InputFormatException;
+		using arcsdec::read::InputFormatException;
 
-		auto selection =
-			std::unique_ptr<arcsdec::FileReaderSelection>{ nullptr };
+		auto selection = std::unique_ptr<FileReaderSelection>{ nullptr };
 
 		const calc::IdSelection id_selection;
 
@@ -551,7 +550,7 @@ std::unique_ptr<arcsdec::FileReaderSelection>
 		}
 	}
 
-	return std::unique_ptr<arcsdec::FileReaderSelection>{ nullptr };
+	return std::unique_ptr<FileReaderSelection>{ nullptr };
 }
 
 
@@ -564,8 +563,8 @@ std::tuple<Checksums, std::unique_ptr<ToC>> ARCalcApplication::calculate(
 	const bool first_file_is_first_track,
 	const bool last_file_is_last_track,
 	const std::vector<arcstk::checksum::type>& types_requested,
-	arcsdec::FileReaderSelection* audio_selection,
-	arcsdec::FileReaderSelection* toc_selection)
+	FileReaderSelection* audio_selection,
+	FileReaderSelection* toc_selection)
 {
 	// The types to calculate are allowed to differ from the explicitly
 	// requested types (since e.g. ARCS1 is a byproduct of ARCS2 and the
@@ -762,22 +761,18 @@ auto ARCalcApplication::do_run_calculation(const Configuration& config) const
 
 	// If AccurateRip Id or URL is requested to print, calculate + validate ARId
 
-	auto arid = std::unique_ptr<ARId>{};
+	auto arid = arcstk::make_empty_arid();
 
 	if (config.is_set(CALC::PRINTID) || config.is_set(CALC::PRINTURL))
 	{
-		arid = arcstk::make_arid(*toc);
-	} else
-	{
-		arid = arcstk::make_empty_arid();
+		arid = std::move(arcstk::make_arid(*toc));
 	}
-
 	// Compose the result
 
 	auto result { create_formatter(config)->format(
 	/* types  */  types_to_print,
 	/* ARCSs  */  checksums,
-	/* ARId   */  *arid,
+	/* ARId   */  arid,
 	/* ToC    */  toc ? toc.get() : nullptr,
 	/* files  */  toc ? toc->filenames() : *config.arguments(),
 	/* Prefix */  std::string { /* TODO Implement Alt-Prefix */ }

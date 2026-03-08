@@ -63,8 +63,8 @@ using arcstk::AudioSize;
 using arcstk::make_arid;
 
 // libarcsdec
-using arcsdec::AudioInfo;
-using arcsdec::ToCParser;
+using arcsdec::calc::AudioInfo;
+using arcsdec::calc::ToCParser;
 
 // arcsapp
 using arid::ARIdLayout;
@@ -195,7 +195,7 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 
 	// Step 2: Calculate ARId by optionally using the audiofile
 
-	auto arid = std::unique_ptr<ARId>{};
+	auto arid = arcstk::make_empty_arid();
 
 	if (toc->complete())
 	{
@@ -278,7 +278,7 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 		);
 	}
 
-	auto id = RichARId { *arid, std::move(layout),
+	auto id = RichARId { arid, std::move(layout),
 		config.value(ARIdOptions::URLPREFIX) };
 	layout = nullptr;
 

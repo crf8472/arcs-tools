@@ -1557,7 +1557,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	// ARId
 
-	std::unique_ptr<ARId> mine_arid = (toc && toc->complete())
+	auto mine_arid = (toc && toc->complete())
 		? arcstk::make_arid(*toc)
 		: arcstk::make_empty_arid();
 
@@ -1587,7 +1587,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 					"Album requested, but calculation returned no ToC.");
 		}
 
-		if (mine_arid->empty())
+		if (mine_arid.empty())
 		{
 			this->fatal_error(
 					"Album requested, but calculation returned an empty ARId.");
@@ -1611,12 +1611,12 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 			ARCS_LOG_DEBUG <<
 				"Process reference input as AccurateRip response for album";
 			ARCS_LOG_DEBUG <<
-				"Computed AccurateRip ID: "  << to_string(*mine_arid);
+				"Computed AccurateRip ID: "  << to_string(mine_arid);
 			ARCS_LOG_DEBUG <<
-				"Computed AccurateRip URL: " << mine_arid->url();
+				"Computed AccurateRip URL: " << mine_arid.url();
 
 			const auto v =
-				std::make_unique<AlbumVerifier>(checksums, *mine_arid);
+				std::make_unique<AlbumVerifier>(checksums, mine_arid);
 			vresult = v->perform(*ref_source);
 		}
 
@@ -1713,7 +1713,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		/* verification results */     vresult.get(),
 		/* optional best match */      best_block,
 		/* mine ARCSs */               checksums,
-		/* optional mine ARId */       *mine_arid,
+		/* optional mine ARId */       mine_arid,
 		/* optional ToC */             toc.get(),
 		/* reference checksum source */ref_source.get(),
 		/* input audio filenames */    filenames,

@@ -30,13 +30,20 @@
 #include <vector>        // for vector
 
 
-// forward declarations
+// forward declarations from libarcsdec
 namespace arcsdec
 {
 inline namespace v_1_0_0
 {
+namespace calc
+{
 class ARCSCalculator;
 class ToCParser;
+}
+namespace select
+{
+class FileReaderSelection;
+}
 } // namespace v_1_0_0
 } // namespace arcsdec
 
@@ -55,9 +62,9 @@ namespace calc
 using arcstk::ToC;
 using arcstk::Checksums;
 
-using arcsdec::ARCSCalculator;
-using arcsdec::FileReaderSelection;
-using arcsdec::ToCParser;
+using arcsdec::calc::ARCSCalculator;
+using arcsdec::calc::ToCParser;
+using arcsdec::select::FileReaderSelection;
 
 // FIXME This has to be made available from arcsdec/calculators.hpp
 using ChecksumTypeset = std::unordered_set<arcstk::checksum::type>;
@@ -136,7 +143,7 @@ struct IdSelection final
 	 *
 	 * \return Selection for FileReader with id \p id
 	 */
-	std::unique_ptr<arcsdec::FileReaderSelection> operator()(
+	std::unique_ptr<FileReaderSelection> operator()(
 			const std::string& id) const;
 };
 

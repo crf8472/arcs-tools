@@ -116,20 +116,23 @@ AudioFormatComposer::AudioFormatComposer()
 }
 
 
-void AudioFormatComposer::add(const arcsdec::FileReaderDescriptor& descriptor)
+void AudioFormatComposer::add(const FileReaderDescriptor& descriptor)
 {
+	using arcsdec::read::Format;
+	using arcsdec::read::Codec;
+
 	auto sep { " " };
 
 	// Space-separated list of Format names
 
-	using format_func = std::string (*)(arcsdec::Format);
-	const format_func f = &arcsdec::name;
+	using format_func = std::string (*)(Format);
+	const format_func f = &arcsdec::read::name;
 	const std::string fmts = details::to_sep_list(descriptor.formats(), sep, f);
 
 	// Space-separated list of Codec names
 
-	using codec_func = std::string (*)(arcsdec::Codec);
-	const codec_func c = &arcsdec::name;
+	using codec_func = std::string (*)(Codec);
+	const codec_func c = &arcsdec::read::name;
 	const std::string cdecs = details::to_sep_list(descriptor.codecs(), sep, c);
 
 	// Compose table: Add rows for the current descriptor
@@ -165,20 +168,23 @@ ToCFormatComposer::ToCFormatComposer()
 }
 
 
-void ToCFormatComposer::add(const arcsdec::FileReaderDescriptor& descriptor)
+void ToCFormatComposer::add(const FileReaderDescriptor& descriptor)
 {
+	using arcsdec::read::Format;
+	using arcsdec::read::Codec;
+
 	auto sep { " " };
 
 	// Space-separated list of Format names
 
-	using format_func = std::string (*)(arcsdec::Format);
-	const format_func f = &arcsdec::name;
+	using format_func = std::string (*)(Format);
+	const format_func f = &arcsdec::read::name;
 	const std::string fmts = details::to_sep_list(descriptor.formats(), sep, f);
 
 	// Space-separated list of Codec names
 
-	using codec_func = std::string (*)(arcsdec::Codec);
-	const codec_func c = &arcsdec::name;
+	using codec_func = std::string (*)(Codec);
+	const codec_func c = &arcsdec::read::name;
 	const std::string cdecs = details::to_sep_list(descriptor.codecs(), sep, c);
 
 	// Compose table: Add rows for the current descriptor
@@ -196,7 +202,7 @@ void ToCFormatComposer::add(const arcsdec::FileReaderDescriptor& descriptor)
 
 template <class Calculator>
 StringTable DefaultReaders(const std::function<
-		bool(const arcsdec::FileReaderDescriptor&)>& filter_func,
+		bool(const FileReaderDescriptor&)>& filter_func,
 		InfoResultComposer& builder)
 {
 	const auto readers { std::make_unique<Calculator>()->readers() };
@@ -225,12 +231,13 @@ StringTable DefaultReaders(const std::function<
 
 const StringTable& AvailableFileReaders::audio()
 {
-	using arcsdec::FileReaderDescriptor;
-	using arcsdec::InputType;
+	using arcsdec::calc::ARCSCalculator;
+	//using arcsdec::read::FileReaderDescriptor;
+	using arcsdec::read::InputType;
 
 	AudioFormatComposer c{};
 
-	static StringTable table { DefaultReaders<arcsdec::ARCSCalculator>(
+	static StringTable table { DefaultReaders<ARCSCalculator>(
 			[](const FileReaderDescriptor& d) -> bool
 			{
 				return InputType::AUDIO == d.input_type();
@@ -242,12 +249,13 @@ const StringTable& AvailableFileReaders::audio()
 
 const StringTable& AvailableFileReaders::toc()
 {
-	using arcsdec::FileReaderDescriptor;
-	using arcsdec::InputType;
+	using arcsdec::calc::ToCParser;
+	//using arcsdec::read::FileReaderDescriptor;
+	using arcsdec::read::InputType;
 
 	ToCFormatComposer c{};
 
-	static StringTable table { DefaultReaders<arcsdec::ToCParser>(
+	static StringTable table { DefaultReaders<ToCParser>(
 			[](const FileReaderDescriptor& d) -> bool
 			{
 				return InputType::TOC == d.input_type();

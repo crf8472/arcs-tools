@@ -15,7 +15,10 @@ namespace arcsdec
 {
 inline namespace v_1_0_0
 {
-class FileReaderDescriptor; // Add this to arcsdec
+namespace read
+{
+class FileReaderDescriptor; // Add this to arcsdec::read
+} // namespace read
 } // namespace v_1_0_0
 } // namespace arcsdec
 
@@ -32,7 +35,7 @@ namespace info
 {
 
 // libarcsdec
-using arcsdec::FileReaderDescriptor;
+using arcsdec::read::FileReaderDescriptor;
 
 // arcs-tools
 using table::StringTable;

@@ -53,9 +53,9 @@ inline namespace v_1_0_0
 namespace calc
 {
 
-using arcsdec::ARCSCalculator;
-using arcsdec::FileReaderSelection;
-using arcsdec::ToCParser;
+using arcsdec::calc::ARCSCalculator;
+using arcsdec::calc::ToCParser;
+using arcsdec::select::FileReaderSelection;
 
 
 std::tuple<bool,bool,std::vector<std::string>> ToCFiles::get(const ToC& toc)
@@ -121,11 +121,15 @@ std::string ToCFiles::expand_path(const std::string& metafilename,
 // IdSelection
 
 
-std::unique_ptr<arcsdec::FileReaderSelection> IdSelection::operator()(
+std::unique_ptr<FileReaderSelection> IdSelection::operator()(
 		const std::string& id) const
 {
-	using IdSelection_t = arcsdec::FileReaderPreferenceSelection<
-		arcsdec::MinPreference, arcsdec::IdSelector>;
+	using arcsdec::select::FileReaderPreferenceSelection;
+	using arcsdec::select::MinPreference;
+	using arcsdec::select::IdSelector;
+
+	using IdSelection_t =
+		FileReaderPreferenceSelection<MinPreference, IdSelector>;
 
 	return !id.empty() ? std::make_unique<IdSelection_t>(id) : nullptr;
 }
