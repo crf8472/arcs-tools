@@ -32,10 +32,10 @@
 #include <arcstk/logging.hpp>
 #endif
 
-#ifndef __LIBARCSDEC_CALCULATORS_HPP__
+#ifndef LIBARCSDEC_CALCULATORS_HPP__
 #include <arcsdec/calculators.hpp>  // for ToCParser, ARCSCalculator
 #endif
-#ifndef __LIBARCSDEC_SELECTION_HPP__
+#ifndef LIBARCSDEC_SELECTION_HPP__
 #include <arcsdec/selection.hpp>    // for FileReaderPreferenceSelection
 #endif
 

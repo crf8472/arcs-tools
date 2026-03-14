@@ -23,10 +23,10 @@
 #include <arcstk/logging.hpp>
 #endif
 
-#ifndef __LIBARCSDEC_SELECTION_HPP__
+#ifndef LIBARCSDEC_SELECTION_HPP__
 #include <arcsdec/selection.hpp>      // for FileReaderSelection
 #endif
-#ifndef __LIBARCSDEC_CALCULATE_HPP__
+#ifndef LIBARCSDEC_CALCULATE_HPP__
 #include <arcsdec/calculators.hpp>
 #endif
 

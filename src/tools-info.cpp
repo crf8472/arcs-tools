@@ -16,10 +16,10 @@
 #include <memory>              // for make_unique
 #include <string>              // for string
 
-#ifndef __LIBARCSDEC_DESCRIPTORS_HPP__
+#ifndef LIBARCSDEC_DESCRIPTORS_HPP__
 #include <arcsdec/descriptor.hpp>   // for FileReaderDescriptor
 #endif
-#ifndef __LIBARCSDEC_CALCULATORS_HPP__
+#ifndef LIBARCSDEC_CALCULATORS_HPP__
 #include <arcsdec/calculators.hpp>  // for ARCSCalculator, ToCParser
 #endif
 

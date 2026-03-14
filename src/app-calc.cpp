@@ -33,7 +33,7 @@
 #include <arcstk/calculate.hpp>     // for type, Checksum, Checksums,...
 #endif
 
-#ifndef __LIBARCSDEC_SELECTION_HPP__
+#ifndef LIBARCSDEC_SELECTION_HPP__
 #include <arcsdec/selection.hpp>    // for FileReaderSelection
 #endif
 

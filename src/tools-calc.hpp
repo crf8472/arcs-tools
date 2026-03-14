@@ -11,7 +11,7 @@
 #include "layouts.hpp"                 // for Layout
 #endif
 
-#ifndef __LIBARCSDEC_SELECTION_HPP__
+#ifndef LIBARCSDEC_SELECTION_HPP__
 #include <arcsdec/selection.hpp>       // FileReaderSelection
 #endif
 

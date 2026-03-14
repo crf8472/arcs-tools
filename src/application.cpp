@@ -26,7 +26,7 @@
 #include <arcstk/version.hpp>         // for LIBARCSTK_VERSION
 #endif
 
-#ifndef __LIBARCSDEC_VERSION_HPP__
+#ifndef LIBARCSDEC_VERSION_HPP__
 #include <arcsdec/version.hpp>        // for LIBARCSDEC_VERSION
 #endif
 
