@@ -1,19 +1,17 @@
 #ifndef ARCSTOOLS_TOOLS_CALC_HPP__
 #define ARCSTOOLS_TOOLS_CALC_HPP__
-
 /**
  * \file
  *
  * \brief Helper tools for ARCS calculation.
  */
 
-#ifndef ARCSTOOLS_LAYOUTS_HPP__
-#include "layouts.hpp"                 // for Layout
-#endif
-
-#ifndef LIBARCSDEC_SELECTION_HPP__
-#include <arcsdec/selection.hpp>       // FileReaderSelection
-#endif
+#include <memory>        // for unique_ptr
+#include <string>        // for string
+#include <tuple>         // for tuple
+#include <utility>       // for pair
+#include <unordered_set> // for unordered_set
+#include <vector>        // for vector
 
 #ifndef LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>        // for Checksums, checksum::type
@@ -22,12 +20,13 @@
 #include <arcstk/metadata.hpp>         // for ToC
 #endif
 
-#include <memory>        // for unique_ptr
-#include <string>        // for string
-#include <tuple>         // for tuple
-#include <utility>       // for pair
-#include <unordered_set> // for unordered_set
-#include <vector>        // for vector
+#ifndef LIBARCSDEC_SELECTION_HPP__
+#include <arcsdec/selection.hpp>       // FileReaderSelection
+#endif
+
+#ifndef ARCSTOOLS_LAYOUTS_HPP__
+#include "layouts.hpp"                 // for Layout
+#endif
 
 
 // forward declarations from libarcsdec

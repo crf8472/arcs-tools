@@ -1,6 +1,5 @@
 #ifndef ARCSTOOLS_TOOLS_INPUT_HPP__
 #define ARCSTOOLS_TOOLS_INPUT_HPP__
-
 /**
  * \file
  *
@@ -21,6 +20,7 @@
 #ifndef LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>     // for ARCS_LOG,...
 #endif
+
 
 namespace arcsapp
 {

@@ -1,6 +1,5 @@
 #ifndef ARCSTOOLS_APPREGISTRY_HPP__
 #define ARCSTOOLS_APPREGISTRY_HPP__
-
 /**
  * \file
  *
@@ -21,6 +20,7 @@
 #ifndef ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"
 #endif
+
 
 namespace arcsapp
 {

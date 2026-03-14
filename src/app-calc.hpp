@@ -1,6 +1,5 @@
 #ifndef ARCSTOOLS_APPCALC_HPP__
 #define ARCSTOOLS_APPCALC_HPP__
-
 /**
  * \file
  *

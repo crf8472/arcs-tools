@@ -1,6 +1,5 @@
 #ifndef ARCSTOOLS_APPLICATION_HPP__
 #define ARCSTOOLS_APPLICATION_HPP__
-
 /**
  * \file
  *
@@ -16,6 +15,7 @@
 #include <memory>      // for unique_ptr, allocator
 #include <mutex>       // for mutex, lock_guard
 #include <string>      // for string
+
 
 namespace arcsapp
 {

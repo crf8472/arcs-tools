@@ -1,6 +1,5 @@
 #ifndef ARCSTOOLS_APPPARSE_HPP__
 #define ARCSTOOLS_APPPARSE_HPP__
-
 /**
  * \file
  *
@@ -13,13 +12,13 @@
 #include <memory>           // for unique_ptr
 #include <string>           // for string
 
-
 #ifndef ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"  // for Application
 #endif
 #ifndef ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"       // for Configurator, OptionCode
 #endif
+
 
 namespace arcsapp
 {

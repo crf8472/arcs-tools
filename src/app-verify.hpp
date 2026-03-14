@@ -1,6 +1,5 @@
 #ifndef ARCSTOOLS_APPVERIFY_HPP__
 #define ARCSTOOLS_APPVERIFY_HPP__
-
 /**
  * \file
  *

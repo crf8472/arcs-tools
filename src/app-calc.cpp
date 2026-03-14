@@ -6,7 +6,6 @@
  * \brief Implements symbols from app-calc.hpp.
  */
 
-#include <arcsdec/descriptor.hpp>
 #ifndef ARCSTOOLS_APPCALC_HPP__
 #include "app-calc.hpp"
 #endif
@@ -55,6 +54,7 @@
 #ifndef ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"               // for ResultObject, Result
 #endif
+
 
 namespace arcsapp
 {

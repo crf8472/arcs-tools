@@ -1,6 +1,5 @@
 #ifndef ARCSTOOLS_TOOLS_INFO_HPP__
 #define ARCSTOOLS_TOOLS_INFO_HPP__
-
 /**
  * \file
  *
@@ -10,6 +9,7 @@
 #ifndef ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"               // for StringTable
 #endif
+
 
 namespace arcsdec
 {

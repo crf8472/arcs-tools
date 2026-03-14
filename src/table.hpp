@@ -1,5 +1,10 @@
 #ifndef ARCSTOOLS_TABLE_HPP__
 #define ARCSTOOLS_TABLE_HPP__
+/**
+ * \file
+ *
+ * \brief Printable Tables.
+ */
 
 #include <algorithm>   // for max
 #include <cstddef>     // for size_t
@@ -12,7 +17,7 @@
 #include <utility>     // for forward
 #include <vector>      // for vector
 
-// to_sep_list requirements:
+// TODO fix to_sep_list requirements:
 //#include <algorithm>   // for transform
 #include <functional>  // for function
 //#include <iterator>    // for ostream_iterator
@@ -22,11 +27,6 @@
 #include "layouts.hpp"      // for Layout
 #endif
 
-/**
- * \file
- *
- * \brief Printable Tables.
- */
 
 namespace arcsapp
 {

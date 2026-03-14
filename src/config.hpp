@@ -1,6 +1,5 @@
 #ifndef ARCSTOOLS_CONFIG_HPP__
 #define ARCSTOOLS_CONFIG_HPP__
-
 /**
  * \file
  *
@@ -34,6 +33,7 @@
 #ifndef ARCSTOOLS_TOOLS_INPUT_HPP__
 #include "tools-input.hpp"        // for StringParser
 #endif
+
 
 namespace arcsapp
 {

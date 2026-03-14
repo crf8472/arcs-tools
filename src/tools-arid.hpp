@@ -1,6 +1,5 @@
 #ifndef ARCSTOOLS_TOOLS_ARID_HPP__
 #define ARCSTOOLS_TOOLS_ARID_HPP__
-
 /**
  * \file
  *
@@ -20,6 +19,7 @@
 #ifndef ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"      // for Layout
 #endif
+
 
 namespace arcsapp
 {

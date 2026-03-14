@@ -6,7 +6,6 @@
  * \brief Implements symbols from table.hpp.
  */
 
-#include "layouts.hpp"
 #include <algorithm>  // for max, min, find_if, for_each
 #include <cstddef>    // for size_t
 #include <cctype>     // for isspace
@@ -26,6 +25,7 @@
 #ifndef ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"
 #endif
+
 
 namespace arcsapp
 {

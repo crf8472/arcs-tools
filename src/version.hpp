@@ -1,6 +1,5 @@
 #ifndef ARCSTOOLS_VERSION_HPP___
 #define ARCSTOOLS_VERSION_HPP___
-
 /**
  * \file
  *
@@ -8,6 +7,7 @@
  */
 
 #include <string>
+
 
 /**
  * \brief Framework for applications, options, configuration and results.

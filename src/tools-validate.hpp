@@ -1,6 +1,5 @@
 #ifndef ARCSTOOLS_TOOLS_VALIDATE_HPP__
 #define ARCSTOOLS_TOOLS_VALIDATE_HPP__
-
 /**
  * \file
  *
@@ -12,6 +11,7 @@
 #ifndef LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>     // for ARCS_LOG_DEBUG, ARCS_LOG_ERROR
 #endif
+
 
 namespace arcsapp
 {

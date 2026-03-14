@@ -1,6 +1,5 @@
 #ifndef ARCSTOOLS_LAYOUTS_HPP__
 #define ARCSTOOLS_LAYOUTS_HPP__
-
 /**
  * \file
  *
@@ -19,6 +18,7 @@
 #include <string>                 // for string
 #include <tuple>                  // for tuple, make_tuple
 #include <type_traits>            // for underlying_type_t
+
 
 namespace arcsapp
 {

@@ -10,7 +10,6 @@
 #include "layouts.hpp"
 #endif
 
-#include <cstdint>             // for uint32_t, uint16_t
 
 namespace arcsapp
 {

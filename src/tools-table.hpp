@@ -1,6 +1,5 @@
 #ifndef ARCSTOOLS_TOOLS_TABLE_HPP__
 #define ARCSTOOLS_TOOLS_TABLE_HPP__
-
 /**
  * \file
  *

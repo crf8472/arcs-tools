@@ -1,6 +1,5 @@
 #ifndef ARCSTOOLS_ANSI_HPP__
 #define ARCSTOOLS_ANSI_HPP__
-
 /**
  * \file
  *
@@ -10,6 +9,7 @@
 #include <ostream>                // for ostream
 #include <string>                 // for to_string
 #include <vector>                 // for vector
+
 
 namespace arcsapp
 {

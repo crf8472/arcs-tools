@@ -1,6 +1,5 @@
 #ifndef ARCSTOOLS_TOOLS_FS_HPP__
 #define ARCSTOOLS_TOOLS_FS_HPP__
-
 /**
  * \file
  *
@@ -8,6 +7,7 @@
  */
 
 #include <string> // for string
+
 
 namespace arcsapp
 {
