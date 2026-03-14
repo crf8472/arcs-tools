@@ -9,7 +9,7 @@
 
 #include <functional>             // for function
 
-#ifndef __LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>     // for ARCS_LOG_DEBUG, ARCS_LOG_ERROR
 #endif
 

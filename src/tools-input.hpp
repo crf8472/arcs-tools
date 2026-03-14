@@ -12,13 +12,13 @@
 #include <streambuf>              // for basic_streambuf
 #include <string>                 // for string, char_traits
 
-#ifndef __LIBARCSTK_DBAR_HPP__
+#ifndef LIBARCSTK_DBAR_HPP__
 #include <arcstk/dbar.hpp>        // for DBAR, ParseHandler, ParseErrorHandler
 #endif
-#ifndef __LIBARCSTK_VERIFY_HPP__
+#ifndef LIBARCSTK_VERIFY_HPP__
 #include <arcstk/verify.hpp>      // for ChecksumSource
 #endif
-#ifndef __LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>     // for ARCS_LOG,...
 #endif
 

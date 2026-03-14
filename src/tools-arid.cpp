@@ -17,10 +17,10 @@
 #include <tuple>        // for get
 #include <utility>      // for move
 
-#ifndef __LIBARCSTK_IDENTIFIER_HPP__
+#ifndef LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
-#ifndef __LIBARCSTK_METADATA_HPP__
+#ifndef LIBARCSTK_METADATA_HPP__
 #include <arcstk/metadata.hpp>    // for ToC
 #endif
 

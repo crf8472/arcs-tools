@@ -18,13 +18,13 @@
 #include <string>            // for string
 #include <utility>           // for move, swap
 
-#ifndef __LIBARCSTK_IDENTIFIER_HPP__
+#ifndef LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>     // for ARId
 #endif
-#ifndef __LIBARCSTK_CALCULATE_HPP__
+#ifndef LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>      // for Checksum
 #endif
-#ifndef __LIBARCSTK_DBAR_HPP__
+#ifndef LIBARCSTK_DBAR_HPP__
 #include <arcstk/dbar.hpp>           // for DBARTriplet, parse_stream
 #endif
 

@@ -14,10 +14,10 @@
 #include <memory>              // for make_unique, unique_ptr
 #include <string>              // for string
 
-#ifndef __LIBARCSTK_DBAR_HPP__
+#ifndef LIBARCSTK_DBAR_HPP__
 #include <arcstk/dbar.hpp>
 #endif
-#ifndef __LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
 #endif
 

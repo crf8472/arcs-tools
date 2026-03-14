@@ -13,7 +13,7 @@
 #include <ostream>      // for ostream
 #include <string>       // for string
 
-#ifndef __LIBARCSTK_IDENTIFIER_HPP__
+#ifndef LIBARCSTK_IDENTIFIER_HPP__
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
 

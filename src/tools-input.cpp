@@ -29,16 +29,16 @@
 #include <stdexcept>     // for runtime_error
 #include <string>        // for string, stoul, getline
 
-#ifndef __LIBARCSTK_CHECKSUM_HPP__
+#ifndef LIBARCSTK_CHECKSUM_HPP__
 #include <arcstk/checksum.hpp>    // for Checksum, EmptyChecksum
 #endif
-#ifndef __LIBARCSTK_DBAR_HPP__
+#ifndef LIBARCSTK_DBAR_HPP__
 #include <arcstk/dbar.hpp>        // for DBAR, ChecksumSource, ParseHandler, ...
 #endif
-#ifndef __LIBARCSTK_IDENTIFIER_HPP__
-#include "identifier.hpp"         // for ARId, EmptyARId
+#ifndef LIBARCSTK_IDENTIFIER_HPP__
+#include <arcstk/identifier.hpp>  // for ARId, EmptyARId
 #endif
-#ifndef __LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>     // for ARCS_LOG,...
 #endif
 

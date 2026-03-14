@@ -17,10 +17,10 @@
 #include <utility>       // for pair
 #include <vector>        // for vector
 
-#ifndef __LIBARCSTK_VERIFY_HPP__
+#ifndef LIBARCSTK_VERIFY_HPP__
 #include <arcstk/verify.hpp>     // for ChecksumSource
 #endif
-#ifndef __LIBARCSTK_DBAR_HPP__
+#ifndef LIBARCSTK_DBAR_HPP__
 #include <arcstk/dbar.hpp>       // for DBAR
 #endif
 

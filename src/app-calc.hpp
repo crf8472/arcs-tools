@@ -15,7 +15,7 @@
 #include <utility>     // for pair
 #include <vector>      // for vector
 
-#ifndef __LIBARCSTK_CALCULATE_HPP__
+#ifndef LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>    // for Checksums, ARId
 #endif
 

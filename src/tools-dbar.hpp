@@ -12,7 +12,7 @@
 #include <memory>            // for unique_ptr
 #include <string>            // for string
 
-#ifndef __LIBARCSTK_DBAR_HPP__
+#ifndef LIBARCSTK_DBAR_HPP__
 #include <arcstk/dbar.hpp>   // for DBAR, ParseHandler, ParseErrorHandler
 #endif
 

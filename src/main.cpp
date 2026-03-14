@@ -11,7 +11,7 @@
 #include <iostream>          // for operator<<, endl, cout, cerr
 #include <string>            // for string
 
-#ifndef __LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>  // for Logging
 #endif
 

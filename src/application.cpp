@@ -19,10 +19,10 @@
 #include <string>      // for string, stoi
 #include <utility>     // for get, move
 
-#ifndef __LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
 #endif
-#ifndef __LIBARCSTK_VERSION_HPP__
+#ifndef LIBARCSTK_VERSION_HPP__
 #include <arcstk/version.hpp>         // for LIBARCSTK_VERSION
 #endif
 

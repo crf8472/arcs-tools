@@ -15,10 +15,10 @@
 #include <arcsdec/selection.hpp>       // FileReaderSelection
 #endif
 
-#ifndef __LIBARCSTK_CALCULATE_HPP__
+#ifndef LIBARCSTK_CALCULATE_HPP__
 #include <arcstk/calculate.hpp>        // for Checksums, checksum::type
 #endif
-#ifndef __LIBARCSTK_METADATA_HPP__
+#ifndef LIBARCSTK_METADATA_HPP__
 #include <arcstk/metadata.hpp>         // for ToC
 #endif
 

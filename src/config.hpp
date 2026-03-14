@@ -24,7 +24,7 @@
 #include <utility>       // for pair
 #include <vector>        // for vector
 
-#ifndef __LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
 #endif
 

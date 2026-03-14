@@ -15,7 +15,7 @@
 #include <stdexcept>  // for runtime_error
 #include <string>     // for string
 
-#ifndef __LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP__
 #include <arcstk/logging.hpp>
 #endif
 

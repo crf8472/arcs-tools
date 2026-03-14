@@ -10,7 +10,7 @@
 #include "tools-calc.hpp"         // TO BE TESTED
 #endif
 
-#ifndef __LIBARCSTK_METADATA_HPP__
+#ifndef LIBARCSTK_METADATA_HPP__
 #include <arcstk/metadata.hpp>    // for ToC
 #endif
 
