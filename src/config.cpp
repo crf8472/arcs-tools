@@ -6,7 +6,7 @@
  * \brief Implements symbols from config.hpp.
  */
 
-#ifndef ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP_
 #include "config.hpp"
 #endif
 
@@ -19,14 +19,14 @@
 #include <utility>       // for make_pair, move
 #include <vector>        // for vector
 
-#ifndef LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>     // for ARCS_LOG_DEBUG,...
 #endif
 
-#ifndef ARCSTOOLS_CLITOKENS_HPP__
+#ifndef ARCSTOOLS_CLITOKENS_HPP_
 #include "clitokens.hpp"          // for parse
 #endif
-#ifndef ARCSTOOLS_TOOLS_INPUT_HPP__
+#ifndef ARCSTOOLS_TOOLS_INPUT_HPP_
 #include "tools-input.hpp"        // for StringParser
 #endif
 

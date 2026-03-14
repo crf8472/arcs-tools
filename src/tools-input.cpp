@@ -6,7 +6,7 @@
  * \brief Implements symbols from tools-input.hpp.
  */
 
-#ifndef ARCSTOOLS_TOOLS_INPUT_HPP__
+#ifndef ARCSTOOLS_TOOLS_INPUT_HPP_
 #include "tools-input.hpp"
 #endif
 
@@ -29,20 +29,20 @@
 #include <stdexcept>     // for runtime_error
 #include <string>        // for string, stoul, getline
 
-#ifndef LIBARCSTK_CHECKSUM_HPP__
+#ifndef LIBARCSTK_CHECKSUM_HPP_
 #include <arcstk/checksum.hpp>    // for Checksum, EmptyChecksum
 #endif
-#ifndef LIBARCSTK_DBAR_HPP__
+#ifndef LIBARCSTK_DBAR_HPP_
 #include <arcstk/dbar.hpp>        // for DBAR, ChecksumSource, ParseHandler, ...
 #endif
-#ifndef LIBARCSTK_IDENTIFIER_HPP__
+#ifndef LIBARCSTK_IDENTIFIER_HPP_
 #include <arcstk/identifier.hpp>  // for ARId, EmptyARId
 #endif
-#ifndef LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>     // for ARCS_LOG,...
 #endif
 
-#ifndef ARCSTOOLS_CLITOKENS_HPP__
+#ifndef ARCSTOOLS_CLITOKENS_HPP_
 #include "clitokens.hpp"          // for CallSyntaxException
 #endif
 

@@ -11,20 +11,20 @@
 #include <iostream>          // for operator<<, endl, cout, cerr
 #include <string>            // for string
 
-#ifndef LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>  // for Logging
 #endif
 
-#ifndef ARCSTOOLS_APPLICATION_HPP__
+#ifndef ARCSTOOLS_APPLICATION_HPP_
 #include "application.hpp"
 #endif
-#ifndef ARCSTOOLS_APPREGISTRY_HPP__
+#ifndef ARCSTOOLS_APPREGISTRY_HPP_
 #include "appregistry.hpp"     // for ApplicationFactory
 #endif
-#ifndef ARCSTOOLS_CLITOKENS_HPP__
+#ifndef ARCSTOOLS_CLITOKENS_HPP_
 #include "clitokens.hpp"       // for CallSyntaxException
 #endif
-#ifndef ARCSTOOLS_VERSION_HPP__
+#ifndef ARCSTOOLS_VERSION_HPP_
 #include "version.hpp"
 #endif
 

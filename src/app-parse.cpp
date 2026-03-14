@@ -6,7 +6,7 @@
  * \brief Implements symbols from app-parse.hpp.
  */
 
-#ifndef ARCSTOOLS_APPPARSE_HPP__
+#ifndef ARCSTOOLS_APPPARSE_HPP_
 #include "app-parse.hpp"
 #endif
 
@@ -14,23 +14,23 @@
 #include <memory>              // for make_unique, unique_ptr
 #include <string>              // for string
 
-#ifndef LIBARCSTK_DBAR_HPP__
+#ifndef LIBARCSTK_DBAR_HPP_
 #include <arcstk/dbar.hpp>
 #endif
-#ifndef LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>
 #endif
 
-#ifndef ARCSTOOLS_APPREGISTRY_HPP__
+#ifndef ARCSTOOLS_APPREGISTRY_HPP_
 #include "appregistry.hpp"         // for RegisterApplicationType
 #endif
-#ifndef ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP_
 #include "config.hpp"              // for DefaultConfigurator
 #endif
-#ifndef ARCSTOOLS_TOOLS_ARID_HPP__
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP_
 #include "tools-arid.hpp"          // for ARIdLayout
 #endif
-#ifndef ARCSTOOLS_TOOLS_DBAR_HPP__
+#ifndef ARCSTOOLS_TOOLS_DBAR_HPP_
 #include "tools-dbar.hpp"          // for PrintParseHandler, DBAROutputFormat
 #endif
 

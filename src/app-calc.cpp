@@ -6,7 +6,7 @@
  * \brief Implements symbols from app-calc.hpp.
  */
 
-#ifndef ARCSTOOLS_APPCALC_HPP__
+#ifndef ARCSTOOLS_APPCALC_HPP_
 #include "app-calc.hpp"
 #endif
 
@@ -19,39 +19,39 @@
 #include <utility>       // for move, make_pair, pair
 #include <vector>        // for vector
 
-#ifndef LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>
 #endif
-#ifndef LIBARCSTK_METADATA_HPP__
+#ifndef LIBARCSTK_METADATA_HPP_
 #include <arcstk/metadata.hpp>      // for ToC, AudioSize
 #endif
-#ifndef LIBARCSTK_IDENTIFIER_HPP__
+#ifndef LIBARCSTK_IDENTIFIER_HPP_
 #include <arcstk/identifier.hpp>    // for ARId
 #endif
-#ifndef LIBARCSTK_CALCULATE_HPP__
+#ifndef LIBARCSTK_CALCULATE_HPP_
 #include <arcstk/calculate.hpp>     // for type, Checksum, Checksums,...
 #endif
 
-#ifndef LIBARCSDEC_SELECTION_HPP__
+#ifndef LIBARCSDEC_SELECTION_HPP_
 #include <arcsdec/selection.hpp>    // for FileReaderSelection
 #endif
 
-#ifndef ARCSTOOLS_APPREGISTRY_HPP__
+#ifndef ARCSTOOLS_APPREGISTRY_HPP_
 #include "appregistry.hpp"          // for RegisterApplicationType
 #endif
-#ifndef ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP_
 #include "config.hpp"               // for Options, Configurator
 #endif
-#ifndef ARCSTOOLS_TOOLS_ARID_HPP__
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP_
 #include "tools-arid.hpp"           // for ARIdLayout
 #endif
-#ifndef ARCSTOOLS_TOOLS_CALC_HPP__
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP_
 #include "tools-calc.hpp"           // for ChecksumCalculator
 #endif
-#ifndef ARCSTOOLS_TOOLS_INFO_HPP__
+#ifndef ARCSTOOLS_TOOLS_INFO_HPP_
 #include "tools-info.hpp"           // for AvailableFileReaders
 #endif
-#ifndef ARCSTOOLS_RESULT_HPP__
+#ifndef ARCSTOOLS_RESULT_HPP_
 #include "result.hpp"               // for ResultObject, Result
 #endif
 

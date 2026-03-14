@@ -1,5 +1,5 @@
-#ifndef ARCSTOOLS_TOOLS_TABLE_HPP__
-#define ARCSTOOLS_TOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TOOLS_TABLE_HPP_
+#define ARCSTOOLS_TOOLS_TABLE_HPP_
 /**
  * \file
  *
@@ -14,26 +14,26 @@
 #include <utility>      // for move
 #include <vector>       // for vector
 
-#ifndef LIBARCSTK_IDENTIFIER_HPP__
+#ifndef LIBARCSTK_IDENTIFIER_HPP_
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
-#ifndef LIBARCSTK_CALCULATE_HPP__
+#ifndef LIBARCSTK_CALCULATE_HPP_
 #include <arcstk/calculate.hpp>   // for Checksum, Checksums
 #endif
-#ifndef LIBARCSTK_METADATA_HPP__
+#ifndef LIBARCSTK_METADATA_HPP_
 #include <arcstk/metadata.hpp>    // for AudioSize
 #endif
-#ifndef LIBARCSTK_VERIFY_HPP__
+#ifndef LIBARCSTK_VERIFY_HPP_
 #include <arcstk/verify.hpp>      // for VerificationResult
 #endif
 
-#ifndef ARCSTOOLS_LAYOUTS_HPP__
+#ifndef ARCSTOOLS_LAYOUTS_HPP_
 #include "layouts.hpp"      // for ARIdLayout, ChecksumLayout
 #endif
-#ifndef ARCSTOOLS_TOOLS_CALC_HPP__
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP_
 #include "tools-calc.hpp"
 #endif
-#ifndef ARCSTOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TABLE_HPP_
 #include "table.hpp"        // for PrintableTable, StringTable,
                             // StringTableLayout, CellDecorator,
                             // DecoratedStringTable

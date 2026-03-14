@@ -1,5 +1,5 @@
-#ifndef ARCSTOOLS_APPID_HPP__
-#define ARCSTOOLS_APPID_HPP__
+#ifndef ARCSTOOLS_APPID_HPP_
+#define ARCSTOOLS_APPID_HPP_
 /**
  * \file
  *
@@ -12,13 +12,13 @@
 #include <string>           // for string
 #include <utility>          // for pair
 
-#ifndef ARCSTOOLS_APPLICATION_HPP__
+#ifndef ARCSTOOLS_APPLICATION_HPP_
 #include "application.hpp"  // for Application
 #endif
-#ifndef ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP_
 #include "config.hpp"       // for Configurator, OptionCode
 #endif
-#ifndef ARCSTOOLS_APPCALC_HPP__
+#ifndef ARCSTOOLS_APPCALC_HPP_
 #include "app-calc.hpp"     // for ARCalcApplicationBase
 #endif
 

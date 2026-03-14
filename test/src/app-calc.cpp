@@ -6,7 +6,7 @@
  * \brief Fixtures for app-calc.hpp.
  */
 
-#ifndef ARCSTOOLS_APPARCALC_HPP__
+#ifndef ARCSTOOLS_APPARCALC_HPP_
 #include "app-calc.hpp"           // TO BE TESTED
 #endif
 

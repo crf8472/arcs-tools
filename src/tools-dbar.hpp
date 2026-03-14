@@ -1,5 +1,5 @@
-#ifndef ARCSTOOLS_TOOLS_DBAR_HPP__
-#define ARCSTOOLS_TOOLS_DBAR_HPP__
+#ifndef ARCSTOOLS_TOOLS_DBAR_HPP_
+#define ARCSTOOLS_TOOLS_DBAR_HPP_
 /**
  * \file
  *
@@ -12,11 +12,11 @@
 #include <memory>            // for unique_ptr
 #include <string>            // for string
 
-#ifndef LIBARCSTK_DBAR_HPP__
+#ifndef LIBARCSTK_DBAR_HPP_
 #include <arcstk/dbar.hpp>   // for DBAR, ParseHandler, ParseErrorHandler
 #endif
 
-#ifndef ARCSTOOLS_LAYOUTS_HPP__
+#ifndef ARCSTOOLS_LAYOUTS_HPP_
 #include "layouts.hpp"       // for Layout
 #endif
 

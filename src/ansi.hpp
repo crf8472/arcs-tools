@@ -1,5 +1,5 @@
-#ifndef ARCSTOOLS_ANSI_HPP__
-#define ARCSTOOLS_ANSI_HPP__
+#ifndef ARCSTOOLS_ANSI_HPP_
+#define ARCSTOOLS_ANSI_HPP_
 /**
  * \file
  *

@@ -6,7 +6,7 @@
  * \brief Implements symbols from tools-fs.hpp.
  */
 
-#ifndef ARCSTOOLS_TOOLS_FS_HPP__
+#ifndef ARCSTOOLS_TOOLS_FS_HPP_
 #include "tools-fs.hpp"
 #endif
 

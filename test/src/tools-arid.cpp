@@ -6,7 +6,7 @@
  * \brief Fixtures for tools-arid.hpp.
  */
 
-#ifndef ARCSTOOLS_TOOLS_ARID_HPP__
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP_
 #include "tools-arid.hpp"         // TO BE TESTED
 #endif
 

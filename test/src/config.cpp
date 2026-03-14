@@ -6,7 +6,7 @@
  * \brief Fixtures for config.hpp.
  */
 
-#ifndef ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP_
 #include "config.hpp"             // TO BE TESTED
 #endif
 

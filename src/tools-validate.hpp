@@ -1,5 +1,5 @@
-#ifndef ARCSTOOLS_TOOLS_VALIDATE_HPP__
-#define ARCSTOOLS_TOOLS_VALIDATE_HPP__
+#ifndef ARCSTOOLS_TOOLS_VALIDATE_HPP_
+#define ARCSTOOLS_TOOLS_VALIDATE_HPP_
 /**
  * \file
  *
@@ -8,7 +8,7 @@
 
 #include <functional>             // for function
 
-#ifndef LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>     // for ARCS_LOG_DEBUG, ARCS_LOG_ERROR
 #endif
 

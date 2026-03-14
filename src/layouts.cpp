@@ -6,7 +6,7 @@
  * \brief Implements symbols from layouts.hpp.
  */
 
-#ifndef ARCSTOOLS_LAYOUTS_HPP__
+#ifndef ARCSTOOLS_LAYOUTS_HPP_
 #include "layouts.hpp"
 #endif
 

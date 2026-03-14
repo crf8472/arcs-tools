@@ -6,7 +6,7 @@
  * \brief Fixtures for result.hpp.
  */
 
-#ifndef ARCSTOOLS_RESULT_HPP__
+#ifndef ARCSTOOLS_RESULT_HPP_
 #include "result.hpp"             // TO BE TESTED
 #endif
 

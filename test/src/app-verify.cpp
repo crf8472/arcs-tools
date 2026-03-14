@@ -6,7 +6,7 @@
  * \brief Fixtures for app-verify.hpp.
  */
 
-#ifndef ARCSTOOLS_APPARVERIFY_HPP__
+#ifndef ARCSTOOLS_APPARVERIFY_HPP_
 #include "app-verify.hpp"         // TO BE TESTED
 #endif
 

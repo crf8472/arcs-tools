@@ -7,7 +7,7 @@
  * \brief Fixtures for tools-validate.hpp.
  */
 
-#ifndef ARCSTOOLS_TOOLS_VALIDATE_HPP__
+#ifndef ARCSTOOLS_TOOLS_VALIDATE_HPP_
 #include "tools-validate.hpp"        // TO BE TESTED
 #endif
 

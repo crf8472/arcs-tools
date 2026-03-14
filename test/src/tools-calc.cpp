@@ -6,11 +6,11 @@
  * \brief Fixtures for tools-calc.hpp.
  */
 
-#ifndef ARCSTOOLS_TOOLS_CALC_HPP__
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP_
 #include "tools-calc.hpp"         // TO BE TESTED
 #endif
 
-#ifndef LIBARCSTK_METADATA_HPP__
+#ifndef LIBARCSTK_METADATA_HPP_
 #include <arcstk/metadata.hpp>    // for ToC
 #endif
 

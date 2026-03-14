@@ -6,7 +6,7 @@
  * \brief Implements symbols from tools-calc.hpp.
  */
 
-#ifndef ARCSTOOLS_TOOLS_CALC_HPP__
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP_
 #include "tools-calc.hpp"
 #endif
 
@@ -25,24 +25,24 @@
 #include <filesystem>
 #endif
 
-#ifndef LIBARCSTK_CALCULATE_HPP__
+#ifndef LIBARCSTK_CALCULATE_HPP_
 #include <arcstk/calculate.hpp>     // for Checksums, type
 #endif
-#ifndef LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>
 #endif
 
-#ifndef LIBARCSDEC_CALCULATORS_HPP__
+#ifndef LIBARCSDEC_CALCULATORS_HPP_
 #include <arcsdec/calculators.hpp>  // for ToCParser, ARCSCalculator
 #endif
-#ifndef LIBARCSDEC_SELECTION_HPP__
+#ifndef LIBARCSDEC_SELECTION_HPP_
 #include <arcsdec/selection.hpp>    // for FileReaderPreferenceSelection
 #endif
 
-#ifndef ARCSTOOLS_TOOLS_FS_HPP__
+#ifndef ARCSTOOLS_TOOLS_FS_HPP_
 #include "tools-fs.hpp"             // for path, prepend_path
 #endif
-#ifndef ARCSTOOLS_TOOLS_VALIDATE_HPP__
+#ifndef ARCSTOOLS_TOOLS_VALIDATE_HPP_
 #include "tools-validate.hpp"       // for Validate
 #endif
 

@@ -6,7 +6,7 @@
  * \brief Fixtures for table.hpp.
  */
 
-#ifndef ARCSTOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TABLE_HPP_
 #include "table.hpp"              // TO BE TESTED
 #endif
 

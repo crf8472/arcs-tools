@@ -6,7 +6,7 @@
  * \brief Implements symbols from tools-arid.hpp.
  */
 
-#ifndef ARCSTOOLS_TOOLS_ARID_HPP__
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP_
 #include "tools-arid.hpp"
 #endif
 
@@ -17,14 +17,14 @@
 #include <tuple>        // for get
 #include <utility>      // for move
 
-#ifndef LIBARCSTK_IDENTIFIER_HPP__
+#ifndef LIBARCSTK_IDENTIFIER_HPP_
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
-#ifndef LIBARCSTK_METADATA_HPP__
+#ifndef LIBARCSTK_METADATA_HPP_
 #include <arcstk/metadata.hpp>    // for ToC
 #endif
 
-#ifndef ARCSTOOLS_TOOLS_VALIDATE_HPP__
+#ifndef ARCSTOOLS_TOOLS_VALIDATE_HPP_
 #include "tools-validate.hpp"     // for Validate
 #endif
 

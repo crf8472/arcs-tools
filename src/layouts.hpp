@@ -1,5 +1,5 @@
-#ifndef ARCSTOOLS_LAYOUTS_HPP__
-#define ARCSTOOLS_LAYOUTS_HPP__
+#ifndef ARCSTOOLS_LAYOUTS_HPP_
+#define ARCSTOOLS_LAYOUTS_HPP_
 /**
  * \file
  *

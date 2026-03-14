@@ -6,7 +6,7 @@
  * \brief Implements symbols from app-id.hpp.
  */
 
-#ifndef ARCSTOOLS_APPID_HPP__
+#ifndef ARCSTOOLS_APPID_HPP_
 #include "app-id.hpp"
 #endif
 
@@ -16,33 +16,33 @@
 #include <string>                   // for string
 #include <utility>                  // for make_pair, move, pair
 
-#ifndef LIBARCSTK_IDENTIFIER_HPP__
+#ifndef LIBARCSTK_IDENTIFIER_HPP_
 #include <arcstk/identifier.hpp>
 #endif
-#ifndef LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>
 #endif
 
-#ifndef LIBARCSDEC_SELECTION_HPP__
+#ifndef LIBARCSDEC_SELECTION_HPP_
 #include <arcsdec/selection.hpp>      // for FileReaderSelection
 #endif
-#ifndef LIBARCSDEC_CALCULATE_HPP__
+#ifndef LIBARCSDEC_CALCULATE_HPP_
 #include <arcsdec/calculators.hpp>
 #endif
 
-#ifndef ARCSTOOLS_APPREGISTRY_HPP__
+#ifndef ARCSTOOLS_APPREGISTRY_HPP_
 #include "appregistry.hpp"            // for RegisterApplicationType
 #endif
-#ifndef ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP_
 #include "config.hpp"                 // for Configurator, OptionCode
 #endif
-#ifndef ARCSTOOLS_RESULT_HPP__
+#ifndef ARCSTOOLS_RESULT_HPP_
 #include "result.hpp"                 // for ResultObject
 #endif
-#ifndef ARCSTOOLS_TOOLS_ARID_HPP__
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP_
 #include "tools-arid.hpp"             // for ARIdLayout
 #endif
-#ifndef ARCSTOOLS_TOOLS_CALC_HPP__
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP_
 #include "tools-calc.hpp"             // for IdSelection
 #endif
 

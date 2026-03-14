@@ -1,5 +1,5 @@
-#ifndef ARCSTOOLS_APPPARSE_HPP__
-#define ARCSTOOLS_APPPARSE_HPP__
+#ifndef ARCSTOOLS_APPPARSE_HPP_
+#define ARCSTOOLS_APPPARSE_HPP_
 /**
  * \file
  *
@@ -12,10 +12,10 @@
 #include <memory>           // for unique_ptr
 #include <string>           // for string
 
-#ifndef ARCSTOOLS_APPLICATION_HPP__
+#ifndef ARCSTOOLS_APPLICATION_HPP_
 #include "application.hpp"  // for Application
 #endif
-#ifndef ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP_
 #include "config.hpp"       // for Configurator, OptionCode
 #endif
 

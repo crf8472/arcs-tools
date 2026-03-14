@@ -6,7 +6,7 @@
  * \brief Implements symbols from appregistry.hpp.
  */
 
-#ifndef ARCSTOOLS_APPREGISTRY_HPP__
+#ifndef ARCSTOOLS_APPREGISTRY_HPP_
 #include "appregistry.hpp"
 #endif
 

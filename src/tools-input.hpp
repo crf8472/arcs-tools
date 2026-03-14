@@ -1,5 +1,5 @@
-#ifndef ARCSTOOLS_TOOLS_INPUT_HPP__
-#define ARCSTOOLS_TOOLS_INPUT_HPP__
+#ifndef ARCSTOOLS_TOOLS_INPUT_HPP_
+#define ARCSTOOLS_TOOLS_INPUT_HPP_
 /**
  * \file
  *
@@ -11,13 +11,13 @@
 #include <streambuf>              // for basic_streambuf
 #include <string>                 // for string, char_traits
 
-#ifndef LIBARCSTK_DBAR_HPP__
+#ifndef LIBARCSTK_DBAR_HPP_
 #include <arcstk/dbar.hpp>        // for DBAR, ParseHandler, ParseErrorHandler
 #endif
-#ifndef LIBARCSTK_VERIFY_HPP__
+#ifndef LIBARCSTK_VERIFY_HPP_
 #include <arcstk/verify.hpp>      // for ChecksumSource
 #endif
-#ifndef LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>     // for ARCS_LOG,...
 #endif
 

@@ -6,7 +6,7 @@
  * \brief Implements symbols from tools-table.hpp.
  */
 
-#ifndef ARCSTOOLS_TOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TOOLS_TABLE_HPP_
 #include "tools-table.hpp"
 #endif
 
@@ -19,30 +19,30 @@
 #include <utility>      // for move
 #include <vector>       // for vector
 
-#ifndef LIBARCSTK_IDENTIFIER_HPP__
+#ifndef LIBARCSTK_IDENTIFIER_HPP_
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
-#ifndef LIBARCSTK_CALCULATE_HPP__
+#ifndef LIBARCSTK_CALCULATE_HPP_
 #include <arcstk/calculate.hpp>   // for Checksum, Checksums
 #endif
-#ifndef LIBARCSTK_METADATA_HPP__
+#ifndef LIBARCSTK_METADATA_HPP_
 #include <arcstk/metadata.hpp>    // for ToC
 #endif
-#ifndef LIBARCSTK_VERIFY_HPP__
+#ifndef LIBARCSTK_VERIFY_HPP_
 #include <arcstk/verify.hpp>      // for VerificationResult
 #endif
-#ifndef LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>     // for ARCS_LOG* (_DEBUG, _ERROR)
 #endif
 
-#ifndef ARCSTOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TABLE_HPP_
 #include "table.hpp"              // for StringTable, StringTableLayout
                                   // CellDecorator, DecoratedStringTable
 #endif
-#ifndef ARCSTOOLS_TOOLS_ARID_HPP__ // for ARIdLayout
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP_ // for ARIdLayout
 #include "tools-arid.hpp"
 #endif
-#ifndef ARCSTOOLS_TOOLS_CALC_HPP__ // for ChecksumLayout, HexLayout
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP_ // for ChecksumLayout, HexLayout
 #include "tools-calc.hpp"
 #endif
 

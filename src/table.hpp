@@ -1,5 +1,5 @@
-#ifndef ARCSTOOLS_TABLE_HPP__
-#define ARCSTOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TABLE_HPP_
+#define ARCSTOOLS_TABLE_HPP_
 /**
  * \file
  *
@@ -23,7 +23,7 @@
 //#include <iterator>    // for ostream_iterator
 //#include <sstream>     // for ostringstream
 
-#ifndef ARCSTOOLS_LAYOUTS_HPP__
+#ifndef ARCSTOOLS_LAYOUTS_HPP_
 #include "layouts.hpp"      // for Layout
 #endif
 

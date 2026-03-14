@@ -1,5 +1,5 @@
-#ifndef ARCSTOOLS_APPCALC_HPP__
-#define ARCSTOOLS_APPCALC_HPP__
+#ifndef ARCSTOOLS_APPCALC_HPP_
+#define ARCSTOOLS_APPCALC_HPP_
 /**
  * \file
  *
@@ -14,24 +14,24 @@
 #include <utility>     // for pair
 #include <vector>      // for vector
 
-#ifndef LIBARCSTK_CALCULATE_HPP__
+#ifndef LIBARCSTK_CALCULATE_HPP_
 #include <arcstk/calculate.hpp>    // for Checksums, ARId
 #endif
 
-#ifndef LIBARCSDEC_SELECTION_HPP__
+#ifndef LIBARCSDEC_SELECTION_HPP_
 #include <arcsdec/selection.hpp>   // for FileReaderSelection
 #endif
 
-#ifndef ARCSTOOLS_APPLICATION_HPP__
+#ifndef ARCSTOOLS_APPLICATION_HPP_
 #include "application.hpp"         // for Application
 #endif
-#ifndef ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP_
 #include "config.hpp"              // for OptionCode, Configurator
 #endif
-#ifndef ARCSTOOLS_LAYOUTS_HPP__
+#ifndef ARCSTOOLS_LAYOUTS_HPP_
 #include "layouts.hpp"             // for Layout
 #endif
-#ifndef ARCSTOOLS_TOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TOOLS_TABLE_HPP_
 #include "tools-table.hpp"         // for TableCreator
 #endif
 

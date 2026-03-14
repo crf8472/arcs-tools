@@ -1,12 +1,12 @@
-#ifndef ARCSTOOLS_TOOLS_INFO_HPP__
-#define ARCSTOOLS_TOOLS_INFO_HPP__
+#ifndef ARCSTOOLS_TOOLS_INFO_HPP_
+#define ARCSTOOLS_TOOLS_INFO_HPP_
 /**
  * \file
  *
  * \brief Tools for informational output.
  */
 
-#ifndef ARCSTOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TABLE_HPP_
 #include "table.hpp"               // for StringTable
 #endif
 

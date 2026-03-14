@@ -6,7 +6,7 @@
  * \brief Fixtures for ansi.hpp.
  */
 
-#ifndef ARCSTOOLS_ANSI_HPP__
+#ifndef ARCSTOOLS_ANSI_HPP_
 #include "ansi.hpp"               // TO BE TESTED
 #endif
 

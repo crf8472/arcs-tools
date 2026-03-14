@@ -6,7 +6,7 @@
  * \brief Implements symbols from app-verify.hpp.
  */
 
-#ifndef ARCSTOOLS_APPVERIFY_HPP__
+#ifndef ARCSTOOLS_APPVERIFY_HPP_
 #include "app-verify.hpp"
 #endif
 
@@ -25,45 +25,45 @@
 #include <tuple>           // for get, make_tuple, tuple
 #include <utility>         // for move, pair
 
-#ifndef LIBARCSTK_METADATA_HPP__
+#ifndef LIBARCSTK_METADATA_HPP_
 #include <arcstk/metadata.hpp>      // for ToC
 #endif
-#ifndef LIBARCSTK_VERIFY_HPP__
+#ifndef LIBARCSTK_VERIFY_HPP_
 #include <arcstk/verify.hpp>        // for Checksum, Checksums, ChecksumSource
 #endif
-#ifndef LIBARCSTK_DBAR_HPP__
+#ifndef LIBARCSTK_DBAR_HPP_
 #include <arcstk/dbar.hpp>          // for DBAR, DBARSource
 #endif
-#ifndef LIBARCSTK_LOGGING_HPP__
+#ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>       // for ARCS_LOG_DEBUG, ARCS_LOG_ERROR
 #endif
 
-#ifndef ARCSTOOLS_APPREGISTRY_HPP__
+#ifndef ARCSTOOLS_APPREGISTRY_HPP_
 #include "appregistry.hpp"          // for RegisterApplicationType
 #endif
-#ifndef ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP_
 #include "config.hpp"               // for Configurator, OptionCode
 #endif
-#ifndef ARCSTOOLS_TOOLS_ARID_HPP__
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP_
 #include "tools-arid.hpp"           // for ARIdLayout
 #endif
-#ifndef ARCSTOOLS_TOOLS_CALC_HPP__
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP_
 #include "tools-calc.hpp"           // for audiofile_layout
 #endif
-#ifndef ARCSTOOLS_TOOLS_DBAR_HPP__
+#ifndef ARCSTOOLS_TOOLS_DBAR_HPP_
 #include "tools-dbar.hpp"           // for ContentHandler
 #endif
-#ifndef ARCSTOOLS_TOOLS_INPUT_HPP__
+#ifndef ARCSTOOLS_TOOLS_INPUT_HPP_
 #include "tools-input.hpp"          // for DBARParser, EmptyChecksumSource
 #endif
-#ifndef ARCSTOOLS_TOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TOOLS_TABLE_HPP_
 #include "tools-table.hpp"          // for StringTableLayout, CellDecorator
 									// TableComposer
 #endif
-#ifndef ARCSTOOLS_TOOLS_VALIDATE_HPP__
+#ifndef ARCSTOOLS_TOOLS_VALIDATE_HPP_
 #include "tools-validate.hpp"       // for Validate
 #endif
-#ifndef ARCSTOOLS_RESULT_HPP__
+#ifndef ARCSTOOLS_RESULT_HPP_
 #include "result.hpp"               // for ResultObject, Result
 #endif
 

@@ -6,11 +6,11 @@
  * \brief Fixtures for clitokens.hpp.
  */
 
-#ifndef ARCSTOOLS_CLITOKENS_HPP__
+#ifndef ARCSTOOLS_CLITOKENS_HPP_
 #include "clitokens.hpp"          // TO BE TESTED
 #endif
 
-#ifndef ARCSTOOLS_CLITOKENS_MOCKS_HPP__
+#ifndef ARCSTOOLS_CLITOKENS_MOCKS_HPP_
 #include "clitokens_mocks.hpp"    // for
 #endif
 

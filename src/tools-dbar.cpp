@@ -7,7 +7,7 @@
  */
 
 #include "layouts.hpp"
-#ifndef ARCSTOOLS_TOOLS_DBAR_HPP__
+#ifndef ARCSTOOLS_TOOLS_DBAR_HPP_
 #include "tools-dbar.hpp"
 #endif
 
@@ -18,23 +18,23 @@
 #include <string>            // for string
 #include <utility>           // for move, swap
 
-#ifndef LIBARCSTK_IDENTIFIER_HPP__
+#ifndef LIBARCSTK_IDENTIFIER_HPP_
 #include <arcstk/identifier.hpp>     // for ARId
 #endif
-#ifndef LIBARCSTK_CALCULATE_HPP__
+#ifndef LIBARCSTK_CALCULATE_HPP_
 #include <arcstk/calculate.hpp>      // for Checksum
 #endif
-#ifndef LIBARCSTK_DBAR_HPP__
+#ifndef LIBARCSTK_DBAR_HPP_
 #include <arcstk/dbar.hpp>           // for DBARTriplet, parse_stream
 #endif
 
-#ifndef ARCSTOOLS_APPLICATION_HPP__
+#ifndef ARCSTOOLS_APPLICATION_HPP_
 #include "application.hpp"           // for Output
 #endif
-#ifndef ARCSTOOLS_TOOLS_ARID_HPP__ // for ARIdLayout
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP_ // for ARIdLayout
 #include "tools-arid.hpp"
 #endif
-#ifndef ARCSTOOLS_TOOLS_CALC_HPP__
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP_
 #include "tools-calc.hpp"            // for HexLayout
 #endif
 

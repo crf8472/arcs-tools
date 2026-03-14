@@ -6,7 +6,7 @@
  * \brief Implements symbols from ansi.hpp.
  */
 
-#ifndef ARCSTOOLS_ANSI_HPP__
+#ifndef ARCSTOOLS_ANSI_HPP_
 #include "ansi.hpp"
 #endif
 

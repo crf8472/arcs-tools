@@ -1,5 +1,5 @@
-#ifndef ARCSTOOLS_TOOLS_ARID_HPP__
-#define ARCSTOOLS_TOOLS_ARID_HPP__
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP_
+#define ARCSTOOLS_TOOLS_ARID_HPP_
 /**
  * \file
  *
@@ -12,11 +12,11 @@
 #include <ostream>      // for ostream
 #include <string>       // for string
 
-#ifndef LIBARCSTK_IDENTIFIER_HPP__
+#ifndef LIBARCSTK_IDENTIFIER_HPP_
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
 
-#ifndef ARCSTOOLS_LAYOUTS_HPP__
+#ifndef ARCSTOOLS_LAYOUTS_HPP_
 #include "layouts.hpp"      // for Layout
 #endif
 

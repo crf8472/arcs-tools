@@ -6,7 +6,7 @@
  * \brief Fixtures for tools-input.hpp.
  */
 
-#ifndef ARCSTOOLS_TOOLS_INPUT_HPP__
+#ifndef ARCSTOOLS_TOOLS_INPUT_HPP_
 #include "tools-input.hpp"        // TO BE TESTED
 #endif
 
