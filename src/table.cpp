@@ -23,7 +23,7 @@
 #include <type_traits>// for underlying_type_t
 #include <utility>    // for forward, make_pair, move, swap
 
-#ifndef __ARCSTOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"
 #endif
 

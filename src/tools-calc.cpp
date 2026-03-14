@@ -6,7 +6,7 @@
  * \brief Implements symbols from tools-calc.hpp.
  */
 
-#ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"
 #endif
 
@@ -39,10 +39,10 @@
 #include <arcsdec/selection.hpp>    // for FileReaderPreferenceSelection
 #endif
 
-#ifndef __ARCSTOOLS_TOOLS_FS_HPP__
+#ifndef ARCSTOOLS_TOOLS_FS_HPP__
 #include "tools-fs.hpp"             // for path, prepend_path
 #endif
-#ifndef __ARCSTOOLS_TOOLS_VALIDATE_HPP__
+#ifndef ARCSTOOLS_TOOLS_VALIDATE_HPP__
 #include "tools-validate.hpp"       // for Validate
 #endif
 

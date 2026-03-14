@@ -6,7 +6,7 @@
  * \brief Implements symbols from app-id.hpp.
  */
 
-#ifndef __ARCSTOOLS_APPID_HPP__
+#ifndef ARCSTOOLS_APPID_HPP__
 #include "app-id.hpp"
 #endif
 
@@ -30,19 +30,19 @@
 #include <arcsdec/calculators.hpp>
 #endif
 
-#ifndef __ARCSTOOLS_APPREGISTRY_HPP__
+#ifndef ARCSTOOLS_APPREGISTRY_HPP__
 #include "appregistry.hpp"            // for RegisterApplicationType
 #endif
-#ifndef __ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"                 // for Configurator, OptionCode
 #endif
-#ifndef __ARCSTOOLS_RESULT_HPP__
+#ifndef ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"                 // for ResultObject
 #endif
-#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP__
 #include "tools-arid.hpp"             // for ARIdLayout
 #endif
-#ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"             // for IdSelection
 #endif
 

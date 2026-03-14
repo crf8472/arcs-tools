@@ -6,7 +6,7 @@
  * \brief Implements symbols from application.hpp.
  */
 
-#ifndef __ARCSTOOLS_APPLICATION_HPP__
+#ifndef ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"
 #endif
 
@@ -30,16 +30,16 @@
 #include <arcsdec/version.hpp>        // for LIBARCSDEC_VERSION
 #endif
 
-#ifndef __ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"          // for Configurator, OptionCode
 #endif
-#ifndef __ARCSTOOLS_RESULT_HPP__
+#ifndef ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"          // for Result
 #endif
-#ifndef __ARCSTOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"           // for StringTable
 #endif
-#ifndef __ARCSTOOLS_VERSION_HPP__
+#ifndef ARCSTOOLS_VERSION_HPP__
 #include "version.hpp"         // for ARCSTOOLS_VERSION
 #endif
 

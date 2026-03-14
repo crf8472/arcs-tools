@@ -1,10 +1,10 @@
-#ifndef __ARCSTOOLS_CLITOKENS_MOCKS_HPP__
-#define __ARCSTOOLS_CLITOKENS_MOCKS_HPP__
+#ifndef ARCSTOOLS_CLITOKENS_MOCKS_HPP__
+#define ARCSTOOLS_CLITOKENS_MOCKS_HPP__
 
 #include <string>  // for string
 #include <vector>  // for vector
 
-#ifndef __ARCSTOOLS_CLITOKENS_HPP__
+#ifndef ARCSTOOLS_CLITOKENS_HPP__
 #include "clitokens.hpp"
 #endif
 

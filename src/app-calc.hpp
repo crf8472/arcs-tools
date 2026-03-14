@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_APPCALC_HPP__
-#define __ARCSTOOLS_APPCALC_HPP__
+#ifndef ARCSTOOLS_APPCALC_HPP__
+#define ARCSTOOLS_APPCALC_HPP__
 
 /**
  * \file
@@ -23,16 +23,16 @@
 #include <arcsdec/selection.hpp>   // for FileReaderSelection
 #endif
 
-#ifndef __ARCSTOOLS_APPLICATION_HPP__
+#ifndef ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"         // for Application
 #endif
-#ifndef __ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"              // for OptionCode, Configurator
 #endif
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#ifndef ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"             // for Layout
 #endif
-#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TOOLS_TABLE_HPP__
 #include "tools-table.hpp"         // for TableCreator
 #endif
 

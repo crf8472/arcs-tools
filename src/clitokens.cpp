@@ -6,7 +6,7 @@
  * \brief Implements symbols from clitokens.hpp.
  */
 
-#ifndef __ARCSTOOLS_CLITOKENS_HPP__
+#ifndef ARCSTOOLS_CLITOKENS_HPP__
 #include "clitokens.hpp"
 #endif
 

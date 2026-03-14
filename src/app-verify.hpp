@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_APPVERIFY_HPP__
-#define __ARCSTOOLS_APPVERIFY_HPP__
+#ifndef ARCSTOOLS_APPVERIFY_HPP__
+#define ARCSTOOLS_APPVERIFY_HPP__
 
 /**
  * \file
@@ -24,22 +24,22 @@
 #include <arcstk/dbar.hpp>       // for DBAR
 #endif
 
-#ifndef __ARCSTOOLS_ANSI_HPP__
+#ifndef ARCSTOOLS_ANSI_HPP__
 #include "ansi.hpp"              // for Highlight, Color
 #endif
-#ifndef __ARCSTOOLS_APPCALC_HPP__
+#ifndef ARCSTOOLS_APPCALC_HPP__
 #include "app-calc.hpp"          // for ARCalcConfigurator, CALC
 #endif
-#ifndef __ARCSTOOLS_APPLICATION_HPP__
+#ifndef ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"       // for Application
 #endif
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#ifndef ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"           // for Layout
 #endif
-#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TOOLS_TABLE_HPP__
 #include "tools-table.hpp"       // for CellDecorator
 #endif
-#ifndef __ARCSTOOLS_TOOLS_INPUT_HPP__
+#ifndef ARCSTOOLS_TOOLS_INPUT_HPP__
 #include "tools-input.hpp"       // for InputStringParser
 #endif
 

@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_TOOLS_INPUT_HPP__
-#define __ARCSTOOLS_TOOLS_INPUT_HPP__
+#ifndef ARCSTOOLS_TOOLS_INPUT_HPP__
+#define ARCSTOOLS_TOOLS_INPUT_HPP__
 
 /**
  * \file

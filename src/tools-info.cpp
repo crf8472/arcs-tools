@@ -6,7 +6,7 @@
  * \brief Implements symbols from tools-info.hpp.
  */
 
-#ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
+#ifndef ARCSTOOLS_TOOLS_INFO_HPP__
 #include "tools-info.hpp"
 #endif
 
@@ -23,7 +23,7 @@
 #include <arcsdec/calculators.hpp>  // for ARCSCalculator, ToCParser
 #endif
 
-#ifndef __ARCSTOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"                // for StringTable
 #endif
 

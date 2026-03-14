@@ -6,7 +6,7 @@
  * \brief Fixtures for app-parse.hpp.
  */
 
-#ifndef __ARCSTOOLS_APPPARSE_HPP__
+#ifndef ARCSTOOLS_APPPARSE_HPP__
 #include "app-parse.hpp"          // TO BE TESTED
 #endif
 

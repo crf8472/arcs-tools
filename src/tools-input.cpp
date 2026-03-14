@@ -6,7 +6,7 @@
  * \brief Implements symbols from tools-input.hpp.
  */
 
-#ifndef __ARCSTOOLS_TOOLS_INPUT_HPP__
+#ifndef ARCSTOOLS_TOOLS_INPUT_HPP__
 #include "tools-input.hpp"
 #endif
 
@@ -42,7 +42,7 @@
 #include <arcstk/logging.hpp>     // for ARCS_LOG,...
 #endif
 
-#ifndef __ARCSTOOLS_CLITOKENS_HPP__
+#ifndef ARCSTOOLS_CLITOKENS_HPP__
 #include "clitokens.hpp"          // for CallSyntaxException
 #endif
 

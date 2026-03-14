@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_APPPARSE_HPP__
-#define __ARCSTOOLS_APPPARSE_HPP__
+#ifndef ARCSTOOLS_APPPARSE_HPP__
+#define ARCSTOOLS_APPPARSE_HPP__
 
 /**
  * \file
@@ -14,10 +14,10 @@
 #include <string>           // for string
 
 
-#ifndef __ARCSTOOLS_APPLICATION_HPP__
+#ifndef ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"  // for Application
 #endif
-#ifndef __ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"       // for Configurator, OptionCode
 #endif
 

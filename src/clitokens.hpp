@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_CLITOKENS_HPP__
-#define __ARCSTOOLS_CLITOKENS_HPP__
+#ifndef ARCSTOOLS_CLITOKENS_HPP__
+#define ARCSTOOLS_CLITOKENS_HPP__
 
 /**
  * \file

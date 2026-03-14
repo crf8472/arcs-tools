@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_TABLE_HPP__
-#define __ARCSTOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TABLE_HPP__
+#define ARCSTOOLS_TABLE_HPP__
 
 #include <algorithm>   // for max
 #include <cstddef>     // for size_t
@@ -18,7 +18,7 @@
 //#include <iterator>    // for ostream_iterator
 //#include <sstream>     // for ostringstream
 
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#ifndef ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"      // for Layout
 #endif
 

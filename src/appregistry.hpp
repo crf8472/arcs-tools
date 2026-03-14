@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_APPREGISTRY_HPP__
-#define __ARCSTOOLS_APPREGISTRY_HPP__
+#ifndef ARCSTOOLS_APPREGISTRY_HPP__
+#define ARCSTOOLS_APPREGISTRY_HPP__
 
 /**
  * \file
@@ -18,7 +18,7 @@
 #include <string>    // for string
 #include <utility>   // for forward, make_pair
 
-#ifndef __ARCSTOOLS_APPLICATION_HPP__
+#ifndef ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"
 #endif
 

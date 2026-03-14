@@ -6,7 +6,7 @@
  * \brief Implements symbols from app-parse.hpp.
  */
 
-#ifndef __ARCSTOOLS_APPPARSE_HPP__
+#ifndef ARCSTOOLS_APPPARSE_HPP__
 #include "app-parse.hpp"
 #endif
 
@@ -21,16 +21,16 @@
 #include <arcstk/logging.hpp>
 #endif
 
-#ifndef __ARCSTOOLS_APPREGISTRY_HPP__
+#ifndef ARCSTOOLS_APPREGISTRY_HPP__
 #include "appregistry.hpp"         // for RegisterApplicationType
 #endif
-#ifndef __ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"              // for DefaultConfigurator
 #endif
-#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP__
 #include "tools-arid.hpp"          // for ARIdLayout
 #endif
-#ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
+#ifndef ARCSTOOLS_TOOLS_DBAR_HPP__
 #include "tools-dbar.hpp"          // for PrintParseHandler, DBAROutputFormat
 #endif
 

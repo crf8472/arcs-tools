@@ -7,7 +7,7 @@
  */
 
 #include <arcsdec/descriptor.hpp>
-#ifndef __ARCSTOOLS_APPCALC_HPP__
+#ifndef ARCSTOOLS_APPCALC_HPP__
 #include "app-calc.hpp"
 #endif
 
@@ -37,22 +37,22 @@
 #include <arcsdec/selection.hpp>    // for FileReaderSelection
 #endif
 
-#ifndef __ARCSTOOLS_APPREGISTRY_HPP__
+#ifndef ARCSTOOLS_APPREGISTRY_HPP__
 #include "appregistry.hpp"          // for RegisterApplicationType
 #endif
-#ifndef __ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"               // for Options, Configurator
 #endif
-#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP__
 #include "tools-arid.hpp"           // for ARIdLayout
 #endif
-#ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"           // for ChecksumCalculator
 #endif
-#ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
+#ifndef ARCSTOOLS_TOOLS_INFO_HPP__
 #include "tools-info.hpp"           // for AvailableFileReaders
 #endif
-#ifndef __ARCSTOOLS_RESULT_HPP__
+#ifndef ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"               // for ResultObject, Result
 #endif
 

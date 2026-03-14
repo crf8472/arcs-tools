@@ -6,7 +6,7 @@
  * \brief Implements symbols from result.hpp.
  */
 
-#ifndef __ARCSTOOLS_RESULT_HPP__
+#ifndef ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"
 #endif
 

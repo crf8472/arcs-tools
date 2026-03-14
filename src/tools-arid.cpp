@@ -6,7 +6,7 @@
  * \brief Implements symbols from tools-arid.hpp.
  */
 
-#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP__
 #include "tools-arid.hpp"
 #endif
 
@@ -24,7 +24,7 @@
 #include <arcstk/metadata.hpp>    // for ToC
 #endif
 
-#ifndef __ARCSTOOLS_TOOLS_VALIDATE_HPP__
+#ifndef ARCSTOOLS_TOOLS_VALIDATE_HPP__
 #include "tools-validate.hpp"     // for Validate
 #endif
 

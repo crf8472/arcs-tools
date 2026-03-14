@@ -7,7 +7,7 @@
  * \brief Implements symbols from version.hpp.
  */
 
-#ifndef __ARCSTOOLS_VERSION_HPP___
+#ifndef ARCSTOOLS_VERSION_HPP___
 #include "version.hpp"
 #endif
 

@@ -6,7 +6,7 @@
  * \brief Implements symbols from tools-table.hpp.
  */
 
-#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TOOLS_TABLE_HPP__
 #include "tools-table.hpp"
 #endif
 
@@ -35,14 +35,14 @@
 #include <arcstk/logging.hpp>     // for ARCS_LOG* (_DEBUG, _ERROR)
 #endif
 
-#ifndef __ARCSTOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"              // for StringTable, StringTableLayout
                                   // CellDecorator, DecoratedStringTable
 #endif
-#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__ // for ARIdLayout
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP__ // for ARIdLayout
 #include "tools-arid.hpp"
 #endif
-#ifndef __ARCSTOOLS_TOOLS_CALC_HPP__ // for ChecksumLayout, HexLayout
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP__ // for ChecksumLayout, HexLayout
 #include "tools-calc.hpp"
 #endif
 

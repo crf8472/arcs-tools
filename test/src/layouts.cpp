@@ -6,7 +6,7 @@
  * \brief Fixtures for layouts.hpp.
  */
 
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#ifndef ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"            // TO BE TESTED
 #endif
 

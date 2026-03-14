@@ -6,7 +6,7 @@
  * \brief Fixtures for tools-fs.hpp.
  */
 
-#ifndef __ARCSTOOLS_TOOLS_FS_HPP__
+#ifndef ARCSTOOLS_TOOLS_FS_HPP__
 #include "tools-fs.hpp"           // TO BE TESTED
 #endif
 

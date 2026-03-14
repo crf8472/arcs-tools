@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_TOOLS_INFO_HPP__
-#define __ARCSTOOLS_TOOLS_INFO_HPP__
+#ifndef ARCSTOOLS_TOOLS_INFO_HPP__
+#define ARCSTOOLS_TOOLS_INFO_HPP__
 
 /**
  * \file
@@ -7,7 +7,7 @@
  * \brief Tools for informational output.
  */
 
-#ifndef __ARCSTOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"               // for StringTable
 #endif
 

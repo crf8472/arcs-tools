@@ -6,7 +6,7 @@
  * \brief Fixtures for application.hpp.
  */
 
-#ifndef __ARCSTOOLS_APPLICATION_HPP__
+#ifndef ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"        // TO BE TESTED
 #endif
 

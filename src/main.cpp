@@ -15,16 +15,16 @@
 #include <arcstk/logging.hpp>  // for Logging
 #endif
 
-#ifndef __ARCSTOOLS_APPLICATION_HPP__
+#ifndef ARCSTOOLS_APPLICATION_HPP__
 #include "application.hpp"
 #endif
-#ifndef __ARCSTOOLS_APPREGISTRY_HPP__
+#ifndef ARCSTOOLS_APPREGISTRY_HPP__
 #include "appregistry.hpp"     // for ApplicationFactory
 #endif
-#ifndef __ARCSTOOLS_CLITOKENS_HPP__
+#ifndef ARCSTOOLS_CLITOKENS_HPP__
 #include "clitokens.hpp"       // for CallSyntaxException
 #endif
-#ifndef __ARCSTOOLS_VERSION_HPP__
+#ifndef ARCSTOOLS_VERSION_HPP__
 #include "version.hpp"
 #endif
 

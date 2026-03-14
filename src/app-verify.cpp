@@ -6,7 +6,7 @@
  * \brief Implements symbols from app-verify.hpp.
  */
 
-#ifndef __ARCSTOOLS_APPARVERIFY_HPP__
+#ifndef ARCSTOOLS_APPVERIFY_HPP__
 #include "app-verify.hpp"
 #endif
 
@@ -38,32 +38,32 @@
 #include <arcstk/logging.hpp>       // for ARCS_LOG_DEBUG, ARCS_LOG_ERROR
 #endif
 
-#ifndef __ARCSTOOLS_APPREGISTRY_HPP__
+#ifndef ARCSTOOLS_APPREGISTRY_HPP__
 #include "appregistry.hpp"          // for RegisterApplicationType
 #endif
-#ifndef __ARCSTOOLS_CONFIG_HPP__
+#ifndef ARCSTOOLS_CONFIG_HPP__
 #include "config.hpp"               // for Configurator, OptionCode
 #endif
-#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP__
 #include "tools-arid.hpp"           // for ARIdLayout
 #endif
-#ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"           // for audiofile_layout
 #endif
-#ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
+#ifndef ARCSTOOLS_TOOLS_DBAR_HPP__
 #include "tools-dbar.hpp"           // for ContentHandler
 #endif
-#ifndef __ARCSTOOLS_TOOLS_INPUT_HPP__
+#ifndef ARCSTOOLS_TOOLS_INPUT_HPP__
 #include "tools-input.hpp"          // for DBARParser, EmptyChecksumSource
 #endif
-#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TOOLS_TABLE_HPP__
 #include "tools-table.hpp"          // for StringTableLayout, CellDecorator
 									// TableComposer
 #endif
-#ifndef __ARCSTOOLS_TOOLS_VALIDATE_HPP__
+#ifndef ARCSTOOLS_TOOLS_VALIDATE_HPP__
 #include "tools-validate.hpp"       // for Validate
 #endif
-#ifndef __ARCSTOOLS_RESULT_HPP__
+#ifndef ARCSTOOLS_RESULT_HPP__
 #include "result.hpp"               // for ResultObject, Result
 #endif
 

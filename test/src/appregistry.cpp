@@ -6,7 +6,7 @@
  * \brief Fixtures for appregistry.hpp.
  */
 
-#ifndef __ARCSTOOLS_APPREGISTRY_HPP__
+#ifndef ARCSTOOLS_APPREGISTRY_HPP__
 #include "appregistry.hpp"        // TO BE TESTED
 #endif
 

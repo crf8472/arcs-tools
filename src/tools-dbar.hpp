@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
-#define __ARCSTOOLS_TOOLS_DBAR_HPP__
+#ifndef ARCSTOOLS_TOOLS_DBAR_HPP__
+#define ARCSTOOLS_TOOLS_DBAR_HPP__
 /**
  * \file
  *
@@ -16,7 +16,7 @@
 #include <arcstk/dbar.hpp>   // for DBAR, ParseHandler, ParseErrorHandler
 #endif
 
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#ifndef ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"       // for Layout
 #endif
 

@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
-#define __ARCSTOOLS_TOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TOOLS_TABLE_HPP__
+#define ARCSTOOLS_TOOLS_TABLE_HPP__
 
 /**
  * \file
@@ -28,13 +28,13 @@
 #include <arcstk/verify.hpp>      // for VerificationResult
 #endif
 
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#ifndef ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"      // for ARIdLayout, ChecksumLayout
 #endif
-#ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"
 #endif
-#ifndef __ARCSTOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TABLE_HPP__
 #include "table.hpp"        // for PrintableTable, StringTable,
                             // StringTableLayout, CellDecorator,
                             // DecoratedStringTable

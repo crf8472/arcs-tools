@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_TOOLS_ARID_HPP__
-#define __ARCSTOOLS_TOOLS_ARID_HPP__
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP__
+#define ARCSTOOLS_TOOLS_ARID_HPP__
 
 /**
  * \file
@@ -17,7 +17,7 @@
 #include <arcstk/identifier.hpp>  // for ARId
 #endif
 
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#ifndef ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"      // for Layout
 #endif
 

@@ -6,7 +6,7 @@
  * \brief Fixtures for tools-info.hpp.
  */
 
-#ifndef __ARCSTOOLS_TOOLSINFO_HPP__
+#ifndef ARCSTOOLS_TOOLSINFO_HPP__
 #include "tools-info.hpp"         // TO BE TESTED
 #endif
 

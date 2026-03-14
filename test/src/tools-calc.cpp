@@ -6,7 +6,7 @@
  * \brief Fixtures for tools-calc.hpp.
  */
 
-#ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP__
 #include "tools-calc.hpp"         // TO BE TESTED
 #endif
 

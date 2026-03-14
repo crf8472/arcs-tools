@@ -6,11 +6,11 @@
  * \brief Fixtures for tools-table.hpp.
  */
 
-#ifndef __ARCSTOOLS_TOOLS_TABLE_HPP__
+#ifndef ARCSTOOLS_TOOLS_TABLE_HPP__
 #include "tools-table.hpp"        // TO BE TESTED
 #endif
 
-#ifndef __ARCSTOOLS_APPVERIFY_HPP__
+#ifndef ARCSTOOLS_APPVERIFY_HPP__
 #include "app-verify.hpp"         // for MatchDecorator
 #endif
 

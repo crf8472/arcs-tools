@@ -6,7 +6,7 @@
  * \brief Fixtures for tools-dbar.hpp.
  */
 
-#ifndef __ARCSTOOLS_TOOLS_DBAR_HPP__
+#ifndef ARCSTOOLS_TOOLS_DBAR_HPP__
 #include "tools-dbar.hpp"         // TO BE TESTED
 #endif
 

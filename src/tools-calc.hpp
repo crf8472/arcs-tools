@@ -1,5 +1,5 @@
-#ifndef __ARCSTOOLS_TOOLS_CALC_HPP__
-#define __ARCSTOOLS_TOOLS_CALC_HPP__
+#ifndef ARCSTOOLS_TOOLS_CALC_HPP__
+#define ARCSTOOLS_TOOLS_CALC_HPP__
 
 /**
  * \file
@@ -7,7 +7,7 @@
  * \brief Helper tools for ARCS calculation.
  */
 
-#ifndef __ARCSTOOLS_LAYOUTS_HPP__
+#ifndef ARCSTOOLS_LAYOUTS_HPP__
 #include "layouts.hpp"                 // for Layout
 #endif
 
