@@ -469,8 +469,6 @@ endif (WITH_TESTS)
 
 option (WITH_DOCS          "Build documentation for public API"           OFF )
 option (USE_DOC_TOOL       "Build documentation using specified tool"     OFF )
-## TODO Remove the following line
-option (USE_MCSS           "Build documentation using m.css"              OFF )
 
 ## -- Process configuration for building the documentation
 if (WITH_DOCS )
@@ -482,18 +480,6 @@ else ()
 		message (FATAL_ERROR "-DWITH_DOCS=ON is required to set USE_DOC_TOOL." )
 	endif()
 endif (WITH_DOCS )
-
-
-## -- For backwards compatibility
-if (USE_MCSS ) # TODO Remove that
-
-	if (NOT "MCSS" IN_LIST USE_DOC_TOOL )
-		list (APPEND USE_DOC_TOOL "MCSS" )
-	endif()
-	unset (USE_MCSS )
-	message (WARNING "Option USE_MCSS is deprecated and will be removed soon!"
-		" Use -DUSE_DOC_TOOL=MCSS instead." )
-endif()
 
 ## --- UNIX man pages {{{1
 
