@@ -179,7 +179,7 @@ using Calc6Layout = Layout<std::unique_ptr<Result>
 	,const std::vector<arcstk::checksum::type>& /* mandatory: types to print */
 	,const Checksums&                /* mandatory: locally computed checksums */
 	,const ARId&                     /* optional: ARId */
-	,const ToC*                      /* optional: ToC */
+	,const ToC&                      /* optional: ToC */
 	,const std::vector<std::string>& /* optional: input audio filenames */
 	,const std::string&              /* optional: AccurateRip URL prefix */
 >;
@@ -323,7 +323,7 @@ public:
 	 *
 	 * \return Calculation result
 	 */
-	static std::tuple<Checksums, std::unique_ptr<ToC>> calculate(
+	static std::pair<Checksums, ToC> calculate(
 		const std::vector<std::string>& audiofilenames,
 		const std::string& metafilename,
 		const bool first_file_is_first_track,

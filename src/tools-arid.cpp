@@ -259,8 +259,8 @@ std::unique_ptr<ARIdLayout> ARIdTableLayout::do_clone() const
 // build_id
 
 
-RichARId build_id(const ToC* /*toc*/, const ARId& arid,
-		const std::string& alt_prefix, const ARIdLayout& layout)
+RichARId build_id(const ARId& arid, const std::string& alt_prefix,
+		const ARIdLayout& layout)
 {
 	return RichARId { arid, layout.clone(), alt_prefix };
 }
@@ -269,7 +269,7 @@ RichARId build_id(const ToC* /*toc*/, const ARId& arid,
 // validate
 
 
-void validate(const ARId& arid, const std::size_t total_tracks, const ToC* toc)
+void validate(const ARId& arid, const std::size_t total_tracks, const ToC& toc)
 {
 	if (arid.empty())
 	{
@@ -278,14 +278,14 @@ void validate(const ARId& arid, const std::size_t total_tracks, const ToC* toc)
 		//throw std::invalid_argument("AccurateRip id must not be empty");
 	}
 
-	using Validation  = valid::Validate<ARId, std::size_t, const ToC*>;
+	using Validation  = valid::Validate<ARId, std::size_t, const ToC>;
 
 	const std::vector<Validation> validations =
 	{
 		Validation
 		{
 			"ARId must not be empty",
-			[](const ARId& a, const std::size_t, const ToC* /*t*/) noexcept
+			[](const ARId& a, const std::size_t, const ToC& /*t*/) noexcept
 			{
 				return not a.empty();
 			},
@@ -294,7 +294,7 @@ void validate(const ARId& arid, const std::size_t total_tracks, const ToC* toc)
 		Validation
 		{
 			"ARId has the declared number of tracks",
-			[](const ARId& a, const std::size_t s, const ToC* /*t*/) noexcept
+			[](const ARId& a, const std::size_t s, const ToC& /*t*/) noexcept
 			{
 				return s == static_cast<std::size_t>(a.track_count());
 			},
@@ -303,11 +303,11 @@ void validate(const ARId& arid, const std::size_t total_tracks, const ToC* toc)
 		Validation
 		{
 			"ARId has the number of tracks specified by ToC",
-			[](const ARId& a, const std::size_t /*s*/, const ToC* t) noexcept
+			[](const ARId& a, const std::size_t /*s*/, const ToC& t) noexcept
 			{
 				if (!t) { return true; }
 
-				return a.track_count() == t->total_tracks();
+				return a.track_count() == t.total_tracks();
 			},
 			"ARId mismatches ToC: different total tracks specified"
 		}

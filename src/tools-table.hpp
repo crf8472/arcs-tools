@@ -1033,7 +1033,7 @@ protected:
 	 *
 	 * \return Print flags for all printable attributes
 	 */
-	print_flag_t create_field_requests(const ToC* toc,
+	print_flag_t create_field_requests(const ToC& toc,
 			const std::vector<std::string>& filenames) const;
 
 	/**

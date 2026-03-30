@@ -981,9 +981,9 @@ bool TableCreator::is_requested(const ATTR a) const
 
 
 TableCreator::print_flag_t TableCreator::create_field_requests(
-		const ToC* toc, const std::vector<std::string>& filenames) const
+		const ToC& toc, const std::vector<std::string>& filenames) const
 {
-	const bool has_toc       { toc != nullptr };
+	const bool has_toc       { !toc.empty() };
 	const bool has_filenames { !filenames.empty() };
 
 	auto flags = print_flag_t {};

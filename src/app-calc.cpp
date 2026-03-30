@@ -435,7 +435,7 @@ std::unique_ptr<Result> CalcTableCreator::do_format(InputTuple t) const
 
 	if (!arid.empty())
 	{
-		buf.append(build_id(toc, arid, alt_prefix, *arid_layout()->clone()));
+		buf.append(build_id(arid, alt_prefix, *arid_layout()->clone()));
 	}
 
 	const auto print_flags { create_field_requests(toc, filenames) };
@@ -450,7 +450,7 @@ std::unique_ptr<Result> CalcTableCreator::do_format(InputTuple t) const
 
 	auto creators { std::vector<std::unique_ptr<FieldCreator>>{} };
 
-	populate_creators_list(creators, field_list, filenames, *toc, checksums);
+	populate_creators_list(creators, field_list, filenames, toc, checksums);
 
 	populate_result_creators(creators, print_flags, field_list, types_to_print,
 			checksums);
@@ -557,7 +557,7 @@ std::unique_ptr<FileReaderSelection>
 // ARCalcApplication
 
 
-std::tuple<Checksums, std::unique_ptr<ToC>> ARCalcApplication::calculate(
+std::pair<Checksums, ToC> ARCalcApplication::calculate(
 	const std::vector<std::string>& audiofilenames,
 	const std::string& metafilename,
 	const bool first_file_is_first_track,
@@ -581,12 +581,17 @@ std::tuple<Checksums, std::unique_ptr<ToC>> ARCalcApplication::calculate(
 	if (toc_selection)   { c.set_toc_selection  (toc_selection);   }
 	if (audio_selection) { c.set_audio_selection(audio_selection); }
 
-	auto [ checksums, toc ] = metafilename.empty()
-		? c.calculate(audiofilenames,                    //Tracks/Album w/o ToC
-				first_file_is_first_track, last_file_is_last_track)
-		: c.calculate(audiofilenames, metafilename);     //Album: w ToC
+	if (metafilename.empty())
+	{
+        //Tracks/Album w/o ToC
+		const auto checksums = c.calculate(audiofilenames,
+				first_file_is_first_track, last_file_is_last_track);
 
-	return std::make_tuple(checksums, std::move(toc));
+		return { checksums, arcstk::EmptyToC };
+	}
+
+	//Album: w ToC
+	return c.calculate(audiofilenames, metafilename);
 }
 
 
@@ -765,7 +770,7 @@ auto ARCalcApplication::do_run_calculation(const Configuration& config) const
 
 	if (config.is_set(CALC::PRINTID) || config.is_set(CALC::PRINTURL))
 	{
-		arid = std::move(arcstk::make_arid(*toc));
+		arid = arcstk::make_arid(toc);
 	}
 	// Compose the result
 
@@ -773,8 +778,8 @@ auto ARCalcApplication::do_run_calculation(const Configuration& config) const
 	/* types  */  types_to_print,
 	/* ARCSs  */  checksums,
 	/* ARId   */  arid,
-	/* ToC    */  toc ? toc.get() : nullptr,
-	/* files  */  toc ? toc->filenames() : *config.arguments(),
+	/* ToC    */  toc,
+	/* files  */  toc ? toc.filenames() : *config.arguments(),
 	/* Prefix */  std::string { /* TODO Implement Alt-Prefix */ }
 	)};
 

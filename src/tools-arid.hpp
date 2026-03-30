@@ -298,15 +298,14 @@ std::ostream& operator << (std::ostream& o, const RichARId& a);
 /**
  * \brief Build an ARId enriched with print information.
  *
- * \param[in] toc        ToC by which \p arid was created
  * \param[in] arid       Actual ARId
  * \param[in] alt_prefix Alternative URL prefix
  * \param[in] layout     Layout to print ARId
  *
  * \return ARId container
  */
-RichARId build_id(const ToC* toc, const ARId& arid,
-		const std::string& alt_prefix, const ARIdLayout& layout);
+RichARId build_id(const ARId& arid, const std::string& alt_prefix,
+		const ARIdLayout& layout);
 
 
 /**
@@ -320,7 +319,7 @@ RichARId build_id(const ToC* toc, const ARId& arid,
  *
  * \throws invalid_argument If validation fails
  */
-void validate(const ARId& arid, const std::size_t total_tracks, const ToC* toc);
+void validate(const ARId& arid, const std::size_t total_tracks, const ToC& toc);
 
 
 } // namespace arid

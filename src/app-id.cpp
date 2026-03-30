@@ -173,36 +173,32 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 
 	// Step 1: Parse metadata to acquire ToC
 
-	auto toc = std::unique_ptr<ToC> {};
-
-	{ // scope
+	const auto parse_metafile = [this](const std::string& mfilename,
+			const Configuration& c)
+	{
+		const auto toc_selection { create_selection(ARIdOptions::PARSERID, c) };
 
 		auto parser = ToCParser {};
-
-		const auto toc_selection {
-			create_selection(ARIdOptions::PARSERID, config)
-		};
 
 		if (toc_selection)
 		{
 			parser.set_selection(toc_selection.get());
 		}
 
-		toc = parser.parse(metafilename);
-	}
+		return parser.parse(mfilename);
+	};
 
-	if (!toc) { this->fatal_error("Could not acquire ToC."); }
-
+	const auto toc = parse_metafile(metafilename, config);
 
 	// Step 2: Calculate ARId by optionally using the audiofile
 
 	auto arid = arcstk::make_empty_arid();
 
-	if (toc->complete())
+	if (toc.complete())
 	{
 		// Audio file is not required
 
-		arid = make_arid(*toc);
+		arid = make_arid(toc);
 
 	} else
 	{
@@ -216,7 +212,7 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 
 			using calc::ToCFiles;
 
-			const auto& [ single, pw_dist, files ] = ToCFiles::get(*toc);
+			const auto& [ single, pw_dist, files ] = ToCFiles::get(toc);
 
 			if (!single)
 			{
@@ -240,9 +236,9 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 
 			const auto audio_size = a.size(audiofilename);
 
-			ARCS_LOG_DEBUG << "Got leadout: " << audio_size->frames();
+			ARCS_LOG_DEBUG << "Got leadout: " << audio_size.frames();
 
-			arid = make_arid(*toc, *audio_size);
+			arid = make_arid(toc, audio_size);
 		}
 	}
 

@@ -50,7 +50,7 @@ TEST_CASE ( "ToCFiles", "" )
 			// no filenames => special case true/false
 		);
 
-		const auto tuple = ToCFiles::get(*toc0);
+		const auto tuple = ToCFiles::get(toc0);
 
 		CHECK ( std::get<0>(tuple) == true  );
 		CHECK ( std::get<1>(tuple) == false );
@@ -75,7 +75,7 @@ TEST_CASE ( "ToCFiles", "" )
 			"file", "file", "file", "file", "file" }
 		);
 
-		const auto tuple = ToCFiles::get(*toc0);
+		const auto tuple = ToCFiles::get(toc0);
 
 		CHECK ( std::get<0>(tuple) == true );
 		CHECK ( std::get<1>(tuple) == true );
@@ -100,7 +100,7 @@ TEST_CASE ( "ToCFiles", "" )
 			"file11", "file12", "file13", "file14", "file15" }
 		);
 
-		const auto tuple = ToCFiles::get(*toc0);
+		const auto tuple = ToCFiles::get(toc0);
 
 		CHECK ( std::get<0>(tuple) == false );
 		CHECK ( std::get<1>(tuple) == true  );
@@ -125,7 +125,7 @@ TEST_CASE ( "ToCFiles", "" )
 					"file", "file",   "file_with_completely_different_name" }
 		);
 
-		const auto tuple = ToCFiles::get(*toc0);
+		const auto tuple = ToCFiles::get(toc0);
 
 		CHECK ( std::get<0>(tuple) == false );
 		CHECK ( std::get<1>(tuple) == false );

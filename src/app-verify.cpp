@@ -748,7 +748,7 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 	if (!arid.empty())
 	{
 		// Print locally calculated ARId ("Mine")
-		buf.append(build_id(toc, arid, alt_prefix, *arid_layout()->clone()));
+		buf.append(build_id(arid, alt_prefix, *arid_layout()->clone()));
 	}
 
 	const auto print_flags { create_field_requests(toc, filenames) };
@@ -770,7 +770,7 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 
 	auto creators { std::vector<std::unique_ptr<FieldCreator>>{} };
 
-	populate_creators_list(creators, field_list, filenames, *toc, checksums);
+	populate_creators_list(creators, field_list, filenames, toc, checksums);
 
 	populate_result_creators(creators, print_flags, field_list, types_to_print,
 			*vresult, block, checksums, *ref_source, total_theirs_per_block);
@@ -1241,7 +1241,7 @@ AddField<ATTR::THEIRS>::AddField(
 // validate
 
 
-void validate(const Checksums& checksums, const ToC* toc,
+void validate(const Checksums& checksums, const ToC& toc,
 	const std::vector<std::string>& filenames,
 	const ChecksumSource& reference,
 	const VerificationResult* /*vresult*/, const int /*block*/)
@@ -1558,8 +1558,8 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	// ARId
 
-	auto mine_arid = (toc && toc->complete())
-		? arcstk::make_arid(*toc)
+	auto mine_arid = (toc && toc.complete())
+		? arcstk::make_arid(toc)
 		: arcstk::make_empty_arid();
 
 	// Prepare verification
@@ -1597,7 +1597,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		// Verify pairwise distinct audio files
 
 		const auto& [ single_audio_file, pairwise_distinct_files ] =
-			calc::ToCFiles::flags(toc->filenames());
+			calc::ToCFiles::flags(toc.filenames());
 
 		if (!single_audio_file && !pairwise_distinct_files)
 		{
@@ -1679,7 +1679,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		{
 			if (toc)
 			{
-				filenames = toc->filenames();
+				filenames = toc.filenames();
 			}
 		} else
 		{
@@ -1715,7 +1715,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		/* optional best match */      best_block,
 		/* mine ARCSs */               checksums,
 		/* optional mine ARId */       mine_arid,
-		/* optional ToC */             toc.get(),
+		/* optional ToC */             toc,
 		/* reference checksum source */ref_source.get(),
 		/* input audio filenames */    filenames,
 		/* optional URL prefix */      alt_prefix

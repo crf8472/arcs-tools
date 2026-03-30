@@ -190,7 +190,7 @@ public:
 	 *
 	 * \return Checksums and ToC of the image represented by the input files
 	 */
-	std::pair<Checksums, std::unique_ptr<ToC>> calculate(
+	std::pair<Checksums, ToC> calculate(
 			const std::vector<std::string>& audiofilenames,
 			const std::string& metafilename) const;
 
@@ -211,10 +211,9 @@ public:
 	 *
 	 * \return The AccurateRip checksums of these tracks
 	 */
-	std::pair<Checksums, std::unique_ptr<ToC>> calculate(
-			const std::vector<std::string>& audiofilenames,
+	Checksums calculate(const std::vector<std::string>& audiofilenames,
 			const bool first_is_first_track, const bool last_is_last_track)
-		const;
+			const;
 
 	/**
 	 * \brief Set the checksum type to be calculated.
@@ -270,9 +269,8 @@ private:
 	 *
 	 * \return Checksums and ToC for the input
 	 */
-	std::pair<Checksums, std::unique_ptr<ToC>> calculate(
-			const std::unique_ptr<ToC>& toc, const std::string& searchpath)
-			const;
+	std::pair<Checksums, ToC> calculate(const ToC& toc,
+			const std::string& searchpath) const;
 
 	/**
 	 * \brief Setup internal ARCSCalculator instance.
@@ -353,7 +351,7 @@ private:
  *
  * \throws invalid_argument If validation fails
  */
-void validate(const Checksums& checksums, const ToC* toc,
+void validate(const Checksums& checksums, const ToC& toc,
 	const std::vector<std::string>& filenames);
 
 

@@ -154,7 +154,7 @@ using Verify9Layout = Layout<std::unique_ptr<Result>
 	,const int                        /* optional:  best block             */
 	,const Checksums&                 /* mandatory: "mine" checksums       */
 	,const ARId&                      /* optional:  "mine" ARId            */
-	,const ToC*                       /* optional:  "mine" ToC             */
+	,const ToC&                       /* optional:  "mine" ToC             */
 	,const ChecksumSource*            /* mandatory: reference sums         */
 	,const std::vector<std::string>&  /* optional:  input audio filenames  */
 	,const std::string&               /* optional:  AccurateRip URL prefix */
@@ -729,7 +729,7 @@ public:
  *
  * \throws invalid_argument If validation fails
  */
-void validate(const Checksums& checksums, const ToC* toc,
+void validate(const Checksums& checksums, const ToC& toc,
 	const std::vector<std::string>& filenames,
 	const ChecksumSource& reference,
 	const VerificationResult* vresult, const int block);

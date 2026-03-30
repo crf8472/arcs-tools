@@ -161,8 +161,7 @@ ChecksumCalculator::~ChecksumCalculator() noexcept
 = default;
 
 
-std::pair<Checksums, std::unique_ptr<ToC>>
-	ChecksumCalculator::calculate(
+std::pair<Checksums, ToC> ChecksumCalculator::calculate(
 			const std::vector<std::string>& audiofilenames,
 			const std::string& metafilename) const
 {
@@ -174,7 +173,7 @@ std::pair<Checksums, std::unique_ptr<ToC>>
 		throw std::invalid_argument("No ToC file specified.");
 	}
 
-	auto toc { setup_parser().parse(metafilename) };
+	const auto toc { setup_parser().parse(metafilename) };
 
 	if (audiofilenames.empty())
 	{
@@ -185,13 +184,13 @@ std::pair<Checksums, std::unique_ptr<ToC>>
 
 	// Validate track number
 
-	const int filecount = audiofilenames.size();
+	const auto filecount { audiofilenames.size() };
 
-	if (filecount != toc->total_tracks() && filecount != 1) // case: illegal
+	if (filecount != toc.total_tracks() && filecount != 1) // case: illegal
 	{
 		std::ostringstream msg;
 		msg << "Inconsistent input: Metafile " << metafilename
-			<< " specifies " << toc->total_tracks() << " tracks"
+			<< " specifies " << toc.total_tracks() << " tracks"
 			<< " but " << filecount << " audio files were passed to override.";
 
 		throw std::invalid_argument(msg.str());
@@ -208,25 +207,24 @@ std::pair<Checksums, std::unique_ptr<ToC>>
 	if (1 == filecount)
 	{
 		const auto [ checksums, toc2 ] =
-			calculator.calculate(audiofilenames.front(), *toc);
+			calculator.calculate(audiofilenames.front(), toc);
 
-		return { checksums, std::make_unique<ToC>(toc2) };
+		return { checksums, toc2 };
 	}
 
 	// case: multi-file album w ToC (== "EAC-styled layout")
-	if (toc->total_tracks() == filecount)
+	if (toc.total_tracks() == filecount)
 	{
 		const auto chksums { calculator.calculate(audiofilenames, true, true) };
 
 		return { chksums, std::move(toc) };
 	}
 
-	return { Checksums{ 0 }, nullptr }; // TODO should throw instead
+	return { Checksums{ 0 }, arcstk::EmptyToC }; // TODO should throw instead
 }
 
 
-std::pair<Checksums, std::unique_ptr<ToC>>
-	ChecksumCalculator::calculate(
+Checksums ChecksumCalculator::calculate(
 		const std::vector<std::string>& audiofilenames,
 		const bool first_is_first_track, const bool last_is_last_track) const
 {
@@ -235,7 +233,7 @@ std::pair<Checksums, std::unique_ptr<ToC>>
 	const auto checksums { calculator.calculate(audiofilenames,
 			first_is_first_track, last_is_last_track) };
 
-	return { checksums, nullptr };
+	return checksums;
 }
 
 
@@ -275,16 +273,15 @@ FileReaderSelection* ChecksumCalculator::audio_selection() const
 }
 
 
-std::pair<Checksums, std::unique_ptr<ToC>>
-	ChecksumCalculator::calculate(
-		const std::unique_ptr<ToC>& toc, const std::string& filepath) const
+std::pair<Checksums, ToC> ChecksumCalculator::calculate(const ToC& toc,
+		const std::string& filepath) const
 {
 	ARCS_LOG_DEBUG << "Calculate result from ToC"
 			" and searchpath for audiofiles";
 
 	// Validate audio file set in ToC
 
-	auto [ is_single_file, pairwise_dist, audiofiles ] = ToCFiles::get(*toc);
+	auto [ is_single_file, pairwise_dist, audiofiles ] = ToCFiles::get(toc);
 
 	if (!is_single_file && !pairwise_dist)
 	{
@@ -304,9 +301,9 @@ std::pair<Checksums, std::unique_ptr<ToC>>
 			ToCFiles::expand_path(filepath, audiofiles.front());
 
 		// case: single-file album w ToC
-		const auto [ checksums, toc2 ] = calculator.calculate(audiofile, *toc);
+		const auto [ checksums, toc2 ] = calculator.calculate(audiofile, toc);
 
-		return { checksums, std::make_unique<ToC>(toc2) };
+		return { checksums, toc2 };
 	} else
 	{
 		for (auto& audiofile : audiofiles)
@@ -317,7 +314,7 @@ std::pair<Checksums, std::unique_ptr<ToC>>
 		// case: multi-file album w toc (== "EAC-styled layout")
 		const auto checksums { calculator.calculate(audiofiles, true, true) };
 
-		return { checksums, nullptr };
+		return { checksums, toc/* FIXME this toc is useless */ };
 	}
 }
 
@@ -384,18 +381,18 @@ std::string HexLayout::do_format(InputTuple t) const
 // validate
 
 
-void validate(const Checksums& checksums, const ToC* toc,
+void validate(const Checksums& checksums, const ToC& toc,
 		const std::vector<std::string>& filenames)
 {
 	using filenames_t = std::vector<std::string>;
-	using Validation  = valid::Validate<Checksums, const ToC*, filenames_t>;
+	using Validation  = valid::Validate<Checksums, const ToC, filenames_t>;
 
 	const std::vector<Validation> validations =
 	{
 		Validation
 		{
 			"Checksums contain actually values",
-			[](const Checksums& c, const ToC* /*t*/, const filenames_t& /*f*/)
+			[](const Checksums& c, const ToC& /*t*/, const filenames_t& /*f*/)
 				noexcept
 			{
 				return c.size() > 0;
@@ -405,7 +402,7 @@ void validate(const Checksums& checksums, const ToC* toc,
 		Validation
 		{
 			"Number of filenames is either 0, 1 or equal to Checksum's tracks",
-			[](const Checksums& c, const ToC* /*t*/, const filenames_t& f)
+			[](const Checksums& c, const ToC& /*t*/, const filenames_t& f)
 				noexcept
 			{
 				return f.empty() || f.size() == 1 || f.size() == c.size();
@@ -416,7 +413,7 @@ void validate(const Checksums& checksums, const ToC* toc,
 		Validation
 		{
 			"Either ToC or set of filenames is present",
-			[](const Checksums& /*c*/, const ToC* t, const filenames_t& f)
+			[](const Checksums& /*c*/, const ToC& t, const filenames_t& f)
 				noexcept
 			{
 				return t || not f.empty();
@@ -426,12 +423,12 @@ void validate(const Checksums& checksums, const ToC* toc,
 		Validation
 		{
 			"If a ToC is present, there is one Checksum for each track",
-			[](const Checksums& c, const ToC* t, const filenames_t& /*f*/)
+			[](const Checksums& c, const ToC& t, const filenames_t& /*f*/)
 				noexcept
 			{
 				if (!t) { return true; }
 
-				return c.size() == static_cast<uint16_t>(t->total_tracks());
+				return c.size() == static_cast<uint16_t>(t.total_tracks());
 			},
 			"Checksums' and ToC's total tracks are incoherent"
 		}
