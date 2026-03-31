@@ -9,7 +9,6 @@
  */
 
 #include <cstddef>       // for size_t
-#include <cstdint>       // for uint16_t, uint32_t
 #include <memory>        // for unique_ptr
 #include <string>        // for string
 #include <unordered_map> // for unordered_map
@@ -150,14 +149,14 @@ private:
  */
 using Verify9Layout = Layout<std::unique_ptr<Result>
 	,const std::vector<arcstk::checksum::type>& /* mandatory: types to print */
-	,const VerificationResult*        /* mandatory: verification results   */
-	,const int                        /* optional:  best block             */
-	,const Checksums&                 /* mandatory: "mine" checksums       */
-	,const ARId&                      /* optional:  "mine" ARId            */
-	,const ToC&                       /* optional:  "mine" ToC             */
-	,const ChecksumSource*            /* mandatory: reference sums         */
-	,const std::vector<std::string>&  /* optional:  input audio filenames  */
-	,const std::string&               /* optional:  AccurateRip URL prefix */
+	,const VerificationResult*          /* mandatory: verification results   */
+	,const int                          /* optional:  best block             */
+	,const Checksums&                   /* mandatory: "mine" checksums       */
+	,const ARId&                        /* optional:  "mine" ARId            */
+	,const ToC&                         /* optional:  "mine" ToC             */
+	,const ChecksumSource*              /* mandatory: reference sums         */
+	,const std::vector<std::string>&    /* optional:  input audio filenames  */
+	,const std::string&                 /* optional:  AccurateRip URL prefix */
 >;
 
 

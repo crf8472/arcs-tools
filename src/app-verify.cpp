@@ -14,7 +14,6 @@
 #include <cctype>          // for toupper
 #include <cmath>           // for ceil
 #include <cstddef>         // for size_t
-#include <cstdint>         // for uint32_t
 #include <cstdlib>         // for EXIT_SUCCESS
 #include <exception>       // for exception
 #include <iterator>        // for begin, end
@@ -22,7 +21,7 @@
 #include <sstream>         // for istringstream, ostringstream
 #include <stdexcept>       // for invalid_argument, runtime_error
 #include <string>          // for stoul, string, to_string
-#include <tuple>           // for get, make_tuple, tuple
+#include <tuple>           // for get, tuple
 #include <utility>         // for move, pair
 
 #ifndef LIBARCSTK_METADATA_HPP_
@@ -1645,32 +1644,43 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	const auto best_b = vresult->best_block();
 
+	namespace best_block = arcstk::best_block;
+
 	if (vresult->all_tracks_verified())
 	{
 		ARCS_LOG_INFO << "Response contains a total match (v"
-			<< (std::get<1>(best_b) + 1)
+			<< (best_block::typeflag(best_b) + 1)
+			//<< (std::get<1>(best_b) + 1)
 			<< ") to the input tracks in block "
-			<< std::get<0>(best_b);
+			<< best_block::index(best_b);
+			//<< std::get<0>(best_b);
 	} else
 	{
-		ARCS_LOG_INFO << "Best match was block "  << std::get<0>(best_b)
-			<< " in response, having difference " << std::get<2>(best_b);
+		ARCS_LOG_INFO << "Best match was block "
+			<< best_block::index(best_b)
+			//<< std::get<0>(best_b)
+			<< " in response, having difference "
+			<< best_block::difference(best_b);
+			//<< std::get<2>(best_b);
 	}
 
 	if (config.is_set(VERIFY::NOOUTPUT)) // implies BOOLEAN
 	{
 		// 0 on accurate match, else > 0
-		return { std::get<2>(best_b), nullptr };
+		return { best_block::difference(best_b), nullptr };
+		//return { std::get<2>(best_b), nullptr };
 	}
 
 	// Create result object
 
-	const auto best_block = config.is_set(VERIFY::PRINTALL) &&
-		config.is_set(VERIFY::RESPONSEFILE)
+	const auto best_block_idx = config.is_set(VERIFY::PRINTALL) &&
+		config.is_set(VERIFY::RESPONSEFILE) // FIXME blocks only with RFILE??
 							? -1 // Won't be used
-							: std::get<0>(best_b);
+							: best_block::index(best_b);
+							//: std::get<0>(best_b);
 
-	const auto matching_version = std::get<1>(best_b);
+	const auto matching_version = best_block::typeflag(best_b);
+	//const auto matching_version = std::get<1>(best_b);
 
 	auto filenames = std::vector<std::string> { };
 	if (print_filenames)
@@ -1712,7 +1722,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	auto result { create_formatter(config)->format(
 		/* types to print */           types_to_print,
 		/* verification results */     vresult.get(),
-		/* optional best match */      best_block,
+		/* optional best match */      best_block_idx,
 		/* mine ARCSs */               checksums,
 		/* optional mine ARId */       mine_arid,
 		/* optional ToC */             toc,
@@ -1722,7 +1732,8 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	)};
 
 	auto exit_code = config.is_set(VERIFY::BOOLEAN)
-		? std::get<2>(best_b) // best difference
+		? best_block::difference(best_b) // best difference
+		//? std::get<2>(best_b) // best difference
 		: EXIT_SUCCESS;
 
 	return { exit_code, std::move(result) };
