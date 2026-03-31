@@ -226,7 +226,7 @@ std::string ARIdTableLayout::do_format(InputTuple t) const
 				value = arid.filename();
 				break;
 			case ARID_FLAG::TRACKS:
-				value = std::to_string(arid.track_count());
+				value = std::to_string(arid.total_tracks());
 				break;
 			case ARID_FLAG::ID1:
 				value = hex_id(arid.disc_id_1());
@@ -278,7 +278,7 @@ void validate(const ARId& arid, const std::size_t total_tracks, const ToC& toc)
 		//throw std::invalid_argument("AccurateRip id must not be empty");
 	}
 
-	using Validation  = valid::Validate<ARId, std::size_t, const ToC>;
+	using Validation  = valid::Validate<ARId, std::size_t, const ToC&>;
 
 	const std::vector<Validation> validations =
 	{
@@ -296,7 +296,7 @@ void validate(const ARId& arid, const std::size_t total_tracks, const ToC& toc)
 			"ARId has the declared number of tracks",
 			[](const ARId& a, const std::size_t s, const ToC& /*t*/) noexcept
 			{
-				return s == static_cast<std::size_t>(a.track_count());
+				return s == static_cast<std::size_t>(a.total_tracks());
 			},
 			"ARId specifies another number of tracks than declared"
 		},
@@ -307,7 +307,7 @@ void validate(const ARId& arid, const std::size_t total_tracks, const ToC& toc)
 			{
 				if (!t) { return true; }
 
-				return a.track_count() == t.total_tracks();
+				return a.total_tracks() == t.total_tracks();
 			},
 			"ARId mismatches ToC: different total tracks specified"
 		}

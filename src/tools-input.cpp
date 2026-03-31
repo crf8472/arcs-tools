@@ -414,7 +414,7 @@ ARId EmptyChecksumSource::do_id(const ChecksumSource::size_type /*block_idx*/)
 Checksum EmptyChecksumSource::do_checksum(const ChecksumSource::size_type /*b*/,
 		const ChecksumSource::size_type /*idx*/) const
 {
-	return arcstk::EmptyChecksum;
+	return arcstk::Checksum {};
 }
 
 

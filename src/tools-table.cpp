@@ -768,8 +768,9 @@ void AddField<ATTR::CHECKSUM_ARCS1>::do_create(TableComposer* c,
 
 	const auto track { static_cast<index_type>(record_idx) };
 
+	// TODO Respect the success flag of ChecksumSet::get()
 	add_field(c, record_idx, ATTR::CHECKSUM_ARCS1,
-			formatted(checksums_->at(track).get(type::ARCS1), *layout_));
+			formatted(checksums_->at(track).get(type::ARCS1).first, *layout_));
 }
 
 
@@ -791,8 +792,9 @@ void AddField<ATTR::CHECKSUM_ARCS2>::do_create(TableComposer* c,
 
 	const auto track { static_cast<index_type>(record_idx) };
 
+	// TODO Respect the success flag of ChecksumSet::get()
 	add_field(c, record_idx, ATTR::CHECKSUM_ARCS2,
-			formatted(checksums_->at(track).get(type::ARCS2), *layout_));
+			formatted(checksums_->at(track).get(type::ARCS2).first, *layout_));
 }
 
 
