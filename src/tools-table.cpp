@@ -77,13 +77,13 @@ std::string DefaultLabel<ATTR::LENGTH>() { return "Length"; };
 template<>
 std::string DefaultLabel<ATTR::CHECKSUM_ARCS1>()
 {
-	return arcstk::checksum::type_name(arcstk::checksum::type::ARCS1);
+	return arcstk::checksum::name(arcstk::checksum::type::ARCS1);
 };
 
 template<>
 std::string DefaultLabel<ATTR::CHECKSUM_ARCS2>()
 {
-	return arcstk::checksum::type_name(arcstk::checksum::type::ARCS2);
+	return arcstk::checksum::name(arcstk::checksum::type::ARCS2);
 };
 
 template<>
@@ -718,7 +718,7 @@ void AddField<ATTR::LENGTH>::do_create(TableComposer* c, const int record_idx)
 	const auto track { static_cast<index_type>(record_idx) };
 
 	add_field(c, record_idx, ATTR::LENGTH,
-			to_string(checksums_->at(track).length()));
+			to_string(checksums_->at(track).length().frames()));
 }
 
 

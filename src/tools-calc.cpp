@@ -220,7 +220,7 @@ std::pair<Checksums, ToC> ChecksumCalculator::calculate(
 		return { chksums, std::move(toc) };
 	}
 
-	return { Checksums{ 0 }, arcstk::EmptyToC }; // TODO should throw instead
+	return { Checksums{ 0 }, ToC{} }; // TODO should throw instead
 }
 
 
