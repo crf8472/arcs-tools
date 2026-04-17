@@ -36,7 +36,7 @@
 #include <arcstk/dbar.hpp>        // for DBAR, ChecksumSource, ParseHandler, ...
 #endif
 #ifndef LIBARCSTK_IDENTIFIER_HPP_
-#include <arcstk/identifier.hpp>  // for ARId, EmptyARId
+#include <arcstk/identifier.hpp>  // for ARId
 #endif
 #ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>     // for ARCS_LOG,...
@@ -157,8 +157,8 @@ unsigned read_from_stdin(const std::size_t amount_of_bytes, ParseHandler* p,
 		ParseErrorHandler* e)
 {
 	auto input_bytes { StdIn(amount_of_bytes).bytes() };
-	VectorIStream<char> input_data(input_bytes);
-	std::istream input_stream(&input_data);
+	VectorIStream<char> input_data { input_bytes };
+	std::istream input_stream { &input_data };
 	return arcstk::parse_stream(input_stream, p, e);
 }
 
@@ -327,7 +327,7 @@ ChecksumValuesSource::ChecksumValuesSource()
 ARId ChecksumValuesSource::do_id(const ChecksumSource::size_type /*block_idx*/)
 	const
 {
-	return arcstk::EmptyARId;
+	return ARId{};
 }
 
 
@@ -335,7 +335,7 @@ Checksum ChecksumValuesSource::do_checksum(
 		const ChecksumSource::size_type /*block_idx*/,
 		const ChecksumSource::size_type track_idx) const
 {
-	return reference_source_.at(track_idx);
+	return Checksum { reference_source_.at(track_idx) };
 }
 
 
@@ -407,7 +407,7 @@ EmptyChecksumSource::EmptyChecksumSource() = default;
 ARId EmptyChecksumSource::do_id(const ChecksumSource::size_type /*block_idx*/)
 	const
 {
-	return arcstk::EmptyARId;
+	return ARId{};
 }
 
 

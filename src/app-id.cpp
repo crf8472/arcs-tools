@@ -192,7 +192,7 @@ auto ARIdApplication::do_run_calculation(const Configuration& config) const
 
 	// Step 2: Calculate ARId by optionally using the audiofile
 
-	auto arid = arcstk::make_empty_arid();
+	auto arid = ARId{};
 
 	if (toc.complete())
 	{

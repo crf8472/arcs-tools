@@ -1557,9 +1557,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	// ARId
 
-	auto mine_arid = (toc && toc.complete())
-		? arcstk::make_arid(toc)
-		: arcstk::make_empty_arid();
+	auto mine_arid = (toc && toc.complete()) ? arcstk::make_arid(toc) : ARId{};
 
 	// Prepare verification
 

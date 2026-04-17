@@ -587,7 +587,7 @@ std::pair<Checksums, ToC> ARCalcApplication::calculate(
 		const auto checksums = c.calculate(audiofilenames,
 				first_file_is_first_track, last_file_is_last_track);
 
-		return { checksums, arcstk::EmptyToC };
+		return { checksums, ToC{} };
 	}
 
 	//Album: w ToC
@@ -766,7 +766,7 @@ auto ARCalcApplication::do_run_calculation(const Configuration& config) const
 
 	// If AccurateRip Id or URL is requested to print, calculate + validate ARId
 
-	auto arid = arcstk::make_empty_arid();
+	auto arid = arcstk::ARId{};
 
 	if (config.is_set(CALC::PRINTID) || config.is_set(CALC::PRINTURL))
 	{

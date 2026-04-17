@@ -77,13 +77,13 @@ std::string DefaultLabel<ATTR::LENGTH>() { return "Length"; };
 template<>
 std::string DefaultLabel<ATTR::CHECKSUM_ARCS1>()
 {
-	return arcstk::checksum::type_name(arcstk::checksum::type::ARCS1);
+	return arcstk::checksum::name(arcstk::checksum::type::ARCS1);
 };
 
 template<>
 std::string DefaultLabel<ATTR::CHECKSUM_ARCS2>()
 {
-	return arcstk::checksum::type_name(arcstk::checksum::type::ARCS2);
+	return arcstk::checksum::name(arcstk::checksum::type::ARCS2);
 };
 
 template<>
