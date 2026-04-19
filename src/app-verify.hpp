@@ -753,11 +753,11 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	 * \param[in] checksums Checksums to get matching tracks
 	 * \param[in] vresult   Result of the verification
 	 * \param[in] block     The block to match tracks from
-	 * \param[in] version   The ARCS version to match tracks for
+	 * \param[in] type      The ARCS type match tracks for
 	 */
 	void log_matching_files(const Checksums& checksums,
 		const VerificationResult& vresult, const int block,
-		const bool version = true) const;
+		const arcstk::checksum::type type) const;
 
 	/**
 	 * \brief Get reference values from Configuration.

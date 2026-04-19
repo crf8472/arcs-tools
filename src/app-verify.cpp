@@ -28,7 +28,7 @@
 #include <arcstk/metadata.hpp>      // for ToC
 #endif
 #ifndef LIBARCSTK_VERIFY_HPP_
-#include <arcstk/verify.hpp>        // for Checksum, Checksums, ChecksumSource
+#include <arcstk/verify.hpp>        // for ChecksumSource
 #endif
 #ifndef LIBARCSTK_DBAR_HPP_
 #include <arcstk/dbar.hpp>          // for DBAR, DBARSource
@@ -1192,8 +1192,7 @@ void AddField<ATTR::THEIRS>::do_create(TableComposer* c, const int r_idx)
 		curr_type =
 			types_to_print_->at(std::ceil(b / total_theirs_per_block_));
 
-		does_match = vresult_->track(block_idx, record_idx,
-						curr_type == arcstk::checksum::type::ARCS2);
+		does_match = vresult_->track(block_idx, record_idx, curr_type);
 
 		idx_label = block_idx + 1;
 		field_idx = c->field_idx(ATTR::THEIRS, b + 1);
@@ -1412,9 +1411,10 @@ std::unique_ptr<VerifyTableCreator> ARVerifyApplication::create_formatter(
 
 void ARVerifyApplication::log_matching_files(const Checksums& checksums,
 		const VerificationResult& vresult, const int block,
-		const bool version) const
+		const arcstk::checksum::type type) const
 {
 	using std::to_string;
+	using index_type = VerificationResult::index_type;
 
 	auto unmatched { checksums.size() };
 
@@ -1422,9 +1422,10 @@ void ARVerifyApplication::log_matching_files(const Checksums& checksums,
 	for (std::size_t t = 0; t < checksums.size() and unmatched > 0; ++t)
 	{
 		// Traverse specified block
-		for (int track = 0; track < vresult.tracks_per_block(); ++track)
+		for (auto track = unsigned { 0 }; track < vresult.tracks_per_block();
+				++track)
 		{
-			if (vresult.track(block, track, version))
+			if (vresult.track(block, static_cast<index_type>(track), type))
 			{
 				ARCS_LOG_DEBUG << "Pos " << to_string(track)
 					<< " matches track " << to_string(track + 1)
@@ -1634,7 +1635,8 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 		if (Logging::instance().has_level(arcstk::LOGLEVEL::DEBUG))
 		{
-			log_matching_files(checksums, *vresult, 1, true);
+			using arcstk::checksum::type;
+			log_matching_files(checksums, *vresult, 1, type::ARCS2);
 		}
 	}
 
@@ -1647,11 +1649,9 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	if (vresult->all_tracks_verified())
 	{
 		ARCS_LOG_INFO << "Response contains a total match (v"
-			<< (best_block::typeflag(best_b) + 1)
-			//<< (std::get<1>(best_b) + 1)
+			<< best_block::checksumtype(best_b)
 			<< ") to the input tracks in block "
 			<< best_block::index(best_b);
-			//<< std::get<0>(best_b);
 	} else
 	{
 		ARCS_LOG_INFO << "Best match was block "
@@ -1677,8 +1677,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 							: best_block::index(best_b);
 							//: std::get<0>(best_b);
 
-	const auto matching_version = best_block::typeflag(best_b);
-	//const auto matching_version = std::get<1>(best_b);
+	const auto matching_checksum_type = best_block::checksumtype(best_b);
 
 	auto filenames = std::vector<std::string> { };
 	if (print_filenames)
@@ -1710,9 +1709,7 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	} else
 	{
 		// Print only type that produced the best match
-		types_to_print = matching_version
-			? std::vector<TYPE>{ TYPE::ARCS2 }
-			: std::vector<TYPE>{ TYPE::ARCS1 };
+		types_to_print = std::vector<TYPE>{ matching_checksum_type };
 	}
 
 	// TODO Create formatter, then add types_to_print as print flags,
