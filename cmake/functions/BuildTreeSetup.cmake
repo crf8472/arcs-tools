@@ -1,7 +1,7 @@
 ## arcstk: Setup build tree
 ## vim:fdm=marker
 
-function (setup_build_tree)
+function (arcstk_setup_build_tree)
 
 ## -- Log Directory {{{1
 

@@ -1,7 +1,7 @@
-## Root CMake file for managing arcs-tools dependencies
+## arcstk: Root CMake file for managing arcs-tools dependencies
 ## vim:fdm=marker
 
-function (setup_required_dependencies )
+function (arcstk_setup_required_dependencies )
 
 if (WITH_SUBMODULES )
 

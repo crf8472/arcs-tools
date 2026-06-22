@@ -1,10 +1,10 @@
-## libarcsdec: Acquire git version info
+## arcstk: Acquire git version info
 ## vim:fdm=marker
 
 find_package (Git QUIET REQUIRED )
 
 ## Execute git
-function (_git_execute_command OUT_VAR )
+function (_arcstk_git_execute_command OUT_VAR )
 
 	# ARGN contains all arguments after OUT_VAR
 	execute_process (
@@ -25,9 +25,9 @@ endfunction()
 
 
 # Get git version string
-function(git_get_version_string VERSION_VAR )
+function (arcstk_git_get_version_string VERSION_VAR )
 
-	_git_execute_command(GIT_VERSION describe --always HEAD )
+	_arcstk_git_execute_command (GIT_VERSION describe --always HEAD )
 
 	if (GIT_VERSION STREQUAL "UNKNOWN" )
 
@@ -42,9 +42,9 @@ function(git_get_version_string VERSION_VAR )
 endfunction()
 
 # Get git commit id
-function(git_get_commit_id COMMIT_VAR )
+function (arcstk_git_get_commit_id COMMIT_VAR )
 
-	_git_execute_command(GIT_COMMIT_ID rev-parse HEAD )
+	_arcstk_git_execute_command (GIT_COMMIT_ID rev-parse HEAD )
 
 	if (GIT_COMMIT_ID STREQUAL "UNKNOWN")
 
