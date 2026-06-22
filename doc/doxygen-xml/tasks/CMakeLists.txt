@@ -67,7 +67,7 @@ function (add_doxygen_xslt_task TASK XML_INPUT_FILES )
 	##	TARGET  ${TASK_TARGET} PRE_BUILD
 	##	COMMENT "List input files of task ${TASK}"
 	##	COMMAND ${CMAKE_COMMAND} -P
-	##		"${PROJECT_ROOT_DIR}/doc/doxygen-xml/tasks/${TASK}/file_list.cmake"
+	##		"${ARCSTK_ROOT_DIR}/doc/doxygen-xml/tasks/${TASK}/file_list.cmake"
 	##	VERBATIM
 	## )
 	##
@@ -85,9 +85,9 @@ function (add_doxygen_xslt_task TASK XML_INPUT_FILES )
 	add_custom_command (
 		TARGET  ${TASK_TARGET} POST_BUILD
 		COMMAND "${PYTHON_CMD}"
-		ARGS    "${PROJECT_ROOT_DIR}/doc/doxygen-xml/tasks/xsl_transform.py"
+		ARGS    "${ARCSTK_ROOT_DIR}/doc/doxygen-xml/tasks/xsl_transform.py"
 				"${XML_INPUT_FILES}"
-				"${PROJECT_ROOT_DIR}/doc/doxygen-xml/tasks/${TASK}/${TASK}.xsl"
+				"${ARCSTK_ROOT_DIR}/doc/doxygen-xml/tasks/${TASK}/${TASK}.xsl"
 		WORKING_DIRECTORY "${DOC_GEN_DIR}"
 		COMMENT "Run transformations of task ${TASK}"
 		VERBATIM

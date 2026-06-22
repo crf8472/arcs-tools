@@ -6,14 +6,14 @@ function (setup_build_tree)
 ## -- Log Directory {{{1
 
 add_custom_command (
-	OUTPUT  "${PROJECT_LOG_DIR}"
+	OUTPUT  "${ARCSTK_LOG_BINARY_DIR}"
 	COMMAND "${CMAKE_COMMAND}"
-	ARGS    -E make_directory "${PROJECT_LOG_DIR}"
+	ARGS    -E make_directory "${ARCSTK_LOG_BINARY_DIR}"
 	VERBATIM
 )
 
 add_custom_target (arcstools_create_log_dir ALL
-	DEPENDS "${PROJECT_LOG_DIR}" )
+	DEPENDS "${ARCSTK_LOG_BINARY_DIR}" )
 ##}}}1
 
 endfunction()

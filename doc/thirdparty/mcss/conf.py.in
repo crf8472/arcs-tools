@@ -4,7 +4,7 @@
 
 DOXYFILE = 'Doxyfile'
 
-MAIN_PROJECT_URL = "@PROJECT_URL@/"
+MAIN_PROJECT_HOMEPAGE_URL = "@PROJECT_HOMEPAGE_URL@/"
 
 LINKS_NAVBAR1    = [
 #    ("Modules", 'modules', []),

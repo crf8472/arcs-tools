@@ -147,7 +147,7 @@ add_dependencies (arcstools_mcss_generate_html
 
 ## --- Target for Running m.css {{{1
 
-set (MCSS_LOG_FILE "${PROJECT_LOG_DIR}/MCSS.log" )
+set (MCSS_LOG_FILE "${ARCSTK_LOG_BINARY_DIR}/MCSS.log" )
 
 if (DOXYGEN_XML_POSTPROCESSING_TASKS )
 

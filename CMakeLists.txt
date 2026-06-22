@@ -14,24 +14,14 @@ cmake_policy (SET CMP0048 NEW )
 
 project (arcstk VERSION 0.1.3 LANGUAGES CXX )
 
-set (PROJECT_VERSION_SUFFIX "alpha.2" )
+set (ARCSTK_VERSION_SUFFIX "alpha.2" )
+set (ARCSTK_VERSION_STRING "${PROJECT_VERSION}-${ARCSTK_VERSION_SUFFIX}" )
 
-set (PROJECT_VERSION_STRING_WITHOUT_SUFFIX
-	"${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
-	)
+set (PROJECT_DESCRIPTION "Example Toolkit for libarcstk" )
 
-set (PROJECT_VERSION_STRING "${PROJECT_VERSION_STRING_WITHOUT_SUFFIX}" )
+set (PROJECT_HOMEPAGE_URL "https://github.com/crf8472/${PROJECT_NAME}/" )
 
-if (PROJECT_VERSION_SUFFIX )
-	set (PROJECT_VERSION_STRING
-		"${PROJECT_VERSION_STRING_WITHOUT_SUFFIX}-${PROJECT_VERSION_SUFFIX}" )
-endif (PROJECT_VERSION_SUFFIX )
-
-set (PROJECT_BRIEF_DESC "Example Toolkit for libarcstk" )
-
-set (PROJECT_URL "https://github.com/crf8472/${PROJECT_NAME}/" )
-
-message (STATUS "Building ${PROJECT_NAME} ${PROJECT_VERSION_STRING}" )
+message (STATUS "Building ${PROJECT_NAME} ${ARCSTK_VERSION_STRING}" )
 
 ## --- Includes {{{1
 set (cmake_include_dir_ "${CMAKE_CURRENT_SOURCE_DIR}/cmake/functions" )
@@ -69,7 +59,7 @@ message (STATUS "CMAKE_MODULE_PATH is now ${CMAKE_MODULE_PATH}" )
 
 if (NOT CMAKE_BUILD_TYPE )
 
-	set (CMAKE_BUILD_TYPE "${PROJECT_DEFAULT_BUILD_TYPE}"
+	set (CMAKE_BUILD_TYPE "Release"
 		CACHE STRING "Choose the type of build (e.g. Debug or Release)" FORCE )
 
 	message (STATUS "No build type specified, set to ${CMAKE_BUILD_TYPE}" )
@@ -91,14 +81,14 @@ set_property (DIRECTORY APPEND
 git_get_version_string (ARCSTK_GIT_VERSION_STRING )
 git_get_commit_id      (ARCSTK_GIT_COMMIT_ID )
 
-configure_file (${PROJECT_SOURCE_DIR}/version.cpp.in
-	${PROJECT_BUILD_SOURCE_DIR}/version.cpp
+configure_file (${ARCSTK_SOURCE_DIR}/version.cpp.in
+	${ARCSTK_GENSRC_BINARY_DIR}/version.cpp
 	@ONLY )
 
 ## 1}}}
 ## --- Define Project Target {{{1
 
-add_executable (${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/main.cpp )
+add_executable (${PROJECT_NAME} ${ARCSTK_SOURCE_DIR}/main.cpp )
 
 ## Use this for all and everything, intentionally not target_properties
 #set (CMAKE_CXX_STANDARD          17  )
@@ -116,30 +106,30 @@ set_target_properties (${PROJECT_NAME} PROPERTIES
 ## -- target: objects {{{2
 
 add_library (arcstk_objects OBJECT
-	"${PROJECT_SOURCE_DIR}/ansi.cpp"
-	"${PROJECT_SOURCE_DIR}/app-calc.cpp"
-	"${PROJECT_SOURCE_DIR}/app-id.cpp"
-	"${PROJECT_SOURCE_DIR}/app-parse.cpp"
-	"${PROJECT_SOURCE_DIR}/app-verify.cpp"
-	"${PROJECT_SOURCE_DIR}/application.cpp"
-	"${PROJECT_SOURCE_DIR}/appregistry.cpp"
-	"${PROJECT_SOURCE_DIR}/clitokens.cpp"
-	"${PROJECT_SOURCE_DIR}/config.cpp"
-	"${PROJECT_SOURCE_DIR}/layouts.cpp"
-	"${PROJECT_SOURCE_DIR}/table.cpp"
-	"${PROJECT_SOURCE_DIR}/tools-arid.cpp"
-	"${PROJECT_SOURCE_DIR}/tools-calc.cpp"
-	"${PROJECT_SOURCE_DIR}/tools-dbar.cpp"
-	"${PROJECT_SOURCE_DIR}/tools-fs.cpp"
-	"${PROJECT_SOURCE_DIR}/tools-info.cpp"
-	"${PROJECT_SOURCE_DIR}/tools-input.cpp"
-	"${PROJECT_SOURCE_DIR}/tools-table.cpp"
-	"${PROJECT_SOURCE_DIR}/result.cpp"
-	"${PROJECT_BUILD_SOURCE_DIR}/version.cpp"
+	"${ARCSTK_SOURCE_DIR}/ansi.cpp"
+	"${ARCSTK_SOURCE_DIR}/app-calc.cpp"
+	"${ARCSTK_SOURCE_DIR}/app-id.cpp"
+	"${ARCSTK_SOURCE_DIR}/app-parse.cpp"
+	"${ARCSTK_SOURCE_DIR}/app-verify.cpp"
+	"${ARCSTK_SOURCE_DIR}/application.cpp"
+	"${ARCSTK_SOURCE_DIR}/appregistry.cpp"
+	"${ARCSTK_SOURCE_DIR}/clitokens.cpp"
+	"${ARCSTK_SOURCE_DIR}/config.cpp"
+	"${ARCSTK_SOURCE_DIR}/layouts.cpp"
+	"${ARCSTK_SOURCE_DIR}/table.cpp"
+	"${ARCSTK_SOURCE_DIR}/tools-arid.cpp"
+	"${ARCSTK_SOURCE_DIR}/tools-calc.cpp"
+	"${ARCSTK_SOURCE_DIR}/tools-dbar.cpp"
+	"${ARCSTK_SOURCE_DIR}/tools-fs.cpp"
+	"${ARCSTK_SOURCE_DIR}/tools-info.cpp"
+	"${ARCSTK_SOURCE_DIR}/tools-input.cpp"
+	"${ARCSTK_SOURCE_DIR}/tools-table.cpp"
+	"${ARCSTK_SOURCE_DIR}/result.cpp"
+	"${ARCSTK_GENSRC_BINARY_DIR}/version.cpp"
 )
 
 target_include_directories (arcstk_objects
-	PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}> )
+	PRIVATE $<BUILD_INTERFACE:${ARCSTK_SOURCE_DIR}> )
 
 set_target_properties (arcstk_objects PROPERTIES
 	CXX_STANDARD          17

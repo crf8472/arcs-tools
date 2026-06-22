@@ -25,13 +25,13 @@ configure_file (MAINPAGE.md.in "${DOC_TEXTS_MAINPAGE}" @ONLY )
 
 foreach (FILE IN ITEMS "BUILD" ) # TODO Add "CODING"
 
-	set (DOC_SOURCES  ${DOC_SOURCES} "${PROJECT_ROOT_DIR}/${FILE}.md" )
+	set (DOC_SOURCES  ${DOC_SOURCES} "${ARCSTK_ROOT_DIR}/${FILE}.md" )
 
 	add_custom_command(
 		TARGET arcstools_static_pages_files PRE_BUILD
 		COMMAND "${CMAKE_COMMAND}"
 		ARGS -E copy
-			"${PROJECT_ROOT_DIR}/${FILE}.md"
+			"${ARCSTK_ROOT_DIR}/${FILE}.md"
 			"${CMAKE_CURRENT_BINARY_DIR}/${FILE}.md"
 		VERBATIM
 	)

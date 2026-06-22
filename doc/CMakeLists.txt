@@ -26,7 +26,7 @@ find_package (Doxygen ) ## must be >= 1.9.8, also ok: 1.8.15...1.8.20
 ## --- Some Variables {{{1
 
 ## Target directory for generated documentation
-set (DOC_GEN_DIR          "${PROJECT_BINARY_DIR}/generated-docs" )
+set (DOC_GEN_DIR          "${ARCSTK_BINARY_DIR}/generated-docs" )
 
 ## Construct comment for doc target
 set (DOC_COMMENT          "Build documentation for APIs" )
@@ -72,9 +72,9 @@ add_custom_target (arcstools_create_output_dir DEPENDS "${DOC_GEN_DIR}" )
 
 set (DOXYGEN_OUTPUT_DIRECTORY       "${DOC_GEN_DIR}/doxygen" )
 set (DOXYGEN_FILE_PATTERNS          "*.hpp *.md" )
-set (DOXYGEN_STRIP_FROM_INC_PATH    "${PROJECT_LOCAL_INCLUDE_DIR}/" )
-set (DOXYGEN_STRIP_FROM_PATH        "${PROJECT_LOCAL_INCLUDE_DIR}/" )
-set (DOXYGEN_INPUT                  "${PROJECT_LOCAL_INCLUDE_DIR}/" )
+set (DOXYGEN_STRIP_FROM_INC_PATH    "${ARCSTK_INCLUDE_SOURCE_DIR}/" )
+set (DOXYGEN_STRIP_FROM_PATH        "${ARCSTK_INCLUDE_SOURCE_DIR}/" )
+set (DOXYGEN_INPUT                  "${ARCSTK_INCLUDE_SOURCE_DIR}/" )
 
 
 
@@ -95,13 +95,13 @@ if (WITH_INTERNAL_DOCS )
 	set (DOXYGEN_INTERNAL_DOCS "YES" )
 
 	string (REPLACE ";" " " DOXYGEN_INPUT
-		"${DOXYGEN_INPUT};${PROJECT_SOURCE_DIR}/;${PROJECT_GEN_SOURCES_DIR}/" )
+		"${DOXYGEN_INPUT};${ARCSTK_SOURCE_DIR}/;${ARCSTK_GENSRC_BINARY_DIR}/" )
 
 	string (REPLACE ";" " " DOXYGEN_STRIP_FROM_INC_PATH
-		"${DOXYGEN_STRIP_FROM_INC_PATH}/;${PROJECT_SOURCE_DIR}/;${PROJECT_GEN_SOURCES_DIR}/" )
+		"${DOXYGEN_STRIP_FROM_INC_PATH}/;${ARCSTK_SOURCE_DIR}/;${ARCSTK_GENSRC_BINARY_DIR}/" )
 
 	string (REPLACE ";" " " DOXYGEN_STRIP_FROM_PATH
-		"${DOXYGEN_STRIP_FROM_PATH}/;${PROJECT_SOURCE_DIR}/;${PROJECT_GEN_SOURCES_DIR}/" )
+		"${DOXYGEN_STRIP_FROM_PATH}/;${ARCSTK_SOURCE_DIR}/;${ARCSTK_GENSRC_BINARY_DIR}/" )
 
 	# commented out, no list of private headers available
 	#set (DOC_SOURCES ${DOC_SOURCES} ${PRIVATE_HEADERS} )

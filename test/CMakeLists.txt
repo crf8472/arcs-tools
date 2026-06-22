@@ -54,8 +54,8 @@ foreach (_testcase ${TEST_SETS} )
 	set_property (TARGET ${_testcase}_test PROPERTY CXX_STANDARD 17 )
 
 	target_include_directories (${_testcase}_test
-		PRIVATE ${PROJECT_SOURCE_DIR}         ## project headers
-		PRIVATE ${PROJECT_BUILD_SOURCE_DIR}   ## generated sources
+		PRIVATE ${ARCSTK_SOURCE_DIR}         ## project headers
+		PRIVATE ${ARCSTK_GENSRC_BINARY_DIR}   ## generated sources
 	)
 
 	if (WITH_SUBMODULES )
@@ -89,7 +89,7 @@ foreach (_testcase ${TEST_SETS} )
 		add_test (
 			NAME ${_testcase}_test_script
 			COMMAND ${CMAKE_COMMAND}
-				-DOUTFILE=${PROJECT_BINARY_DIR}/report.${_testcase}.xml
+				-DOUTFILE=${ARCSTK_BINARY_DIR}/report.${_testcase}.xml
 				-DREPORT=junit
 				-DBIN_DIR=${CMAKE_CURRENT_BINARY_DIR}
 				-DDATA_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data
@@ -104,7 +104,7 @@ foreach (_testcase ${TEST_SETS} )
 		add_test (
 			NAME    ${_testcase}_test
 			COMMAND ${_testcase}_test
-				-o "${PROJECT_BINARY_DIR}/report.${_testcase}.xml"
+				-o "${ARCSTK_BINARY_DIR}/report.${_testcase}.xml"
 				-r junit
 			WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data"
 		)

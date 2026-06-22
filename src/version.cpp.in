@@ -27,9 +27,9 @@ extern const int ARCSTOOLS_VERSION_MINOR = std::stoi("@PROJECT_VERSION_MINOR@");
 
 extern const int ARCSTOOLS_VERSION_PATCH = std::stoi("@PROJECT_VERSION_PATCH@");
 
-extern const std::string ARCSTOOLS_VERSION_SUFFIX { "@PROJECT_VERSION_SUFFIX@" };
+extern const std::string ARCSTOOLS_VERSION_SUFFIX { "@ARCSTK_VERSION_SUFFIX@" };
 
-extern const std::string ARCSTOOLS_VERSION { "@PROJECT_VERSION_STRING@" };
+extern const std::string ARCSTOOLS_VERSION { "@ARCSTK_VERSION_STRING@" };
 
 extern const std::string ARCSTOOLS_GIT_VERSION { "@ARCSTK_GIT_VERSION_STRING@" };
 

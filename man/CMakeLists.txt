@@ -20,7 +20,7 @@ set (MAN_SRC_DIR         "${CMAKE_CURRENT_BINARY_DIR}/configured-doxfiles" )
 set (MAN_DOXYGEN_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/doxygen-output" )
 
 ## Directory for generated man pages
-set (MAN_BUILD_DIR       "${PROJECT_BINARY_DIR}/generated-manpages" )
+set (MAN_BUILD_DIR       "${ARCSTK_BINARY_DIR}/generated-manpages" )
 
 
 ## Compound target for creating the manpages (conatins all steps)

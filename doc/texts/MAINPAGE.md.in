@@ -1,4 +1,4 @@
-\mainpage ARCS Tools - @PROJECT_BRIEF_DESC@
+\mainpage ARCS Tools - @PROJECT_DESCRIPTION@
 
 
 \section Home
@@ -57,7 +57,7 @@ can instead pull them as submodules by doing:
 	$ cmake -DCMAKE_BUILD_TYPE=Release -DWITH_SUBMODULES=ON ..
 
 This documentation was generated from commit
-[@GIT_VERSION_STRING@](@PROJECT_URL@/commit/@GIT_COMMIT_ID@).
+[@ARCSTK_GIT_VERSION_STRING@](@PROJECT_HOMEPAGE_URL@/commit/@ARCSTK_GIT_COMMIT_ID@).
 
 [1]: https://github.com/crf8472/libarcstk
 [2]: https://github.com/crf8472/libarcsdec
