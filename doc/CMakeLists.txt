@@ -10,12 +10,6 @@
 ##            arcstools_doc_generate_html, arcstools_doc_generate_pdf
 
 cmake_minimum_required (VERSION 3.12 )
-## --- Policies {{{1
-
-## Support IN_LIST if() operator required by FindDoxygen.cmake
-## https://cmake.org/cmake/help/latest/policy/CMP0057.html
-cmake_policy (SET CMP0057 NEW )
-## 1}}}
 
 message (STATUS "Build documentation" )
 
