@@ -31,7 +31,7 @@ extern const std::string ARCSTOOLS_VERSION_SUFFIX { "@PROJECT_VERSION_SUFFIX@" }
 
 extern const std::string ARCSTOOLS_VERSION { "@PROJECT_VERSION_STRING@" };
 
-extern const std::string ARCSTOOLS_GIT_VERSION { "@GIT_VERSION_STRING@" };
+extern const std::string ARCSTOOLS_GIT_VERSION { "@ARCSTK_GIT_VERSION_STRING@" };
 
 } // namespace v_1_0_0
 } // namespace arcsapp

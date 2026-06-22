@@ -2,6 +2,7 @@
 ## vim:fdm=marker
 
 cmake_minimum_required (VERSION 3.15 )
+
 ## --- Policies {{{1
 
 ## Set variables corresponding to unspecified versions to the empty string.
@@ -11,19 +12,9 @@ cmake_policy (SET CMP0048 NEW )
 
 ## 1}}}
 
-
 project (arcstk VERSION 0.1.3 LANGUAGES CXX )
 
 set (PROJECT_VERSION_SUFFIX "alpha.2" )
-
-
-## --- Setup Short Description, URL and Version Information {{{1
-
-set (PROJECT_BRIEF_DESC "Example Toolkit for libarcstk" )
-
-set (PROJECT_URL "https://github.com/crf8472/${PROJECT_NAME}/" )
-
-set (PROJECT_DEFAULT_BUILD_TYPE "Release" )
 
 set (PROJECT_VERSION_STRING_WITHOUT_SUFFIX
 	"${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
@@ -36,32 +27,34 @@ if (PROJECT_VERSION_SUFFIX )
 		"${PROJECT_VERSION_STRING_WITHOUT_SUFFIX}-${PROJECT_VERSION_SUFFIX}" )
 endif (PROJECT_VERSION_SUFFIX )
 
+set (PROJECT_BRIEF_DESC "Example Toolkit for libarcstk" )
+
+set (PROJECT_URL "https://github.com/crf8472/${PROJECT_NAME}/" )
+
 message (STATUS "Building ${PROJECT_NAME} ${PROJECT_VERSION_STRING}" )
 
+## --- Includes {{{1
+set (cmake_include_dir_ "${CMAKE_CURRENT_SOURCE_DIR}/cmake/functions" )
 
+## Mandatory configuration
+include ("${cmake_include_dir_}/ProjectFilesAndDirectories.cmake" )
+include ("${cmake_include_dir_}/BuildTreeSetup.cmake" )
+include ("${cmake_include_dir_}/CompilerFlags.cmake" )
+include ("${cmake_include_dir_}/GitInfo.cmake" )
+include ("${cmake_include_dir_}/Dependencies.cmake" )
 
-## --- Setup Default Build Type {{{1
+## Optional support for development
+#include ("${cmake_include_dir_}/ToolClangTidy.cmake" )
+#include ("${cmake_include_dir_}/ToolGraphViz.cmake" )
+#include ("${cmake_include_dir_}/ToolClangIncludeGraph.cmake" )
 
-if (NOT CMAKE_BUILD_TYPE )
+unset (cmake_include_dir_ )
+## 1}}}
+## --- CMake Setup {{{1
 
-	set (CMAKE_BUILD_TYPE "${PROJECT_DEFAULT_BUILD_TYPE}"
-		CACHE STRING "Choose the type of build (e.g. Debug or Release)" FORCE )
+set (CMAKE_EXPORT_COMPILE_COMMANDS ON ) ## required for clang-tidy and iwyu
 
-	message (STATUS "No build type specified, set to ${CMAKE_BUILD_TYPE}" )
-endif (NOT CMAKE_BUILD_TYPE )
-
-message (STATUS "Build type: ${CMAKE_BUILD_TYPE}" )
-
-
-
-## --- Trigger Configuration Step Whenever Git Index Changes {{{1
-
-set_property (DIRECTORY APPEND
-	PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/.git/index" )
-
-
-
-## --- CMake Modules Setup {{{1
+## --- CMake Modules Setup {{{2
 
 ## Tell find_package to first try locating libarcstk via system-installed
 ## .config file instead of project's FindLibarcstk.cmake module
@@ -71,126 +64,58 @@ set (CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE ) ## since CMake 3.15
 message (STATUS "CMAKE_MODULE_PATH is currently ${CMAKE_MODULE_PATH}" )
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 message (STATUS "CMAKE_MODULE_PATH is now ${CMAKE_MODULE_PATH}" )
+## 2}}}
+## --- Setup Default Build Type {{{2
 
+if (NOT CMAKE_BUILD_TYPE )
 
+	set (CMAKE_BUILD_TYPE "${PROJECT_DEFAULT_BUILD_TYPE}"
+		CACHE STRING "Choose the type of build (e.g. Debug or Release)" FORCE )
 
-## --- Project Directory Layout {{{1
+	message (STATUS "No build type specified, set to ${CMAKE_BUILD_TYPE}" )
+endif (NOT CMAKE_BUILD_TYPE )
+## 2}}}
+## 1}}}
 
-## Source directory for markdown files
-set (PROJECT_ROOT_DIR           "${CMAKE_CURRENT_SOURCE_DIR}" )
+message (STATUS "Build type: ${CMAKE_BUILD_TYPE}" )
 
-## Root directory for sources
-set (PROJECT_SOURCE_DIR         "${CMAKE_CURRENT_SOURCE_DIR}/src" )
+## --- Setup Build Tree {{{1
+setup_build_tree()
 
-## Root directory for public/exported headers
-set (PROJECT_LOCAL_INCLUDE_DIR  "${PROJECT_SOURCE_DIR}" )
+## 1}}}
+## --- Trigger Configuration Step Whenever Git Index Changes {{{1
 
-## Root directory for out-of-source build
-set (PROJECT_BINARY_DIR         "${CMAKE_CURRENT_BINARY_DIR}" )
+set_property (DIRECTORY APPEND
+	PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/.git/index" )
 
-## Target directory for non-cmake logs
-set (PROJECT_LOG_DIR            "${PROJECT_BINARY_DIR}/log" )
+git_get_version_string (ARCSTK_GIT_VERSION_STRING )
+git_get_commit_id      (ARCSTK_GIT_COMMIT_ID )
 
-## Target directory for generated sources and configuration
-set (PROJECT_BUILD_SOURCE_DIR   "${PROJECT_BINARY_DIR}/generated-sources" )
-
-
-
-## --- Create build-tree directories  {{{1
-
-## -- Log directory {{{2
-
-add_custom_command (
-	OUTPUT  "${PROJECT_LOG_DIR}"
-	COMMAND "${CMAKE_COMMAND}"
-	ARGS    -E make_directory "${PROJECT_LOG_DIR}"
-	VERBATIM
-)
-
-add_custom_target (arcstools_create_log_dir ALL DEPENDS "${PROJECT_LOG_DIR}" )
-##	TODO Remove: COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_LOG_DIR}" )
-
-
-## --- Update version.cpp with info from git {{{1
-
-find_package (Git QUIET REQUIRED )
-
-## Run 'git describe'
-execute_process (
-	COMMAND ${GIT_EXECUTABLE} describe --always HEAD
-	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-	RESULT_VARIABLE GIT_EXIT_CODE
-	OUTPUT_VARIABLE GIT_VERSION_STRING
-	OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-## Did running git work?
-if (GIT_EXIT_CODE EQUAL 0 )
-	message (STATUS "git describe --always HEAD: ${GIT_VERSION_STRING}" )
-else()
-	message (WARNING "Failed to run git describe --always HEAD" )
-endif()
-
-## Run 'git rev-parse'
-execute_process (
-	COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
-	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-	RESULT_VARIABLE GIT_EXIT_CODE
-	OUTPUT_VARIABLE GIT_COMMIT_ID
-	OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-## Did running git work?
-if (GIT_EXIT_CODE EQUAL 0 )
-	message (STATUS "git rev-parse HEAD: ${GIT_COMMIT_ID}" )
-else()
-	message (WARNING "Failed to run git rev-parse HEAD" )
-endif()
-
-## This presupposes having CMAKE_CONFIGURE_DEPENDS set to .git/index
 configure_file (${PROJECT_SOURCE_DIR}/version.cpp.in
 	${PROJECT_BUILD_SOURCE_DIR}/version.cpp
 	@ONLY )
+
 ## 1}}}
-
-## Use this for all and everything, intentionally not target_properties
-set (CMAKE_CXX_STANDARD          17  )
-set (CMAKE_CXX_STANDARD_REQUIRED ON  )
-set (CMAKE_CXX_EXTENSIONS        OFF ) ## use -std=c++17 instead of -std=gnu++17
-
 ## --- Define Project Target {{{1
 
-## -- Specify Headers {{{2
+add_executable (${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/main.cpp )
 
-## TODO Remove headers
-# set (PRIVATE_HEADERS
-# 	"${PROJECT_SOURCE_DIR}/ansi.hpp"
-# 	"${PROJECT_SOURCE_DIR}/app-calc.hpp"
-# 	"${PROJECT_SOURCE_DIR}/app-id.hpp"
-# 	"${PROJECT_SOURCE_DIR}/app-parse.hpp"
-# 	"${PROJECT_SOURCE_DIR}/app-verify.hpp"
-# 	"${PROJECT_SOURCE_DIR}/application.hpp"
-# 	"${PROJECT_SOURCE_DIR}/appregistry.hpp"
-# 	"${PROJECT_SOURCE_DIR}/clitokens.hpp"
-# 	"${PROJECT_SOURCE_DIR}/config.hpp"
-# 	"${PROJECT_SOURCE_DIR}/layouts.hpp"
-# 	"${PROJECT_SOURCE_DIR}/table.hpp"
-# 	"${PROJECT_SOURCE_DIR}/tools-arid.hpp"
-# 	"${PROJECT_SOURCE_DIR}/tools-calc.hpp"
-# 	"${PROJECT_SOURCE_DIR}/tools-dbar.hpp"
-# 	"${PROJECT_SOURCE_DIR}/tools-fs.hpp"
-# 	"${PROJECT_SOURCE_DIR}/tools-info.hpp"
-# 	"${PROJECT_SOURCE_DIR}/tools-input.hpp"
-# 	"${PROJECT_SOURCE_DIR}/tools-table.hpp"
-# 	"${PROJECT_SOURCE_DIR}/tools-validate.hpp"
-# 	"${PROJECT_SOURCE_DIR}/result.hpp"
-# 	"${PROJECT_SOURCE_DIR}/version.hpp"
-# )
+## Use this for all and everything, intentionally not target_properties
+#set (CMAKE_CXX_STANDARD          17  )
+#set (CMAKE_CXX_STANDARD_REQUIRED ON  )
+#set (CMAKE_CXX_EXTENSIONS        OFF ) ## use -std=c++17 instead of -std=gnu++17
 
+set_target_properties (${PROJECT_NAME} PROPERTIES
+	CXX_STANDARD          17
+	CXX_STANDARD_REQUIRED ON
+	CXX_EXTENSIONS        OFF ## use -std=c++17 instead of std=gnu++17
+	PREFIX                ""
+	VERSION               "${PROJECT_VERSION}"
+	SOVERSION             "${PROJECT_VERSION}" )
 
-## -- Specify Sources {{{2
+## -- target: objects {{{2
 
-add_library (objects OBJECT
+add_library (arcstk_objects OBJECT
 	"${PROJECT_SOURCE_DIR}/ansi.cpp"
 	"${PROJECT_SOURCE_DIR}/app-calc.cpp"
 	"${PROJECT_SOURCE_DIR}/app-id.cpp"
@@ -213,137 +138,29 @@ add_library (objects OBJECT
 	"${PROJECT_BUILD_SOURCE_DIR}/version.cpp"
 )
 
-target_include_directories (objects
+target_include_directories (arcstk_objects
 	PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}> )
 
+set_target_properties (arcstk_objects PROPERTIES
+	CXX_STANDARD          17
+	CXX_STANDARD_REQUIRED ON
+	CXX_EXTENSIONS        OFF ## use -std=c++17 instead of std=gnu++17
+)
 
-## -- Configure Target {{{2
+## 2}}}
 
-add_executable (${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/main.cpp )
+target_link_libraries (${PROJECT_NAME} PRIVATE arcstk_objects )
 
-target_link_libraries (${PROJECT_NAME} PRIVATE objects )
-
-
+## 1}}}
 ## --- Compiler Specific Settings {{{1
 
-## -- Define Warning and Optimization Flags for g++ and clang++ {{{2
+apply_compiler_flags (arcstk_objects )
+apply_compiler_flags (${PROJECT_NAME} )
 
-## g++: Warnings
-set (PROJECT_CXX_GNU_FLAGS_WARNINGS
-	-Wall -Wextra -Wpedantic -Weffc++
-	-Wold-style-cast
-	-Wsuggest-override
-	-Wcast-align
-	-Wcast-qual
-	-Wctor-dtor-privacy
-	-Wdisabled-optimization
-	-Wformat=2
-	-Wlogical-op
-	-Wmissing-declarations
-	-Wmissing-include-dirs
-	-Wnoexcept
-	-Woverloaded-virtual
-	-Wredundant-decls
-	-Wshadow
-	-Wsign-conversion
-	-Wsign-promo
-	-Wstrict-null-sentinel
-	-Wstrict-overflow=3
-	-Wswitch-default
-	-Wundef
-	-Wuseless-cast
-	-Wzero-as-null-pointer-constant
-	)
+## 1}}}
 
-## g++: Optimize flags
-set (PROJECT_CXX_GNU_FLAGS_OPTIMIZE  -march=native -mtune=generic )
-
-
-## clang++: Warnings
-## Clang warnings are quite aggressive by default. Some of the g++ warnings are
-## either compatibility flags that do nothing or are activated by other meta
-## flags. Some are just on by default. The following list is intended to contain
-## only those flags that are off by default and no compatibility flags.
-set (PROJECT_CXX_CLANG_FLAGS_WARNINGS
-	-Wall -Wextra -Wpedantic -Weffc++
-	-Wold-style-cast
-	-Wcast-align
-	-Wcast-qual
-	-Wformat=2
-	-Wshadow
-	-Wsign-conversion
-	-Wundef
-	-Wunused
-	-Wzero-as-null-pointer-constant
-	# -- clang++ specific --
-	-Winconsistent-missing-destructor-override
-	)
-
-## clang++: Optimize flags
-set (PROJECT_CXX_CLANG_FLAGS_OPTIMIZE -march=native -mtune=generic )
-
-
-## -- Select Warning and Optimization Flags for Actual Compiler {{{2
-
-if (CMAKE_COMPILER_IS_GNUCXX ) ## for g++
-
-	message (STATUS "Select compile flags for g++" )
-
-	set (PROJECT_CXX_FLAGS_WARNINGS ${PROJECT_CXX_GNU_FLAGS_WARNINGS} )
-	set (PROJECT_CXX_FLAGS_OPTIMIZE ${PROJECT_CXX_GNU_FLAGS_OPTIMIZE} )
-
-elseif (CMAKE_CXX_COMPILER MATCHES ".*clang"       ## for clang
-		OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" )
-
-	message (STATUS "Select compile flags for clang++" )
-
-	set (PROJECT_CXX_FLAGS_WARNINGS ${PROJECT_CXX_CLANG_FLAGS_WARNINGS} )
-	set (PROJECT_CXX_FLAGS_OPTIMIZE ${PROJECT_CXX_CLANG_FLAGS_OPTIMIZE} )
-
-else()
-
-	message (WARNING "C++ Compiler seems to be neither g++ nor clang++" )
-	message (WARNING "No compile flags specified for the actual C++ compiler" )
-	message (WARNING "Try a generic compile without project specific flags" )
-
-endif()
-
-
-## -- Activate Compiler Warnings {{{2
-
-target_compile_options (objects         PRIVATE ${PROJECT_CXX_FLAGS_WARNINGS} )
-target_compile_options (${PROJECT_NAME} PRIVATE ${PROJECT_CXX_FLAGS_WARNINGS} )
-
-message (STATUS "Warning Flags: ${PROJECT_CXX_FLAGS_WARNINGS}" )
-
-
-## -- Manage Optimization Flags {{{2
-
-## - Optional: Activate Optimization Option (default ON for Release only) {{{3
-
-option (WITH_NATIVE "Use platform specific optimization on compiling" OFF )
-
-if (CMAKE_BUILD_TYPE STREQUAL "Release" )
-
-	set (WITH_NATIVE ON CACHE BOOL
-			"Release: Force platform specific optimization" FORCE )
-endif ()
-
-## - If Optimization Option Activated, Add Flags {{{3
-
-if (WITH_NATIVE )
-
-	message (STATUS "Build with platform specific optimization" )
-
-	target_compile_options (objects PRIVATE ${PROJECT_CXX_FLAGS_OPTIMIZE} )
-
-	target_compile_options (${PROJECT_NAME}
-		PRIVATE ${PROJECT_CXX_FLAGS_OPTIMIZE} )
-else()
-
-	message (STATUS "Build without platform specific optimization" )
-
-endif (WITH_NATIVE )
+get_target_property (ARCSTK_CXX_FLAGS ${PROJECT_NAME} COMPILE_OPTIONS )
+message (STATUS "Compile flags: ${ARCSTK_CXX_FLAGS}" )
 
 ## --- Installation {{{1
 
@@ -378,17 +195,12 @@ if (NOT SKIP_INSTALL_ALL )
 	endif(UNIX )
 
 endif()
-
-
-
-
-
-
+## 1}}}
 ## --- Optional: Build tests (default: OFF) {{{1
 
 option (WITH_TESTS "Build unit tests" OFF )
 
-if (WITH_TESTS)
+if (WITH_TESTS )
 
 	message (STATUS "Build with tests" )
 
@@ -405,10 +217,8 @@ if (WITH_TESTS)
 	## Add tests
 	add_subdirectory ("${CMAKE_CURRENT_SOURCE_DIR}/test" )
 
-endif (WITH_TESTS)
-
-
-
+endif (WITH_TESTS )
+## 1}}}
 ## --- Optional: Build documentation (default: OFF) {{{1
 
 option (WITH_DOCS          "Build documentation for public API"           OFF )
@@ -424,74 +234,23 @@ else ()
 		message (FATAL_ERROR "-DWITH_DOCS=ON is required to set USE_DOC_TOOL." )
 	endif()
 endif (WITH_DOCS )
+## 1}}}
+## --- Setup Dependencies {{{1
 
-## --- UNIX man pages {{{1
+option (WITH_SUBMODULES "Compile libarcstk and libarcsdec as submodules" OFF )
 
+setup_required_dependencies ()
+## 1}}}
+## --- Setup man pages (UNIX only) {{{1
 if (UNIX )
 
 	add_subdirectory (man )
 
 endif (UNIX )
-
-## --- Setup Dependencies {{{1
-
-option (WITH_SUBMODULES "Compile libarcstk and libarcsdec as submodules" OFF )
-
-if (WITH_SUBMODULES )
-
-	message (STATUS "Link to local submodules libarcstk and libarcsdec" )
-
-	## This signals libarcsdec's CMakeLists.txt where to find it's libarcstk
-	## depencency.
-	set (SUBMODULES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs" )
-
-	add_subdirectory (${SUBMODULES_DIR}/libarcstk  )
-	add_subdirectory (${SUBMODULES_DIR}/libarcsdec )
-
-	## Commented out: try to force RPATH to build tree .so's but no success
-	#set (CMAKE_SKIP_BUILD_RPATH            FALSE )
-	#set (CMAKE_BUILD_WITH_INSTALL_RPATH    FALSE )
-	#set (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE  )
-else()
-
-	message (STATUS "Link to system-installed libarcstk and libarcsdec" )
-
-	find_package (libarcstk  0.9.0 REQUIRED )
-	find_package (libarcsdec 0.3.0 REQUIRED )
-endif()
-
-
-## --- Required: libarcstk
-
-if (TARGET libarcstk::libarcstk )
-
-	if (WITH_SUBMODULES )
-		# Force to set RPATH instead of RUNPATH, point to .so's in build tree.
-		# Note that this is for development and will not support installation.
-		target_link_libraries (objects
-			PUBLIC libarcstk::libarcstk -Wl,--disable-new-dtags )
-	else()
-		target_link_libraries (objects PUBLIC libarcstk::libarcstk )
-	endif()
-else()
-	message (FATAL_ERROR "libarcstk targets are not present" )
-endif()
-
-
-
-## --- Required: libarcsdec
-
-if (TARGET libarcsdec::libarcsdec )
-
-	if (WITH_SUBMODULES )
-		# Force to set RPATH instead of RUNPATH, point to .so's in build tree.
-		# Note that this is for development and will not support installation.
-		target_link_libraries (objects
-			PUBLIC libarcsdec::libarcsdec -Wl,--disable-new-dtags )
-	else()
-		target_link_libraries (objects PUBLIC libarcsdec::libarcsdec )
-	endif()
-else()
-	message (FATAL_ERROR "libarcsdec targets are not present" )
-endif()
 ## 1}}}
+## --- Setup development tools {{{1
+#enable_clang_tidy              (ARCSTK_CLANG_TIDY_ENABLED )
+#enable_target_dep_graph_by_dot (ARCSTK_TARGET_DEPS_GRAPH_ENABLED )
+#enable_clang_include_graph     (ARCSTK_CLANG_INCLUDE_GRAPH_ENABLED )
+## 1}}}
+
