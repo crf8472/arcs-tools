@@ -3,15 +3,6 @@
 
 cmake_minimum_required (VERSION 3.15 )
 
-## --- Policies {{{1
-
-## Set variables corresponding to unspecified versions to the empty string.
-## Required for specifying the project version along with the name in project().
-## See: https://cmake.org/cmake/help/latest/policy/CMP0048.html
-cmake_policy (SET CMP0048 NEW )
-
-## 1}}}
-
 project (arcstk VERSION 0.1.3 LANGUAGES CXX )
 
 set (ARCSTK_VERSION_SUFFIX "alpha.2" )
@@ -70,7 +61,7 @@ endif (NOT CMAKE_BUILD_TYPE )
 message (STATUS "Build type: ${CMAKE_BUILD_TYPE}" )
 
 ## --- Setup Build Tree {{{1
-setup_build_tree()
+arcstk_setup_build_tree()
 
 ## 1}}}
 ## --- Trigger Configuration Step Whenever Git Index Changes {{{1
@@ -78,8 +69,7 @@ setup_build_tree()
 set_property (DIRECTORY APPEND
 	PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/.git/index" )
 
-git_get_version_string (ARCSTK_GIT_VERSION_STRING )
-git_get_commit_id      (ARCSTK_GIT_COMMIT_ID )
+arcstk_git_get_version_string (ARCSTK_GIT_VERSION_STRING )
 
 configure_file (${ARCSTK_SOURCE_DIR}/version.cpp.in
 	${ARCSTK_GENSRC_BINARY_DIR}/version.cpp
@@ -144,8 +134,8 @@ target_link_libraries (${PROJECT_NAME} PRIVATE arcstk_objects )
 ## 1}}}
 ## --- Compiler Specific Settings {{{1
 
-apply_compiler_flags (arcstk_objects )
-apply_compiler_flags (${PROJECT_NAME} )
+arcstk_apply_compiler_flags (arcstk_objects )
+arcstk_apply_compiler_flags (${PROJECT_NAME} )
 
 ## 1}}}
 
@@ -229,7 +219,7 @@ endif (WITH_DOCS )
 
 option (WITH_SUBMODULES "Compile libarcstk and libarcsdec as submodules" OFF )
 
-setup_required_dependencies ()
+arcstk_setup_required_dependencies ()
 ## 1}}}
 ## --- Setup man pages (UNIX only) {{{1
 if (UNIX )

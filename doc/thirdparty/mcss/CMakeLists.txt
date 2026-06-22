@@ -9,7 +9,7 @@
 ## - Variables: DOC_COMMENT, DOC_DOXYFILE_BASE, DOC_GEN_DIR, DOC_SOURCES
 ##
 ## Provides:
-## - Targets: 'arcstools_mcss_generate_html'
+## - Targets: 'arcstk_mcss_generate_html'
 
 cmake_minimum_required (VERSION 3.10 )
 
@@ -45,8 +45,8 @@ set (MCSS_SCRIPT_RELPATH "documentation/doxygen.py" )
 ## 1}}}
 
 
-add_custom_target (arcstools_mcss_generate_html DEPENDS "${INDEX_HTML}" )
-add_dependencies  (arcstools_doc_generate_html arcstools_mcss_generate_html )
+add_custom_target (arcstk_mcss_generate_html DEPENDS "${INDEX_HTML}" )
+add_dependencies  (arcstk_doc_generate_html arcstk_mcss_generate_html )
 
 
 ## --- Define m.css to be Checked out/Updated on Configure {{{1
@@ -88,7 +88,7 @@ else()
 
 	include (ExternalProject )
 
-	ExternalProject_Add (arcstools_mcss_download
+	ExternalProject_Add (arcstk_mcss_download
 		GIT_REPOSITORY    ${MCSS_REPO_URL}
 		#GIT_TAG          ... use always HEAD of default branch
 		GIT_SHALLOW       true
@@ -111,7 +111,7 @@ else()
 
 	unset(SOURCE_DIR )
 
-	add_dependencies (arcstools_mcss_generate_html arcstools_mcss_download )
+	add_dependencies (arcstk_mcss_generate_html arcstk_mcss_download )
 	# 2}}}
 endif()
 
@@ -134,13 +134,13 @@ configure_file ("${CONFPY_SOURCE}" "${CONFPY}"  @ONLY )
 
 ## --- Set up Python Environment {{{1
 
-add_requirements_target (arcstools_mcss_requirements
+add_requirements_target (arcstk_mcss_requirements
 	"${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt"
 )
 
-add_dependencies (arcstools_mcss_generate_html
-	arcstools_mcss_requirements
-	arcstools_doxygen_provide_xml
+add_dependencies (arcstk_mcss_generate_html
+	arcstk_mcss_requirements
+	arcstk_doxygen_provide_xml
 )
 
 
@@ -154,7 +154,7 @@ if (DOXYGEN_XML_POSTPROCESSING_TASKS )
 	## Doxygen needs to run separately from m.css since we want to post-process
 	## its XML output.
 
-	add_doxygen_xml_target (arcstools_mcss_generate_xml
+	add_doxygen_xml_target (arcstk_mcss_generate_xml
 		"${DOXYFILE}" "${INDEX_XML}" )
 
 	add_custom_command (
@@ -172,13 +172,13 @@ else()
 
 	## Since we do not use add_doxygen_target, we have to take care for the
 	## dependencies manually
-	add_dependencies (arcstools_mcss_generate_html
+	add_dependencies (arcstk_mcss_generate_html
 		## add deps from PARENT
-		arcstools_create_output_dir
-		arcstools_create_log_dir
-		arcstools_static_pages_files
+		arcstk_create_output_dir
+		arcstk_create_log_dir
+		arcstk_static_pages_files
 		## add deps from here
-		arcstools_mcss_requirements
+		arcstk_mcss_requirements
 	)
 
 	add_custom_command (

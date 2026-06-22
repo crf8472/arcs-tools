@@ -8,11 +8,11 @@ message (STATUS "Doxygen XML generation is required" )
 
 
 ## Run doxygen to Produce XML
-add_custom_target (arcstools_doxygen_generate_xml )
+add_custom_target (arcstk_doxygen_generate_xml )
 
 ## Providing Postprocessed XML for Generator
-add_custom_target (arcstools_doxygen_provide_xml )
-add_dependencies (arcstools_doxygen_provide_xml arcstools_doxygen_generate_xml )
+add_custom_target (arcstk_doxygen_provide_xml )
+add_dependencies (arcstk_doxygen_provide_xml arcstk_doxygen_generate_xml )
 
 ## --- Check for required Postprocessing Tasks {{{1
 
@@ -44,7 +44,7 @@ function (add_doxygen_xml_target DOXY_TARGET DOXYFILE INDEX_XML )
 
 	add_doxygen_target (${DOXY_TARGET} "${DOXYFILE}" "${INDEX_XML}" )
 
-	add_dependencies (arcstools_doxygen_generate_xml ${DOXY_TARGET} )
+	add_dependencies (arcstk_doxygen_generate_xml ${DOXY_TARGET} )
 
 	cmake_path (GET INDEX_XML PARENT_PATH _xmlpath )
 

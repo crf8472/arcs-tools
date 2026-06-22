@@ -61,7 +61,7 @@ add_custom_command(
 ## issue.
 
 ## --- Define target and Export Variables  {{{1
-add_custom_target (arcstools_virtualenv_create_sandbox DEPENDS "${ENV_DIR}" )
+add_custom_target (arcstk_virtualenv_create_sandbox DEPENDS "${ENV_DIR}" )
 
 ## Export variables used in parent CMakeLists.txt
 set (PYTHON_ENV_AVAILABLE "YES"                   PARENT_SCOPE )
@@ -85,6 +85,6 @@ function (add_requirements_target UPDATE_TARGET REQUIREMENTS_FILE )
 		VERBATIM
 	)
 
-	add_dependencies (${UPDATE_TARGET} arcstools_virtualenv_create_sandbox )
+	add_dependencies (${UPDATE_TARGET} arcstk_virtualenv_create_sandbox )
 endfunction()
 

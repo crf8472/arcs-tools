@@ -7,23 +7,23 @@ cmake_minimum_required (VERSION 3.12 )
 message (STATUS "Doxygen XSLT postprocessing is required" )
 
 
-## --- Setup Python target arcstools_doxygen_xml_env {{{1
+## --- Setup Python target arcstk_doxygen_xml_env {{{1
 
 ## Target for preparing the doxygen XML run (python etc.)
-add_custom_target (arcstools_doxygen_xml_env )
-add_dependencies (arcstools_doxygen_provide_xml arcstools_doxygen_xml_env )
+add_custom_target (arcstk_doxygen_xml_env )
+add_dependencies (arcstk_doxygen_provide_xml arcstk_doxygen_xml_env )
 
 if (PYTHON_ENV_AVAILABLE )
 
 	## A virtualenv was already setup for a HTML static site generator
 	## (like m.css).
 
-	add_requirements_target (arcstools_doxygen_xml_python_requirements
+	add_requirements_target (arcstk_doxygen_xml_python_requirements
 		"${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt"
 	)
 
-	add_dependencies  (arcstools_doxygen_xml_env
-		arcstools_doxygen_xml_python_requirements )
+	add_dependencies  (arcstk_doxygen_xml_env
+		arcstk_doxygen_xml_python_requirements )
 
 else()
 
@@ -47,16 +47,16 @@ function (add_doxygen_xslt_task TASK XML_INPUT_FILES )
 	## itself a dependency of doxygen_provide_xml. The actual posprocessing
 	## will be a POST_BUILD command to this target.
 
-	set (TASK_TARGET arcstools_doxygen_xsl_task_${TASK} )
+	set (TASK_TARGET arcstk_doxygen_xsl_task_${TASK} )
 
 	add_custom_target (${TASK_TARGET} )
 
 	add_dependencies (${TASK_TARGET}
-		arcstools_doxygen_generate_xml
-		arcstools_doxygen_xml_env
+		arcstk_doxygen_generate_xml
+		arcstk_doxygen_xml_env
 	)
 
-	add_dependencies (arcstools_doxygen_provide_xml ${TASK_TARGET} )
+	add_dependencies (arcstk_doxygen_provide_xml ${TASK_TARGET} )
 
 	## NOTE Get XML input filenames at build time
 	##

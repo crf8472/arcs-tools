@@ -8,12 +8,12 @@
 ##
 ## Prerequisites from PARENT:
 ## - m.css must have been downloaded
-## - Targets:   'arcstools_mcss_doc'
+## - Targets:   'arcstk_mcss_doc'
 ## - Variables: DOXYGEN_OUTPUT_DIRECTORY
 ##
 ## Provides:
-## - Target 'arcstools_mcss_custom_css' as dependency of
-##   parent's 'arcstools_mcss_create_html'
+## - Target 'arcstk_mcss_custom_css' as dependency of
+##   parent's 'arcstk_mcss_create_html'
 
 
 ## --- Create CSS output directory {{{1
@@ -30,7 +30,7 @@ add_custom_command (
 )
 
 ## Target Directory
-add_custom_target (arcstools_create_css_output_dir DEPENDS "${CSS_TARGET_DIR}" )
+add_custom_target (arcstk_create_css_output_dir DEPENDS "${CSS_TARGET_DIR}" )
 
 
 
@@ -96,16 +96,16 @@ add_custom_command (
 
 ## --- Target: Provide Custom CSS File {{{1
 
-add_custom_target (arcstools_mcss_custom_css
+add_custom_target (arcstk_mcss_custom_css
 	DEPENDS "${CUSTOM_STYLESHEET_TARGET}"
 )
 
-add_dependencies  (arcstools_mcss_custom_css arcstools_create_css_output_dir )
+add_dependencies  (arcstk_mcss_custom_css arcstk_create_css_output_dir )
 
 
 
 ## --- Activate this Script's Target {{{1
-add_dependencies (arcstools_mcss_generate_html arcstools_mcss_custom_css )
+add_dependencies (arcstk_mcss_generate_html arcstk_mcss_custom_css )
 
 
 ## --- Redo Configuring conf.py (was already done in PARENT) {{{1

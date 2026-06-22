@@ -106,12 +106,12 @@ endforeach (FILE )
 ## Make list of source files to a list of target files
 list(TRANSFORM STYLE_FILES PREPEND "${TARGET_CSS_DIR}/" )
 
-add_custom_target (arcstools_deploy_css_files ALL DEPENDS ${STYLE_FILES} )
+add_custom_target (arcstk_deploy_css_files ALL DEPENDS ${STYLE_FILES} )
 
 
 ## --- Target: Deploy Custom Style Files {{{1
 
-add_custom_target (arcstools_deploy_custom_style_file ALL
+add_custom_target (arcstk_deploy_custom_style_file ALL
 	DEPENDS "${TARGET_CSS_DIR}/${CUSTOM_STYLE_FILE}" )
 
 add_custom_command(
@@ -120,8 +120,8 @@ add_custom_command(
 			"${CMAKE_CURRENT_SOURCE_DIR}/${CUSTOM_STYLE_FILE}"
 			"${TARGET_CSS_DIR}/${FILE}" )
 
-add_dependencies   (arcstools_deploy_css_files
-										arcstools_deploy_custom_style_file )
+add_dependencies   (arcstk_deploy_css_files
+										arcstk_deploy_custom_style_file )
 
 ## --- Target: Create CSS Directory {{{1
 
@@ -132,9 +132,9 @@ add_custom_command (
 	VERBATIM
 )
 
-add_custom_target (arcstools_create_css_dir ALL DEPENDS "${TARGET_CSS_DIR}" )
+add_custom_target (arcstk_create_css_dir ALL DEPENDS "${TARGET_CSS_DIR}" )
 
-add_dependencies  (arcstools_deploy_css_files arcstools_create_css_dir )
+add_dependencies  (arcstk_deploy_css_files arcstk_create_css_dir )
 
 
 ## --- Pass results to parent {{{1
@@ -142,6 +142,6 @@ add_dependencies  (arcstools_deploy_css_files arcstools_create_css_dir )
 set (DOC_DOXYFILE_INPUT "${DOXYFILE}" PARENT_SCOPE )
 ## 1}}}
 
-add_custom_target (arcstools_doxygen_awesome_css )
-add_dependencies  (arcstools_doxygen_awesome_css arcstools_deploy_css_files )
+add_custom_target (arcstk_doxygen_awesome_css )
+add_dependencies  (arcstk_doxygen_awesome_css arcstk_deploy_css_files )
 

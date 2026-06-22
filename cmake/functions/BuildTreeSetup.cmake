@@ -12,7 +12,7 @@ add_custom_command (
 	VERBATIM
 )
 
-add_custom_target (arcstools_create_log_dir ALL
+add_custom_target (arcstk_create_log_dir ALL
 	DEPENDS "${ARCSTK_LOG_BINARY_DIR}" )
 ##}}}1
 

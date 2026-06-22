@@ -3,11 +3,11 @@
 ## vim:fdm=marker
 ##
 ## Prerequisites:
-## - target arcstools_create_log_dir
+## - target arcstk_create_log_dir
 ##
 ## Provides:
-## - targets: doc, arcstools_doc, arcstools_create_output_dir,
-##            arcstools_doc_generate_html, arcstools_doc_generate_pdf
+## - targets: doc, arcstk_doc, arcstk_create_output_dir,
+##            arcstk_doc_generate_html, arcstk_doc_generate_pdf
 
 cmake_minimum_required (VERSION 3.12 )
 
@@ -38,8 +38,8 @@ set (DOC_DOXYFILE_BASE    "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-base" )
 
 ## --- Add Default 'doc' Target {{{1
 
-add_custom_target (arcstools_doc )
-add_dependencies  (arcstools_doc arcstools_create_log_dir )
+add_custom_target (arcstk_doc )
+add_dependencies  (arcstk_doc arcstk_create_log_dir )
 ## Each documentation config in thirdparty/ may add its own concrete dependency
 ## target to 'doc' and do the concrete work.
 
@@ -54,7 +54,7 @@ add_custom_command (
 	VERBATIM
 )
 
-add_custom_target (arcstools_create_output_dir DEPENDS "${DOC_GEN_DIR}" )
+add_custom_target (arcstk_create_output_dir DEPENDS "${DOC_GEN_DIR}" )
 
 
 
@@ -153,11 +153,11 @@ endif (USE_DOC_TOOL )
 
 ## FIXME Activate only those targets whose format is actually requested
 
-add_custom_target (arcstools_doc_generate_html )
-add_dependencies  (arcstools_doc arcstools_doc_generate_html )
+add_custom_target (arcstk_doc_generate_html )
+add_dependencies  (arcstk_doc arcstk_doc_generate_html )
 
-add_custom_target (arcstools_doc_generate_pdf )
-add_dependencies  (arcstools_doc arcstools_doc_generate_pdf )
+add_custom_target (arcstk_doc_generate_pdf )
+add_dependencies  (arcstk_doc arcstk_doc_generate_pdf )
 
 
 
@@ -169,9 +169,9 @@ function (add_doxygen_target DOXY_TARGET DOXYFILE INDEXFILE )
 	add_custom_target (${DOXY_TARGET} DEPENDS "${INDEXFILE}" )
 
 	add_dependencies  (${DOXY_TARGET}
-			arcstools_create_log_dir
-			arcstools_create_output_dir
-			arcstools_static_pages_files
+			arcstk_create_log_dir
+			arcstk_create_output_dir
+			arcstk_static_pages_files
 	)
 
 	## Produce INDEXFILE (either XML or HTML) by running doxygen
@@ -218,5 +218,5 @@ if (NOT TARGET doc)
 	add_custom_target (doc )
 endif()
 
-add_dependencies (doc arcstools_doc )
+add_dependencies (doc arcstk_doc )
 
