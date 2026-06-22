@@ -55,9 +55,9 @@ find_package_handle_standard_args (libarcsdec
 
 ## Export oldstyle variables for backwards compatibility
 if (libarcsdec_FOUND )
-	set (libarcsdec_INCLUDE_DIRS ${LIBARCSDEC_INCLUDE_DIR} )
-	set (libarcsdec_LIBRARIES    ${LIBARCSDEC_LIBRARY} )
-	set (libarcsdec_VERSION      ${LIBARCSDEC_VERSION} )
+	set (libarcsdec_INCLUDE_DIRS "${LIBARCSDEC_INCLUDE_DIR}" )
+	set (libarcsdec_LIBRARIES    "${LIBARCSDEC_LIBRARY}" )
+	set (libarcsdec_VERSION      "${LIBARCSDEC_VERSION}" )
 endif()
 
 ## Export "modern" target

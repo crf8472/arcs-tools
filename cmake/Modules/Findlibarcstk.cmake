@@ -71,3 +71,4 @@ set_target_properties (libarcstk::libarcstk
 	INTERFACE_LINK_LIBRARIES      "${libarcstk_LIBRARIES}" ## TODO Necessary ?
 	IMPORTED_LOCATION             "${libarcstk_LIBRARIES}"
 )
+
