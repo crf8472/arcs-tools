@@ -1,4 +1,6 @@
 ## CMake file for single-header version of Catch2
+##
+## vim:fdm=marker
 
 cmake_minimum_required (VERSION 3.10 )
 
@@ -7,11 +9,43 @@ find_package (Git REQUIRED )
 ## --- Catch2 identifiers
 
 set (CATCH2_REPO_URL    "https://github.com/catchorg/Catch2.git" )
-set (CATCH2_VERSION_TAG "v3.4.0" )
+set (CATCH2_VERSION_TAG "v3.14.0" )
 
-## --- Define Catch2 to be checked out/updated while configuring
+## --- Define Catch2 to be checked out/updated while configuring {{{1
 
-if (${CMAKE_VERSION} VERSION_LESS "3.11.0" ) ## No FetchContent module available
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.11.0" )
+
+	## --- FetchContent {{{2
+
+	include (FetchContent )
+
+	FetchContent_Declare(
+		catch2
+		GIT_REPOSITORY    ${CATCH2_REPO_URL}
+		GIT_TAG           ${CATCH2_VERSION_TAG}
+	)
+
+	if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.14.0" )
+
+		FetchContent_MakeAvailable (catch2 )
+
+	else()
+
+		FetchContent_GetProperties (catch2 )
+
+		if (NOT catch2_POPULATED )
+
+			FetchContent_Populate (catch2 )
+			add_subdirectory ("${catch2_SOURCE_DIR}" "${catch2_BINARY_DIR}" )
+		endif()
+	endif()
+	# 2}}}
+
+	set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" PARENT_SCOPE )
+
+else()
+
+	## --- ExternalProject (will be updated on build) {{{2
 
 	include (ExternalProject )
 
@@ -19,10 +53,10 @@ if (${CMAKE_VERSION} VERSION_LESS "3.11.0" ) ## No FetchContent module available
 		catch2
 		GIT_REPOSITORY    ${CATCH2_REPO_URL}
 		GIT_TAG           ${CATCH2_VERSION_TAG}
-		GIT_SHALLOW       true
-		GIT_PROGRESS      true
+		GIT_SHALLOW       ON
+		GIT_PROGRESS      ON
 		TIMEOUT           10
-		UPDATE_COMMAND    ${GIT_EXECUTABLE} pull
+		UPDATE_COMMAND    "${GIT_EXECUTABLE}" pull
 		CONFIGURE_COMMAND ""
 		BUILD_COMMAND     ""
 		INSTALL_COMMAND   ""
@@ -43,30 +77,7 @@ if (${CMAKE_VERSION} VERSION_LESS "3.11.0" ) ## No FetchContent module available
 	unset (SOURCE_DIR )
 	unset (BINARY_DIR )
 	unset (TMP_DIR )
-
-else()
-
-	## --- Fetch Catch2
-
-	include (FetchContent )
-
-	FetchContent_Declare(
-		catch2
-		GIT_REPOSITORY    ${CATCH2_REPO_URL}
-		GIT_TAG           ${CATCH2_VERSION_TAG}
-	)
-
-	if (${CMAKE_VERSION} VERSION_LESS "3.14.0" )
-
-		FetchContent_GetProperties (catch2 )
-		if (NOT catch2_POPULATED )
-			FetchContent_Populate (catch2 )
-			add_subdirectory ("${catch2_SOURCE_DIR}" "${catch2_BINARY_DIR}" )
-		endif()
-	else()
-
-		FetchContent_MakeAvailable(catch2)
-	endif()
+	# 2}}}
 
 endif()
 

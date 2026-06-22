@@ -68,8 +68,9 @@ set_property (DIRECTORY APPEND
 set (CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE ) ## since CMake 3.15
 
 ## Search path for cmake modules
-set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules" )
-message (STATUS "Changed CMAKE_MODULE_PATH to: ${CMAKE_MODULE_PATH}" )
+message (STATUS "CMAKE_MODULE_PATH is currently ${CMAKE_MODULE_PATH}" )
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+message (STATUS "CMAKE_MODULE_PATH is now ${CMAKE_MODULE_PATH}" )
 
 
 
@@ -344,68 +345,6 @@ else()
 
 endif (WITH_NATIVE )
 
-## --- Setup Dependencies {{{1
-
-option (WITH_SUBMODULES "Compile libarcstk and libarcsdec as submodules" OFF )
-
-if (WITH_SUBMODULES )
-
-	message (STATUS "Link to local submodules libarcstk and libarcsdec" )
-
-	## This signals libarcsdec's CMakeLists.txt where to find it's libarcstk
-	## depencency.
-	set (SUBMODULES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs" )
-
-	add_subdirectory (${SUBMODULES_DIR}/libarcstk  )
-	add_subdirectory (${SUBMODULES_DIR}/libarcsdec )
-
-	## Commented out: try to force RPATH to build tree .so's but no success
-	#set (CMAKE_SKIP_BUILD_RPATH            FALSE )
-	#set (CMAKE_BUILD_WITH_INSTALL_RPATH    FALSE )
-	#set (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE  )
-else()
-
-	message (STATUS "Link to system-installed libarcstk and libarcsdec" )
-
-	find_package (libarcstk  0.3.0 REQUIRED )
-	find_package (libarcsdec 0.2.0 REQUIRED )
-endif()
-
-
-## --- Required: libarcstk
-
-if (TARGET libarcstk::libarcstk )
-
-	if (WITH_SUBMODULES )
-		# Force to set RPATH instead of RUNPATH, point to .so's in build tree.
-		# Note that this is for development and will not support installation.
-		target_link_libraries (objects
-			PUBLIC libarcstk::libarcstk -Wl,--disable-new-dtags )
-	else()
-		target_link_libraries (objects PUBLIC libarcstk::libarcstk )
-	endif()
-else()
-	message (FATAL_ERROR "libarcstk targets are not present" )
-endif()
-
-
-
-## --- Required: libarcsdec
-
-if (TARGET libarcsdec::libarcsdec )
-
-	if (WITH_SUBMODULES )
-		# Force to set RPATH instead of RUNPATH, point to .so's in build tree.
-		# Note that this is for development and will not support installation.
-		target_link_libraries (objects
-			PUBLIC libarcsdec::libarcsdec -Wl,--disable-new-dtags )
-	else()
-		target_link_libraries (objects PUBLIC libarcsdec::libarcsdec )
-	endif()
-else()
-	message (FATAL_ERROR "libarcsdec targets are not present" )
-endif()
-## 1}}}
 ## --- Installation {{{1
 
 set (TOOL_NAMES ) ## tool names, used for installation + manpage generation
@@ -455,11 +394,16 @@ if (WITH_TESTS)
 
 	enable_testing()
 
-	## Add Catch2 test framework
-	add_subdirectory (thirdparty/catch2 EXCLUDE_FROM_ALL )
+	## Add Catch2 test framework if it is not already present
+	## (i.e. if PARENT did not include it)
+	if (NOT TARGET Catch2::Catch2 )
+		add_subdirectory (thirdparty/catch2 EXCLUDE_FROM_ALL )
+	else()
+		message (WARNING "Catch2 skipped since target already exists" )
+	endif()
 
 	## Add tests
-	add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/test )
+	add_subdirectory ("${CMAKE_CURRENT_SOURCE_DIR}/test" )
 
 endif (WITH_TESTS)
 
@@ -489,3 +433,65 @@ if (UNIX )
 
 endif (UNIX )
 
+## --- Setup Dependencies {{{1
+
+option (WITH_SUBMODULES "Compile libarcstk and libarcsdec as submodules" OFF )
+
+if (WITH_SUBMODULES )
+
+	message (STATUS "Link to local submodules libarcstk and libarcsdec" )
+
+	## This signals libarcsdec's CMakeLists.txt where to find it's libarcstk
+	## depencency.
+	set (SUBMODULES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs" )
+
+	add_subdirectory (${SUBMODULES_DIR}/libarcstk  )
+	add_subdirectory (${SUBMODULES_DIR}/libarcsdec )
+
+	## Commented out: try to force RPATH to build tree .so's but no success
+	#set (CMAKE_SKIP_BUILD_RPATH            FALSE )
+	#set (CMAKE_BUILD_WITH_INSTALL_RPATH    FALSE )
+	#set (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE  )
+else()
+
+	message (STATUS "Link to system-installed libarcstk and libarcsdec" )
+
+	find_package (libarcstk  0.9.0 REQUIRED )
+	find_package (libarcsdec 0.3.0 REQUIRED )
+endif()
+
+
+## --- Required: libarcstk
+
+if (TARGET libarcstk::libarcstk )
+
+	if (WITH_SUBMODULES )
+		# Force to set RPATH instead of RUNPATH, point to .so's in build tree.
+		# Note that this is for development and will not support installation.
+		target_link_libraries (objects
+			PUBLIC libarcstk::libarcstk -Wl,--disable-new-dtags )
+	else()
+		target_link_libraries (objects PUBLIC libarcstk::libarcstk )
+	endif()
+else()
+	message (FATAL_ERROR "libarcstk targets are not present" )
+endif()
+
+
+
+## --- Required: libarcsdec
+
+if (TARGET libarcsdec::libarcsdec )
+
+	if (WITH_SUBMODULES )
+		# Force to set RPATH instead of RUNPATH, point to .so's in build tree.
+		# Note that this is for development and will not support installation.
+		target_link_libraries (objects
+			PUBLIC libarcsdec::libarcsdec -Wl,--disable-new-dtags )
+	else()
+		target_link_libraries (objects PUBLIC libarcsdec::libarcsdec )
+	endif()
+else()
+	message (FATAL_ERROR "libarcsdec targets are not present" )
+endif()
+## 1}}}
