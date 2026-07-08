@@ -1,0 +1,31 @@
+UseColor: true
+
+Checks: >
+    -*,
+    bugprone-*,
+    -bugprone-easily-swappable-parameters,
+    -bugprone-branch-clone,
+    cppcoreguidelines-*,
+    -cppcoreguidelines-avoid-magic-numbers,
+    -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
+    -cppcoreguidelines-pro-type-reinterpret-cast,
+    -cppcoreguidelines-use-default-member-init,
+    google-*,
+    -google-readability-todo,
+    misc-*,
+    modernize-*,
+    -modernize-use-nodiscard,
+    -modernize-use-trailing-return-type,
+    performance-*,
+    portability-*,
+
+CheckOptions:
+  - key:    cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value:  true
+
+HeaderFilterRegex:            '.*'
+
+HeaderFileExtensions:         ['hpp']
+
+ImplementationFileExtensions: ['cpp']
+

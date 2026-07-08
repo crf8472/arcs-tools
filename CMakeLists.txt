@@ -12,30 +12,26 @@ set (PROJECT_DESCRIPTION "Example Toolkit for libarcstk" )
 
 set (PROJECT_HOMEPAGE_URL "https://github.com/crf8472/${PROJECT_NAME}/" )
 
-message (STATUS "Building ${PROJECT_NAME} ${ARCSTK_VERSION_STRING}" )
+include (cmake/functions/Banner.cmake )
+banner (BEGIN "Configure ${PROJECT_NAME} ${ARCSTK_VERSION_STRING}" )
 
-## --- Includes {{{1
-set (cmake_include_dir_ "${CMAKE_CURRENT_SOURCE_DIR}/cmake/functions" )
-
-## Mandatory configuration
-include ("${cmake_include_dir_}/ProjectFilesAndDirectories.cmake" )
-include ("${cmake_include_dir_}/BuildTreeSetup.cmake" )
-include ("${cmake_include_dir_}/CompilerFlags.cmake" )
-include ("${cmake_include_dir_}/GitInfo.cmake" )
-include ("${cmake_include_dir_}/Dependencies.cmake" )
-
-## Optional support for development
-#include ("${cmake_include_dir_}/ToolClangTidy.cmake" )
-#include ("${cmake_include_dir_}/ToolGraphViz.cmake" )
-#include ("${cmake_include_dir_}/ToolClangIncludeGraph.cmake" )
-
-unset (cmake_include_dir_ )
-## 1}}}
 ## --- CMake Setup {{{1
 
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON ) ## required for clang-tidy and iwyu
 
-## --- CMake Modules Setup {{{2
+## --- Setup Default Build Type {{{2
+
+if (NOT CMAKE_BUILD_TYPE )
+
+	set (CMAKE_BUILD_TYPE "Release"
+		CACHE STRING "Choose the type of build (e.g. Debug or Release)" FORCE )
+
+	message (STATUS "No build type specified, set to ${CMAKE_BUILD_TYPE}" )
+endif (NOT CMAKE_BUILD_TYPE )
+
+message (STATUS "Build type: ${CMAKE_BUILD_TYPE}" )
+## 2}}}
+## --- Modules {{{2
 
 ## Tell find_package to first try locating libarcstk via system-installed
 ## .config file instead of project's FindLibarcstk.cmake module
@@ -46,23 +42,29 @@ message (STATUS "CMAKE_MODULE_PATH is currently ${CMAKE_MODULE_PATH}" )
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 message (STATUS "CMAKE_MODULE_PATH is now ${CMAKE_MODULE_PATH}" )
 ## 2}}}
-## --- Setup Default Build Type {{{2
-
-if (NOT CMAKE_BUILD_TYPE )
-
-	set (CMAKE_BUILD_TYPE "Release"
-		CACHE STRING "Choose the type of build (e.g. Debug or Release)" FORCE )
-
-	message (STATUS "No build type specified, set to ${CMAKE_BUILD_TYPE}" )
-endif (NOT CMAKE_BUILD_TYPE )
-## 2}}}
 ## 1}}}
+## --- Mandatory includes {{{1
+set (_arcstk_cmake_include_dir "${CMAKE_CURRENT_SOURCE_DIR}/cmake/functions" )
 
-message (STATUS "Build type: ${CMAKE_BUILD_TYPE}" )
-
+## Mandatory configuration
+include ("${_arcstk_cmake_include_dir}/ProjectFilesAndDirectories.cmake" )
+include ("${_arcstk_cmake_include_dir}/BuildTreeSetup.cmake" )
+include ("${_arcstk_cmake_include_dir}/CompilerFlags.cmake" )
+include ("${_arcstk_cmake_include_dir}/GitInfo.cmake" )
+include ("${_arcstk_cmake_include_dir}/Dependencies.cmake" )
+## 1}}}
 ## --- Setup Build Tree {{{1
 arcstk_setup_build_tree()
 
+## 1}}}
+## --- Includes for optional development support {{{1
+
+## Optional support for development
+include  ("${_arcstk_cmake_include_dir}/ToolClangTidy.cmake" )
+#include ("${_arcstk_cmake_include_dir}/ToolGraphViz.cmake" )
+#include ("${_arcstk_cmake_include_dir}/ToolClangIncludeGraph.cmake" )
+
+unset (_arcstk_cmake_include_dir )
 ## 1}}}
 ## --- Trigger Configuration Step Whenever Git Index Changes {{{1
 
@@ -142,6 +144,35 @@ arcstk_apply_compiler_flags (${PROJECT_NAME} )
 get_target_property (ARCSTK_CXX_FLAGS ${PROJECT_NAME} COMPILE_OPTIONS )
 message (STATUS "Compile flags: ${ARCSTK_CXX_FLAGS}" )
 
+## --- Setup required dependencies {{{1
+
+option (WITH_SUBMODULES "Compile libarcstk and libarcsdec as submodules" OFF )
+
+arcstk_setup_required_dependencies ()
+## 1}}}
+## --- Option: WITH_TESTS {{{1
+
+option (WITH_TESTS "Build unit tests" OFF )
+
+if (WITH_TESTS )
+
+	message (STATUS "Build with tests" )
+
+	enable_testing()
+
+	## Add Catch2 test framework if it is not already present
+	## (i.e. if PARENT did not include it)
+	if (NOT TARGET Catch2::Catch2 )
+		add_subdirectory (thirdparty/catch2 EXCLUDE_FROM_ALL )
+	else()
+		message (WARNING "Catch2 skipped since target already exists" )
+	endif()
+
+	## Add tests
+	add_subdirectory ("${CMAKE_CURRENT_SOURCE_DIR}/test" )
+
+endif (WITH_TESTS )
+## 1}}}
 ## --- Installation {{{1
 
 set (TOOL_NAMES ) ## tool names, used for installation + manpage generation
@@ -176,30 +207,7 @@ if (NOT SKIP_INSTALL_ALL )
 
 endif()
 ## 1}}}
-## --- Optional: Build tests (default: OFF) {{{1
-
-option (WITH_TESTS "Build unit tests" OFF )
-
-if (WITH_TESTS )
-
-	message (STATUS "Build with tests" )
-
-	enable_testing()
-
-	## Add Catch2 test framework if it is not already present
-	## (i.e. if PARENT did not include it)
-	if (NOT TARGET Catch2::Catch2 )
-		add_subdirectory (thirdparty/catch2 EXCLUDE_FROM_ALL )
-	else()
-		message (WARNING "Catch2 skipped since target already exists" )
-	endif()
-
-	## Add tests
-	add_subdirectory ("${CMAKE_CURRENT_SOURCE_DIR}/test" )
-
-endif (WITH_TESTS )
-## 1}}}
-## --- Optional: Build documentation (default: OFF) {{{1
+## --- Optional: Build documentation {{{1
 
 option (WITH_DOCS          "Build documentation for public API"           OFF )
 option (USE_DOC_TOOL       "Build documentation using specified tool"     OFF )
@@ -215,12 +223,6 @@ else ()
 	endif()
 endif (WITH_DOCS )
 ## 1}}}
-## --- Setup Dependencies {{{1
-
-option (WITH_SUBMODULES "Compile libarcstk and libarcsdec as submodules" OFF )
-
-arcstk_setup_required_dependencies ()
-## 1}}}
 ## --- Setup man pages (UNIX only) {{{1
 if (UNIX )
 
@@ -229,8 +231,11 @@ if (UNIX )
 endif (UNIX )
 ## 1}}}
 ## --- Setup development tools {{{1
-#enable_clang_tidy              (ARCSTK_CLANG_TIDY_ENABLED )
+arcstk_enable_clang_tidy               (ARCSTK_CLANG_TIDY_ENABLED )
 #enable_target_dep_graph_by_dot (ARCSTK_TARGET_DEPS_GRAPH_ENABLED )
 #enable_clang_include_graph     (ARCSTK_CLANG_INCLUDE_GRAPH_ENABLED )
 ## 1}}}
+
+banner (END
+	"Configuration completed ${PROJECT_NAME} ${LIBARCSDEC_VERSION_STRING}" )
 
