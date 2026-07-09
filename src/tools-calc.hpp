@@ -337,6 +337,11 @@ public:
 private:
 
 	std::string do_format(InputTuple t) const override;
+
+	void do_assertions(InputTuple) const override
+	{
+		// empty
+	}
 };
 
 

@@ -691,7 +691,7 @@ void VerifyTableCreator::populate_result_creators(
 }
 
 
-void VerifyTableCreator::assertions(const InputTuple t) const
+void VerifyTableCreator::do_assertions(const InputTuple t) const
 {
 	const auto checksums  = std::get<3>(t);
 	const auto arid       = std::get<4>(t);

@@ -220,13 +220,13 @@ protected:
 		const std::vector<arcstk::checksum::type>& types,
 		const Checksums& checksums) const;
 
-	void assertions(const InputTuple t) const final;
-
 private:
 
 	void do_init_composer(TableComposer& c) const final;
 
 	std::unique_ptr<Result> do_format(InputTuple t) const final;
+
+	void do_assertions(const InputTuple t) const final;
 };
 
 

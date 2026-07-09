@@ -402,7 +402,7 @@ void CalcTableCreator::populate_result_creators(
 }
 
 
-void CalcTableCreator::assertions(const InputTuple t) const
+void CalcTableCreator::do_assertions(const InputTuple t) const
 {
 	const auto checksums = std::get<1>(t);
 	const auto arid      = std::get<2>(t);

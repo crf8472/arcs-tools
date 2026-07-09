@@ -175,6 +175,11 @@ private:
 	virtual std::unique_ptr<ARIdLayout> do_clone() const
 	= 0;
 
+	void do_assertions(const InputTuple) const override
+	{
+		// empty
+	}
+
 protected:
 
 	/**

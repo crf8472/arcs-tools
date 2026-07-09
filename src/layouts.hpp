@@ -128,12 +128,15 @@ public:
 
 protected:
 
-	virtual void assertions(InputTuple) const
+	void assertions(InputTuple t) const
 	{
-		/* empty */
+		this->do_assertions(t);
 	};
 
 private:
+
+	virtual void do_assertions(InputTuple) const
+	= 0;
 
 	virtual T do_format(InputTuple args) const
 	= 0;
