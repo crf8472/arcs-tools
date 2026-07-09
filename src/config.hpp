@@ -55,7 +55,7 @@ public:
 	 *
 	 * \param[in] what_arg What-Message
 	 */
-	ConfigurationException(const std::string& what_arg);
+	explicit ConfigurationException(const std::string& what_arg);
 };
 
 
@@ -493,7 +493,7 @@ public:
 	 *
 	 * \param[in] options Options to configure the application
 	 */
-	Configuration(std::unique_ptr<Options> options);
+	explicit Configuration(std::unique_ptr<Options> options);
 
 	/**
 	 * \brief Put an object into the Configuration.

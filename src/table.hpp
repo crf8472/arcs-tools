@@ -73,7 +73,8 @@ std::string trim(std::string str);
  *
  * \return Parts of the string with equal length except last.
  */
-std::vector<std::string> split(std::string str, const std::size_t max_len);
+std::vector<std::string> split(const std::string& str,
+		const std::size_t max_len);
 
 /**
  * \brief Split a string in parts divided by <tt>delim</tt>.
@@ -361,7 +362,7 @@ public:
 	 * \param[in] rows  Number of rows
 	 * \param[in] cols  Number of columns
 	 */
-	StringTable(const std::string& title, const std::size_t rows,
+	StringTable(std::string title, const std::size_t rows,
 			const std::size_t cols);
 
 	StringTable(const StringTable& rhs);
@@ -374,7 +375,7 @@ public:
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	virtual ~StringTable() noexcept;
+	~StringTable() noexcept final ;
 
 	/**
 	 * \brief Set the table title.
@@ -642,7 +643,7 @@ protected:
 	 * otherwise FALSE.
 	 */
 	template<typename T>
-	typename std::enable_if<std::is_unsigned<T>::value, bool>::type
+	typename std::enable_if_t<std::is_unsigned_v<T>, bool>
 		exists(T i) const
 	{
 		return i < cells_.size();
@@ -659,7 +660,7 @@ protected:
 	 * otherwise FALSE.
 	 */
 	template<typename T>
-	typename std::enable_if<!std::is_unsigned<T>::value, bool>::type
+	typename std::enable_if_t<!std::is_unsigned_v<T>, bool>
 		exists(T i) const
 	{
 		return i >= 0 && i < cells_.size();
@@ -776,10 +777,10 @@ private:
  */
 class DefaultSplitter final : public StringSplitter
 {
-	virtual std::vector<std::string> do_split(const std::string& str,
+	std::vector<std::string> do_split(const std::string& str,
 			const std::size_t max_len) const final;
 
-	virtual std::unique_ptr<StringSplitter> do_clone() const final;
+	std::unique_ptr<StringSplitter> do_clone() const final;
 };
 
 
@@ -839,7 +840,7 @@ public:
 	 *
 	 * \param[in] s The splitter to use
 	 */
-	StringTableLayout(std::unique_ptr<StringSplitter> s);
+	explicit StringTableLayout(std::unique_ptr<StringSplitter> s);
 
 	StringTableLayout(const StringTableLayout& rhs);
 	StringTableLayout& operator=(const StringTableLayout& rhs);
@@ -993,7 +994,7 @@ protected:
 	 *
 	 * \param[in] rhs Instance to copy
 	 */
-	CellDecorator(const CellDecorator& rhs);
+	CellDecorator(const CellDecorator& rhs) = default;
 
 	index_type i(const int index) const;
 
@@ -1004,7 +1005,12 @@ public:
 	 *
 	 * \param[in] n Total number of flags
 	 */
-	CellDecorator(const std::size_t n);
+	explicit CellDecorator(const std::size_t n);
+
+	CellDecorator(CellDecorator&& rhs) noexcept = default;
+	CellDecorator& operator= (CellDecorator&& rhs) noexcept = default;
+
+	CellDecorator& operator= (const CellDecorator& rhs) = delete;
 
 	/**
 	 * \brief Virtual default destructor.
@@ -1042,7 +1048,7 @@ public:
 	 *
 	 * \return Decorated string
 	 */
-	std::string decorate(const int i, std::string&& s) const;
+	std::string decorate(const int i, const std::string& s) const;
 
 	/**
 	 * \brief Clone this instance.

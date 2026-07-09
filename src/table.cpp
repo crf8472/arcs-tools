@@ -55,7 +55,8 @@ std::string trim(std::string s)
 }
 
 
-std::vector<std::string> split(std::string str, const std::size_t max_len)
+std::vector<std::string> split(const std::string& str,
+		const std::size_t max_len)
 {
 	if (str.empty())
 	{
@@ -147,7 +148,7 @@ void insert_or_resize(std::vector<T>& v, const std::size_t elements,
 	}
 }
 
-} // details
+} // namespace details
 
 
 namespace table
@@ -237,9 +238,9 @@ const StringTableLayout* PrintableTable::layout() const
 // StringTable
 
 
-StringTable::StringTable(const std::string& title, const std::size_t rows,
+StringTable::StringTable(std::string title, const std::size_t rows,
 		const std::size_t cols)
-	: title_              { title }
+	: title_              { std::move(title) }
 	, rows_               { rows }
 	, default_max_height_ {  5 } // Max height for a row is 5 lines
 	, cols_               { cols }
@@ -295,10 +296,10 @@ StringTable& StringTable::operator=(StringTable rhs) noexcept
 
 StringTable::StringTable(StringTable&& rhs) noexcept
 	: title_              { std::move(rhs.title_) }
-	, rows_               { std::move(rhs.rows_) }
-	, default_max_height_ { std::move(rhs.default_max_height_) }
-	, cols_               { std::move(rhs.cols_) }
-	, default_max_width_  { std::move(rhs.default_max_width_) }
+	, rows_               { rhs.rows_ }
+	, default_max_height_ { rhs.default_max_height_ }
+	, cols_               { rhs.cols_ }
+	, default_max_width_  { rhs.default_max_width_ }
 	, row_labels_         { std::move(rhs.row_labels_) }
 	, row_max_heights_    { std::move(rhs.row_max_heights_) }
 	, col_labels_         { std::move(rhs.col_labels_) }
@@ -629,7 +630,7 @@ std::vector<std::string> DefaultSplitter::do_split(
 	using std::cend;
 
 	std::for_each(cbegin(delimited), cend(delimited),
-		[&parts, max_len](std::string s)
+		[&parts, max_len](const std::string& s)
 		{
 			// Split every substring that is still too long
 			if (s.length() > max_len)
@@ -990,13 +991,6 @@ CellDecorator::CellDecorator(const std::size_t n)
 }
 
 
-CellDecorator::CellDecorator(const CellDecorator& rhs)
-	: flags_(rhs.flags_)
-{
-	// empty
-}
-
-
 CellDecorator::index_type CellDecorator::i(const int index) const
 {
 	return static_cast<index_type>(index);
@@ -1021,11 +1015,11 @@ bool CellDecorator::is_set(const int idx) const
 }
 
 
-std::string CellDecorator::decorate(const int i, std::string&& s) const
+std::string CellDecorator::decorate(const int i, const std::string& s) const
 {
 	return is_set(i)
-		? do_decorate_set(std::move(s))
-		: do_decorate_unset(std::move(s));
+		? do_decorate_set(s)
+		: do_decorate_unset(s);
 }
 
 
@@ -1567,16 +1561,29 @@ void TablePrinter::Impl::row(std::ostream& o, const PrintableTable& t,
 		const StringTableLayout& l) const
 {
 	// Wrapper for row_label()
-	const auto row_label_f = std::bind(&TablePrinter::Impl::row_label,
-		this,
-		std::placeholders::_1, std::placeholders::_2,
-		std::placeholders::_3, std::placeholders::_4);
+	const auto row_label_f = [this](std::ostream& ostr,
+		const PrintableTable& table,
+		const int r, const std::size_t width)
+	{
+		return this->row_label(ostr, table, r, width);
+	};
+	// Outcommented previous version, TODO Remove
+	//const auto row_label_f = std::bind(&TablePrinter::Impl::row_label,
+	//	this,
+	//	std::placeholders::_1, std::placeholders::_2,
+	//	std::placeholders::_3, std::placeholders::_4);
 
 	// Wrapper for cell()
-	const auto cell_f = std::bind(&TablePrinter::Impl::cell, this,
-		std::placeholders::_1, std::placeholders::_2,
-		std::placeholders::_3, std::placeholders::_4,
-		std::placeholders::_5);
+	const auto cell_f = [this](std::ostream& ostr, const PrintableTable& table,
+			const int r, const int col, const std::size_t width)
+	{
+		return this->cell(ostr, table, r, col, width);
+	};
+	// Outcommented previous version, TODO Remove
+	//const auto cell_f = std::bind(&TablePrinter::Impl::cell, this,
+	//	std::placeholders::_1, std::placeholders::_2,
+	//	std::placeholders::_3, std::placeholders::_4,
+	//	std::placeholders::_5);
 
 	row_worker(o, t, row, col_widths, l, row_label_f, cell_f);
 }
@@ -1657,7 +1664,7 @@ void TablePrinter::Impl::row_cells_worker(std::ostream& o,
 	auto width = std::size_t { 0 };
 
 	// Print multiline row
-	do
+	do // NOLINT(cppcoreguidelines-avoid-do-while)
 	{
 		// Print every col in row
 		for (auto c = std::size_t { 0 }; c < t.cols(); ++c)
@@ -2022,7 +2029,7 @@ std::ostream& operator << (std::ostream& o, const PrintableTable& table)
 {
 	if (!table.empty())
 	{
-		TablePrinter p;
+		const auto p = TablePrinter {}; // FIXME member? static? create once!
 		p.print(o, table);
 	}
 

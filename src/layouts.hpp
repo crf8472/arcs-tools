@@ -524,8 +524,8 @@ public:
 	 *
 	 * \param[in] labels List of key-label pairs for initialization
 	 */
-	explicit LabelStore(const store_t& labels)
-		: labels_ { labels }
+	explicit LabelStore(store_t labels)
+		: labels_ { std::move(labels) }
 	{
 		// empty
 	}

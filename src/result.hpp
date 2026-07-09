@@ -70,7 +70,7 @@ public:
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	~ResultList() noexcept = default;
+	~ResultList() noexcept final = default;
 
 	/**
 	 * \brief Append a result to the list of results.
@@ -118,7 +118,7 @@ public:
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	virtual ~ResultObject() noexcept = default;
+	~ResultObject() noexcept final = default;
 
 	/**
 	 * \brief Join another ResultObject to the list of arguments.
