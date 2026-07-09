@@ -195,7 +195,7 @@ private:
 	struct RetrieveName
 	{
 		template <typename T>
-		typename T::first_type operator()(T keyValuePair) const
+		typename T::first_type operator()(const T& keyValuePair) const
 		{
 			return keyValuePair.first;
 		}
@@ -218,7 +218,7 @@ private:
 template <class T> //TODO SFINAE exclude types
 class RegisterApplicationType final : ApplicationFactory
 {
-	virtual void do_not_make_this_class_abstract() const final { /* empty */ }
+	void do_not_make_this_class_abstract() const final { /* empty */ }
 
 public:
 
@@ -227,7 +227,7 @@ public:
 	 *
 	 * \param[in] name The name to register the application type
 	 */
-	RegisterApplicationType(const std::string& name)
+	explicit RegisterApplicationType(const std::string& name)
 	{
 		get_map()->insert(
 				std::make_pair(name, &details::instantiateApplication<T>));

@@ -14,7 +14,7 @@
 #include <cstdlib>     // for EXIT_SUCCESS
 #include <iostream>    // for cout
 #include <memory>      // for unique_ptr, make_unique
-#include <mutex>       // for mutex, lock_guard
+#include <mutex>       // for mutex, scoped_lock
 #include <stdexcept>   // for invalid_argument, out_of_range, runtime_error
 #include <string>      // for string, stoi
 #include <utility>     // for get, move
@@ -52,15 +52,6 @@ inline namespace v_1_0_0
 // Output
 
 
-Output::Output()
-	: mutex_    { }
-	, filename_ { }
-	, append_   { false }
-{
-	// empty
-}
-
-
 bool Output::is_appending() const
 {
 	return append_;
@@ -69,7 +60,7 @@ bool Output::is_appending() const
 
 void Output::set_append(const bool append)
 {
-	const std::lock_guard<std::mutex> lock(mutex_);
+	const std::scoped_lock<std::mutex> lock(mutex_);
 	append_ = append;
 }
 
@@ -82,7 +73,7 @@ const std::string& Output::filename() const
 
 void Output::to_file(const std::string& filename)
 {
-	const std::lock_guard<std::mutex> lock(mutex_);
+	const std::scoped_lock<std::mutex> lock(mutex_);
 	filename_ = filename;
 }
 

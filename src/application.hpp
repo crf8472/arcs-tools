@@ -13,7 +13,7 @@
 #include <ios>         // for ios_base
 #include <iostream>    // for cout
 #include <memory>      // for unique_ptr, allocator
-#include <mutex>       // for mutex, lock_guard
+#include <mutex>       // for mutex, scoped_lock
 #include <string>      // for string
 
 
@@ -32,7 +32,7 @@ public:
 	/**
 	 * \brief Default constructor.
 	 */
-	Output();
+	Output() = default;
 
 	/**
 	 * \brief TRUE iff output appends to previous output.
@@ -95,11 +95,11 @@ public:
 	template <typename T>
 	inline auto output(T&& object) -> decltype( std::cout << object, void() )
 	{
-		const std::lock_guard<std::mutex> lock(mutex_);
+		const std::scoped_lock<std::mutex> lock { mutex_ };
 
 		if (filename().empty())
 		{
-			std::cout << object;
+			std::cout << std::forward<T>(object);
 			return;
 		}
 
@@ -120,7 +120,7 @@ public:
 				std::fstream::out | std::fstream::trunc);
 		}
 
-		out_file_stream << object;
+		out_file_stream << std::forward<T>(object);
 
 		append_ = true; // first call overwrites, subsequent calls append
 	}
@@ -137,17 +137,17 @@ private:
 	/**
 	 * \brief Internal guard.
 	 */
-	std::mutex mutex_;
+	std::mutex mutex_ {};
 
 	/**
 	 * \brief Internal output filename.
 	 */
-	std::string filename_;
+	std::string filename_ {};
 
 	/**
-	 * \brief Internall append flag.
+	 * \brief Internal append flag.
 	 */
-	bool append_;
+	bool append_ {};
 };
 
 
