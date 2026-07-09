@@ -148,8 +148,8 @@ ChecksumCalculator::ChecksumCalculator()
 
 
 ChecksumCalculator::ChecksumCalculator(
-		const ChecksumTypeset& types)
-	: types_           { types }
+		ChecksumTypeset types)
+	: types_           { std::move(types) }
 	, audio_selection_ { nullptr }
 	, toc_selection_   { nullptr }
 {
@@ -217,7 +217,7 @@ std::pair<Checksums, ToC> ChecksumCalculator::calculate(
 	{
 		const auto chksums { calculator.calculate(audiofilenames, true, true) };
 
-		return { chksums, std::move(toc) };
+		return { chksums, toc };
 	}
 
 	return { Checksums{ 0 }, ToC{} }; // TODO should throw instead

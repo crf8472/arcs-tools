@@ -31,7 +31,7 @@
 #ifndef ARCSTOOLS_APPLICATION_HPP_
 #include "application.hpp"           // for Output
 #endif
-#ifndef ARCSTOOLS_TOOLS_ARID_HPP_ // for ARIdLayout
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP_    // for ARIdLayout
 #include "tools-arid.hpp"
 #endif
 #ifndef ARCSTOOLS_TOOLS_CALC_HPP_
@@ -49,7 +49,6 @@ namespace dbar
 // libarcstk
 using arcstk::ARId;
 using arcstk::DBARTriplet;
-using arcstk::parse_stream;
 
 // arcsapp
 using arcsapp::arid::ARIdTableLayout;
@@ -85,8 +84,6 @@ std::string evaluate(std::string s, const std::string& ph,
 
 	return s;
 }
-
-using arcsapp::details::flag_operand;
 
 } // namespace details
 
@@ -307,6 +304,7 @@ DBARBaseFormat::DBARBaseFormat()
 
 std::string DBARBaseFormat::indent() const
 {
+	// NOLINTNEXTLINE(modernize-return-braced-init-list)
 	return std::string ( indent_, ' ' );
 }
 

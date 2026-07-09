@@ -166,25 +166,25 @@ unsigned read_from_stdin(const std::size_t amount_of_bytes, ParseHandler* p,
 // parse_list
 
 
-void parse_list(const std::string& input, const char delim,
-		std::function<void(const std::string&)> value_hook)
+void parse_list(const std::string& input_list, const char delim,
+		const std::function<void(const std::string&)>& entry_hook)
 {
-	if (input.empty())
+	if (input_list.empty())
 	{
 		return;
 	}
 
-	if (input.length() > 500)  // TODO magic number, just give up on big input
+	if (input_list.length() > 500)  // TODO magic number, give up on big input
 	{
 		return;
 	}
 
-	auto input_stream = std::istringstream { input };
+	auto input_stream = std::istringstream { input_list };
 	auto string_part  = std::string {};
 
 	while ( std::getline( input_stream, string_part, delim ) )
 	{
-		value_hook(string_part);
+		entry_hook(string_part);
 	}
 
 	if (input_stream.eof())
@@ -290,14 +290,14 @@ std::string ChecksumValuesParser::start_message() const
 void ChecksumValuesParser::do_parse_nonempty(
 		const std::string& checksum_list) const
 {
-	values_ = input::parse_list_to_objects<uint32_t>(
+	values_ = ChecksumValuesSource { input::parse_list_to_objects<uint32_t>(
 				checksum_list,
 				',' /*delimiter for values*/,
 				[](const std::string& s) -> uint32_t
 				{
 					return std::stoul(s, nullptr, 16);
 				},
-				counter());
+				counter()) };
 }
 
 
@@ -310,8 +310,8 @@ ChecksumValuesSource ChecksumValuesParser::provide_object() const
 // ChecksumValuesSource
 
 
-ChecksumValuesSource::ChecksumValuesSource(const ChecksumValuesType& values)
-	: reference_source_ { values }
+ChecksumValuesSource::ChecksumValuesSource(ChecksumValuesType values)
+	: reference_source_ { std::move(values) }
 {
 	// empty
 }

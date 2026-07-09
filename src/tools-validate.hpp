@@ -90,11 +90,11 @@ public:
 	 * \param[in] test_func Validation function
 	 * \param[in] error_msg Message on error
 	 */
-	Validate(const std::string& desc,
-			const validation_type& test_func, const std::string& error_msg)
-		: desc_      { desc }
+	Validate(std::string desc,
+			const validation_type& test_func, std::string error_msg)
+		: desc_      { std::move(desc) }
 		, func_      { test_func }
-		, error_msg_ { error_msg }
+		, error_msg_ { std::move(error_msg) }
 	{
 		// empty
 	}

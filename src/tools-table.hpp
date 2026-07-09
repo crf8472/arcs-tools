@@ -256,7 +256,7 @@ public:
 
 protected:
 
-	RecordInterface(std::unique_ptr<T> object)
+	explicit RecordInterface(std::unique_ptr<T> object)
 		: object_ { std::move(object) }
 	{
 		// empty
@@ -462,7 +462,7 @@ public:
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	virtual ~TableComposer() noexcept override = default;
+	~TableComposer() noexcept override = default;
 
 	/**
 	 * \brief Get the fields of the table to construct.
@@ -564,11 +564,11 @@ private:
 
 	std::string do_label_by_type(const ATTR& field_type) const final;
 
-	virtual void do_set_label_by_index(const int field_idx,
+	void do_set_label_by_index(const int field_idx,
 			const std::string& label) override
 	= 0;
 
-	virtual std::string do_label_by_index(const int field_idx) const override
+	std::string do_label_by_index(const int field_idx) const override
 	= 0;
 
 	int do_field_idx(const ATTR& field_type, const int i) const final;
@@ -605,9 +605,9 @@ class RowTableComposer final : public TableComposer
 
 	size_type do_total_records() const final;
 	size_type do_fields_per_record() const final;
-	virtual void do_set_label_by_index(const int field_idx,
+	void do_set_label_by_index(const int field_idx,
 			const std::string& label) final;
-	virtual std::string do_label_by_index(const int field_idx) const final;
+	std::string do_label_by_index(const int field_idx) const final;
 
 	// DecorationInterface
 
@@ -641,9 +641,9 @@ class ColTableComposer final : public TableComposer
 
 	size_type do_total_records() const final;
 	size_type do_fields_per_record() const final;
-	virtual void do_set_label_by_index(const int field_idx,
+	void do_set_label_by_index(const int field_idx,
 			const std::string& label) final;
-	virtual std::string do_label_by_index(const int field_idx) const final;
+	std::string do_label_by_index(const int field_idx) const final;
 
 	// DecorationInterface
 
@@ -823,12 +823,12 @@ class AddRecords final
 	/**
 	 * \brief Internal index of the current record.
 	 */
-	std::size_t current_;
+	std::size_t current_ {};
 
 	/**
 	 * \brief Internal TableComposer to use.
 	 */
-	TableComposer* composer_;
+	TableComposer* composer_ {};
 
 	/**
 	 * \brief Reset the current record index to its initial value.
@@ -874,7 +874,7 @@ public:
 	 *
 	 * \param[in] composer TableComposer to use
 	 */
-	AddRecords(TableComposer* composer);
+	explicit AddRecords(TableComposer* composer);
 
 	/**
 	 * \brief Return current record index.
@@ -1180,9 +1180,7 @@ void add_field(TableComposer* c, const int record_idx, const int field_idx,
  */
 template <typename T>
 using Unqualified = typename
-		std::remove_pointer<
-			std::remove_cv_t<
-				std::remove_reference_t<T>>>::type;
+		std::remove_pointer_t<std::remove_cv_t<std::remove_reference_t<T>>>;
 
 /**
  * \brief Get \p size_type from type \p T.
@@ -1224,13 +1222,13 @@ class AddField<ATTR::TRACK> final : public FieldCreator
 template <>
 class AddField<ATTR::OFFSET> final : public FieldCreator
 {
-	const std::vector<AudioSize> offsets_;
+	std::vector<AudioSize> offsets_;
 
 	void do_create(TableComposer* c, const int record_idx) const final;
 
 public:
 
-	AddField(const std::vector<AudioSize>& toc);
+	explicit AddField(const std::vector<AudioSize>& toc);
 };
 
 
@@ -1243,7 +1241,7 @@ class AddField<ATTR::LENGTH> final : public FieldCreator
 
 public:
 
-	AddField(const Checksums* checksums);
+	explicit AddField(const Checksums* checksums);
 };
 
 
@@ -1256,7 +1254,7 @@ class AddField<ATTR::FILENAME> final : public FieldCreator
 
 public:
 
-	AddField(const std::vector<std::string>* filenames);
+	explicit AddField(const std::vector<std::string>* filenames);
 };
 
 
@@ -1270,7 +1268,7 @@ class AddField<ATTR::CHECKSUM_ARCS1> final : public FieldCreator
 
 public:
 
-	AddField(const Checksums* checksums, const ChecksumLayout* layout);
+	explicit AddField(const Checksums* checksums, const ChecksumLayout* layout);
 };
 
 
@@ -1284,7 +1282,7 @@ class AddField<ATTR::CHECKSUM_ARCS2> final : public FieldCreator
 
 public:
 
-	AddField(const Checksums* checksums, const ChecksumLayout* layout);
+	explicit AddField(const Checksums* checksums, const ChecksumLayout* layout);
 };
 
 #pragma GCC diagnostic pop

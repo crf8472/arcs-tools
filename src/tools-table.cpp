@@ -590,8 +590,7 @@ void FieldCreator::create(TableComposer* c, const int record_idx) const
 
 
 AddRecords::AddRecords(TableComposer* composer)
-	: current_  { 0 }
-	, composer_ { composer }
+	: composer_ { composer }
 {
 	// empty
 }

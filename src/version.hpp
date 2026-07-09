@@ -1,5 +1,5 @@
-#ifndef ARCSTOOLS_VERSION_HPP__
-#define ARCSTOOLS_VERSION_HPP__
+#ifndef ARCSTOOLS_VERSION_HPP_
+#define ARCSTOOLS_VERSION_HPP_
 /**
  * \file
  *

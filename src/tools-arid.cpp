@@ -39,18 +39,18 @@ namespace arid
 // RichARId
 
 
-RichARId::RichARId(const ARId& id, std::unique_ptr<ARIdLayout> layout,
-			const std::string& alt_prefix)
-	: id_ { id }
-	, layout_ { std::move(layout) }
-	, alt_prefix_ { alt_prefix }
+RichARId::RichARId(ARId id, std::unique_ptr<ARIdLayout> layout,
+			std::string alt_prefix)
+	: id_         { std::move(id)         }
+	, layout_     { std::move(layout)     }
+	, alt_prefix_ { std::move(alt_prefix) }
 {
 	// empty
 }
 
 
-RichARId::RichARId(const ARId& id, std::unique_ptr<ARIdLayout> layout)
-	: RichARId { id, std::move(layout), std::string{} }
+RichARId::RichARId(ARId id, std::unique_ptr<ARIdLayout> layout)
+	: RichARId { std::move(id), std::move(layout), std::string{} }
 {
 	// empty
 }
@@ -109,9 +109,6 @@ ARIdLayout::ARIdLayout(const bool labels, const bool id, const bool url,
 {
 	// empty
 }
-
-
-ARIdLayout::~ARIdLayout() noexcept = default;
 
 
 bool ARIdLayout::fieldlabels() const

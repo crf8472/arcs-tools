@@ -30,7 +30,6 @@ inline namespace v_1_0_0
 
 namespace arid
 {
-class Application;
 class ARIdLayout;
 }
 

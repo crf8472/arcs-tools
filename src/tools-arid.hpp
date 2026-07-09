@@ -92,7 +92,7 @@ public:
 	/**
 	 * \brief Virtual default destructor
 	 */
-	virtual ~ARIdLayout() noexcept;
+	~ARIdLayout() noexcept override = default;
 
 	/**
 	 * \brief Returns TRUE iff instance is configured to print field labels.
@@ -140,7 +140,7 @@ private:
 	 *
 	 * Order matches definition order in ARID_FLAG.
 	 */
-	const std::array<ARID_FLAG, 7> show_flags_
+	constexpr static std::array<ARID_FLAG, 7> show_flags_
 	{
 		ARID_FLAG::ID,
 		ARID_FLAG::URL,
@@ -246,20 +246,20 @@ public:
 	/**
 	 * \brief An ARId with every information required for printing.
 	 *
-	 * \param[in] id      ARId to print
-	 * \param[in] layout  Layout to use for printing
-	 */
-	RichARId(const arcstk::ARId& id, std::unique_ptr<ARIdLayout> layout);
-
-	/**
-	 * \brief An ARId with every information required for printing.
-	 *
 	 * \param[in] id         ARId to print
 	 * \param[in] layout     Layout to use for printing
 	 * \param[in] alt_prefix Optional alternative URL prefix
 	 */
-	RichARId(const arcstk::ARId& id, std::unique_ptr<ARIdLayout> layout,
-			const std::string& alt_prefix);
+	RichARId(arcstk::ARId id, std::unique_ptr<ARIdLayout> layout,
+			std::string alt_prefix);
+
+	/**
+	 * \brief An ARId with every information required for printing.
+	 *
+	 * \param[in] id      ARId to print
+	 * \param[in] layout  Layout to use for printing
+	 */
+	RichARId(arcstk::ARId id, std::unique_ptr<ARIdLayout> layout);
 
 	/**
 	 * \brief ARId of this instance.

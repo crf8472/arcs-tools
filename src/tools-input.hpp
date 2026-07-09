@@ -100,7 +100,7 @@ private:
 	/**
 	 * \brief Bytes per read
 	 */
-	const std::size_t buf_size_;
+	std::size_t buf_size_;
 };
 
 
@@ -127,12 +127,12 @@ unsigned read_from_stdin(const std::size_t amount_of_bytes,
  * \brief Parse \p list as a sequence of strings separated by \p delim and call
  * \p entry_hook on each of them.
  *
- * \param[in] list       Input string to parse as a list
+ * \param[in] input_list Input string to parse as a list
  * \param[in] delim      Delimiter for list entries
  * \param[in] entry_hook Call this function on each entry
  */
-void parse_list(const std::string& list, const char delim,
-		std::function<void(const std::string& s)> entry_hook);
+void parse_list(const std::string& input_list, const char delim,
+		const std::function<void(const std::string&)>& entry_hook);
 
 
 /**
@@ -248,7 +248,7 @@ class InputStringParser : public StringParser
 	/**
 	 * \brief Internal counter for parsed units.
 	 */
-	mutable int count_;
+	mutable int count_ {};
 
 	// StringParser
 
@@ -295,15 +295,6 @@ public:
 	 * \brief Result type provided by this parser.
 	 */
 	using result_type = T;
-
-	/**
-	 * \brief Default constructor.
-	 */
-	InputStringParser()
-		: count_ { 0 }
-	{
-		// empty
-	}
 
 	/**
 	 * \brief Total number of syntactic units seen in the last call of parse().
@@ -391,7 +382,7 @@ public:
 	 *
 	 * \param[in] values Checksum values
 	 */
-	ChecksumValuesSource(const ChecksumValuesType& values);
+	explicit ChecksumValuesSource(ChecksumValuesType values);
 
 	/**
 	 * \brief Default constructor.

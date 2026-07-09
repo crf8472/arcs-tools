@@ -169,7 +169,7 @@ public:
 	 *
 	 * \param[in] types The checksum types to calculate
 	 */
-	explicit ChecksumCalculator(const ChecksumTypeset& types);
+	explicit ChecksumCalculator(ChecksumTypeset types);
 
 	/**
 	 * \brief Virtual default destructor.
