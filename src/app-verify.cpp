@@ -95,7 +95,6 @@ using arid::ARIdTableLayout;
 using arid::RichARId;
 using calc::HexLayout;
 using input::DBARParser;
-using input::EmptyChecksumSource;
 using input::ChecksumValuesParser;
 using input::ChecksumValuesSource;
 using input::ChecksumValuesType;
@@ -771,8 +770,14 @@ std::unique_ptr<Result> VerifyTableCreator::do_format(InputTuple t) const
 
 	populate_creators_list(creators, field_list, filenames, toc, checksums);
 
+	if (total_theirs_per_block > std::numeric_limits<int>::max())
+	{
+		ARCS_LOG_ERROR << "Too many entries for 'theirs'";
+	}
+
 	populate_result_creators(creators, print_flags, field_list, types_to_print,
-			*vresult, block, checksums, *ref_source, total_theirs_per_block);
+			*vresult, block, checksums, *ref_source,
+			static_cast<int>(total_theirs_per_block));
 
 	// Add table to result
 
@@ -917,17 +922,21 @@ ansi::Color MatchDecorator::bg(const DecorationType& d) const
 }
 
 
-std::string MatchDecorator::do_decorate_set(std::string&& s) const
+std::string MatchDecorator::do_decorate_set(const std::string& s) const
 {
 	return  colored(hl(DecorationType::MATCH),
-				fg(DecorationType::MATCH), bg(DecorationType::MATCH), s);
+				fg(DecorationType::MATCH),
+				bg(DecorationType::MATCH),
+				s);
 }
 
 
-std::string MatchDecorator::do_decorate_unset(std::string&& s) const
+std::string MatchDecorator::do_decorate_unset(const std::string& s) const
 {
 	return  colored(hl(DecorationType::MISMATCH),
-				fg(DecorationType::MISMATCH), bg(DecorationType::MISMATCH), s);
+				fg(DecorationType::MISMATCH),
+				bg(DecorationType::MISMATCH),
+				s);
 }
 
 
@@ -1045,8 +1054,8 @@ ColorizingVerifyTableCreator::ColorizingVerifyTableCreator()
 
 
 ColorizingVerifyTableCreator::
-	ColorizingVerifyTableCreator(const ColorRegistry& colors)
-	: colors_ { colors }
+	ColorizingVerifyTableCreator(ColorRegistry colors)
+	: colors_ { std::move(colors) }
 {
 	// empty
 }

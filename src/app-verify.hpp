@@ -252,11 +252,11 @@ protected:
 		const ChecksumSource& ref_source,
 		const int total_theirs_per_block) const;
 
-private:
-
 	// Verify9Layout
 
 	void assertions(const InputTuple t) const final;
+
+private:
 
 	std::unique_ptr<Result> do_format(InputTuple t) const final;
 
@@ -374,9 +374,9 @@ class MatchDecorator final : public CellDecorator
 
 	// CellDecorator
 
-	std::string do_decorate_set(std::string&& s) const final;
+	std::string do_decorate_set(const std::string& s) const final;
 
-	std::string do_decorate_unset(std::string&& s) const final;
+	std::string do_decorate_unset(const std::string& s) const final;
 
 	std::unique_ptr<CellDecorator> do_clone() const final;
 
@@ -633,7 +633,7 @@ public:
 	 *
 	 * \param[in] colors Colorset to use
 	 */
-	ColorizingVerifyTableCreator(const ColorRegistry& colors);
+	explicit ColorizingVerifyTableCreator(ColorRegistry colors);
 
 	/**
 	 * \brief Return colors for coloring output of type \p d.
@@ -691,12 +691,12 @@ template <>
 class table::AddField<ATTR::THEIRS> final : public FieldCreator
 {
 	const VerificationResult* vresult_;
-	const int block_;
+	int block_;
 	const ChecksumSource* checksums_;
 	const std::vector<arcstk::checksum::type>* types_to_print_;
 	const VerifyTableCreator* formatter_;
-	const std::size_t total_theirs_per_block_;
-	const bool print_confidence_;
+	std::size_t total_theirs_per_block_;
+	bool print_confidence_;
 
 	void do_create(TableComposer* c, const int record_idx) const final;
 

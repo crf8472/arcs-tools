@@ -161,7 +161,7 @@ public:
 	 *
 	 * \param[in] hl Highlight to set
 	 */
-	Modifier(Highlight hl);
+	explicit Modifier(Highlight hl);
 
 	/**
 	 * \brief Constructor.
@@ -170,7 +170,7 @@ public:
 	 *
 	 * \param[in] colors Colors to set
 	 */
-	Modifier(const std::vector<Color>& colors);
+	explicit Modifier(const std::vector<Color>& colors);
 
 	/**
 	 * \brief Highlight of this modifier.

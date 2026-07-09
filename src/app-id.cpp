@@ -60,7 +60,6 @@ const auto id = RegisterApplicationType<ARIdApplication>("id");
 
 // libarcstk
 using arcstk::ARId;
-using arcstk::AudioSize;
 using arcstk::make_arid;
 
 // libarcsdec

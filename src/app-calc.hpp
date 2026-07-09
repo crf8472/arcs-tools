@@ -220,9 +220,9 @@ protected:
 		const std::vector<arcstk::checksum::type>& types,
 		const Checksums& checksums) const;
 
-private:
-
 	void assertions(const InputTuple t) const final;
+
+private:
 
 	void do_init_composer(TableComposer& c) const final;
 
@@ -247,7 +247,7 @@ class ARCalcApplicationBase : public Application
 
 	// Application
 
-	virtual int do_run(const Configuration& config) override;
+	int do_run(const Configuration& config) override;
 
 protected:
 
