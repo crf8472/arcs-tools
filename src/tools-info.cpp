@@ -184,9 +184,9 @@ void ToCFormatComposer::add(const FileReaderDescriptor& descriptor)
 
 	// Space-separated list of Codec names
 
-	using codec_func = std::string (*)(Codec);
-	const codec_func c = &arcsdec::read::name;
 	// commented out, obviously unused, kept until q&a TODO Remove
+	//using codec_func = std::string (*)(Codec);
+	//const codec_func c = &arcsdec::read::name;
 	//const std::string cdecs = details::to_sep_list(descriptor.codecs(), sep, c);
 
 	// Compose table: Add rows for the current descriptor

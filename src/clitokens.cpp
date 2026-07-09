@@ -104,108 +104,19 @@ CallSyntaxException::CallSyntaxException(const std::string& what_arg)
 	// empty
 }
 
+
+// NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
 /**
  * \brief Parse input chars as an option symbol.
  *
- * \param[in] opt         The option symbol to consume
+ * \param[in] token       The option symbol to consume
  * \param[in] val         The option value to consume
  * \param[in] supported   The supported options to match
  * \param[in,out] pos     Character position in the call string
  * \param[in] pass_token  Function to call on each parsed token
  */
-void parse_symbol(const char* const opt, const char* const val,
-		const OptionRegistry& supported, int& pos,
-		const option_callback& pass_token);
-
-
-/**
- * \brief Parse input chars as an option shorthand symbol.
- *
- * \param[in] opt        The option symbol to consume
- * \param[in] val        The option value to consume
- * \param[in] supported  The supported options to match
- * \param[in,out] pos    Character position in the call string
- * \param[in] pass_token Function to call on each parsed token
- */
-void parse_shorthand(const char* const opt, const char* const val,
-		const OptionRegistry& supported, int& pos,
-		const option_callback& pass_token);
-
-// NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-
-void parse(const int argc, const char* const* const argv,
-		const OptionRegistry& supported, const option_callback& pass_token)
-{
-	if (argc < 2 or !argv)
-	{
-		return; // No Options or Arguments
-	}
-
-	auto pos = int { 1 };   // Current Position in argv, ignore argv[0]
-	const char* token = nullptr; // Current token
-	const char* next  = nullptr; // Next token
-
-	//using unsigned_char = unsigned char;
-	auto first_ch  = /*unsigned_*/char { 0 }; // First char in argv[pos]
-	auto second_ch = /*unsigned_*/char { 0 }; // Second char in argv[pos]
-
-	while (pos < argc)
-	{
-		// Leading chars of current token
-		first_ch  = argv[pos][0];
-		second_ch = first_ch ? argv[pos][1] : 0;
-
-		if (first_ch == '-') // An Option Starts
-		{
-			if (second_ch)
-			{
-				// Get Next token
-				token = argv[pos];
-				next  = (pos + 1 < argc) ? argv[pos + 1] : nullptr;
-
-				if (second_ch == '-')
-				{
-					// Token starts with '--'
-
-					if (!argv[pos][2])
-					{
-						// Token is only '--'
-						pass_token(DDASH, "");
-						++pos;
-						//break;
-					} else
-					{
-						// Expected Syntax: --some-option
-						parse_symbol(token, next, supported, pos, pass_token);
-					}
-				} else
-				{
-					// Expected Syntax: -o
-					parse_shorthand(token, next, supported, pos, pass_token);
-				}
-			} else
-			{
-				// Token is only '-':
-				pass_token(DASH, "");
-				++pos;
-			}
-		} else
-		{
-			// An Argument
-			pass_token(ARGUMENT, argv[pos]);
-			++pos;
-		}
-	} // while
-
-	while (pos < argc)
-	{
-		pass_token(ARGUMENT, argv[pos]);
-		++pos;
-	}
-}
-
-
-void parse_symbol(const char* const token, const char* const next,
+static void parse_symbol(const char* const token, const char* const val,
 		const OptionRegistry& supported, int& pos,
 		const option_callback& pass_token)
 {
@@ -310,7 +221,7 @@ void parse_symbol(const char* const token, const char* const next,
 		pass_token(code, &token[sym_len + 3]);
 	} else if (option->needs_value()) // Expect syntax '--foo bar'
 	{
-		if (!next or !next[0] or next[0] == '-')
+		if (!val or !val[0] or val[0] == '-')
 		{
 			if (OP_VALUE::NONE == option->default_arg()
 					|| option->default_arg().empty())
@@ -329,7 +240,7 @@ void parse_symbol(const char* const token, const char* const next,
 		{
 			// Move token pointer for caller
 			++pos;
-			pass_token(code, next);
+			pass_token(code, val);
 		}
 	} else
 	{
@@ -338,7 +249,16 @@ void parse_symbol(const char* const token, const char* const next,
 }
 
 
-void parse_shorthand(const char* const token, const char* const next,
+/**
+ * \brief Parse input chars as an option shorthand symbol.
+ *
+ * \param[in] token      The option symbol to consume
+ * \param[in] val        The option value to consume
+ * \param[in] supported  The supported options to match
+ * \param[in,out] pos    Character position in the call string
+ * \param[in] pass_token Function to call on each parsed token
+ */
+static void parse_shorthand(const char* const token, const char* const val,
 		const OptionRegistry& supported, int& pos,
 		const option_callback& pass_token)
 {
@@ -399,14 +319,14 @@ void parse_shorthand(const char* const token, const char* const next,
 			{
 				// No trailing part, consider next token as value
 
-				if (!next or !next[0])
+				if (!val or !val[0])
 				{
 					std::ostringstream msg;
 					msg << "Option '-" << token
 						<< "' requires a value but none was passed";
 					throw CallSyntaxException(msg.str());
 				}
-				pass_token(code, next);
+				pass_token(code, val);
 			}
 
 			cind = 0;
@@ -416,6 +336,78 @@ void parse_shorthand(const char* const token, const char* const next,
 			pass_token(code, "");
 		}
 	} // while
+}
+
+
+void parse(const int argc, const char* const* const argv,
+		const OptionRegistry& supported, const option_callback& pass_token)
+{
+	if (argc < 2 or !argv)
+	{
+		return; // No Options or Arguments
+	}
+
+	auto pos = int { 1 };   // Current Position in argv, ignore argv[0]
+	const char* token = nullptr; // Current token
+	const char* next  = nullptr; // Next token
+
+	//using unsigned_char = unsigned char;
+	auto first_ch  = /*unsigned_*/char { 0 }; // First char in argv[pos]
+	auto second_ch = /*unsigned_*/char { 0 }; // Second char in argv[pos]
+
+	while (pos < argc)
+	{
+		// Leading chars of current token
+		first_ch  = argv[pos][0];
+		second_ch = first_ch ? argv[pos][1] : 0;
+
+		if (first_ch == '-') // An Option Starts
+		{
+			if (second_ch)
+			{
+				// Get Next token
+				token = argv[pos];
+				next  = (pos + 1 < argc) ? argv[pos + 1] : nullptr;
+
+				if (second_ch == '-')
+				{
+					// Token starts with '--'
+
+					if (!argv[pos][2])
+					{
+						// Token is only '--'
+						pass_token(DDASH, "");
+						++pos;
+						//break;
+					} else
+					{
+						// Expected Syntax: --some-option
+						parse_symbol(token, next, supported, pos, pass_token);
+					}
+				} else
+				{
+					// Expected Syntax: -o
+					parse_shorthand(token, next, supported, pos, pass_token);
+				}
+			} else
+			{
+				// Token is only '-':
+				pass_token(DASH, "");
+				++pos;
+			}
+		} else
+		{
+			// An Argument
+			pass_token(ARGUMENT, argv[pos]);
+			++pos;
+		}
+	} // while
+
+	while (pos < argc)
+	{
+		pass_token(ARGUMENT, argv[pos]);
+		++pos;
+	}
 }
 
 // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)

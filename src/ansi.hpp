@@ -6,6 +6,7 @@
  * \brief ANSI output modifiers for the command line.
  */
 
+#include <cstdint>                // for uint8_t
 #include <ostream>                // for ostream
 #include <string>                 // for to_string
 #include <vector>                 // for vector
@@ -30,7 +31,7 @@ namespace ansi
  *
  * According to https://en.wikipedia.org/wiki/ANSI_escape_code#Select_Graphic_Rendition_parameters
  */
-enum class Highlight : int
+enum class Highlight : std::uint8_t
 {
 	NORMAL =  0,
 	//
@@ -61,7 +62,7 @@ Highlight reset(const Highlight hl);
  *
  * According to https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
  */
-enum class Color : int
+enum class Color : std::uint8_t
 {
 	NONE        =  0,
 	//
