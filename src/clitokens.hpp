@@ -61,9 +61,9 @@ public:
 	 * \param[in] default_arg Default argument as a string
 	 * \param[in] desc        Option description
 	 */
-	Option(const char shorthand, const std::string& symbol,
-		const bool needs_value, const std::string& default_arg,
-		const std::string& desc);
+	Option(const char shorthand, std::string symbol,
+		const bool needs_value, std::string default_arg,
+		std::string desc);
 
 	/**
 	 * \brief Constructor for options with symbol only.
@@ -73,9 +73,11 @@ public:
 	 * \param[in] default_arg Default argument as a string
 	 * \param[in] desc        Option description
 	 */
-	Option(const std::string& symbol, const bool needs_value,
-		   const std::string& default_arg, const std::string& desc)
-		: Option ('\0', symbol, needs_value, default_arg, desc )
+	Option(std::string symbol, const bool needs_value,
+		   std::string default_arg, std::string desc)
+		: Option { '\0',
+				std::move(symbol), needs_value,
+				std::move(default_arg), std::move(desc) }
 	{ /* empty */ }
 
 	/**
@@ -200,21 +202,21 @@ struct OP_VALUE
  *   - A non-boolean option without its expected value is passed.
  *   - A boolean option is passed a value (e.g. as '-t0').
  */
-class CallSyntaxException : public std::runtime_error
+class CallSyntaxException final : public std::runtime_error
 {
 public:
 
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	virtual ~CallSyntaxException() noexcept = default;
+	~CallSyntaxException() noexcept final = default;
 
 	/**
 	 * \brief Constructor
 	 *
 	 * \param[in] what_arg What-Message
 	 */
-	CallSyntaxException(const std::string& what_arg);
+	explicit CallSyntaxException(const std::string& what_arg);
 };
 
 

@@ -31,14 +31,14 @@ inline namespace v_1_0_0
 OptionCode NONE;
 
 
-Option::Option(const char shorthand, const std::string& symbol,
-		const bool needs_value, const std::string& default_arg,
-		const std::string& desc)
+Option::Option(const char shorthand, std::string symbol,
+		const bool needs_value, std::string default_arg,
+		std::string desc)
 	: shorthand_   { shorthand }
-	, symbol_      { symbol }
+	, symbol_      { std::move(symbol) }
 	, needs_value_ { needs_value }
-	, default_arg_ { default_arg }
-	, description_ { desc }
+	, default_arg_ { std::move(default_arg) }
+	, description_ { std::move(desc) }
 {
 	// empty
 }
@@ -131,6 +131,7 @@ void parse_shorthand(const char* const opt, const char* const val,
 		const OptionRegistry& supported, int& pos,
 		const option_callback& pass_token);
 
+// NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 void parse(const int argc, const char* const* const argv,
 		const OptionRegistry& supported, const option_callback& pass_token)
@@ -353,7 +354,7 @@ void parse_shorthand(const char* const token, const char* const next,
 
 	while (cind > 0)
 	{
-		c = unsigned_char (token[cind]); // Check next character
+		c = static_cast<unsigned_char>(token[cind]); // Check next character
 		option = nullptr;
 
 		if (c != 0)
@@ -375,6 +376,7 @@ void parse_shorthand(const char* const token, const char* const next,
 		if (!option)
 		{
 			std::ostringstream msg;
+			// NOLINTNEXTLINE(bugprone-unintended-char-ostream-output)
 			msg << "Invalid option '-" << c << "'";
 			throw CallSyntaxException(msg.str());
 		}
@@ -415,6 +417,8 @@ void parse_shorthand(const char* const token, const char* const next,
 		}
 	} // while
 }
+
+// NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 } // namespace cli
 } // namespace v_1_0_0
