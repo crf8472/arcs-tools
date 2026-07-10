@@ -9,6 +9,7 @@
  */
 
 #include <cstddef>       // for size_t
+#include <cstdint>       // for uint8_t
 #include <memory>        // for unique_ptr
 #include <string>        // for string
 #include <unordered_map> // for unordered_map
@@ -320,7 +321,7 @@ class MonochromeVerifyTableCreator final : public VerifyTableCreator
  * Decoratable cell categories are matches with "theirs" (MATCH), mismatches
  * with "theirs" (MISMATCH), and locally computed checksums (MINE).
  */
-enum class DecorationType : int
+enum class DecorationType : uint8_t
 {
 	MATCH,
 	MISMATCH,
@@ -573,6 +574,8 @@ class ColorSpecParser final : public InputStringParser<ColorRegistry>
 	mutable ColorRegistry registry_;
 
 	std::string start_message() const final;
+
+	void do_parse_empty() const final;
 
 	void do_parse_nonempty(const std::string& s) const final;
 

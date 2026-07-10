@@ -6,7 +6,7 @@
  * \brief Formatter for ARId objects.
  */
 
-#include <cstdint>      // for uint32_t
+#include <cstdint>      // for uint8_t, uint32_t
 #include <array>        // for array
 #include <memory>       // for unique_ptr
 #include <ostream>      // for ostream
@@ -39,7 +39,7 @@ using arcstk::ToC;
 /**
  * \brief Show flags of ARIdLayout
  */
-enum class ARID_FLAG : int
+enum class ARID_FLAG : uint8_t
 {
 	ID       = 0,
 	URL      = 1,

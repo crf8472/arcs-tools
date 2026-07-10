@@ -57,6 +57,7 @@ public:
 	 */
 	explicit VectorIStream(std::vector<CharT>& v)
 	{
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		this->setg(v.data(), v.data(), v.data() + v.size());
 	}
 };
@@ -223,9 +224,7 @@ class InputStringParser : public StringParser
 	 * \brief Parsing result for empty input.
 	 */
 	virtual void do_parse_empty() const
-	{
-		ARCS_LOG(DEBUG1) << "Empty parser input, return default object";
-	}
+	= 0;
 
 	/**
 	 * \brief Parsing result for non-empty input.
@@ -418,6 +417,8 @@ class ChecksumValuesParser final :
 	mutable ChecksumValuesSource values_;
 
 	std::string start_message() const final;
+
+	void do_parse_empty() const final;
 
 	void do_parse_nonempty(const std::string& s) const final;
 

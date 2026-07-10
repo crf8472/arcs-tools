@@ -125,7 +125,7 @@ public:
 	 *
 	 * \param[in] r Result object to join
 	 */
-	void join(ResultObject&& r)
+	void join(const ResultObject& r)
 	{
 		t_ = std::tuple_cat(t_, r.object());
 	}

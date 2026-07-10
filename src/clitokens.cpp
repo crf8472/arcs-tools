@@ -281,7 +281,7 @@ void parse_shorthand(const char* const token, const char* const val,
 			// Traverse supported options till c is found as shorthand symbol
 			for (const auto& [o_code, o] : supported)
 			{
-				if (c == o.shorthand_symbol())
+				if (c == static_cast<unsigned char>(o.shorthand_symbol()))
 				{
 					option = &o;
 					code   =  o_code;

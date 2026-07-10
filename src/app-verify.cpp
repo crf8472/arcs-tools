@@ -126,6 +126,12 @@ std::string ColorSpecParser::start_message() const
 }
 
 
+void ColorSpecParser::do_parse_empty() const
+{
+	ARCS_LOG(DEBUG1) << "Empty parser input, return default object";
+}
+
+
 void ColorSpecParser::do_parse_nonempty(const std::string& input) const
 {
 	using cli::CallSyntaxException;

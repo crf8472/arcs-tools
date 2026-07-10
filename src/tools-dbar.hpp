@@ -312,7 +312,7 @@ public:
 /**
  * \brief Data entities of a DBAR object.
  */
-enum class DBAR_ENTITY : int
+enum class DBAR_ENTITY : uint8_t
 {
 	DBAR   = 0,
 	ID     = 1,

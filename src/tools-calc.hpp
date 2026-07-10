@@ -314,7 +314,7 @@ using ChecksumLayout = Layout<std::string, arcstk::Checksum, int>;
 /**
  * \brief Show flags of HexLayout
  */
-enum class HEX_FLAG : int
+enum class HEX_FLAG : uint8_t
 {
 	SHOW_BASE = 0,
 	UPPERCASE = 1

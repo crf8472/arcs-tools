@@ -16,7 +16,6 @@
 #include <fcntl.h>       // for _setmode, 0_BINARY
 #endif
 
-#include <algorithm>     // for replace
 #include <any>           // for any
 #include <cerrno>        // for errno
 #include <cstddef>       // for size_t
@@ -137,6 +136,7 @@ std::vector<char> StdIn::bytes()
 			throw std::runtime_error(msg.str());
 		}
 
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		bytes.insert(bytes.end(), buf.get(), buf.get() + len);
 	}
 
@@ -284,6 +284,12 @@ ChecksumValuesParser::ChecksumValuesParser()
 std::string ChecksumValuesParser::start_message() const
 {
 	return "List of local reference checksums (=\"Theirs\")";
+}
+
+
+void ChecksumValuesParser::do_parse_empty() const
+{
+	ARCS_LOG_DEBUG << "Empty value, return default object";
 }
 
 

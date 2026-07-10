@@ -316,7 +316,7 @@ private:
  * TableComposer will know whether the field_types are rows or columns in the
  * result table to build.
  */
-enum class ATTR : int
+enum class ATTR : uint8_t
 {
 	FILENAME,
 	TRACK,
