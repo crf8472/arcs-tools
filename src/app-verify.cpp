@@ -43,6 +43,9 @@
 #ifndef ARCSTOOLS_CONFIG_HPP_
 #include "config.hpp"               // for Configurator, OptionCode
 #endif
+#ifndef ARCSTOOLS_SAFE_CAST_HPP_
+#include "safe_cast.hpp"            // for safe_cast
+#endif
 #ifndef ARCSTOOLS_TOOLS_ARID_HPP_
 #include "tools-arid.hpp"           // for ARIdLayout
 #endif
@@ -1189,6 +1192,9 @@ void AddField<ATTR::THEIRS>::do_create(TableComposer* c, const int r_idx)
 	// field index of the "theirs"-column
 	auto field_idx = int { 0 };
 
+	using index_type = VerificationResult::index_type;
+	using service::safe_cast;
+
 	// Create all "theirs" fields
 	for (auto b = std::size_t { 0 }; b < total_theirs; ++b)
 	{
@@ -1201,10 +1207,11 @@ void AddField<ATTR::THEIRS>::do_create(TableComposer* c, const int r_idx)
 		curr_type =
 			types_to_print_->at(std::ceil(b / total_theirs_per_block_));
 
-		does_match = vresult_->track(block_idx, record_idx, curr_type);
+		does_match = vresult_->track(safe_cast<index_type>(block_idx),
+				safe_cast<index_type>(record_idx), curr_type);
 
-		idx_label = block_idx + 1;
-		field_idx = c->field_idx(ATTR::THEIRS, b + 1);
+		idx_label = safe_cast<int>(block_idx) + 1;
+		field_idx = c->field_idx(ATTR::THEIRS, safe_cast<int>(b) + 1);
 
 		// Update field label to show best block index
 		c->set_label(field_idx, DefaultLabel<ATTR::THEIRS>()
@@ -1214,11 +1221,11 @@ void AddField<ATTR::THEIRS>::do_create(TableComposer* c, const int r_idx)
 
 		formatter_->their_checksum(
 				checksums_->checksum(block_idx, record_idx), does_match,
-				record_idx, field_idx, c);
+				safe_cast<int>(record_idx), field_idx, c);
 
 		if (print_confidence_)
 		{
-			table::add_field(c, record_idx, field_idx + 1,
+			table::add_field(c, safe_cast<int>(record_idx), field_idx + 1,
 				to_string(checksums_->confidence(block_idx, record_idx)));
 		}
 	}

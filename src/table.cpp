@@ -19,9 +19,11 @@
 #include <stdexcept>  // for runtime_error
 #include <sstream>    // for ostringstream
 #include <string>     // for string
-#include <type_traits>// for underlying_type_t
 #include <utility>    // for forward, make_pair, move, swap
 
+#ifndef ARCSTOOLS_SAFE_CAST_HPP_
+#include "safe_cast.hpp"          // for safe_cast
+#endif
 #ifndef ARCSTOOLS_TABLE_HPP_
 #include "table.hpp"
 #endif
@@ -422,8 +424,11 @@ void StringTable::insert_rows_after(const std::size_t rows, const int row)
 
 	// Adjust table cell store
 
+	using service::safe_cast;
+
 	insert_or_resize(cells_, rows * this->cols(), /* amount of cells */
-			index(row, this->cols()), /* position after specified row */
+			/* position after specified row */
+			safe_cast<int>(index(row, safe_cast<int>(this->cols()))),
 			std::string{});
 
 	rows_ += rows;
@@ -437,7 +442,11 @@ void StringTable::insert_rows_after(const std::size_t rows, const int row)
 
 void StringTable::append_rows(const std::size_t rows)
 {
-	insert_rows_after(rows, this->rows() > 0 ? this->rows() - 1 : 0);
+	using service::safe_cast;
+
+	insert_rows_after(rows, this->rows() > 0
+			? safe_cast<int>(this->rows()) - 1
+			: 0);
 }
 
 
@@ -555,12 +564,14 @@ Align StringTable::do_align(int col) const
 
 std::size_t StringTable::do_optimal_width(const int col) const
 {
+	using service::safe_cast;
+
 	auto width = std::size_t { 0 };
 	auto optimal_width { width };
 
 	for(auto row = std::size_t { 0 }; row < rows(); ++row)
 	{
-		width = cell(row, col).length();
+		width = cell(safe_cast<int>(row), col).length();
 		if (width > optimal_width) { optimal_width = width; }
 	}
 
@@ -1515,7 +1526,10 @@ void TablePrinter::Impl::title(std::ostream& o, const PrintableTable& t,
 void TablePrinter::Impl::row_label(std::ostream& o, const PrintableTable& t,
 		const int row, const std::size_t width) const
 {
-	o << std::setw(width) << std::left << t.row_label(row) << std::setfill(' ');
+	using service::safe_cast;
+
+	o << std::setw(safe_cast<int>(width))
+		<< std::left << t.row_label(row) << std::setfill(' ');
 	// Row labels are always aligned LEFT
 }
 
@@ -1523,7 +1537,10 @@ void TablePrinter::Impl::row_label(std::ostream& o, const PrintableTable& t,
 void TablePrinter::Impl::col_label(std::ostream& o, const PrintableTable& t,
 		const int col, const std::size_t width) const
 {
-	o << std::setw(width) << std::left << t.col_label(col) << std::setfill(' ');
+	using service::safe_cast;
+
+	o << std::setw(safe_cast<int>(width))
+		<< std::left << t.col_label(col) << std::setfill(' ');
 	// Col labels are always aligned LEFT
 }
 
@@ -1593,10 +1610,12 @@ void TablePrinter::Impl::rows(std::ostream& o, const PrintableTable& t,
 		const std::vector<std::size_t>& col_widths,
 		const StringTableLayout& l) const
 {
+	using service::safe_cast;
+
 	// Table rows
 	for (auto r = std::size_t { 0 }; r < t.rows() - 1; ++r)
 	{
-		row(o, t, r, col_widths, l);
+		row(o, t, safe_cast<int>(r), col_widths, l);
 
 		if (l.row_inner_delims())
 		{
@@ -1604,7 +1623,7 @@ void TablePrinter::Impl::rows(std::ostream& o, const PrintableTable& t,
 		}
 	}
 
-	row(o, t, t.rows() - 1, col_widths, l);
+	row(o, t, safe_cast<int>(t.rows()) - 1, col_widths, l);
 }
 
 
@@ -1663,13 +1682,17 @@ void TablePrinter::Impl::row_cells_worker(std::ostream& o,
 	auto line  = std::size_t { 0 };
 	auto width = std::size_t { 0 };
 
+	using service::safe_cast;
+
 	// Print multiline row
 	do // NOLINT(cppcoreguidelines-avoid-do-while)
 	{
 		// Print every col in row
-		for (auto c = std::size_t { 0 }; c < t.cols(); ++c)
+		for (auto c = int { 0 }; safe_cast<std::size_t>(c) < t.cols(); ++c)
 		{
-			const auto& cell_text = (row >= 0) ? t.ref(row, c) : t.col_label(c);
+			const auto& cell_text = (row >= 0)
+				? t.ref(row, c)
+				: t.col_label(c);
 
 			// Call the actual cell printing function
 			if (Align::BLOCK == t.align(c))
@@ -1690,7 +1713,7 @@ void TablePrinter::Impl::row_cells_worker(std::ostream& o,
 				} else // Cell must be splitted
 				{
 					// Get multiline text field in actual column
-					field = fields.find(c);
+					field = fields.find(safe_cast<std::size_t>(c));/*key type*/
 
 					if (field != end(fields)) // Is follow-up line
 					{
@@ -1760,7 +1783,9 @@ void TablePrinter::Impl::row_cells_worker(std::ostream& o,
 void TablePrinter::Impl::cell(std::ostream& o, const PrintableTable& t,
 		const int row, const int col, const std::size_t col_width) const
 {
-	o << std::setw(col_width);
+	using service::safe_cast;
+
+	o << std::setw(safe_cast<int>(col_width));
 
 	switch (t.align(col))
 	{
@@ -1791,14 +1816,19 @@ void TablePrinter::Impl::cell(std::ostream& o, const PrintableTable& t,
 void TablePrinter::Impl::empty_cell(std::ostream& o,
 		const std::size_t width) const
 {
-	o << std::setw(width) << ' ' << std::setfill(' ');
+	using service::safe_cast;
+
+	o << std::setw(safe_cast<int>(width)) << ' ' << std::setfill(' ');
 }
 
 
 void TablePrinter::Impl::line_n(std::ostream& o, const std::size_t width,
 		const std::string& text) const
 {
-	o << std::setw(width) << std::left << text << std::setfill(' ');
+	using service::safe_cast;
+
+	o << std::setw(safe_cast<int>(width)) << std::left << text
+		<< std::setfill(' ');
 }
 
 
@@ -1915,8 +1945,10 @@ std::vector<std::size_t> TablePrinter::Impl::printed_widths(
 
 	auto width = std::size_t { 0 };
 
+	using service::safe_cast;
+
 	// Collect the real widths for print
-	for (auto c = std::size_t { 0 }; c < t.cols(); ++c)
+	for (auto c = int { 0 }; safe_cast<std::size_t>(c) < t.cols(); ++c)
 	{
 		width = l.col_labels()
 			? std::max(t.optimal_width(c), t.col_label(c).length())
@@ -1943,9 +1975,11 @@ std::size_t TablePrinter::Impl::optimal_row_label_width(
 	auto optimal_width { t.row_label(0).length() };
 	auto curr_width { optimal_width };
 
+	using service::safe_cast;
+
 	for (auto r = std::size_t { 1 }; r < t.rows(); ++r)
 	{
-		curr_width = t.row_label(r).length();
+		curr_width = t.row_label(safe_cast<int>(r)).length();
 		if (curr_width > optimal_width)
 		{
 			optimal_width = curr_width;

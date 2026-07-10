@@ -35,6 +35,9 @@
 #include <arcstk/logging.hpp>     // for ARCS_LOG* (_DEBUG, _ERROR)
 #endif
 
+#ifndef ARCSTOOLS_SAFE_CAST_HPP_
+#include "safe_cast.hpp"          // for safe_cast
+#endif
 #ifndef ARCSTOOLS_TABLE_HPP_
 #include "table.hpp"              // for StringTable, StringTableLayout
                                   // CellDecorator, DecoratedStringTable
@@ -262,7 +265,9 @@ int TableComposer::do_field_idx(const ATTR& field_type, const int i) const
 		}
 		++o;
 	}
-	return o - cbegin(fields_) - 1;
+
+	using service::safe_cast;
+	return safe_cast<int>(o - cbegin(fields_) - 1);
 }
 
 
@@ -304,13 +309,15 @@ RowTableComposer::RowTableComposer(const std::size_t entries,
 		}
 	}
 
+	using service::safe_cast;
+
 	// Columns that may appear multiple times
 	for (auto i = std::size_t { 0 }; i < this->from_table().cols(); ++i)
 	{
 		// Stretch the "theirs" columns to a width of 8
 		if (ATTR::THEIRS == field_types[i])
 		{
-			in_table().set_align(i, table::Align::BLOCK);
+			in_table().set_align(safe_cast<int>(i), table::Align::BLOCK);
 			// BLOCK makes the table respect max_width for this column,
 			// whose default is 8.
 		}
@@ -318,7 +325,7 @@ RowTableComposer::RowTableComposer(const std::size_t entries,
 		// Align confidence columns
 		if (ATTR::CONFIDENCE == field_types[i])
 		{
-			in_table().set_align(i, table::Align::RIGHT);
+			in_table().set_align(safe_cast<int>(i), table::Align::RIGHT);
 		}
 	}
 }
@@ -396,10 +403,12 @@ ColTableComposer::ColTableComposer(const std::size_t total_records,
 			static_cast<int>(field_types.size()),
 			static_cast<int>(total_records)))
 {
+	using service::safe_cast;
+
 	// Each column contains each type, therefore each column is RIGHT
 	for (auto col = std::size_t { 0 }; col < from_table().cols(); ++col)
 	{
-		in_table().set_align(col, table::Align::RIGHT);
+		in_table().set_align(safe_cast<int>(col), table::Align::RIGHT);
 	}
 }
 
@@ -521,6 +530,8 @@ void TableComposerBuilder::assign_default_labels(TableComposer& c,
 	using std::cbegin;
 	using std::cend;
 
+	using service::safe_cast;
+
 	auto p { end(labels_) };
 
 	for (auto i = std::size_t { 0 }; i < field_types.size(); ++i)
@@ -529,10 +540,10 @@ void TableComposerBuilder::assign_default_labels(TableComposer& c,
 
 		if (cend(labels_) == p)
 		{
-			c.set_label(i, "?"); // Could not find label
+			c.set_label(safe_cast<int>(i), "?"); // Could not find label
 		} else
 		{
-			c.set_label(i, p->second);
+			c.set_label(safe_cast<int>(i), p->second);
 		}
 	}
 }
@@ -616,7 +627,9 @@ std::size_t AddRecords::current_record() const
 
 void AddRecords::add_field(const FieldCreator& field) const
 {
-	field.create(composer_, current_record());
+	using service::safe_cast;
+
+	field.create(composer_, safe_cast<int>(current_record()));
 }
 
 

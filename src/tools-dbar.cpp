@@ -29,13 +29,16 @@
 #endif
 
 #ifndef ARCSTOOLS_APPLICATION_HPP_
-#include "application.hpp"           // for Output
+#include "application.hpp"          // for Output
 #endif
-#ifndef ARCSTOOLS_TOOLS_ARID_HPP_    // for ARIdLayout
+#ifndef ARCSTOOLS_SAFE_CAST_HPP_
+#include "safe_cast.hpp"            // for safe_cast
+#endif
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP_   // for ARIdLayout
 #include "tools-arid.hpp"
 #endif
 #ifndef ARCSTOOLS_TOOLS_CALC_HPP_
-#include "tools-calc.hpp"            // for HexLayout
+#include "tools-calc.hpp"           // for HexLayout
 #endif
 
 
@@ -312,14 +315,18 @@ std::string DBARBaseFormat::indent() const
 int DBARBaseFormat::inc_indent() const
 {
 	indent_ += indent_step_;
-	return indent_;
+
+	using service::safe_cast;
+	return safe_cast<int>(indent_);
 }
 
 
 int DBARBaseFormat::dec_indent() const
 {
 	indent_ -= indent_step_;
-	return indent_;
+
+	using service::safe_cast;
+	return safe_cast<int>(indent_);
 }
 
 

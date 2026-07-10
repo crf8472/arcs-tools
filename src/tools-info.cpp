@@ -23,6 +23,9 @@
 #include <arcsdec/calculators.hpp>  // for ARCSCalculator, ToCParser
 #endif
 
+#ifndef ARCSTOOLS_SAFE_CAST_HPP_
+#include "safe_cast.hpp"            // for safe_cast
+#endif
 #ifndef ARCSTOOLS_TABLE_HPP_
 #include "table.hpp"                // for StringTable
 #endif
@@ -138,7 +141,9 @@ void AudioFormatComposer::add(const FileReaderDescriptor& descriptor)
 
 	// Compose table: Add rows for the current descriptor
 
-	const auto row { to_table().rows() };
+	using service::safe_cast;
+
+	const auto row { safe_cast<int>(to_table().rows()) };
 
 	to_table().cell(row, 0) = descriptor.id();
 	to_table().cell(row, 1) = libs_to_sep_list(descriptor, sep);
@@ -191,7 +196,9 @@ void ToCFormatComposer::add(const FileReaderDescriptor& descriptor)
 
 	// Compose table: Add rows for the current descriptor
 
-	const auto row { to_table().rows() };
+	using service::safe_cast;
+
+	const auto row { safe_cast<int>(to_table().rows()) };
 
 	to_table().cell(row, 0) = descriptor.id();
 	to_table().cell(row, 1) = libs_to_sep_list(descriptor, sep);

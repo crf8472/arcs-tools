@@ -24,6 +24,9 @@
 #include <arcstk/metadata.hpp>    // for ToC
 #endif
 
+#ifndef ARCSTOOLS_SAFE_CAST_HPP_
+#include "safe_cast.hpp"          // for safe_cast
+#endif
 #ifndef ARCSTOOLS_TOOLS_VALIDATE_HPP_
 #include "tools-validate.hpp"     // for Validate
 #endif
@@ -175,6 +178,8 @@ std::string ARIdLayout::hex_id(const uint32_t id) const
 
 std::string ARIdTableLayout::do_format(InputTuple t) const
 {
+	using service::safe_cast;
+
 	if (no_properties())
 	{
 		// no properties set means nothing to print
@@ -238,7 +243,7 @@ std::string ARIdTableLayout::do_format(InputTuple t) const
 				break;
 		}
 
-		stream << std::setw(value.length()) << value;
+		stream << std::setw(safe_cast<int>(value.length())) << value;
 	}
 
 	if (true) { stream << '\n'; } // TODO Make configurable
