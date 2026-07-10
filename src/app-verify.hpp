@@ -366,12 +366,14 @@ class MatchDecorator final : public CellDecorator
 	/**
 	 * \brief Internal highlight store.
 	 */
-	Highlight highlights_[2];
+	std::array<Highlight, 2> highlights_;
+	//Highlight highlights_[2];
 
 	/**
 	 * \brief Internal color store.
 	 */
-	Color colors_[4];
+	std::array<Color, 4> colors_;
+	//Color colors_[4];
 
 	// CellDecorator
 
