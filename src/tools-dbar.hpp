@@ -327,7 +327,7 @@ enum class DBAR_ENTITY : uint8_t
 /**
  * \brief Delimiters for syntactic elements of a DBAR.
  */
-enum class DBAR_DELIM : int
+enum class DBAR_DELIM : uint8_t
 {
 	UNPARSED     =  0,  /* unparsed value */
 	DOC_START    =  1,  /* on document start */

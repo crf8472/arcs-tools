@@ -115,7 +115,7 @@ public:
 	 *
 	 * \return Label for \c flag
 	 */
-	auto label(const ARID_FLAG flag) const -> std::string;
+	//auto label(const ARID_FLAG flag) const -> std::string;
 
 	/**
 	 * \brief Set label for the specified flag.
@@ -123,7 +123,7 @@ public:
 	 * \param[in] flag  Flag to set label for
 	 * \param[in] label Label to set
 	 */
-	void set_label(const ARID_FLAG flag, const std::string& label);
+	//void set_label(const ARID_FLAG flag, const std::string& label);
 
 	/**
 	 * \brief Deep copy of this instance.

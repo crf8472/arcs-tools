@@ -150,7 +150,7 @@ const std::vector<ATTR>& TableComposer::fields() const
 	return fields_;
 }
 
-
+/*
 bool TableComposer::has_field(const ATTR f) const
 {
 	using std::cbegin;
@@ -158,7 +158,7 @@ bool TableComposer::has_field(const ATTR f) const
 	using std::find;
 	return find(cbegin(fields_), cend(fields_), f) != cend(fields_);
 }
-
+*/
 
 int TableComposer::get_row(const int i, const int j) const
 {

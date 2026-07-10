@@ -478,7 +478,7 @@ public:
 	 *
 	 * \return TRUE iff instance will produce field \p f, otherwise FALSE
 	 */
-	bool has_field(const ATTR f) const;
+	//bool has_field(const ATTR f) const;
 
 	/**
 	 * \brief Get the table row index.

@@ -142,7 +142,7 @@ namespace table
 /**
  * \brief Alignment types for StringTable.
  */
-enum Align : int
+enum Align : uint8_t
 {
 	LEFT,
 	RIGHT,
@@ -785,7 +785,7 @@ class DefaultSplitter final : public StringSplitter
 /**
  * \brief Flags for printing aspects of the table.
  */
-enum class TABLE_FLAG : int
+enum class TABLE_FLAG : uint8_t
 {
 	TITLE,
 	ROW_LABELS,
@@ -804,7 +804,7 @@ enum class TABLE_FLAG : int
 /**
  * \brief Delimiter type.
  */
-enum class TABLE_DELIM : int
+enum class TABLE_DELIM : uint8_t
 {
 	ROW_TOP_DELIM,
 	ROW_HEADER_DELIM,

@@ -125,7 +125,7 @@ void ARIdLayout::set_fieldlabels(const bool labels)
 	field_labels_ = labels;
 }
 
-
+/*
 auto ARIdLayout::label(const ARID_FLAG flag) const -> std::string
 {
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
@@ -138,7 +138,7 @@ void ARIdLayout::set_label(const ARID_FLAG flag, const std::string& label)
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
 	labels_[array_idx(flag)] = label;
 }
-
+*/
 
 std::unique_ptr<ARIdLayout> ARIdLayout::clone() const
 {
