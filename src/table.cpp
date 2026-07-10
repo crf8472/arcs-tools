@@ -285,36 +285,13 @@ StringTable::StringTable(const StringTable& rhs)
 }
 
 
-StringTable& StringTable::operator=(StringTable rhs) noexcept
+StringTable& StringTable::operator= (const StringTable& rhs)
 {
-	// Note that this operator also takes rvalue references.
-	// See discussion at
-	// https://stackoverflow.com/questions/19841626/move-assignment-incompatible-with-standard-copy-and-swap
 	using std::swap;
-	swap(*this, rhs);
+	auto tmp { rhs };
+	swap(tmp, *this);
 	return *this;
 }
-
-
-StringTable::StringTable(StringTable&& rhs) noexcept
-	: title_              { std::move(rhs.title_) }
-	, rows_               { rhs.rows_ }
-	, default_max_height_ { rhs.default_max_height_ }
-	, cols_               { rhs.cols_ }
-	, default_max_width_  { rhs.default_max_width_ }
-	, row_labels_         { std::move(rhs.row_labels_) }
-	, row_max_heights_    { std::move(rhs.row_max_heights_) }
-	, col_labels_         { std::move(rhs.col_labels_) }
-	, col_max_widths_     { std::move(rhs.col_max_widths_) }
-	, aligns_             { std::move(rhs.aligns_) }
-	, cells_              { std::move(rhs.cells_) }
-	, layout_             { std::move(rhs.layout_) }
-{
-	// empty
-}
-
-
-StringTable::~StringTable() noexcept = default;
 
 
 void StringTable::set_title(const std::string& title)
@@ -1742,7 +1719,8 @@ void TablePrinter::Impl::row_cells_worker(std::ostream& o,
 				}
 			} else
 			{
-				width = col_widths[c];
+				// cast to vector size_type
+				width = col_widths[safe_cast<std::size_t>(c)];
 
 				if (line == 0)
 				{
@@ -1754,7 +1732,7 @@ void TablePrinter::Impl::row_cells_worker(std::ostream& o,
 			}
 
 			// Trigger delimiter for inner columns
-			if (c < rightmost_col)
+			if (safe_cast<std::size_t>(c) < rightmost_col)
 			{
 				if (l.col_inner_delims())
 				{

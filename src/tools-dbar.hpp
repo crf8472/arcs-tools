@@ -675,7 +675,7 @@ public:
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	~PrintParseHandler() noexcept;
+	~PrintParseHandler() noexcept final;
 
 	/**
 	 * \brief Sets the format for printing DBAR objects.

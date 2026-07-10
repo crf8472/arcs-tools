@@ -18,11 +18,14 @@ inline namespace v_1_0_0
 namespace service
 {
 
+template <typename F, typename T, typename ENABLE = void>
+struct SafeCastImpl;
+
+
 // F+T signed or F+T unsigned
-template <typename F, typename T,
-          typename = std::enable_if_t<
-              std::is_signed_v<F> == std::is_signed_v<T>>>
-struct SafeCastImpl
+template <typename F, typename T>
+struct SafeCastImpl<F, T,
+          std::enable_if_t<std::is_signed_v<F> == std::is_signed_v<T>>>
 {
 	static T do_cast(F number)
 	{

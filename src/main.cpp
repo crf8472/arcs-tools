@@ -58,6 +58,8 @@ int main(int argc, char** argv)
 	using arcsapp::ApplicationFactory;
 	using arcsapp::cli::CallSyntaxException;
 
+	// NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
 	// Was binary called by some alias?
 
 	const auto CALL_NAME = std::string { argv[0] ? argv[0] : "" };
@@ -106,6 +108,8 @@ int main(int argc, char** argv)
 			std::cerr << "No application selected." << '\n';
 		}
 	}
+
+	// NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 	// No input? Print usage.
 

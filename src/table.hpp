@@ -366,16 +366,15 @@ public:
 			const std::size_t cols);
 
 	StringTable(const StringTable& rhs);
+	StringTable& operator =(const StringTable& rhs);
 
-	StringTable(StringTable&& rhs) noexcept;
-
-	// General assignment
-	StringTable& operator=(StringTable rhs) noexcept;
+	StringTable(StringTable&& rhs) noexcept = default;
+	StringTable& operator =(StringTable&& rhs) noexcept = default;
 
 	/**
 	 * \brief Virtual default destructor.
 	 */
-	~StringTable() noexcept final ;
+	~StringTable() noexcept final = default;
 
 	/**
 	 * \brief Set the table title.
@@ -844,6 +843,11 @@ public:
 
 	StringTableLayout(const StringTableLayout& rhs);
 	StringTableLayout& operator=(const StringTableLayout& rhs);
+
+	StringTableLayout(StringTableLayout&& rhs) = default;
+	StringTableLayout& operator=(StringTableLayout&& rhs) = default;
+
+	~StringTableLayout() noexcept final = default;
 
 	void swap(StringTableLayout& rhs) noexcept;
 
