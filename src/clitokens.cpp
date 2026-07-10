@@ -28,9 +28,6 @@ inline namespace v_1_0_0
 // Option
 
 
-OptionCode NONE;
-
-
 Option::Option(const char shorthand, std::string symbol,
 		const bool needs_value, std::string default_arg,
 		std::string desc)
@@ -104,6 +101,8 @@ CallSyntaxException::CallSyntaxException(const std::string& what_arg)
 	// empty
 }
 
+namespace
+{
 
 // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
@@ -116,7 +115,7 @@ CallSyntaxException::CallSyntaxException(const std::string& what_arg)
  * \param[in,out] pos     Character position in the call string
  * \param[in] pass_token  Function to call on each parsed token
  */
-static void parse_symbol(const char* const token, const char* const val,
+void parse_symbol(const char* const token, const char* const val,
 		const OptionRegistry& supported, int& pos,
 		const option_callback& pass_token)
 {
@@ -258,7 +257,7 @@ static void parse_symbol(const char* const token, const char* const val,
  * \param[in,out] pos    Character position in the call string
  * \param[in] pass_token Function to call on each parsed token
  */
-static void parse_shorthand(const char* const token, const char* const val,
+void parse_shorthand(const char* const token, const char* const val,
 		const OptionRegistry& supported, int& pos,
 		const option_callback& pass_token)
 {
@@ -337,6 +336,8 @@ static void parse_shorthand(const char* const token, const char* const val,
 		}
 	} // while
 }
+
+} // namespace
 
 
 void parse(const int argc, const char* const* const argv,
