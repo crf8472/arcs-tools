@@ -100,6 +100,8 @@ std::vector<std::string> split(std::string str, const std::string& delim)
 	return parts.empty() ? std::vector<std::string>{ str } : parts;
 }
 
+namespace
+{
 
 /**
  * \brief Insert or resize.
@@ -149,6 +151,8 @@ void insert_or_resize(std::vector<T>& v, const std::size_t elements,
 		v.insert(pos, amount, default_value);
 	}
 }
+
+} // namespace
 
 } // namespace details
 

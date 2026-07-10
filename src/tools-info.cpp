@@ -208,6 +208,7 @@ void ToCFormatComposer::add(const FileReaderDescriptor& descriptor)
 
 // DefaultReaders
 
+namespace {
 
 template <class Calculator>
 StringTable DefaultReaders(const std::function<
@@ -215,8 +216,6 @@ StringTable DefaultReaders(const std::function<
 		InfoResultComposer& builder)
 {
 	const auto readers { std::make_unique<Calculator>()->readers() };
-
-	//auto builder = std::unique_ptr<InfoResultComposer>();
 
 	const auto collect = [&builder,&filter_func](const auto& key_value_pair)
 	{
@@ -233,6 +232,8 @@ StringTable DefaultReaders(const std::function<
 
 	return builder.table();
 }
+
+} // namespace
 
 
 // AvailableFileReaders

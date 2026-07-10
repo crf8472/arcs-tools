@@ -92,6 +92,8 @@ Output& Output::instance()
 using arcstk::LOGLEVEL;
 
 
+namespace {
+
 /**
  * \brief LOGLEVEL from a string representation.
  *
@@ -180,6 +182,8 @@ LOGLEVEL to_loglevel(const std::string& lvl_str)
 
 	return log_level;
 }
+
+} // namespace
 
 
 // Application

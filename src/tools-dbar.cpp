@@ -60,6 +60,8 @@ using arcsapp::arid::ARIdTableLayout;
 namespace details
 {
 
+namespace {
+
 /**
  * \brief Evaluate a string with placeholders.
  *
@@ -67,10 +69,10 @@ namespace details
  * width \c width with character \c c.
  */
 std::string evaluate(std::string s, const std::string& ph,
-		const long unsigned number, const long unsigned width, const char c);
+		const uint64_t number, const uint64_t width, const char c);
 
 std::string evaluate(std::string s, const std::string& ph,
-		const long unsigned number, const long unsigned width, const char c)
+		const uint64_t number, const uint64_t width, const char c)
 {
 	if (auto pos = s.find(ph, 0); pos != std::string::npos)
 	{
@@ -87,6 +89,8 @@ std::string evaluate(std::string s, const std::string& ph,
 
 	return s;
 }
+
+} // namespace
 
 } // namespace details
 
