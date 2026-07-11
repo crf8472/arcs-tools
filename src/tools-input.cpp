@@ -95,8 +95,17 @@ std::vector<char> StdIn::bytes()
 	// https://msdn.microsoft.com/en-us/library/tw4k6df8.aspx
 #else
 
-	if(std::freopen(nullptr, "rb", stdin)){/*empty*/};
-	// Ignore returned FILE ptr to stdin while avoiding g++ warning
+	// freopen returnes a FILE ptr to stdin. We do not use it, but we check
+	// whether it was correctly overhanded.
+	// NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
+	if (std::freopen(nullptr, "rb", stdin) == nullptr)
+	{
+		auto msg = std::ostringstream {};
+		msg << "Error while opening stdin for binary mode: "
+			<< std::strerror(errno) << " (errno " << errno << ")";
+
+		throw std::runtime_error(msg.str());
+	}
 #endif
 
 	// Binary Mode From Here On
@@ -110,16 +119,20 @@ std::vector<char> StdIn::bytes()
 		throw std::runtime_error(msg.str());
 	}
 
-	auto bytes = std::vector<char> {}; // collects the input bytes
-	auto len   = std::size_t { 0 }; // number of bytes read from stdin
-	auto buf { std::make_unique<char[]>(buf_size()) }; // input buffer
 	const auto MAX_KB_INPUT = MAX_KB_ * 1024; // maximum input bytes to accept
+
+	auto bytes = std::vector<char> {}; // collects the input bytes
+	bytes.reserve(std::min(static_cast<size_t>(MAX_KB_INPUT), buf_size()));
 
 	// As long as there are any bytes, read them
 
+	// NOLINTNEXTLINE(*-avoid-c-arrays)
+	auto buf { std::make_unique<char[]>(buf_size()) }; // input buffer
+	auto len = std::size_t { 0 }; // number of bytes read from stdin
+
 	while((len = std::fread(buf.get(), sizeof(buf[0]), buf_size(), stdin)) > 0)
 	{
-		if (std::ferror(stdin) and not std::feof(stdin))
+		if (std::ferror(stdin)) // and not std::feof(stdin))
 		{
 			auto msg = std::ostringstream {};
 			msg << "While reading from stdin: " << std::strerror(errno)
@@ -128,8 +141,15 @@ std::vector<char> StdIn::bytes()
 			throw std::runtime_error(msg.str());
 		}
 
-		if (bytes.size() >= MAX_KB_INPUT)
+		if (bytes.size() + len >= MAX_KB_INPUT)
 		{
+			const auto space_left { MAX_KB_INPUT - bytes.size() };
+
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			bytes.insert(bytes.end(), buf.get(), buf.get() + space_left);
+
+			// FIXME return bytes + flag instead of exception
+
 			auto msg = std::ostringstream {};
 			msg << "Input exceeds maximum size of " << MAX_KB_
 				<< " kilobytes, abort.";
