@@ -17,6 +17,10 @@
 #include <string>    // for string
 #include <utility>   // for forward, make_pair
 
+#ifndef LIBARCSTK_LOGGING_HPP_
+#include "arcstk/logging.hpp"
+#endif
+
 #ifndef ARCSTOOLS_APPLICATION_HPP_
 #include "application.hpp"
 #endif
@@ -206,7 +210,8 @@ private:
 	 */
 	static std::unique_ptr<MapType> map_;
 
-	virtual void do_not_make_this_class_abstract() const = 0;
+	virtual void implement_in_derived_classes() const noexcept
+	= 0;
 };
 
 
@@ -218,7 +223,7 @@ private:
 template <class T> //TODO SFINAE exclude types
 class RegisterApplicationType final : ApplicationFactory
 {
-	void do_not_make_this_class_abstract() const final { /* empty */ }
+	void implement_in_derived_classes() const noexcept final { /* empty */ }
 
 public:
 
@@ -227,10 +232,16 @@ public:
 	 *
 	 * \param[in] name The name to register the application type
 	 */
-	explicit RegisterApplicationType(const std::string& name)
+	explicit RegisterApplicationType(const std::string& name) noexcept
 	{
-		get_map()->insert(
+		try
+		{
+			get_map()->insert(
 				std::make_pair(name, &details::instantiateApplication<T>));
+		} catch (const std::exception&)
+		{
+			ARCS_LOG_ERROR << "Could not register " << name;
+		}
 	}
 };
 

@@ -64,6 +64,7 @@ inline namespace v_1_0_0
 namespace registered
 {
 // Enable ApplicationFactory::lookup() to find this application by its name
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 const auto calc = RegisterApplicationType<ARCalcApplication>("calc");
 }
 
