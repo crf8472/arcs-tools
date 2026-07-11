@@ -59,7 +59,7 @@ using IdLayout = Layout<std::string, arcstk::ARId, std::string>;
 
 /**
  * \brief Interface for formatting ARId instances for output.
- */
+ */     // NOLINTNEXTLINE(misc-multiple-inheritance)
 class ARIdLayout : public PropertyStore<ARID_FLAG>
 				 , public IdLayout // TODO Do also Settings!
 				 , public LabelStore<ARID_FLAG>
@@ -107,23 +107,6 @@ public:
 	 * \param[in] labels Flag to indicate that field labels have to be printed
 	 */
 	void set_fieldlabels(const bool labels);
-
-	/**
-	 * \brief Label for the specified flag.
-	 *
-	 * \param[in] flag Flag to get label for
-	 *
-	 * \return Label for \c flag
-	 */
-	//auto label(const ARID_FLAG flag) const -> std::string;
-
-	/**
-	 * \brief Set label for the specified flag.
-	 *
-	 * \param[in] flag  Flag to set label for
-	 * \param[in] label Label to set
-	 */
-	//void set_label(const ARID_FLAG flag, const std::string& label);
 
 	/**
 	 * \brief Deep copy of this instance.

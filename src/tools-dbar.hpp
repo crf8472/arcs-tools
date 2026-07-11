@@ -354,7 +354,7 @@ enum class DBAR_DELIM : uint8_t
 
 /**
  * \brief Abstract base class for formatting DBAR objects.
- */
+ */     // NOLINTNEXTLINE(misc-multiple-inheritance)
 class DBARBaseFormat : public DBAROutputFormat
 					 , public LabelStore<DBAR_DELIM>
 					 , public PropertyStore<DBAR_DELIM>

@@ -163,7 +163,7 @@ using Verify9Layout = Layout<std::unique_ptr<Result>
 
 /**
  * \brief Interface for formatting the results of an ARVerifyApplication.
- */
+ */     // NOLINTNEXTLINE(misc-multiple-inheritance)
 class VerifyTableCreator	: public TableCreator
 							, public Verify9Layout
 {
@@ -307,7 +307,7 @@ class MonochromeVerifyTableCreator final : public VerifyTableCreator
 {
 	// VerifyTableCreator
 
-	void do_init_composer(TableComposer& c) const override;
+	void do_init_composer(TableComposer& c) const final;
 
 	void do_their_match(const Checksum& checksum, const int record,
 			const int field, TableComposer* c) const final;

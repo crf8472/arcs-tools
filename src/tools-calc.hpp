@@ -323,7 +323,7 @@ enum class HEX_FLAG : uint8_t
 
 /**
  * \brief Format Checksums in hexadecimal representation.
- */
+ */     // NOLINTNEXTLINE(misc-multiple-inheritance)
 class HexLayout final : public PropertyStore<HEX_FLAG>
 					  , public ChecksumLayout
 {

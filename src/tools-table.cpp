@@ -856,6 +856,18 @@ const TableComposerBuilder* TableCreator::builder() const
 }
 
 
+bool TableCreator::has_property(const ATTR a) const noexcept
+{
+	return properties_.has_property(a);
+}
+
+
+void TableCreator::update_property(const ATTR a, const bool value)
+{
+	properties_.update_property(a, value);
+}
+
+
 void TableCreator::set_table_layout(std::unique_ptr<StringTableLayout> l)
 {
 	checksum_table_layout_ = std::move(l);

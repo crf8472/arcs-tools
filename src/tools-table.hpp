@@ -930,7 +930,7 @@ std::string formatted(const Checksum& checksum,
  * printing the checksums and a default ARIdTableLayout for printing the ARId
  * info.
  */
-class TableCreator : public PropertyStore<ATTR>
+class TableCreator
 {
 public:
 
@@ -938,6 +938,8 @@ public:
 	 * \brief Constructor.
 	 */
 	TableCreator();
+
+	virtual ~TableCreator() noexcept = default;
 
 	/**
 	 * \brief Set the layout to use for formatting the output table.
@@ -994,6 +996,10 @@ public:
 	 * \return The TableComposerBuilder to use
 	 */
 	const TableComposerBuilder* builder() const;
+
+	bool has_property(const ATTR a) const noexcept;
+
+	void update_property(const ATTR a, const bool value);
 
 protected:
 
@@ -1147,6 +1153,8 @@ private:
 	 * \brief Format for the ARId.
 	 */
 	std::unique_ptr<ARIdLayout> arid_layout_;
+
+	PropertyStore<ATTR> properties_ {};
 };
 
 

@@ -187,7 +187,7 @@ using Calc6Layout = Layout<std::unique_ptr<Result>
 
 /**
  * \brief Format the results of the ARCalcApplication.
- */
+ */     // NOLINTNEXTLINE(misc-multiple-inheritance)
 class CalcTableCreator final	: public TableCreator
 								, public Calc6Layout
 {
