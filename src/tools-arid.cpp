@@ -44,6 +44,10 @@ inline namespace v_1_0_0
 namespace arid
 {
 
+using arcstk::ToC;
+using arcstk::ARId;
+
+
 // RichARId
 
 

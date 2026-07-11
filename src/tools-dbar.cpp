@@ -20,8 +20,8 @@
 #ifndef LIBARCSTK_IDENTIFIER_HPP_
 #include <arcstk/identifier.hpp>     // for ARId
 #endif
-#ifndef LIBARCSTK_CALCULATE_HPP_
-#include <arcstk/calculate.hpp>      // for Checksum
+#ifndef LIBARCSTK_CHECKSUM_HPP_
+#include <arcstk/checksum.hpp>       // for Checksum
 #endif
 #ifndef LIBARCSTK_DBAR_HPP_
 #include <arcstk/dbar.hpp>           // for DBARTriplet

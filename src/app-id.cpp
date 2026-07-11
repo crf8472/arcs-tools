@@ -20,6 +20,9 @@
 #ifndef LIBARCSTK_IDENTIFIER_HPP_
 #include <arcstk/identifier.hpp>
 #endif
+#ifndef LIBARCSTK_CHECKSUM_HPP_
+#include <arcstk/checksum.hpp>
+#endif
 #ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>
 #endif

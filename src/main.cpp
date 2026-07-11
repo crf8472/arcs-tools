@@ -12,7 +12,10 @@
 #include <string>            // for string
 
 #ifndef LIBARCSTK_LOGGING_HPP_
-#include <arcstk/logging.hpp>  // for Logging
+#include <arcstk/logging.hpp>         // for Logging
+#endif
+#ifndef LIBARCSTK_LOGLEVEL_HPP_
+#include <arcstk/loglevel.hpp>        // for LOGLEVEL
 #endif
 
 #ifndef ARCSTOOLS_APPLICATION_HPP_

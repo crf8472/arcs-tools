@@ -19,6 +19,9 @@
 #ifndef ARCSTOOLS_LAYOUTS_HPP_
 #include "layouts.hpp"       // for Layout
 #endif
+#ifndef ARCSTOOLS_TOOLS_ARID_HPP_
+#include "tools-arid.hpp"    // for ARIdLayout
+#endif
 
 
 namespace arcsapp

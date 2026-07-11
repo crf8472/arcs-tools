@@ -27,6 +27,9 @@
 #include <utility>         // for move, pair
 #include <vector>          // for vector
 
+#ifndef LIBARCSTK_CHECKSUM_HPP_
+#include <arcstk/checksum.hpp>      // for checksum::type, Checksum, Checksums
+#endif
 #ifndef LIBARCSTK_METADATA_HPP_
 #include <arcstk/metadata.hpp>      // for ToC
 #endif

@@ -26,6 +26,9 @@
 #include <filesystem>
 #endif
 
+#ifndef LIBARCSTK_CHECKSUM_HPP_
+#include <arcstk/checksum.hpp>      // for checksum::type
+#endif
 #ifndef LIBARCSTK_CALCULATE_HPP_
 #include <arcstk/calculate.hpp>     // for Checksums, type
 #endif

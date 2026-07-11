@@ -22,6 +22,9 @@
 #ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>
 #endif
+#ifndef LIBARCSTK_LOGLEVEL_HPP_
+#include <arcstk/loglevel.hpp>        // for LOGLEVEL
+#endif
 #ifndef LIBARCSTK_VERSION_HPP_
 #include <arcstk/version.hpp>         // for LIBARCSTK_VERSION
 #endif
