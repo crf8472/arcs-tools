@@ -222,7 +222,11 @@ protected:
 
 private:
 
+	// TableCreator
+
 	void do_init_composer(TableComposer& c) const final;
+
+	// Layout
 
 	std::unique_ptr<Result> do_format(InputTuple t) const final;
 

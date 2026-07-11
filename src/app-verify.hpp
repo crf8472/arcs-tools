@@ -257,6 +257,8 @@ protected:
 
 private:
 
+	// Layout
+
 	void do_assertions(const InputTuple t) const final;
 
 	std::unique_ptr<Result> do_format(InputTuple t) const final;
