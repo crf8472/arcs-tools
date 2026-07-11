@@ -8,6 +8,7 @@
 
 #include <algorithm>  // for max, min, find_if, for_each
 #include <cstddef>    // for size_t
+#include <cstdint>    // for uint32_t
 #include <cctype>     // for isspace
 #include <functional> // for bind, function, placeholders
 #include <iomanip>    // for setw, setfill
@@ -20,6 +21,7 @@
 #include <sstream>    // for ostringstream
 #include <string>     // for string
 #include <utility>    // for forward, make_pair, move, swap
+#include <vector>     // for vector
 
 #ifndef ARCSTOOLS_SAFE_CAST_HPP_
 #include "safe_cast.hpp"          // for safe_cast

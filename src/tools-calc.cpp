@@ -12,6 +12,7 @@
 
 #include <cstdint>                  // for uint16_t
 #include <iomanip>                  // for setw, setfill
+#include <ios>                      // for hex, showbase, uppercase
 #include <memory>                   // for unique_ptr, make_unique
 #include <sstream>                  // for ostringstream
 #include <stdexcept>                // for invalid_argument

@@ -11,11 +11,16 @@
 #endif
 
 #include <cstddef>      // for size_t
+#include <cstdint>      // for uint32_t
 #include <iomanip>      // for setw, setfill
+#include <ios>          // for hex
 #include <memory>       // for unique_ptr
+#include <ostream>      // for ostream
 #include <sstream>      // for ostringstream
+#include <string>       // for string
 #include <tuple>        // for get
 #include <utility>      // for move
+#include <vector>       // for vector
 
 #ifndef LIBARCSTK_IDENTIFIER_HPP_
 #include <arcstk/identifier.hpp>  // for ARId

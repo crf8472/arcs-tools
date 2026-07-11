@@ -11,6 +11,7 @@
 #endif
 
 #include <algorithm>     // for find_if
+#include <any>           // for any
 #include <cstddef>       // for size_t
 #include <iomanip>       // for setw
 #include <memory>        // for unique_ptr, make_unique

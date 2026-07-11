@@ -13,6 +13,7 @@
 #include <cstdlib>             // for EXIT_SUCCESS
 #include <memory>              // for make_unique, unique_ptr
 #include <string>              // for string
+#include <utility>             // for move
 
 #ifndef LIBARCSTK_DBAR_HPP_
 #include <arcstk/dbar.hpp>
@@ -26,9 +27,6 @@
 #endif
 #ifndef ARCSTOOLS_CONFIG_HPP_
 #include "config.hpp"              // for DefaultConfigurator
-#endif
-#ifndef ARCSTOOLS_TOOLS_ARID_HPP_
-#include "tools-arid.hpp"          // for ARIdLayout
 #endif
 #ifndef ARCSTOOLS_TOOLS_DBAR_HPP_
 #include "tools-dbar.hpp"          // for PrintParseHandler, DBAROutputFormat

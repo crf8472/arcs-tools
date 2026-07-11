@@ -16,17 +16,22 @@
 #include <fcntl.h>       // for _setmode, 0_BINARY
 #endif
 
-#include <any>           // for any
+#include <algorithm>     // for min
 #include <cerrno>        // for errno
 #include <cstddef>       // for size_t
 #include <cstdint>       // for uint32_t, uint8_t
 #include <cstdio>        // for feof, ferror, fread, freopen
 #include <cstring>       // for strerror
+#include <exception>     // for exception
+#include <functional>    // for functional
 #include <istream>       // for istream
+#include <memory>        // for unique_ptr
 #include <ostream>       // for ostream, endl, operator<<
 #include <sstream>       // for istringstream, ostringstream
 #include <stdexcept>     // for runtime_error
 #include <string>        // for string, stoul, getline
+#include <utility>       // for make_unique, move
+#include <vector>        // for vector
 
 #ifndef LIBARCSTK_CHECKSUM_HPP_
 #include <arcstk/checksum.hpp>    // for Checksum, EmptyChecksum

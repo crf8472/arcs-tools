@@ -10,11 +10,11 @@
 #include "application.hpp"
 #endif
 
-#include <cstdio>      // for stdout
 #include <cstdlib>     // for EXIT_SUCCESS
 #include <iostream>    // for cout
 #include <memory>      // for unique_ptr, make_unique
 #include <mutex>       // for mutex, scoped_lock
+#include <sstream>     // for ostringstream
 #include <stdexcept>   // for invalid_argument, out_of_range, runtime_error
 #include <string>      // for string, stoi
 #include <utility>     // for get, move

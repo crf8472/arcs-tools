@@ -13,6 +13,7 @@
 #include <cstdlib>                  // for EXIT_SUCCESS
 #include <iterator>                 // for end
 #include <memory>                   // for unique_ptr, make_unique
+#include <stdexcept>                // for runtime_error
 #include <string>                   // for string
 #include <utility>                  // for make_pair, move, pair
 

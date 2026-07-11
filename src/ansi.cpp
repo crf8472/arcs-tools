@@ -13,8 +13,10 @@
 #include <iterator>                    // for end
 #include <ostream>                     // for ostream
 #include <sstream>                     // for ostringstream
+#include <string>                      // for string, to_string
 #include <type_traits>                 // for underlying_type_t
 #include <unordered_map>               // for unordered_map
+#include <vector>                      // for vector
 
 
 namespace arcsapp

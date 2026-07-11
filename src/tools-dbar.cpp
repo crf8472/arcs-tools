@@ -12,7 +12,6 @@
 #endif
 
 #include <cstdint>           // for uint32_t, uint8_t
-#include <iomanip>           // for setw, setfill
 #include <memory>            // for unique_ptr, make_unique
 #include <sstream>           // for ostringstream
 #include <string>            // for string
@@ -25,7 +24,7 @@
 #include <arcstk/calculate.hpp>      // for Checksum
 #endif
 #ifndef LIBARCSTK_DBAR_HPP_
-#include <arcstk/dbar.hpp>           // for DBARTriplet, parse_stream
+#include <arcstk/dbar.hpp>           // for DBARTriplet
 #endif
 
 #ifndef ARCSTOOLS_APPLICATION_HPP_
@@ -36,9 +35,6 @@
 #endif
 #ifndef ARCSTOOLS_TOOLS_ARID_HPP_   // for ARIdLayout
 #include "tools-arid.hpp"
-#endif
-#ifndef ARCSTOOLS_TOOLS_CALC_HPP_
-#include "tools-calc.hpp"           // for HexLayout
 #endif
 
 

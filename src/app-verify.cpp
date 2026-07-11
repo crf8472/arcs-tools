@@ -17,15 +17,21 @@
 #include <cstdlib>         // for EXIT_SUCCESS
 #include <exception>       // for exception
 #include <iterator>        // for begin, end
+#include <limits>          // for numeric_limits
 #include <memory>          // for unique_ptr, make_unique
 #include <sstream>         // for istringstream, ostringstream
 #include <stdexcept>       // for invalid_argument, runtime_error
 #include <string>          // for stoul, string, to_string
 #include <tuple>           // for get, tuple
+#include <unordered_map>   // for unordered_map
 #include <utility>         // for move, pair
+#include <vector>          // for vector
 
 #ifndef LIBARCSTK_METADATA_HPP_
 #include <arcstk/metadata.hpp>      // for ToC
+#endif
+#ifndef LIBARCSTK_IDENTIFIER_HPP_
+#include <arcstk/identifier.hpp>    // for make_arid, to_string
 #endif
 #ifndef LIBARCSTK_VERIFY_HPP_
 #include <arcstk/verify.hpp>        // for ChecksumSource
@@ -35,6 +41,9 @@
 #endif
 #ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>       // for ARCS_LOG_DEBUG, ARCS_LOG_ERROR
+#endif
+#ifndef LIBARCSTK_LOGLEVEL_HPP_
+#include <arcstk/loglevel.hpp>      // for LOGLEVEL
 #endif
 
 #ifndef ARCSTOOLS_APPREGISTRY_HPP_

@@ -11,6 +11,7 @@
 #endif
 
 #include <algorithm>           // for for_each
+#include <cstddef>             // for size_t
 #include <functional>          // for functional
 #include <iterator>            // for begin, end
 #include <memory>              // for make_unique

@@ -22,6 +22,9 @@
 #ifndef LIBARCSTK_LOGGING_HPP_
 #include <arcstk/logging.hpp>
 #endif
+#ifndef LIBARCSTK_CHECKSUM_HPP_
+#include <arcstk/checksum.hpp>      // for Checksums
+#endif
 #ifndef LIBARCSTK_METADATA_HPP_
 #include <arcstk/metadata.hpp>      // for ToC, AudioSize
 #endif
@@ -50,6 +53,12 @@
 #endif
 #ifndef ARCSTOOLS_TOOLS_INFO_HPP_
 #include "tools-info.hpp"           // for AvailableFileReaders
+#endif
+#ifndef ARCSTOOLS_TABLE_HPP_
+#include "table.hpp"                // for StringTableLayout
+#endif
+#ifndef ARCSTOOLS_TOOLS_TABLE_HPP_
+#include "tools-table.hpp"          // for TableComposer, ...
 #endif
 #ifndef ARCSTOOLS_RESULT_HPP_
 #include "result.hpp"               // for ResultObject, Result

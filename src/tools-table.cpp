@@ -15,7 +15,6 @@
 #include <iterator>     // for begin, end
 #include <memory>       // for unique_ptr, make_unique
 #include <string>       // for string, to_string
-#include <type_traits>  // for underlying_type_t
 #include <utility>      // for move
 #include <vector>       // for vector
 

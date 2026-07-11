@@ -14,10 +14,7 @@
 #include <sstream>    // for ostringstream
 #include <stdexcept>  // for runtime_error
 #include <string>     // for string
-
-#ifndef LIBARCSTK_LOGGING_HPP_
-#include <arcstk/logging.hpp>
-#endif
+#include <utility>    // for move
 
 
 namespace arcsapp
