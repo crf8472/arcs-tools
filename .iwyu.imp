@@ -1,0 +1,16 @@
+## IWYU mapping for arcstk/arcs-tools
+## vim:ft=yaml:fdm=marker
+
+
+## STL-containers: if you use std::vector, <vector> is required directly
+[
+  { include: ["<bits/stdc++.h>", "private", "<vector>",        "public"] },
+  { include: ["<bits/stdc++.h>", "private", "<string>",        "public"] },
+  { include: ["<bits/stdc++.h>", "private", "<map>",           "public"] },
+  { include: ["<bits/stdc++.h>", "private", "<unordered_map>", "public"] },
+]
+
+## libarcstk:
+# (If header_A includes header_B but you only need header_B):
+# { include: ["path/to/header_A.h", "private", "path/to/header_B.h", "public"] }
+
