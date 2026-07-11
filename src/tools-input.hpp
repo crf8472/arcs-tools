@@ -190,36 +190,6 @@ class StringParser
 	virtual std::string start_message() const
 	= 0;
 
-	virtual std::any do_parse(const std::string& s) const
-	= 0;
-
-public:
-
-	/**
-	 * \brief Virtual default destructor.
-	 */
-	virtual ~StringParser() = default;
-
-	/**
-	 * \brief Parse input string to object.
-	 *
-	 * \param[in] s Input string to be parsed
-	 *
-	 * \return Result object
-	 */
-	std::any parse(const std::string& s) const;
-};
-
-
-/**
- * \brief Abstract base class for for option value string parsers.
- *
- * \tparam T Parsing result type
- * \tparam R Returned object type
- */
-template <typename T, typename R=T>
-class InputStringParser : public StringParser
-{
 	/**
 	 * \brief Parsing result for empty input.
 	 */
@@ -236,6 +206,61 @@ class InputStringParser : public StringParser
 	virtual void do_parse_nonempty(const std::string& s) const
 	= 0;
 
+	virtual std::any do_parse(const std::string& s) const
+	= 0;
+
+protected:
+
+	/**
+	 * \brief Parse input string to object.
+	 *
+	 * \param[in] s Input string to be parsed
+	 *
+	 * \return Result object
+	 */
+	void parse_impl(const std::string& s) const
+	{
+		ARCS_LOG(DEBUG1) << "=> " << start_message();
+
+		if (s.empty())
+		{
+			this->do_parse_empty();
+		} else
+		{
+			this->do_parse_nonempty(s);
+		}
+	}
+
+public:
+
+	/**
+	 * \brief Virtual default destructor.
+	 */
+	virtual ~StringParser() = default;
+
+	/**
+	 * \brief Parse input string to object.
+	 *
+	 * \param[in] s Input string to be parsed
+	 *
+	 * \return Result object
+	 */
+	std::any parse(const std::string& s) const
+	{
+		return this->do_parse(s);
+	}
+};
+
+
+/**
+ * \brief Abstract base class for for option value string parsers.
+ *
+ * \tparam T Parsing result type
+ * \tparam R Returned object type
+ */
+template <typename T, typename R=T>
+class InputStringParser : public StringParser
+{
 	/**
 	 * \brief Provide the result object as a std::any.
 	 *
@@ -244,25 +269,19 @@ class InputStringParser : public StringParser
 	virtual auto provide_object() const -> R
 	= 0;
 
+	// NOLINTNEXTLINE(portability-template-virtual-member-function)
+	std::any do_parse(const std::string& s) const final
+	{
+		parse_impl(s);
+		return this->provide_object();
+	}
+
 	/**
 	 * \brief Internal counter for parsed units.
 	 */
 	mutable int count_ {};
 
 	// StringParser
-
-	std::any do_parse(const std::string& s) const final
-	{
-		if (s.empty())
-		{
-			this->do_parse_empty();
-		} else
-		{
-			this->do_parse_nonempty(s);
-		}
-
-		return this->provide_object();
-	}
 
 protected:
 

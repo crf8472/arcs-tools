@@ -222,16 +222,6 @@ void parse_list(const std::string& input_list, const char delim,
 }
 
 
-// StringParser
-
-
-std::any StringParser::parse(const std::string& s) const
-{
-	ARCS_LOG(DEBUG1) << "=> " << start_message();
-	return this->do_parse(s);
-}
-
-
 // DBARParser
 
 

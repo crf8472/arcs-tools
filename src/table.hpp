@@ -102,7 +102,7 @@ std::vector<std::string> split(std::string str, const std::string& delim);
  * \return List of Container contents, separated by \p delim
  */
 template <typename Container> // TODO SFINAE stuff: empty(), size(), b+e, rbegin
-inline std::string to_sep_list(const Container c, const std::string& delim,
+inline std::string to_sep_list(const Container& c, const std::string& delim,
 		const std::function<std::string(const typename Container::value_type&)>&
 		f)
 {
@@ -120,6 +120,10 @@ inline std::string to_sep_list(const Container c, const std::string& delim,
 
 		std::transform(cbegin(c), --c.crbegin().base(),
 			std::ostream_iterator<std::string>(list_stream, delim.c_str()), f);
+		// Commented out, untested
+		//auto last_elem = std::prev(c.cend());
+		//std::transform(c.cbegin(), last_elem,
+		//	std::ostream_iterator<std::string>(list_stream, delim.c_str()), f);
 
 		list_stream << f(*crbegin(c));
 	} else
