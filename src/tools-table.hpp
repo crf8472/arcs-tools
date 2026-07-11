@@ -453,7 +453,7 @@ public:
  *
  * Whether the records are rows or columns in the resulting table is defined by
  * the concrete subclasses.
- */
+ */                                 // NOLINTNEXTLINE(misc-multiple-inheritance)
 class TableComposer :   public RecordInterface<DecoratedStringTable, ATTR>
 					  , public DecorationInterface
 {
