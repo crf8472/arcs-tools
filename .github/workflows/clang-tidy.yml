@@ -1,0 +1,61 @@
+name: Clang-Tidy Analysis
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - 'feature/**'
+      - 'bugfix/**'
+      - 'hotfix/**'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  clang-tidy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # libarcstk, libarcsdec
+          submodules: recursive
+
+      - name: Update libarcstk to dev if on dev branch
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          cd libs/libarcstk
+          git fetch origin dev:dev
+          git checkout dev
+
+      - name: Update libarcsdec to dev if on dev branch
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          cd libs/libarcsdec
+          git fetch origin dev:dev
+          git checkout dev
+
+      - name: Set up dependencies (ubuntu-latest == 24.04 "Noble Noumbat")
+        run: |
+          sudo apt-get install -y cmake ninja-build libfl-dev clang-tidy
+
+      # Minimal configuration of arcs-tools (no deps, only on-board features)
+
+      - name: Configure with clang-tidy
+        run: |
+          cmake -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DWITH_SUBMODULES=ON  \
+            -DWITH_TESTS=OFF      \
+            -DWITH_FLAC=OFF       \
+            -DWITH_FFMPEG=OFF     \
+            -DWITH_WAVPACK=OFF    \
+            -DWITH_LIBSNDFILE=OFF \
+            -DWITH_LIBCUE=OFF     \
+            -DWITH_EXAMPLES=OFF
+
+      - name: Create clang-tidy report
+        run: cmake --build build --target arcstk_clang-tidy-workflow
+
