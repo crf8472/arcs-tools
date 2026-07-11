@@ -142,7 +142,7 @@ namespace table
 /**
  * \brief Alignment types for StringTable.
  */
-enum Align : uint8_t
+enum class Align : uint8_t
 {
 	LEFT,
 	RIGHT,
