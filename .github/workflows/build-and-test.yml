@@ -1,0 +1,108 @@
+name: Build & Test
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - 'feature/**'
+      - 'bugfix/**'
+      - 'hotfix/**'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            compiler: g++
+          - os: ubuntu-latest
+            compiler: clang++
+          - os: macos-latest
+            compiler: clang++
+          # Windows (commented out, untested)
+          # - os: windows-latest
+          #   compiler: msvc
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # libarcstk, libarcsdec
+          submodules: recursive
+
+      - name: Update libarcstk to dev if on dev branch
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          cd libs/libarcstk
+          git fetch origin dev:dev
+          git checkout dev
+
+      - name: Update libarcsdec to dev if on dev branch
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          cd libs/libarcsdec
+          git fetch origin dev:dev
+          git checkout dev
+
+      # Full build of libarcsdec (all deps, all features)
+
+      - name: Set up dependencies (ubuntu-latest == 24.04 "Noble Noumbat")
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install -y cmake ninja-build
+          sudo apt-get install -y libfl-dev
+          sudo apt-get install -y libflac++10   libflac++-dev
+          sudo apt-get install -y libavcodec60  libavcodec-dev
+          sudo apt-get install -y libavformat60 libavformat-dev
+          sudo apt-get install -y libavutil58   libavutil-dev
+          sudo apt-get install -y libwavpack1   libwavpack-dev
+          sudo apt-get install -y libsndfile1   libsndfile1-dev
+          sudo apt-get install -y libcue2       libcue-dev
+
+      - name: Set up modern bison (macos-latest)
+        if: runner.os == 'macOS'
+        run: |
+          brew install bison
+          echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+
+      - name: Set up dependencies (macos-latest)
+        if: runner.os == 'macOS'
+        run: |
+          brew install cmake ninja flac ffmpeg libsndfile wavpack libcue
+
+      - name: Configure
+        run: |
+          cmake -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DWITH_SUBMODULES=ON \
+            -DWITH_TESTS=ON      \
+            -DWITH_FLAC=ON       \
+            -DWITH_FFMPEG=ON     \
+            -DWITH_WAVPACK=ON    \
+            -DWITH_LIBSNDFILE=ON \
+            -DWITH_LIBCUE=ON     \
+            -DWITH_MANPAGES=OFF  \
+            -DWITH_EXAMPLES=OFF
+
+      - name: Configure (macos-latest)
+        if: runner.os == 'macOS'
+        run: |
+          cmake -B build \
+            -G Ninja \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -DCMAKE_PREFIX_PATH=$(brew --prefix)
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure -V
+
