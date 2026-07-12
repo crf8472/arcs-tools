@@ -246,5 +246,5 @@ arcstk_enable_clang_tidy               (ARCSTK_CLANG_TIDY_ENABLED )
 ## 1}}}
 
 banner (END
-	"Configuration completed ${PROJECT_NAME} ${LIBARCSDEC_VERSION_STRING}" )
+	"Configuration completed: ${PROJECT_NAME} ${ARCSTK_VERSION_STRING}" )
 
