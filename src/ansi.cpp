@@ -25,6 +25,19 @@ inline namespace v_1_0_0
 {
 namespace ansi
 {
+namespace
+{
+
+template <typename E>
+std::enable_if_t<std::is_enum_v<E>, std::string> enum_to_string(E e)
+{
+    using underlying = std::underlying_type_t<E>;
+	using std::to_string;
+
+    return to_string(static_cast<unsigned int>(static_cast<underlying>(e)));
+}
+
+} // namespace
 
 
 Highlight reset(const Highlight hl)
@@ -150,7 +163,8 @@ std::string Modifier::colors_str() const
 	using std::to_string;
 	for (const auto& c : colors_)
 	{
-		s << ";" << to_string(static_cast<std::underlying_type_t<Color>>(c));
+		//s << ";" << to_string(static_cast<std::underlying_type_t<Color>>(c));
+		s << ";" << enum_to_string(c);
 	}
 
 	return s.str();
@@ -164,7 +178,8 @@ std::string Modifier::str() const
 
 	using std::to_string;
 	return "\x1B["
-		+ to_string(static_cast<std::underlying_type_t<Highlight>>(hl_))
+		//+ to_string(static_cast<std::underlying_type_t<Highlight>>(hl_))
+		+ enum_to_string(hl_)
 		+ colors_str()
 		+ "m";
 }
