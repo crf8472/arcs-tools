@@ -1,5 +1,10 @@
 ## CMakeLists.txt for generating and compressing the man pages
 
+cmake_minimum_required (VERSION 3.12 )
+
+message (STATUS "Build manpages" )
+
+
 find_package (Doxygen 1.8.0 )
 
 find_program (GZIP_EXEC NAMES gzip )

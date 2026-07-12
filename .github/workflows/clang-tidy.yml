@@ -54,6 +54,7 @@ jobs:
             -DWITH_WAVPACK=OFF    \
             -DWITH_LIBSNDFILE=OFF \
             -DWITH_LIBCUE=OFF     \
+            -DWITH_MANPAGES=OFF   \
             -DWITH_EXAMPLES=OFF
 
       - name: Create clang-tidy report

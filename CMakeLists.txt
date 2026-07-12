@@ -224,11 +224,20 @@ else ()
 endif (WITH_DOCS )
 ## 1}}}
 ## --- Setup man pages (UNIX only) {{{1
-if (UNIX )
+option (WITH_MANPAGES      "Build Unix manpages"                          ON )
 
-	add_subdirectory (man )
+if (WITH_MANPAGES )
 
-endif (UNIX )
+	if (UNIX )
+		message (STATUS "Build with manpages" )
+		add_subdirectory (man )
+	else ()
+		message (WARNING "Option WITH_MANPAGES is only available on unixoids" )
+	endif (UNIX )
+
+else()
+	message (STATUS "Build without manpages" )
+endif ()
 ## 1}}}
 ## --- Setup development tools {{{1
 arcstk_enable_clang_tidy               (ARCSTK_CLANG_TIDY_ENABLED )
