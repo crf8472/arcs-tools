@@ -9,6 +9,8 @@ cmake_policy (SET CMP0003 NEW )
 ## Link libraries by full path even in implicit directories.
 cmake_policy (SET CMP0060 NEW )
 
+set (CMAKE_BUILD_WITH_INSTALL_RPATH    FALSE )
+set (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE  )
 
 ## Directory for test sources
 set (TEST_SOURCE_DIR "src" )
@@ -51,6 +53,14 @@ foreach (_testcase ${TEST_SETS} )
 		"${TEST_SOURCE_DIR}/${_testcase}.cpp"
 	)
 
+	set_target_properties (${_testcase}_test PROPERTIES
+		CXX_STANDARD           17
+		CXX_STANDARD_REQUIRED  ON
+		BUILD_RPATH            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+		BUILD_RPATH_USE_ORIGIN ON
+		SKIP_RPATH             OFF
+	)
+
 	set_property (TARGET ${_testcase}_test PROPERTY CXX_STANDARD 17 )
 
 	target_include_directories (${_testcase}_test
@@ -64,7 +74,7 @@ foreach (_testcase ${TEST_SETS} )
 			Catch2::Catch2WithMain
 			libarcstk::libarcstk
 			libarcsdec::libarcsdec
-			-Wl,--disable-new-dtags ## set RPATH instead of RUNPATH
+			#-Wl,--disable-new-dtags ## set RPATH instead of RUNPATH
 			$<TARGET_OBJECTS:arcstk_objects>
 		)
 		## Setting RPATH forces loading the lib*.so files from the build tree,
