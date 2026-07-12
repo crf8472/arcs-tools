@@ -104,10 +104,7 @@ jobs:
         run: cmake --build build
 
       - name: Run tests
-        run: ctest --test-dir build --output-on-failure -V
-
-      - name: Print report for tools-calc
-        if: runner.os == 'macOS'
         continue-on-error: true
-        run: cat build/report.tools-calc.xml
+        run: ctest --test-dir build --output-on-failure -V \
+             cat build/report.tools-calc.xml
 
