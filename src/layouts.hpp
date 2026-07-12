@@ -511,7 +511,7 @@ public:
 	/**
 	 * \brief Internal store type.
 	 */
-	using store_t = std::map<const key_t, std::string>;
+	using store_t = std::map<key_t, std::string>;
 
 	/**
 	 * \brief Default constructor.
