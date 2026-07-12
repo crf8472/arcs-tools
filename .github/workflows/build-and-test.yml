@@ -104,7 +104,5 @@ jobs:
         run: cmake --build build
 
       - name: Run tests
-        run: |
-            ctest --test-dir build --output-on-failure -V
-            cat build/report.tools-calc.xml
+        run: ctest --test-dir build --output-on-failure --verbose -V
 
