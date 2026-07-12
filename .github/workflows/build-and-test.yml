@@ -107,6 +107,6 @@ jobs:
         run: ctest --test-dir build --output-on-failure -V
 
       - name: Print report for tools-calc
-        run: |
-            cat build/report.tools-calc.xml
+        if: runner.os == 'macOS'
+        run: cat build/report.tools-calc.xml
 
