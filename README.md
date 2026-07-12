@@ -3,6 +3,9 @@
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![C++17](https://img.shields.io/badge/C++-17-darkblue.svg)](./API.md)
 [![Release](https://img.shields.io/github/v/release/crf8472/arcs-tools?display_name=tag&include_prereleases)](https://github.com/crf8472/arcs-tools/releases)
+[![Build & Test](https://github.com/crf8472/arcs-tools/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/crf8472/arcs-tools/actions/workflows/build-and-test.yml)
+[![Sanitizers](https://github.com/crf8472/arcs-tools/actions/workflows/sanitizers.yml/badge.svg)](https://github.com/crf8472/arcs-tools/actions/workflows/sanitizers.yml)
+[![clang-tidy](https://github.com/crf8472/arcs-tools/actions/workflows/clang-tidy.yml/badge.svg)](https://github.com/crf8472/arcs-tools/actions/workflows/clang-tidy.yml)
 
 
 ## Introduction
