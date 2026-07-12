@@ -108,5 +108,6 @@ jobs:
 
       - name: Print report for tools-calc
         if: runner.os == 'macOS'
+        continue-on-error: true
         run: cat build/report.tools-calc.xml
 
