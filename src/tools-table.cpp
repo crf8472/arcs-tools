@@ -921,6 +921,9 @@ std::vector<ATTR> TableCreator::create_field_types(
 				if (print_flags(a))
 				{
 					fields.emplace_back(a);
+
+					ARCS_LOG(DEBUG3) << "Create field type "
+						<< static_cast<int>(a);
 				}
 			}
 	);
@@ -961,24 +964,32 @@ void TableCreator::populate_creators_list(
 
 	if (required(field_types, ATTR::FILENAME))
 	{
+		ARCS_LOG(DEBUG3) << "Add creator FILENAME to list";
+
 		creators.emplace_back(
 				std::make_unique<AddField<ATTR::FILENAME>>(&filenames));
 	}
 
 	if (required(field_types, ATTR::TRACK))
 	{
+		ARCS_LOG(DEBUG3) << "Add creator TRACK to list";
+
 		creators.emplace_back(
 				std::make_unique<AddField<ATTR::TRACK>>());
 	}
 
 	if (required(field_types, ATTR::OFFSET))
 	{
+		ARCS_LOG(DEBUG3) << "Add creator OFFSET to list";
+
 		creators.emplace_back(
 				std::make_unique<AddField<ATTR::OFFSET>>(toc.offsets()));
 	}
 
 	if (required(field_types, ATTR::LENGTH))
 	{
+		ARCS_LOG(DEBUG3) << "Add creator LENGTH to list";
+
 		creators.emplace_back(
 				std::make_unique<AddField<ATTR::LENGTH>>(&checksums));
 	}
@@ -995,6 +1006,9 @@ std::unique_ptr<TableComposer> TableCreator::create_composer(
 		const std::size_t total_entries, const std::vector<ATTR>& field_types)
 		const
 {
+	ARCS_LOG(DEBUG3) << "Create table with " << field_types.size()
+		<< " fields for " << total_entries << " entries.";
+
 	return builder()->build(total_entries, field_types);
 }
 
@@ -1020,7 +1034,7 @@ TableCreator::print_flag_t TableCreator::create_field_requests(
 	flags.set(ATTR::OFFSET,     has_toc && is_requested(ATTR::OFFSET));
 	flags.set(ATTR::LENGTH,     is_requested(ATTR::LENGTH));
 
-	ARCS_LOG(DEBUG1) << "Activate flags for printing:";
+	ARCS_LOG(DEBUG1) << "Activate print flags:";
 	ARCS_LOG(DEBUG1) << " filenames = " << flags(ATTR::FILENAME);
 	ARCS_LOG(DEBUG1) << " tracks    = " << flags(ATTR::TRACK);
 	ARCS_LOG(DEBUG1) << " offsets   = " << flags(ATTR::OFFSET);

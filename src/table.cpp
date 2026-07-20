@@ -23,6 +23,10 @@
 #include <utility>    // for forward, make_pair, move, swap
 #include <vector>     // for vector
 
+#ifndef LIBARCSTK_LOGGING_HPP_
+#include <arcstk/logging.hpp>     // for ARCS_LOG* (_DEBUG, _ERROR)
+#endif
+
 #ifndef ARCSTOOLS_SAFE_CAST_HPP_
 #include "safe_cast.hpp"          // for safe_cast
 #endif
@@ -1178,8 +1182,10 @@ DecoratedStringTable::DecoratedStringTable(const std::string& title,
 
 DecoratedStringTable::DecoratedStringTable(const std::size_t rows,
 		const std::size_t cols)
-	: DecoratedStringTable(std::string{/*empty title*/}, rows, cols)
+	: DecoratedStringTable { {/*empty title*/}, rows, cols }
 {
+	ARCS_LOG(DEBUG1) << "Decorated string table with " << rows << " rows,"
+		<< " " << cols << " columns";
 	// empty
 }
 
@@ -1595,6 +1601,8 @@ void TablePrinter::Impl::rows(std::ostream& o, const PrintableTable& t,
 {
 	using service::safe_cast;
 
+	ARCS_LOG(DEBUG1) << "Print " << t.rows() << " rows";
+
 	// Table rows
 	for (auto r = std::size_t { 0 }; r < t.rows() - 1; ++r)
 	{
@@ -1974,50 +1982,50 @@ std::size_t TablePrinter::Impl::optimal_row_label_width(
 }
 
 
-void TablePrinter::Impl::print(std::ostream& o, const PrintableTable& t)
+void TablePrinter::Impl::print(std::ostream& out, const PrintableTable& table)
 	const
 {
-	const auto prev_settings { o.flags() };
-	const auto* l { t.layout() };
+	const auto prev_settings { out.flags() };
+	const auto* l { table.layout() };
 
 	// Print title
 	if (l->title())
 	{
-		title(o, t, *l);
+		title(out, table, *l);
 	}
 
 	// Column widths (w/o row labels)
-	const auto col_widths { printed_widths(t, *l) };
+	const auto col_widths { printed_widths(table, *l) };
 
 	// Print top delims
 	if (l->top_delims())
 	{
-		row_delimiters(o, t, col_widths, *l, l->top_delim());
+		row_delimiters(out, table, col_widths, *l, l->top_delim());
 	}
 
 	// Print column labels
 	if (l->col_labels())
 	{
-		col_labels(o, t, col_widths, *l);
+		col_labels(out, table, col_widths, *l);
 		// FIXME + cols() * 1 delim
 
 		// Header row delims
-		if (l->row_header_delims() && t.rows() > 0)
+		if (l->row_header_delims() && table.rows() > 0)
 		{
-			row_delimiters(o, t, col_widths, *l, l->row_header_delim());
+			row_delimiters(out, table, col_widths, *l, l->row_header_delim());
 		}
 	}
 
 	// Print rows
-	rows(o, t, col_widths, *l); // also prints row_inner_delims
+	rows(out, table, col_widths, *l); // also prints row_inner_delims
 
 	// Print bottom delims
 	if (l->bottom_delims())
 	{
-		row_delimiters(o, t, col_widths, *l, l->bottom_delim());
+		row_delimiters(out, table, col_widths, *l, l->bottom_delim());
 	}
 
-	o.flags(prev_settings);
+	out.flags(prev_settings);
 }
 
 
