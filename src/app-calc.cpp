@@ -659,6 +659,28 @@ std::unique_ptr<CalcTableCreator> ARCalcApplication::create_formatter(
 		cs_table_layout->set_col_inner_delim(config.value(CALC::COLDELIM));
 	}
 
+	// Print tracks either as columns or as rows
+
+	std::unique_ptr<TableComposerBuilder> cs_table_builder = nullptr;
+	if (config.is_set(CALC::TRACKSASCOLS))
+	{
+		cs_table_builder = std::make_unique<ColTableComposerBuilder>();
+
+		if (!fmt->has_property(ATTR::TRACK))
+		{
+			// TRACKSASCOLS has no other labels than track numbers, hence
+			// no track numbers means no column labels
+			cs_table_layout->set_col_labels(false);
+		}
+
+		// delimiter between labels column and column for first track
+		cs_table_layout->set_col_labels_delim(": ");
+		cs_table_layout->set_col_labels_delims(true);
+	} else
+	{
+		cs_table_builder = std::make_unique<RowTableComposerBuilder>();
+	}
+
 	// Remove labels and delims if requested
 
 	if (config.is_set(CALC::NOLABELS))
@@ -672,22 +694,6 @@ std::unique_ptr<CalcTableCreator> ARCalcApplication::create_formatter(
 	} else
 	{
 		ARCS_LOG(DEBUG3) << "Print with labels";
-	}
-
-	// Print tracks either as columns or as rows
-
-	std::unique_ptr<TableComposerBuilder> cs_table_builder = nullptr;
-	if (config.is_set(CALC::TRACKSASCOLS))
-	{
-		cs_table_builder = std::make_unique<ColTableComposerBuilder>();
-
-		// delimiter between labels column and column for first track
-		cs_table_layout->set_col_labels_delim(
-				cs_table_layout->col_inner_delim()); // XXX What???
-		cs_table_layout->set_col_labels_delims(true);
-	} else
-	{
-		cs_table_builder = std::make_unique<RowTableComposerBuilder>();
 	}
 
 
