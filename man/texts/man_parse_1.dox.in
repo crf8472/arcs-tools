@@ -22,7 +22,7 @@ the response.
 
 \section parse_opts OPTIONS
 
-\subsection calc_output Options for output
+\subsection parse_output Options for output
 
 \par --format=FORMAT
 Specify output format where FORMAT is one of { json, text, text_decorated, raw,
