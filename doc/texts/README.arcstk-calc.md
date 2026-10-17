@@ -1,4 +1,4 @@
-\page arcstk-calc
+# arcstk-calc
 
 arcstk-calc, an example tool to calculate AccurateRip Track Checksums v1 and v2
 of losslessly encoded audio files.

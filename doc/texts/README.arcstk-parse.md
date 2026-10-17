@@ -1,4 +1,4 @@
-\page arcstk-parse
+# arcstk-parse
 
 arcstk-parse, a tool to parse AccurateRip responses to plaintext.
 

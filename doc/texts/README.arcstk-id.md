@@ -1,4 +1,4 @@
-\page arcstk-id
+# arcstk-id
 
 arcstk-id, a tool to compute AccurateRip disc ids and AccurateRip URLs from
 CUE/audio file pairs.

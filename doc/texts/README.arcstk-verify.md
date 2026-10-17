@@ -1,4 +1,4 @@
-\page arcstk-verify
+# arcstk-verify
 
 arcstk-verify, an example tool to calculate and verify AccurateRip Track
 Checksums v1 and v2 of losslessly encoded audio files, either for albums or for
