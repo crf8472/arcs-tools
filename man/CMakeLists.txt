@@ -28,42 +28,16 @@ set (MAN_DOXYGEN_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/doxygen-output" )
 set (MAN_BUILD_DIR       "${ARCSTK_BINARY_DIR}/generated-manpages" )
 
 
+## --- Configure manpage texts
+add_subdirectory (texts )
+configure_manpage_texts ( "${MAN_TEXTS_DIR}" "${MAN_SRC_DIR}" )
+
+## Respect configured sources in doxygen
+set (DOXYGEN_INPUT "${DOXYGEN_INPUT};${MAN_SRC_DIR}" PARENT_SCOPE )
+
+
 ## Compound target for creating the manpages (conatins all steps)
 add_custom_target (provide_manpages ALL )
-
-
-## --- Generate the dox file sources from the .dox.in files
-
-## List of cmake-controlled manpage source files
-file (GLOB MAN_SOURCE_TEMPLATES ${MAN_TEXTS_DIR}/*.dox.in )
-
-if (${CMAKE_VERSION} VERSION_LESS "3.14.0" ) ## No NAME_WLE available
-
-	foreach (_form IN LISTS MAN_SOURCE_TEMPLATES )
-
-		get_filename_component(_form_NAME ${_form} NAME_WE )
-		configure_file (${_form} "${MAN_SRC_DIR}/${_form_NAME}.dox" )
-	endforeach()
-
-else ()
-
-	foreach (_form IN LISTS MAN_SOURCE_TEMPLATES )
-
-		get_filename_component(_form_OUTFILE ${_form} NAME_WLE )
-		configure_file (${_form} "${MAN_SRC_DIR}/${_form_OUTFILE}" )
-	endforeach()
-
-endif()
-
-
-## List of manpage source text files (those not controlled by cmake)
-file (GLOB MAN_SOURCE_TEXTS ${MAN_TEXTS_DIR}/*.dox )
-
-foreach (_doxfile IN LISTS MAN_SOURCE_TEXTS )
-
-	get_filename_component(_doxfilename ${_doxfile} NAME )
-	file (COPY ${_doxfile} DESTINATION "${MAN_SRC_DIR}" )
-endforeach()
 
 
 ## --- Generate the man source files from the manpage source text files
