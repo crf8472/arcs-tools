@@ -207,23 +207,7 @@ if (NOT SKIP_INSTALL_ALL )
 
 endif()
 ## 1}}}
-## --- Optional: Build documentation {{{1
-
-option (WITH_DOCS          "Build documentation for public API"           OFF )
-option (USE_DOC_TOOL       "Build documentation using specified tool"     OFF )
-
-## -- Process configuration for building the documentation
-if (WITH_DOCS )
-
-	add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/doc )
-else ()
-
-	if (USE_DOC_TOOL )
-		message (FATAL_ERROR "-DWITH_DOCS=ON is required to set USE_DOC_TOOL." )
-	endif()
-endif (WITH_DOCS )
-## 1}}}
-## --- Setup man pages (UNIX only) {{{1
+## --- Setup man pages (*NIX only) {{{1
 option (WITH_MANPAGES      "Build Unix manpages"                          ON )
 
 if (WITH_MANPAGES )
@@ -238,6 +222,37 @@ if (WITH_MANPAGES )
 else()
 	message (STATUS "Build without manpages" )
 endif ()
+## 1}}}
+## --- Optional: Build documentation {{{1
+
+option (WITH_DOCS          "Build documentation for public API"           OFF )
+option (USE_DOC_TOOL       "Build documentation using specified tool"     OFF )
+
+## -- Process configuration for building the documentation
+if (WITH_DOCS )
+
+	## We want to have the manpages always be part of the documentation.
+
+	## Directory for configured manpage text files
+	set (MAN_SRC_DIR "${CMAKE_CURRENT_BINARY_DIR}/man/configured-doxfiles" )
+
+	## Ensure manpage texts are configured
+	if (NOT WITH_MANPAGES OR NOT EXISTS "${MAN_SRC_DIR}" )
+
+		set (MAN_TEXTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/man/texts" )
+
+		## configure manpage texts
+		add_subdirectory ("${MAN_TEXTS_DIR}" )
+		configure_manpage_texts ( "${MAN_TEXTS_DIR}" "${MAN_SRC_DIR}" )
+	endif ()
+
+	add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/doc )
+else ()
+
+	if (USE_DOC_TOOL )
+		message (FATAL_ERROR "-DWITH_DOCS=ON is required to set USE_DOC_TOOL." )
+	endif()
+endif (WITH_DOCS )
 ## 1}}}
 ## --- Setup development tools {{{1
 arcstk_enable_clang_tidy               (ARCSTK_CLANG_TIDY_ENABLED )
