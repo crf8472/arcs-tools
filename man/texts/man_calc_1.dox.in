@@ -113,7 +113,7 @@ right.
 \snippet{doc} include/option_version.dox   OPT_VERSION
 
 
-\section calc_exmp
+\section calc_exmp Examples
 
 \subsection calc_ALBUMTOCM 1. Album + TOC, using the audio files specified in the TOC
 
@@ -127,7 +127,7 @@ be a single file or one file per track.
 \subsection calc_ALBUMTOCF 2. Album + TOC, overriding the files in the TOC, if any
 
 
-\par a) Single audio file
+\subsubsection singlefile Single audio file
 
 You have: An album ripped to a single audio file, say fLaC, and the TOC as a
 Cuesheet. The Cuesheet specifies audio files, but you want to override them with
@@ -136,7 +136,7 @@ Cuesheet. The Cuesheet specifies audio files, but you want to override them with
 \code{.sh}$ arcstk-calc -m myalbum/toc.cue myalbum/album_rip.flac\endcode
 
 
-\par b) One audio file per track
+\subsubsection multifile One audio file per track
 
 You have: An album ripped one-file-per-track to a set of fLaC files, and the TOC
 as a Cuesheet. The Cuesheet is stored elsewhere or references WAV files, so you
@@ -160,7 +160,7 @@ You have: A set of audiofiles that do not form an album. (Either the album is
 missing some tracks or the tracks you intend to pass are completely unrelated.)
 
 
-\par a) Unrelated intermediate tracks or nothing known
+\subsubsection unknown1 Unrelated intermediate tracks or nothing known
 
 The following just applies the AccurateRip algorithm for \e intermediate tracks
 (i.e. that are neither first nor last track) to any input file:
@@ -172,7 +172,7 @@ Of course you can specifiy the order of the filenames explicitly:
 \code{.sh}$ arcstk-calc myalbum/f1.flac myalbum/f2.flac ...\endcode
 
 
-\par a) First or last track known but album incomplete
+\subsubsection incomplete1 First or last track known but album incomplete
 
 For each call you may or may not specify exactly one first and one last track.
 These correspond with the first and last of the audio filenames you pass, but

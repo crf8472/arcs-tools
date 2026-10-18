@@ -186,7 +186,7 @@ in a local dBAR file (see man 1 arcstk-parse).
 \subsection verify_ALBUMTOCF 2. Album + TOC, overriding the files in the TOC, if any
 
 
-\par a) Single audio file
+\subsubsection verify_ALBUMTOCF_1 Single audio file
 
 You have: An album ripped to a single audio file, say fLaC, and the TOC as
 Cuesheet. The Cuesheet specifies audio files, but you want to override them with
@@ -196,7 +196,7 @@ local dBAR file (see man 1 arcstk-parse).
 \code{.sh}$ arcstk-verify -r dBAR-some_id.bin -m myalbum/toc.cue myalbum/album_rip.flac\endcode
 
 
-\par b) One audio file per track
+\subsubsection verify_ALBUMTOCF_2 One audio file per track
 
 You have: An album ripped one-file-per-track to a set of fLaC files, and the TOC
 as a Cuesheet. The Cuesheet is stored elsewhere or references WAV files, so you
