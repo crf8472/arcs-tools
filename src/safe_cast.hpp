@@ -107,6 +107,8 @@ struct SafeCastImpl<F, T,
  *
  * \throw overflow_error If \c number is too large for type \c T
  * \throw overflow_error If \c number is too small for type \c T
+ *
+ * \return Value of type \c T
  */
 template <typename T, typename F>
 T safe_cast(F number)

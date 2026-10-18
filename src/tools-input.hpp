@@ -215,8 +215,6 @@ protected:
 	 * \brief Parse input string to object.
 	 *
 	 * \param[in] s Input string to be parsed
-	 *
-	 * \return Result object
 	 */
 	void parse_impl(const std::string& s) const
 	{
