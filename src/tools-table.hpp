@@ -471,7 +471,7 @@ public:
 	 */
 	const std::vector<ATTR>& fields() const;
 
-	/**
+	/* *
 	 * \brief TRUE iff table to be composed has field \p f, otherwise FALSE.
 	 *
 	 * \param[in] f Field to check for

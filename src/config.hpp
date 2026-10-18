@@ -350,7 +350,7 @@ public:
 	 */
 	OptionRegistry supported_options() const;
 
-	/**
+	/* *
 	 * \brief Returns the minimal OptionCode constant to be used by subclasses.
 	 *
 	 * Subclasses may declare their numerical range starting with this
