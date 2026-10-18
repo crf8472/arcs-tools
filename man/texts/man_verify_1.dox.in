@@ -85,20 +85,29 @@ could be matched for either ARCSv2 or ARCSv1.
 \snippet{doc} include/option_coldelim.dox          OPT_COLDELIM
 
 \par \--colors,\--colors=[TYPE:COLOR+COLOR,TYPE:COLOR+COLOR,...]
+\htmlonly
+<table class="m-table">
+	<tr> <th>Attribute</th> <th>Possible Values</th> </tr>
+	<tr> <td>TYPE</td>  <td>MATCH, MISMATCH, MINE</td> </tr>
+	<tr> <td>COLOR</td> <td>FG_BLACK, FG_RED, FG_GREEN, FG_YELLOW, FG_BLUE, FG_MAGENTA, FG_CYAN, FG_WHITE, FG_DEFAULT,
+BG_BLACK, BG_RED, BG_GREEN, BG_YELLOW, BG_BLUE, BG_MAGENTA, BG_CYAN, BG_WHITE, BG_DEFAULT </td> </tr>
+</table>
+\endhtmlonly
 \manonly
-.sp 1
+.sp
 TYPE is one of: MATCH, MISMATCH, MINE
-.sp 1
+.sp
 COLOR is one of:
 FG_BLACK, FG_RED, FG_GREEN, FG_YELLOW, FG_BLUE, FG_MAGENTA, FG_CYAN, FG_WHITE,
 FG_DEFAULT,
 BG_BLACK, BG_RED, BG_GREEN, BG_YELLOW, BG_BLUE, BG_MAGENTA, BG_CYAN, BG_WHITE,
 BG_DEFAULT
-.sp 1
+.sp
 \endmanonly
-Use colored output for match results. This is only useful for output printed to
-command line. Output to a file will be cluttered with ANSI escape sequences. If
-used without a parameter, i.e. \b --colors or \b --colors=default the default
+Use colored output for match results.
+This is only useful for output printed to command line while output to a file
+will be cluttered with ANSI escape sequences.
+If used without a parameter, i.e. \b --colors or \b --colors=default the default
 colors are used, which are FG_GREEN+BG_DEFAULT for matches, FG_RED+BG_DEFAULT
 for mismatches and FG_DEFAULT+BG_DEFAULT for locally computed checksums a.k.a.
 "MINE". A semicolon-separated list of pairs of a TYPE and a color specification

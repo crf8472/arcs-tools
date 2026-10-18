@@ -1,18 +1,31 @@
 [OPT_READER]
 \par \--reader=STRING
 Force to process the audio file (if any) by the reader with the specified id.
-The following readers are available with this version of libarcsdec.
+The following readers are available with the current version of libarcsdec.
+\htmlonly
+<table class="m-table">
+	<tr> <th>ID</th>                  <th>Description</th> </tr>
+	<tr> <td><tt>wavpcm</tt></td>     <td>Internal RIFF/WAV reader for PCM encoded audio. Fast, but experimental.</td>   </tr>
+	<tr> <td><tt>ffmpeg</tt></td>     <td>Reader for WAV,FLAC,APE,CAF,OGGFLAC,AIFF and ALAC in M4A based on ffmpeg.</td> </tr>
+	<tr> <td><tt>flac</tt></td>       <td>Reader for FLAC based on libFLAC.</td>                                         </tr>
+	<tr> <td><tt>wavpack</tt></td>    <td>Reader for .wv container based on WavPack.</td>                                </tr>
+	<tr> <td><tt>libsndfile</tt></td> <td>Reader for WAV,FLAC and AIFF based on libsndfile.</td>                         </tr>
+</table>
+\endhtmlonly
 \manonly
+.sp
 .TS
 tab(|);
 ll.
-ID|Description
-wavpcm|Internal RIFF/WAV parser for PCM encoded audio. Fast, but experimental.
-ffmpeg|Reader for WAV,FLAC,APE,CAF,OGGFLAC,AIFF and ALAC in M4A based on ffmpeg.
-flac|Reader for FLAC based on libFLAC.
-wavpack|Reader for .WV container based on WavPack.
-libsndfile|Reader WAV,FLAC and AIFF based on libsndfile.
+ID         | Description
+---------- | -----------
+wavpcm     | Internal RIFF/WAV reader for PCM encoded audio. Fast, but experimental.
+ffmpeg     | Reader for WAV,FLAC,APE,CAF,OGGFLAC,AIFF and ALAC in M4A based on ffmpeg.
+flac       | Reader for FLAC based on libFLAC.
+wavpack    | Reader for .wv container based on WavPack.
+libsndfile | Reader for WAV,FLAC and AIFF based on libsndfile.
 .TE
+.sp
 \endmanonly
 Any reader will only be available if compiled in. Specifying a reader that is
 not available results in an error. Specifying a reader that is not capable of

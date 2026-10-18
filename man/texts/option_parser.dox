@@ -1,15 +1,26 @@
 [OPT_PARSER]
 \par \--parser=STRING
-Force to process the TOC file (if any) by the parser with the specified id.
+Force to process the metadata file (if any) by the parser with the specified id.
 The following parsers are available with libarcsdec if compiled.
+\htmlonly
+<table class="m-table">
+	<tr> <th>ID</th>                   <th>Description</th> </tr>
+	<tr> <td><tt>cdrtoc</tt></td>      <td>Internal cdrdao/TOC parser, experimental</td> </tr>
+	<tr> <td><tt>cuesheet</tt></td>    <td>Internal CueSheet parser, experimental</td>   </tr>
+	<tr> <td><tt>libcue</tt></td>      <td>Cuesheet parser based on libcue</td>          </tr>
+</table>
+\endhtmlonly
 \manonly
+.sp
 .TS
 tab(|);
 ll.
-ID|Description
-cuesheet|Internal CueSheet parser, experimental
-libcue  |CueSheet parser based on libcue
+ID       | Description
+-------- | --------
+cuesheet | Internal Cuesheet parser, experimental
+libcue   | Cuesheet parser based on libcue
 .TE
+.sp
 \endmanonly
 Any parser will only be available if compiled in. Specifying a parser that is
 not available results in an error. Specifying a parser that is not capable of

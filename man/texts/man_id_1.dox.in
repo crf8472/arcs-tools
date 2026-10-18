@@ -46,7 +46,7 @@ Print the database id. This id is identical to the filename of the
 AccurateRip response  file  and  has   the   canonical   form   of   38
 characters   as follows: dBAR-<track_count:3>-<id1:8>-<id2:8>-<cddb_id:8>.bin
 
-\snippet{doc} include/option_help.dox OPT_HELP
+\snippet{doc} include/option_help.dox      OPT_HELP
 
 \snippet{doc} include/option_logfile.dox   OPT_LOGFILE
 
