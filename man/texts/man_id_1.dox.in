@@ -17,7 +17,7 @@ arcstk-id [OPTIONS] TOCFILE [AUDIOFILE1 AUDIOFILE2 ...]
 
 Compute the AccurateRip id of a CD by its metadata or by the audio data. The
 leadout frame offset is necessary to calculate the AccurateRip Id. Some
-metadata formats like CUESheet do not allow to the leadout. If this is the case,
+metadata formats like Cuesheet do not allow to the leadout. If this is the case,
 the actual audio data must be inspected to get this information. If the metadata
 file contains the name of the audio file, this audio file name is used.
 Otherwise, option \b -a allows to specify the audio file explicitly.

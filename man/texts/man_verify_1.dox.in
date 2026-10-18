@@ -175,7 +175,7 @@ be ignored if \b --refvalues is used.
 \subsection verify_ALBUMTOCM 1. Album + TOC, using the audio files specified in the TOC
 
 You have: An album ripped to a single audio file, say fLaC, or a set of files
-and the TOC (as CUESheet). The CUESheet specifies the actual audiofiles, may it
+and the TOC (as Cuesheet). The Cuesheet specifies the actual audiofiles, may it
 be a single file or one file per track. You saved the checksums from AccurateRip
 in a local dBAR file (see man 1 arcstk-parse).
 
@@ -189,7 +189,7 @@ in a local dBAR file (see man 1 arcstk-parse).
 \par a) Single audio file
 
 You have: An album ripped to a single audio file, say fLaC, and the TOC as
-CUESheet. The CUESheet specifies audio files, but you want to override them with
+Cuesheet. The Cuesheet specifies audio files, but you want to override them with
 \c myalbum/album_rip.flac instead. You saved the checksums from AccurateRip in a
 local dBAR file (see man 1 arcstk-parse).
 
@@ -199,7 +199,7 @@ local dBAR file (see man 1 arcstk-parse).
 \par b) One audio file per track
 
 You have: An album ripped one-file-per-track to a set of fLaC files, and the TOC
-as a CUESheet. The CUESheet is stored elsewhere or references WAV files, so you
+as a Cuesheet. The Cuesheet is stored elsewhere or references WAV files, so you
 want to override its file references. You saved the checksums from AccurateRip
 in a local dBAR file (see man 1 arcstk-parse).
 
