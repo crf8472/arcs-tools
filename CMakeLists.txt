@@ -234,7 +234,7 @@ if (WITH_DOCS )
 	## We want to have the manpages always be part of the documentation.
 
 	## Directory for configured manpage text files
-	set (MAN_SRC_DIR "${CMAKE_CURRENT_BINARY_DIR}/man/configured-doxfiles" )
+	set (MAN_SRC_DIR "${ARCSTK_BINARY_DIR}/generated-docs/include" )
 
 	## Ensure manpage texts are configured
 	if (NOT WITH_MANPAGES OR NOT EXISTS "${MAN_SRC_DIR}" )

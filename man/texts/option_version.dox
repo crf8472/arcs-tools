@@ -1,0 +1,6 @@
+[OPT_VERSION]
+\par \--version
+Print version information and exit. If \b --version is passed, neither of the
+other command line options except \b --help will be evaluated.
+[OPT_VERSION]
+

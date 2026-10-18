@@ -22,47 +22,60 @@ the actual audio data must be inspected to get this information. If the metadata
 file contains the name of the audio file, this audio file name is used.
 Otherwise, option \b -a allows to specify the audio file explicitly.
 
+
 \section id_opts OPTIONS
 
-\copydoc inc_helpopt
 
-\par --cddb-id
+\subsection id_opts_in  Options for Input
+
+\par -a,\--audiofile=FILEPATH
+Specify the audiofile to use explicitly.
+
+\snippet{doc} include/option_listaudioformats.dox  OPT_LISTAUDIOFORMATS
+
+\snippet{doc} include/option_listtocformats.dox    OPT_LISTTOCFORMATS
+
+
+\subsection id_opts_out Options for Output
+
+\par \--cddb-id
 Print the cddb id.
 
-\par --db-id,--filename
+\par \--db-id,\--filename
 Print the database id. This id is identical to the filename of the
 AccurateRip response  file  and  has   the   canonical   form   of   38
 characters   as follows: dBAR-<track_count:3>-<id1:8>-<id2:8>-<cddb_id:8>.bin
 
-\par --no-labels
+\snippet{doc} include/option_help.dox OPT_HELP
+
+\snippet{doc} include/option_logfile.dox   OPT_LOGFILE
+
+\par \--no-labels
 Print no labels when using \b --profile or combining some of \b --cddb-id,
 \b --db-id and \b --url.
 
-\par --url
-Print the AccurateRip request URL.
+\snippet{doc} include/option_outfile.dox   OPT_OUTFILE
 
-\par --profile
+\snippet{doc} include/option_parser.dox    OPT_PARSER
+
+\par \--profile
 Print all information as a table.
 
-\par --url-prefix=STRING
+\snippet{doc} include/option_quiet.dox     OPT_QUIET
+
+\snippet{doc} include/option_reader.dox    OPT_READER
+
+\par \--url
+Print the AccurateRip request URL.
+
+\par \--url-prefix=STRING
 Use a custom URL prefix for URL output. The default prefix is
 'http://accuraterip.com/accuraterip/'. The custom prefix should end with a slash
 '/'.
 
-\par -a,--audiofile=FILEPATH
-Specify the audiofile to use explicitly.
+\snippet{doc} include/option_verbosity.dox OPT_VERBOSITY
 
-\copydoc inc_infooptions
-
-\copydoc inc_procoptions
-
-\copydoc inc_outfileopt
-
-\copydoc inc_logfileopt
-
-\copydoc inc_logoptions
-
-\copydoc inc_versionopt
+\snippet{doc} include/option_version.dox   OPT_VERSION
 
 
 \section id_exmp EXAMPLES
@@ -70,19 +83,21 @@ Specify the audiofile to use explicitly.
 Compute AccurateRip id for audiofile.cue while having the real audio file in the
 same directory:
 
-$ arcstk-id audiofile.cue
+\code{.sh}$ arcstk-id audiofile.cue\endcode
 
 Do the same as in the first example, but track precisely what is going on:
 
-$ arcstk-id --vvv audiofile.cue
+\code{.sh}$ arcstk-id --vvv audiofile.cue\endcode
 
 
 \section id_bugs BUGS
 
+\snippet{doc} include/text_bugs.dox    TEXT_BUGS
+
 
 \section id_copy COPYRIGHT
 
-\copydoc inc_license
+\snippet{doc} include/text_license.dox TEXT_LICENSE
 
 
 \section id_see SEE ALSO

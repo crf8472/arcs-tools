@@ -68,7 +68,7 @@ set (DOXYGEN_OUTPUT_DIRECTORY       "${DOC_GEN_DIR}/doxygen" )
 set (DOXYGEN_FILE_PATTERNS          "*.hpp *.md *.dox" )
 set (DOXYGEN_STRIP_FROM_INC_PATH    "${ARCSTK_INCLUDE_SOURCE_DIR}/" )
 set (DOXYGEN_STRIP_FROM_PATH        "${ARCSTK_INCLUDE_SOURCE_DIR}/" )
-set (DOXYGEN_INPUT                  "${ARCSTK_INCLUDE_SOURCE_DIR}/;${CMAKE_BINARY_DIR}/man/configured-doxfiles" )
+set (DOXYGEN_INPUT                  "${ARCSTK_INCLUDE_SOURCE_DIR}/;${ARCSTK_BINARY_DIR}/generated-docs/include" )
 
 
 

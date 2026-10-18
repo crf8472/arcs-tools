@@ -19,7 +19,7 @@ set (DOXYFILE ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile )
 set (MAN_TEXTS_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/texts" )
 
 ## Directory for configured manpage sources
-set (MAN_SRC_DIR         "${CMAKE_CURRENT_BINARY_DIR}/configured-doxfiles" )
+set (MAN_SRC_DIR         "${ARCSTK_BINARY_DIR}/generated-docs/include" )
 
 ## Directory for doxygen output (with all redundant pages)
 set (MAN_DOXYGEN_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/doxygen-output" )
@@ -32,9 +32,12 @@ set (MAN_BUILD_DIR       "${ARCSTK_BINARY_DIR}/generated-manpages" )
 add_subdirectory (texts )
 configure_manpage_texts ( "${MAN_TEXTS_DIR}" "${MAN_SRC_DIR}" )
 
-## Respect configured sources in doxygen
-set (DOXYGEN_INPUT "${DOXYGEN_INPUT};${MAN_SRC_DIR}" PARENT_SCOPE )
-
+## Link the directory with the include-doxfiles
+add_custom_command(
+	OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include"
+	COMMAND ${CMAKE_COMMAND}
+	ARGS -E create_symlink "${MAN_SRC_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/include"
+)
 
 ## Compound target for creating the manpages (conatins all steps)
 add_custom_target (provide_manpages ALL )
@@ -80,7 +83,7 @@ endforeach()
 add_custom_command (
 	OUTPUT  ${MANPAGES}
 	COMMAND Doxygen::doxygen ${DOXYFILE}
-	DEPENDS ${MAN_SOURCE_TEMPLATES} ${MAN_SOURCE_TEXTS}
+	DEPENDS ${MAN_SOURCE_TEMPLATES} ${MAN_SOURCE_TEXTS} "${CMAKE_CURRENT_BINARY_DIR}/include" ## TODO Doxyfile
 	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	COMMENT "Generate manpages with Doxygen"
 	VERBATIM

@@ -18,58 +18,63 @@ arcstk-calc [OPTIONS] AUDIOFILE1 AUDIOFILE2 ...
 Calculates AccurateRip checksums from losslessly encoded audiofiles and
 TOC information.
 
-\copydoc inc_calcdesc
+\snippet{doc} include/text_calcdesc.dox TEXT_CALCDESC
 
 
 \section calc_opts OPTIONS
 
 \subsection calc_input Options for processing input
 
-\par --first
+\par \--first
 Process the first of the audiofiles as first track of an album. This option is
 implied in \b -m. This switch is intended for cases in which all tracks of an
 album are represented as single files but no TOC metadata is present.
 See also \b --last and \b --album.
 
-\par --last
+\par \--last
 Process the last of the audiofiles as last track of an album. This option is
 implied in \b -m. This switch is intended for cases in which all tracks of an
 album are represented as single files but no TOC metadata is present.
 See also \b --first and \b --album.
 
-\par --album
+\par \--album
 Abbreviates \b --first \b --last to process the first of the audiofiles as first
 track and the last one as the last track of an album. This option is
 implied in \b -m. This switch is intended for cases in which all tracks of an
 album are represented as single files but no TOC metadata is present.
 
-\copydoc inc_calcinoptions
+\snippet{doc} include/option_metafile.dox  OPT_METAFILE
 
 
 \subsection calc_output Options for output
 
-\copydoc inc_calcoutoptions
+\snippet{doc} include/option_coldelim.dox          OPT_COLDELIM
+\snippet{doc} include/option_nofilenames.dox       OPT_NOFILENAMES
+\snippet{doc} include/option_nolabels.dox          OPT_NOLABELS
+\snippet{doc} include/option_nolengths.dox         OPT_NOLENGTHS
+\snippet{doc} include/option_nooffsets.dox         OPT_NOOFFSETS
+\snippet{doc} include/option_notracknos.dox        OPT_NOTRACKNOS
 
-\copydoc inc_helpopt
+\snippet{doc} include/option_help.dox              OPT_HELP
 
-\par --no-v1
+\par \--no-v1
 Do not output ARCSs v1. Default is OFF which prints ARCSs v1 as well as ARCSs
 v2. Since, however, the ARCSv1 checksum is effectively a subtotal of the ARCSv2
 checksum, ARCSv1 will effectively have to be calculated. Therefore, this switch
 will not result in making the calculation consume less time. Combining this
 switch with \b --no-v2 will result in doing nothing.
 
-\par --no-v2
+\par \--no-v2
 Do not calculate and output ARCSs v2. Default is OFF which calculates and
 output ARCSs v1 as well as v2. By specifiying \b --no-v2 the calculation of
 ARCSv2 is suppressed. Combining this switch with \b --no-v1 will result in doing
 nothing.
 
-\par --print-id
+\par \--print-id
 Print the calculated AccurateRip id. Effects only album input. If --print-url is
 also used, the id will be printed before the url.
 
-\par --print-sums-only
+\par \--print-sums-only
 Abbreviates --no-labels --no-track-nos --no-filenames --no-offsets --no-lengths.
 Prints the checksums and nothing else. If the output contains two columns (or
 lines in case of --tracks-as-cols) the left output column/first line will show
@@ -78,28 +83,34 @@ this option can be combined with --print-id or --print-url (if they are
 applicable for the input). In these cases, id or url are both always printed
 before the checksums.
 
-\par --print-url
+\par \--print-url
 Print the calculated AccurateRip url. Effects only album input. If --print-id is
 also used, the id will be printed before the url.
 
-\par --tracks-as-cols
+\par \--tracks-as-cols
 Print the tracks or filenames as columns instead of the track properties. This
 implies \b --no-filenames. The columns are in the same order from left to right
 as the input filenames. If the columns represent tracks instead of files, the
 order of columns follows the order of track numbers in ascending from left to
 right.
 
-\copydoc inc_infooptions
+\snippet{doc} include/option_listaudioformats.dox  OPT_LISTAUDIOFORMATS
 
-\copydoc inc_procoptions
+\snippet{doc} include/option_listtocformats.dox    OPT_LISTTOCFORMATS
 
-\copydoc inc_outfileopt
+\snippet{doc} include/option_parser.dox    OPT_PARSER
 
-\copydoc inc_logfileopt
+\snippet{doc} include/option_reader.dox    OPT_READER
 
-\copydoc inc_logoptions
+\snippet{doc} include/option_logfile.dox   OPT_LOGFILE
 
-\copydoc inc_versionopt
+\snippet{doc} include/option_outfile.dox   OPT_OUTFILE
+
+\snippet{doc} include/option_quiet.dox     OPT_QUIET
+
+\snippet{doc} include/option_verbosity.dox OPT_VERBOSITY
+
+\snippet{doc} include/option_version.dox   OPT_VERSION
 
 
 \section calc_exmp
@@ -110,7 +121,7 @@ You have: An album ripped to a single audio file, say fLaC, or a set of files
 and the TOC as a CUESheet. The CUESheet specifies the actual audiofiles, may it
 be a single file or one file per track.
 
-$ arcstk-calc -m myalbum/toc.cue
+\code{.sh}$ arcstk-calc -m myalbum/toc.cue\endcode
 
 
 \subsection calc_ALBUMTOCF 2. Album + TOC, overriding the files in the TOC, if any
@@ -122,7 +133,7 @@ You have: An album ripped to a single audio file, say fLaC, and the TOC as a
 CUESheet. The CUESheet specifies audio files, but you want to override them with
 \c myalbum/album_rip.flac instead.
 
-$ arcstk-calc -m myalbum/toc.cue myalbum/album_rip.flac
+\code{.sh}$ arcstk-calc -m myalbum/toc.cue myalbum/album_rip.flac\endcode
 
 
 \par b) One audio file per track
@@ -131,7 +142,7 @@ You have: An album ripped one-file-per-track to a set of fLaC files, and the TOC
 as a CUESheet. The CUESheet is stored elsewhere or references WAV files, so you
 want to override its file references.
 
-$ arcstk-calc -m myalbum/toc.cue myalbum/track_1.flac myalbum/track_2.flac ...
+\code{.sh}$ arcstk-calc -m myalbum/toc.cue myalbum/track_1.flac myalbum/track_2.flac ...\endcode
 
 
 \subsection calc_ALBUMFILES 3. Audiofiles forming an album, but no TOC
@@ -140,7 +151,7 @@ You have: A set of audio files that you know to form an album, but there is no
 TOC information. The filenames are such that the first filename is also the
 first track and the last filename is the last track of the album.
 
-$ arcstk-calc --album myalbum/track_1.flac myalbum/track_2.flac ...
+\code{.sh}$ arcstk-calc --album myalbum/track_1.flac myalbum/track_2.flac ...\endcode
 
 
 \subsection calc_FILES 4. Some audiofiles but no TOC
@@ -154,11 +165,11 @@ missing some tracks or the tracks you intend to pass are completely unrelated.)
 The following just applies the AccurateRip algorithm for \e intermediate tracks
 (i.e. that are neither first nor last track) to any input file:
 
-$ arcstk-calc myalbum/\*.flac
+\code{.sh}$ arcstk-calc myalbum/\*.flac\endcode
 
 Of course you can specifiy the order of the filenames explicitly:
 
-$ arcstk-calc myalbum/f1.flac myalbum/f2.flac ...
+\code{.sh}$ arcstk-calc myalbum/f1.flac myalbum/f2.flac ...\endcode
 
 
 \par a) First or last track known but album incomplete
@@ -172,22 +183,22 @@ specifically.
 If you know that \c f1.flac is the first track, pass the file as first of
 the audio files and declare it accordingly:
 
-$ arcstk-calc --first myalbum/f1.flac myalbum/f2.flac ...
+\code{.sh}$ arcstk-calc --first myalbum/f1.flac myalbum/f2.flac ...\endcode
 
 If you know that \c f17.flac is the last track, pass the file as last of the
 audio files and declare it accordingly:
 
-$ arcstk-calc --last myalbum/f1.flac myalbum/f12.flac ... myalbum/f17.flac
+\code{.sh}$ arcstk-calc --last myalbum/f1.flac myalbum/f12.flac ... myalbum/f17.flac\endcode
 
 
 \section calc_bugs BUGS
 
-\copydoc inc_buginfo
+\snippet{doc} include/text_bugs.dox    TEXT_BUGS
 
 
 \section calc_copy COPYRIGHT
 
-\copydoc inc_license
+\snippet{doc} include/text_license.dox TEXT_LICENSE
 
 
 \section calc_see SEE ALSO

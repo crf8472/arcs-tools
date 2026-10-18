@@ -15,29 +15,31 @@ arcstk-parse [OPTIONS] FILENAME
 
 \section parse_desc DESCRIPTION
 
-Parse responses from the AccurateRip database and output checksums,
-confidence values and the checksums for frame 450 for each profile contained in
-the response.
+Parse responses from the AccurateRip database and output checksums, confidence
+values and the checksums for frame 450 for each profile contained in the
+response.
 
 
 \section parse_opts OPTIONS
 
-\subsection parse_output Options for output
+\subsection parse_opts_out Options for output
 
-\par --format=FORMAT
+\par \--format=FORMAT
 Specify output format where FORMAT is one of { json, text, text_decorated, raw,
 yaml } from which text_decorated is the default. If omitted or specified without
 a value, the default value is applied.
 
-\copydoc inc_helpopt
+\snippet{doc} include/option_help.dox      OPT_HELP
 
-\copydoc inc_logfileopt
+\snippet{doc} include/option_logfile.dox   OPT_LOGFILE
 
-\copydoc inc_outfileopt
+\snippet{doc} include/option_outfile.dox   OPT_OUTFILE
 
-\copydoc inc_logoptions
+\snippet{doc} include/option_quiet.dox     OPT_QUIET
 
-\copydoc inc_versionopt
+\snippet{doc} include/option_verbosity.dox OPT_VERBOSITY
+
+\snippet{doc} include/option_version.dox   OPT_VERSION
 
 
 \section parse_exmp EXAMPLES
@@ -45,23 +47,25 @@ a value, the default value is applied.
 Parse the binary data returned by AccurateRip and print it in a human-readable
 form:
 
-$ arcstk-parse dBAR-123.bin
+\code{.sh}$ arcstk-parse dBAR-123.bin\endcode
 
 Do the same as in the first example, but track precisely what is going on:
 
-$ arcstk-parse --vvv dBAR-123.bin
+\code{.sh}$ arcstk-parse --vvv dBAR-123.bin\endcode
 
 Do the same as in the first example, but write to myfile.txt instead of stdout:
 
-$ arcstk-parse -o myfile.txt dBAR-123.bin
+\code{.sh}$ arcstk-parse -o myfile.txt dBAR-123.bin\endcode
 
 
 \section parse_bugs BUGS
 
+\snippet{doc} include/text_bugs.dox    TEXT_BUGS
+
 
 \section parse_copy COPYRIGHT
 
-\copydoc inc_license
+\snippet{doc} include/text_license.dox TEXT_LICENSE
 
 
 \section parse_see SEE ALSO

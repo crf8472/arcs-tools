@@ -1,0 +1,7 @@
+[OPT_OUTFILE]
+\par -o,\--outfile=OUTFILE
+Result output (checksums) will go to this file instead of stdout. The outfile
+will not contain log messages and no error messages. If OUTFILE exists, it will
+be overwritten. If no output file is specified, output will go to stdout.
+[OPT_OUTFILE]
+

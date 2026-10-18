@@ -1,0 +1,7 @@
+[OPT_NOLABELS]
+\par \--no-labels
+Do not print column labels in the output. If combined with \b --print-id or
+\b --print-url the field labels for AccurateRip ID and AccurateRip URL are also
+skipped.
+[OPT_NOLABELS]
+

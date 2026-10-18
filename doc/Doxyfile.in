@@ -47,7 +47,7 @@ WARN_NO_PARAMDOC       = YES
 INPUT                  = @DOXYGEN_INPUT@
 EXCLUDE                = build thirdparty
 FILE_PATTERNS          = @DOXYGEN_FILE_PATTERNS@
-EXCLUDE_PATTERNS       = *.cpp */include.dox
+EXCLUDE_PATTERNS       = *.cpp
 RECURSIVE              = YES
 
 USE_MDFILE_AS_MAINPAGE = @DOXYGEN_USE_MDFILE_AS_MAINPAGE@

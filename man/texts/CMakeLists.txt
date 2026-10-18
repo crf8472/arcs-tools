@@ -16,6 +16,11 @@
 
 function (configure_manpage_texts TEXTS_SRC_DIR TEXTS_BIN_DIR )
 
+	list (GET TOOL_NAMES 0 TOOL_NAME_CALC )
+	list (GET TOOL_NAMES 1 TOOL_NAME_ID )
+	list (GET TOOL_NAMES 2 TOOL_NAME_PARSE )
+	list (GET TOOL_NAMES 3 TOOL_NAME_VERIFY )
+
 	## List of cmake-controlled manpage source files
 	file (GLOB MAN_SOURCE_TEMPLATES ${TEXTS_SRC_DIR}/*.dox.in )
 

@@ -1,0 +1,18 @@
+[OPT_PARSER]
+\par \--parser=STRING
+Force to process the TOC file (if any) by the parser with the specified id.
+The following parsers are available with libarcsdec if compiled.
+\manonly
+.TS
+tab(|);
+ll.
+ID|Description
+cuesheet|Internal CueSheet parser, experimental
+libcue  |CueSheet parser based on libcue
+.TE
+\endmanonly
+Any parser will only be available if compiled in. Specifying a parser that is
+not available results in an error. Specifying a parser that is not capable of
+reading the input file will result in an error.
+[OPT_PARSER]
+

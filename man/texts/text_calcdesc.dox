@@ -1,0 +1,35 @@
+[TEXT_CALCDESC]
+Accepted input formats for metadata files are the ones listed by \b
+--list-toc-formats. Accepted input formats for audio files are the ones listed
+by \b --list-audio-formats. An "audio format" is a combination of a codec and a
+container file format. Which input formats are supported depends entirely on the
+underlying instance of libarcsdec that is used.
+
+If a metadata file with the TOC is passed, there may or may not be passed audio
+files. The audio input will always be considered to form an album in this case.
+
+If a metadata file and no audio files are specified, the name of the audio files
+must be present in the metadata file.
+
+If a metadata file is passed along with a single audio file, the audiofile is
+supposed to contain all tracks of the album. It overrides any filename from the
+metadata file.
+
+If a metadata file is passed along with multiple audiofiles, the total number of
+the audiofiles passed must be identical to the number of tracks specified in the
+metadata file, otherwise the input will not be processed. To put it simpler, if
+you override audiofilenames in the metadata file, you either have to override
+them by a single audiofile holding all tracks or you have to specify exactly one
+distinct audiofile for each known track. The audiofiles will be assigned to
+album tracks in the order they are passed.
+
+If audiofiles are passed without a metadata file, the audiofiles are processed
+in the order their names are passed. When using wildcards the order may be
+specific to your command line processor. The audio input is not supposed to
+form an album, but can be declared to do so by using \b --album or a combination
+of the switches \b --first and \b --last to declare the first audio file in the
+list passed to be the first track of the album or the last audio file to be the
+last track. If no flags are used, each audiofile passed is processed as an
+intermediate track.
+[TEXT_CALCDESC]
+

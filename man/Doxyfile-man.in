@@ -1,14 +1,26 @@
+## Base configuration for doxygen to generate manpages.
+##
+## Activates only manpage output, deactives HTML and LaTeX.
+##
+## Can be used as a standalone config for doxygen or to be included by
+## another doxyfile that adds generator-specific configuration.
+## See e.g. doc/thirdparty/mcss/Doxyfile.in.
+
 PROJECT_NAME           = "@PROJECT_NAME@"
 PROJECT_NUMBER         = "@ARCSTK_VERSION_STRING@"
 PROJECT_BRIEF          = "@PROJECT_DESCRIPTION@"
-#
 OUTPUT_DIRECTORY       = "@ARCSTK_BINARY_DIR@"
-WARN_LOGFILE           = "@ARCSTK_LOG_BINARY_DIR@/Doxygen_Warnings.log"
+
+WARN_LOGFILE           = "@ARCSTK_LOG_BINARY_DIR@/Doxygen_Warnings_Manpages.log"
+
 INPUT                  = "@MAN_SRC_DIR@"
 FILE_PATTERNS          = *.dox
+
 GENERATE_HTML          = NO
 GENERATE_LATEX         = NO
+
 GENERATE_MAN           = YES
 MAN_OUTPUT             = "@MAN_DOXYGEN_OUT_DIR@"
 MAN_EXTENSION          = .1
 MAN_SUBDIR             = 1
+

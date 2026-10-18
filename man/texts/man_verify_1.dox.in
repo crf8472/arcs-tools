@@ -18,7 +18,7 @@ arcstk-verify [OPTIONS] AUDIOFILE1 AUDIOFILE2 ...
 Calculates AccurateRip checksums from losslessly encoded audiofiles and
 TOC information and verifies them against reference checksums.
 
-\copydoc inc_calcdesc
+\snippet{doc} include/text_calcdesc.dox TEXT_CALCDESC
 
 The reference checksums are mandatory. They either can be specified by the name
 of a binary file (some dBAR-*.bin file) using \b -r or can be piped in via
@@ -42,45 +42,49 @@ performed, regardless of v2 or v1 or whether a match attempt was successful.
 
 \section verify_opts OPTIONS
 
-\subsection verify_input Options for processing input
+\subsection verify_opts_in Options for input
 
-\copydoc inc_helpopt
+\par \--no-album
+Abbreviates \b --no-first \b --no-last to suppress calculating a first and a
+last track. This switch is intended for cases in which only some tracks of an
+album are to be verified.
 
-\par -r,--response=RESPONSEFILE
-Specify the binary file with the AccurateRip response. Parsed text files will
-not be accepted. If \b --response is absent, the binary content as provided
-by AccurateRip is expected on stdin.
+\par \--no-first
+Do not process the first of the audiofiles as first track of an album.
+See also \b --no-last and \b --no-album.
 
-\par --refvalues=0x111,0x222,0x333,...
+\par \--no-last
+Do not process the last of the audiofiles as last track of an album.
+See also \b --no-first and \b --no-album.
+
+\snippet{doc} include/option_parser.dox    OPT_PARSER
+
+\snippet{doc} include/option_reader.dox    OPT_READER
+
+\par \--refvalues=0x111,0x222,0x333,...
 Comma-separated list of hexadecimal values (with or without leading base marker
 '0x') that are treated as reference values for verification. When using
 \b --refvalues any \b --metafile is ignored and therefore no TOC information
 and no AccurateRip URL or ID is available. Therefore \b --print-id and
 \b --print-url are without effect if \b --refvalues is present.
 
-\par --no-first
-Do not process the first of the audiofiles as first track of an album.
-See also \b --no-last and \b --no-album.
-
-\par --no-last
-Do not process the last of the audiofiles as last track of an album.
-See also \b --no-first and \b --no-album.
-
-\par --no-album
-Abbreviates \b --no-first \b --no-last to suppress calculating a first and a
-last track. This switch is intended for cases in which only some tracks of an
-album are to be verified.
-
-\copydoc inc_infooptions
-
-\copydoc inc_procoptions
+\par -r,\--response=RESPONSEFILE
+Specify the binary file with the AccurateRip response. Parsed text files will
+not be accepted. If \b --response is absent, the binary content as provided
+by AccurateRip is expected on stdin.
 
 
-\subsection verify_output Options for output
+\subsection verify_opts_out Options for output
 
-\copydoc inc_calcoutoptions
+\par -b,\--boolean
+Return the difference of the best match. Hence, 0 indicates a successful
+verification and some value bigger than 0 indicates that some input tracks
+could not be verified. The result only informs whether some reference block
+could be matched for either ARCSv2 or ARCSv1.
 
-\par --colors,--colors=[TYPE:COLOR+COLOR,TYPE:COLOR+COLOR,...]
+\snippet{doc} include/option_coldelim.dox          OPT_COLDELIM
+
+\par \--colors,\--colors=[TYPE:COLOR+COLOR,TYPE:COLOR+COLOR,...]
 \manonly
 .sp 1
 TYPE is one of: MATCH, MISMATCH, MINE
@@ -109,43 +113,52 @@ default colors will be ignored, hence every TYPE that is not assigned a color
 in the list is printed as FG_DEFAULT+BG_DEFAULT regardless whether it has a
 default color.
 
-\par --confidence
+\par \--confidence
 Print the confidence value of each "Theirs" checksum in a column on the right
 hand side of the respective "Theirs" column. This switch will be ignored if
 \b --refvalues is used.
 
-\par --print-id
-Print the AccurateRip id of the reference data, if available. This switch will
-be ignored if \b --refvalues is used.
+\snippet{doc} include/option_help.dox              OPT_HELP
 
-\par --print-url
-Print the AccurateRip URL of the reference data, if available. This switch will
-be ignored if \b --refvalues is used.
+\snippet{doc} include/option_listaudioformats.dox  OPT_LISTAUDIOFORMATS
 
-\par --print-all-matches
+\snippet{doc} include/option_listtocformats.dox    OPT_LISTTOCFORMATS
+
+\snippet{doc} include/option_nofilenames.dox       OPT_NOFILENAMES
+\snippet{doc} include/option_nolabels.dox          OPT_NOLABELS
+\snippet{doc} include/option_nolengths.dox         OPT_NOLENGTHS
+\snippet{doc} include/option_nooffsets.dox         OPT_NOOFFSETS
+
+\par -n,\--no-output
+Do not print any result. Implies \b --boolean, therefore the return value will
+be informative.
+
+\snippet{doc} include/option_notracknos.dox        OPT_NOTRACKNOS
+
+\par \--print-all-matches
 Print each match result for each reference block. If combined with
 \b --refvalues, the effect is just to activate the output of the match result
 for ARCSv1 as well as ARCSv2.
 
-\par -b,--boolean
-Return the difference of the best match. Hence, 0 indicates a successful
-verification and some value bigger than 0 indicates that some input tracks
-could not be verified. The result only informs whether some reference block
-could be matched for either ARCSv2 or ARCSv1.
+\par \--print-id
+Print the AccurateRip id of the reference data, if available. This switch will
+be ignored if \b --refvalues is used.
 
-\par -n,--no-output
-Do not print any result. Implies \b --boolean, therefore the return value will
-be informative.
+\par \--print-url
+Print the AccurateRip URL of the reference data, if available. This switch will
+be ignored if \b --refvalues is used.
 
-\copydoc inc_calcinoptions
+\snippet{doc} include/option_metafile.dox  OPT_METAFILE
 
-\copydoc inc_outfileopt
+\snippet{doc} include/option_logfile.dox   OPT_LOGFILE
 
-\copydoc inc_logfileopt
+\snippet{doc} include/option_outfile.dox   OPT_OUTFILE
 
-\copydoc inc_logoptions
+\snippet{doc} include/option_quiet.dox     OPT_QUIET
 
-\copydoc inc_versionopt
+\snippet{doc} include/option_verbosity.dox OPT_VERBOSITY
+
+\snippet{doc} include/option_version.dox   OPT_VERSION
 
 
 \section verify_exmp EXAMPLES
@@ -157,7 +170,7 @@ and the TOC (as CUESheet). The CUESheet specifies the actual audiofiles, may it
 be a single file or one file per track. You saved the checksums from AccurateRip
 in a local dBAR file (see man 1 arcstk-parse).
 
-$ arcstk-verify -r dBAR-some_id.bin -m myalbum/toc.cue
+\code{.sh}$ arcstk-verify -r dBAR-some_id.bin -m myalbum/toc.cue\endcode
 
 
 
@@ -171,7 +184,7 @@ CUESheet. The CUESheet specifies audio files, but you want to override them with
 \c myalbum/album_rip.flac instead. You saved the checksums from AccurateRip in a
 local dBAR file (see man 1 arcstk-parse).
 
-$ arcstk-verify -r dBAR-some_id.bin -m myalbum/toc.cue myalbum/album_rip.flac
+\code{.sh}$ arcstk-verify -r dBAR-some_id.bin -m myalbum/toc.cue myalbum/album_rip.flac\endcode
 
 
 \par b) One audio file per track
@@ -181,7 +194,7 @@ as a CUESheet. The CUESheet is stored elsewhere or references WAV files, so you
 want to override its file references. You saved the checksums from AccurateRip
 in a local dBAR file (see man 1 arcstk-parse).
 
-$ arcstk-verify -r dBAR-some_id.bin -m myalbum/toc.cue myalbum/track_1.flac myalbum/track_2.flac ...
+\code{.sh}$ arcstk-verify -r dBAR-some_id.bin -m myalbum/toc.cue myalbum/track_1.flac myalbum/track_2.flac ...\endcode
 
 
 
@@ -192,7 +205,7 @@ TOC information. The filenames are such that the first filename is also the
 first track and the last filename is the last track of the album. You saved the
 checksums from AccurateRip in a local dBAR file (see man 1 arcstk-parse).
 
-$ arcstk-verify -r dBAR-some_id.bin --album myalbum/f1.flac myalbum/f2.flac ...
+\code{.sh}$ arcstk-verify -r dBAR-some_id.bin --album myalbum/f1.flac myalbum/f2.flac ...\endcode
 
 
 \subsection verify_FILES 4. Some audiofiles but no TOC
@@ -202,15 +215,15 @@ e.g. the mapping from files to tracks is not known. You saved the checksums of
 some possibly matching album from AccurateRip in a local dBAR file
 (see man 1 arcstk-parse).
 
-$ arcstk-verify -r dBAR-some_id.bin myalbum/track_1.flac myalbum/track_2.flac ...
+\code{.sh}$ arcstk-verify -r dBAR-some_id.bin myalbum/track_1.flac myalbum/track_2.flac ...\endcode
 
 If you know that \c track_1.flac is the first track, declare it accordingly:
 
-$ arcstk-verify -r dBAR-some_id.bin --first myalbum/track_1.flac myalbum/track_2.flac ...
+\code{.sh}$ arcstk-verify -r dBAR-some_id.bin --first myalbum/track_1.flac myalbum/track_2.flac ...\endcode
 
 If you know that \c track_15.flac is the last track, declare it accordingly:
 
-$ arcstk-verify -r dBAR-some_id.bin --last myalbum/track_1.flac ... myalbum/track_15.flac
+\code{.sh}$ arcstk-verify -r dBAR-some_id.bin --last myalbum/track_1.flac ... myalbum/track_15.flac\endcode
 
 \b NOTE The number of audiofiles passed must be equal to the track count of the
 album.
@@ -218,12 +231,12 @@ album.
 
 \section verify_bugs BUGS
 
-\copydoc inc_buginfo
+\snippet{doc} include/text_bugs.dox    TEXT_BUGS
 
 
 \section verify_copy COPYRIGHT
 
-\copydoc inc_license
+\snippet{doc} include/text_license.dox TEXT_LICENSE
 
 
 \section verify_see SEE ALSO
