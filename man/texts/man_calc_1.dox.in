@@ -16,7 +16,7 @@ arcstk-calc [OPTIONS] AUDIOFILE1 AUDIOFILE2 ...
 \section calc_desc DESCRIPTION
 
 Calculates AccurateRip checksums from losslessly encoded audiofiles and
-TOC information.
+ToC information.
 
 \snippet{doc} include/text_calcdesc.dox TEXT_CALCDESC
 
@@ -26,22 +26,22 @@ TOC information.
 \subsection calc_input Options for processing input
 
 \par \--first
-Process the first of the audiofiles as first track of an album. This option is
+Declare the first audiofile passed as first track of an album. This option is
 implied in \b -m. This switch is intended for cases in which all tracks of an
-album are represented as single files but no TOC metadata is present.
+album are represented as single files but no ToC metadata is present.
 See also \b --last and \b --album.
 
 \par \--last
-Process the last of the audiofiles as last track of an album. This option is
+Declare the last audiofile passed as last track of an album. This option is
 implied in \b -m. This switch is intended for cases in which all tracks of an
-album are represented as single files but no TOC metadata is present.
+album are represented as single files but no ToC metadata is present.
 See also \b --first and \b --album.
 
 \par \--album
-Abbreviates \b --first \b --last to process the first of the audiofiles as first
-track and the last one as the last track of an album. This option is
-implied in \b -m. This switch is intended for cases in which all tracks of an
-album are represented as single files but no TOC metadata is present.
+Declare that the audiofiles passed form an album in the order they are passed.
+This option implies \b --first and \b --last and is implied in \b -m. This
+switch is intended for cases in which all tracks of an album are represented as
+single files but no ToC metadata is present.
 
 \snippet{doc} include/option_metafile.dox  OPT_METAFILE
 
@@ -58,41 +58,41 @@ album are represented as single files but no TOC metadata is present.
 \snippet{doc} include/option_help.dox              OPT_HELP
 
 \par \--no-v1
-Do not output ARCSs v1. Default is OFF which prints ARCSs v1 as well as ARCSs
-v2. Since, however, the ARCSv1 checksum is effectively a subtotal of the ARCSv2
-checksum, ARCSv1 will effectively have to be calculated. Therefore, this switch
-will not result in making the calculation consume less time. Combining this
-switch with \b --no-v2 will result in doing nothing.
+Do not output ARCSv1. By default, the tool outputs both ARCSv1 and ARCSv2.
+Since the ARCSv1 checksum is a subtotal of the ARCSv2 checksum, ARCSv1 must
+effectively be calculated when ARCSv2 is requested. Therefore, this switch will
+not reduce the time required to calculate ARCSv2. Combining this switch with
+\b --no-v2 will result in doing nothing.
 
 \par \--no-v2
-Do not calculate and output ARCSs v2. Default is OFF which calculates and
-output ARCSs v1 as well as v2. By specifiying \b --no-v2 the calculation of
-ARCSv2 is suppressed. Combining this switch with \b --no-v1 will result in doing
-nothing.
+Do not calculate and output ARCSv2. By default, the tool calculates and outputs
+both ARCSv1 and ARCSv2. By specifying \b --no-v2, the calculation and output
+of ARCSv2 is suppressed, which should be faster than the default setting.
+Combining this switch with \b --no-v1 will result in doing nothing.
 
 \par \--print-id
-Print the calculated AccurateRip id. Effects only album input. If --print-url is
-also used, the id will be printed before the url.
+Print the calculated AccurateRip id. Affects album input only. If \b --print-url
+is also specified, the id will be printed before the url.
 
 \par \--print-sums-only
-Abbreviates --no-labels --no-track-nos --no-filenames --no-offsets --no-lengths.
-Prints the checksums and nothing else. If the output contains two columns (or
-lines in case of --tracks-as-cols) the left output column/first line will show
-ARCSs v1 while the right output column/second line will show ARCSs v2. However,
-this option can be combined with --print-id or --print-url (if they are
-applicable for the input). In these cases, id or url are both always printed
-before the checksums.
+Abbreviates the combination of \b --no-labels, \b --no-track-nos,
+\b --no-filenames, \b --no-offsets, and \b --no-lengths. Prints the checksums
+and nothing else. If the output contains two columns (or two lines when
+specifying \b --tracks-as-cols) the left output column (or first line) will show
+ARCSv1 while the right output column (or second line) will show ARCSv2.
+This option can be combined with \b --print-id or \b --print-url (if applicable
+for the input). In these cases, id or url are both always printed before the
+checksums.
 
 \par \--print-url
-Print the calculated AccurateRip url. Effects only album input. If --print-id is
-also used, the id will be printed before the url.
+Print the calculated AccurateRip url. Affects album input only. If \b --print-id
+is also specified, the id will be printed before the url.
 
 \par \--tracks-as-cols
-Print the tracks or filenames as columns instead of the track properties. This
-implies \b --no-filenames. The columns are in the same order from left to right
-as the input filenames. If the columns represent tracks instead of files, the
-order of columns follows the order of track numbers in ascending from left to
-right.
+Print tracks or filenames as column headers instead of as row labels. This
+option implies \b --no-filenames. Columns are ordered left to right according to
+the input filenames. If columns represent tracks instead of files, they are
+ordered left to right by ascending track number.
 
 \snippet{doc} include/option_listaudioformats.dox  OPT_LISTAUDIOFORMATS
 
@@ -115,21 +115,21 @@ right.
 
 \section calc_exmp Examples
 
-\subsection calc_ALBUMTOCM 1. Album + TOC, using the audio files specified in the TOC
+\subsection calc_ALBUMTOCM 1. Album + ToC, using the audio files specified in the ToC
 
 You have: An album ripped to a single audio file, say fLaC, or a set of files
-and the TOC as a Cuesheet. The Cuesheet specifies the actual audiofiles, may it
+and the ToC as a Cuesheet. The Cuesheet specifies the actual audiofiles, may it
 be a single file or one file per track.
 
 \code{.sh}$ arcstk-calc -m myalbum/toc.cue\endcode
 
 
-\subsection calc_ALBUMTOCF 2. Album + TOC, overriding the files in the TOC, if any
+\subsection calc_ALBUMTOCF 2. Album + ToC, overriding the files in the ToC, if any
 
 
 \subsubsection singlefile Single audio file
 
-You have: An album ripped to a single audio file, say fLaC, and the TOC as a
+You have: An album ripped to a single audio file, say fLaC, and the ToC as a
 Cuesheet. The Cuesheet specifies audio files, but you want to override them with
 \c myalbum/album_rip.flac instead.
 
@@ -138,23 +138,23 @@ Cuesheet. The Cuesheet specifies audio files, but you want to override them with
 
 \subsubsection multifile One audio file per track
 
-You have: An album ripped one-file-per-track to a set of fLaC files, and the TOC
+You have: An album ripped one-file-per-track to a set of fLaC files, and the ToC
 as a Cuesheet. The Cuesheet is stored elsewhere or references WAV files, so you
 want to override its file references.
 
 \code{.sh}$ arcstk-calc -m myalbum/toc.cue myalbum/track_1.flac myalbum/track_2.flac ...\endcode
 
 
-\subsection calc_ALBUMFILES 3. Audiofiles forming an album, but no TOC
+\subsection calc_ALBUMFILES 3. Audiofiles forming an album, but no ToC
 
 You have: A set of audio files that you know to form an album, but there is no
-TOC information. The filenames are such that the first filename is also the
+ToC information. The filenames are such that the first filename is also the
 first track and the last filename is the last track of the album.
 
 \code{.sh}$ arcstk-calc --album myalbum/track_1.flac myalbum/track_2.flac ...\endcode
 
 
-\subsection calc_FILES 4. Some audiofiles but no TOC
+\subsection calc_FILES 4. Some audiofiles but no ToC
 
 You have: A set of audiofiles that do not form an album. (Either the album is
 missing some tracks or the tracks you intend to pass are completely unrelated.)

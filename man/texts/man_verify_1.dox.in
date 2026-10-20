@@ -2,7 +2,7 @@
 
 \page arcstk-verify
 
-\brief Calculate and verify AccurateRip checksums locally
+\brief Verify locally calculated checksums against AccurateRip reference checksums
 
 \version @PROJECT_VERSION@
 
@@ -15,29 +15,36 @@ arcstk-verify [OPTIONS] AUDIOFILE1 AUDIOFILE2 ...
 
 \section verify_desc DESCRIPTION
 
-Calculates AccurateRip checksums from losslessly encoded audiofiles and
-TOC information and verifies them against reference checksums.
+Calculates AccurateRip checksums from losslessly encoded audiofiles and table of
+contents (ToC) information and verifies them against reference checksums.
 
 \snippet{doc} include/text_calcdesc.dox TEXT_CALCDESC
 
-The reference checksums are mandatory. They either can be specified by the name
-of a binary file (some dBAR-*.bin file) using \b -r or can be piped in via
-stdin. Reference checksums can also be passed as a comma-separated list of
-\b --refvalues that are parsed as hexadecimal numbers.
+Providing reference checksums is mandatory. They can be specified in one of
+three ways: passed as a comma-separated list of hexadecimal values using the
+\b --refvalues option, or as the name of a binary file (typically a
+<tt>dBAR-*.bin</tt> file) using the \b -r option, or as binary content (as
+provided from AccurateRip) via stdin.
 
-The result will be the "best possible" match, i.e. the result of the comparison
-that provided the least number of non-identical checksums for an index position
-in the input. The number of these "non-matches" in the compared set is called
-"difference", e.g. if all but two checksums match, the difference is 2 and all
-but the corresponding two files or tracks can be considered verified.
+The result will be the "best possible" match; this is the result of the
+comparison that provided the least total number of non-identical checksums for
+any index positions in the input. The total number of these "non-matches" in the
+compared set is called "difference"; for example, if all but two checksums
+match, the difference is 2 and all but the corresponding two files or tracks
+that did not match can be considered verified.
 
-The output declares reference checksums as "Theirs", while the actual checksums
-are declared "Mine". Matches of checksums will be marked with symbol "==" in the
-corresponding table cell. For a non-matching checksum, the corresponding table
-cell will contain the respective checksum.
+The output declares locally calculated actual checksums as "Mine"; reference
+checksums are called "Theirs". Each block of reference checksums in the input
+corresponds to a "Theirs" column in the output; the "Theirs" columns are
+numbered in the order, their corresponding blocks occurred in the input.
+
+Matches of checksums will be marked with symbol "==" in the corresponding table
+cell. For a non-matching checksum, the corresponding table cell will contain the
+respective checksum. For ANSI terminals, colored output is optionally available.
 
 Switch \b --print-all-matches prints every match attempt that was actually
-performed, regardless of v2 or v1 or whether a match attempt was successful.
+performed, regardless of ARCSv2 or ARCSv1 or whether a match attempt was
+successful.
 
 
 \section verify_opts OPTIONS
@@ -45,38 +52,40 @@ performed, regardless of v2 or v1 or whether a match attempt was successful.
 \subsection verify_opts_in Options for input
 
 \par \--no-album
-Abbreviates \b --no-first \b --no-last to suppress calculating a first and a
-last track. This switch is intended for cases in which only some tracks of an
-album are to be verified.
+Shorthand for \b --no-first \b --no-last; suppresses special treatment of the
+first and last track. Default is OFF. This switch is intended for cases in which
+only some tracks of an album are to be verified.
 
 \par \--no-first
-Do not process the first of the audiofiles as first track of an album.
-See also \b --no-last and \b --no-album.
+Do not treat the first of the input audiofiles as first track of an album.
+Default is OFF. See also \b --no-last and \b --no-album.
 
 \par \--no-last
-Do not process the last of the audiofiles as last track of an album.
-See also \b --no-first and \b --no-album.
+Do not treat the last of the input audiofiles as last track of an album. Default
+is OFF. See also \b --no-first and \b --no-album.
 
 \snippet{doc} include/option_parser.dox    OPT_PARSER
 
 \snippet{doc} include/option_reader.dox    OPT_READER
 
 \par \--refvalues=0x111,0x222,0x333,...
-Comma-separated list of hexadecimal values (with or without leading base marker
-'0x') that are treated as reference values for verification. When using
-\b --refvalues any \b --metafile is ignored and therefore no TOC information
-and no AccurateRip URL or ID is available. Therefore \b --print-id and
-\b --print-url are without effect if \b --refvalues is present.
+Comma-separated list of hexadecimal values (with or without leading '0x' prefix)
+to use as reference values for verification. If \b --refvalues is specified,
+option \b --metafile is ignored and therefore ToC information and AccurateRip
+url and id are not available. Consequently, options \b --print-id and
+\b --print-url are without effect if \b --refvalues is specified.
+If neither \b --response nor \b --refvalues is specified, the binary content as
+provided by AccurateRip is expected on stdin.
 
-\par -r,\--response=RESPONSEFILE
+\par -r, \--response=RESPONSEFILE
 Specify the binary file with the AccurateRip response. Parsed text files will
-not be accepted. If \b --response is absent, the binary content as provided
-by AccurateRip is expected on stdin.
+not be accepted. If neither \b --response nor \b --refvalues is specified, the
+binary content as provided by AccurateRip is expected on stdin.
 
 
 \subsection verify_opts_out Options for output
 
-\par -b,\--boolean
+\par -b, \--boolean
 Return the difference of the best match. Hence, 0 indicates a successful
 verification and some value bigger than 0 indicates that some input tracks
 could not be verified. The result only informs whether some reference block
@@ -84,43 +93,89 @@ could be matched for either ARCSv2 or ARCSv1.
 
 \snippet{doc} include/option_coldelim.dox          OPT_COLDELIM
 
-\par \--colors,\--colors=[TYPE:COLOR+COLOR,TYPE:COLOR+COLOR,...]
+\par \--colors, \--colors=[default|TYPE:COLOR+COLOR,TYPE:COLOR+COLOR,...]
+Use colored output for match results when printing to the command line.
+Note that output to files will contain ANSI escape sequences.
+A semicolon-separated list of pairs of a TYPE and a color specification
+separated by a colon ':' is accepted as an optional parameter.
+\n\n
+TYPE and COLOR values are case-insensitive. If a custom color list is provided,
+any TYPE not explicitly assigned a color is rendered as FG_DEFAULT+BG_DEFAULT
+regardless whether it has a different default color.
+\n\n
+To use custom colors provide a comma-separated list of \b TYPE:COLOR pairs. Each
+pair maps a checksum display type to one or two colors.
 \htmlonly
 <table class="m-table">
-	<tr> <th>Attribute</th> <th>Possible Values</th> </tr>
-	<tr> <td>TYPE</td>  <td>MATCH, MISMATCH, MINE</td> </tr>
-	<tr> <td>COLOR</td> <td>FG_BLACK, FG_RED, FG_GREEN, FG_YELLOW, FG_BLUE, FG_MAGENTA, FG_CYAN, FG_WHITE, FG_DEFAULT,
-BG_BLACK, BG_RED, BG_GREEN, BG_YELLOW, BG_BLUE, BG_MAGENTA, BG_CYAN, BG_WHITE, BG_DEFAULT </td> </tr>
+	<tr> <th>TYPE</th>     <th>Definition</th>                            </tr>
+	<tr> <td>MATCH</td>    <td>"Theirs" checksum matches "Mine"</td>      </tr>
+	<tr> <td>MISMATCH</td> <td>"Theirs" checksum differs from "Mine"</td> </tr>
+	<tr> <td>MINE</td>     <td>Locally computed checksums</td>            </tr>
 </table>
 \endhtmlonly
 \manonly
 .sp
-TYPE is one of: MATCH, MISMATCH, MINE
-.sp
-COLOR is one of:
-FG_BLACK, FG_RED, FG_GREEN, FG_YELLOW, FG_BLUE, FG_MAGENTA, FG_CYAN, FG_WHITE,
-FG_DEFAULT,
-BG_BLACK, BG_RED, BG_GREEN, BG_YELLOW, BG_BLUE, BG_MAGENTA, BG_CYAN, BG_WHITE,
-BG_DEFAULT
+.TS
+tab(|);
+cl.
+TYPE      | Definition
+--------- | -----------
+ MATCH    | "Theirs" checksum matches "Mine"
+ MISMATCH | "Theirs" checksum differs from "Mine"
+ MINE     | Locally computed checksums
+.TE
 .sp
 \endmanonly
-Use colored output for match results.
-This is only useful for output printed to command line while output to a file
-will be cluttered with ANSI escape sequences.
-If used without a parameter, i.e. \b --colors or \b --colors=default the default
-colors are used, which are FG_GREEN+BG_DEFAULT for matches, FG_RED+BG_DEFAULT
-for mismatches and FG_DEFAULT+BG_DEFAULT for locally computed checksums a.k.a.
-"MINE". A semicolon-separated list of pairs of a TYPE and a color specification
-separated by a colon ':' is accepted as an optional parameter. TYPE is one of
-MATCH, MISMATCH or MINE. MATCH defines the color for "Theirs" matching "Mine".
-Accordingly, MISMATCH defines the color for "Theirs" checksums not matching
-"Mine". MINE defines the color for "Mine" checksums. The color specification is
-either a single color name or a plus-separated pair of color names. Hence, there
-can be defined one color for the foreground and another for the background. Both
-TYPE and COLOR are parsed case insensitive. If a list of colors is passed, all
-default colors will be ignored, hence every TYPE that is not assigned a color
-in the list is printed as FG_DEFAULT+BG_DEFAULT regardless whether it has a
-default color.
+A color specification is either a single color name (foreground) or two names
+separated by \b + (foreground + background) in any order.
+Example: \b FG_GREEN+BG_DEFAULT
+\htmlonly
+<table class="m-table">
+	<tr> <th>Attribute</th> <th>Possible Values</th> </tr>
+	<tr> <td>TYPE</td>  <td>MATCH, MISMATCH, MINE</td> </tr>
+	<tr> <td>COLOR</td>
+		<td>FG_BLACK, FG_RED, FG_GREEN, FG_YELLOW, FG_BLUE,
+			FG_MAGENTA, FG_CYAN, FG_WHITE, FG_DEFAULT,
+			BG_BLACK, BG_RED, BG_GREEN, BG_YELLOW, BG_BLUE,
+			BG_MAGENTA, BG_CYAN, BG_WHITE, BG_DEFAULT </td> </tr>
+</table>
+\endhtmlonly
+\manonly
+.sp
+.TS
+tab(|);
+cl.
+Attribute | Possible Values
+--------- | ---------------
+   TYPE   | MATCH, MISMATCH, MINE
+   COLOR  | FG_BLACK, FG_RED, FG_GREEN, FG_YELLOW, FG_BLUE, FG_MAGENTA, FG_CYAN, FG_WHITE, FG_DEFAULT, BG_BLACK, BG_RED, BG_GREEN, BG_YELLOW, BG_BLUE, BG_MAGENTA, BG_CYAN, BG_WHITE, BG_DEFAULT
+.TE
+.sp
+\endmanonly
+The default behavior is \b --colors or \b --colors=default uses the following
+predefined colors.
+\htmlonly
+<table class="m-table">
+	<tr> <th>TYPE</th>     <th>Default color specification</th> </tr>
+	<tr> <td>MATCH</td>    <td>FG_GREEN+BG_DEFAULT</td>   </tr>
+	<tr> <td>MISMATCH</td> <td>FG_RED+BG_DEFAULT</td>     </tr>
+	<tr> <td>MINE</td>     <td>FG_DEFAULT+BG_DEFAULT</td> </tr>
+</table>
+\endhtmlonly
+\manonly
+.sp
+.TS
+tab(|);
+cl.
+TYPE      | Default color specification
+--------- | ---------------------------
+ MATCH    | FG_GREEN+BG_DEFAULT
+ MISMATCH | FG_RED+BG_DEFAULT
+ MINE     | FG_DEFAULT+BG_DEFAULT
+.TE
+.sp
+\endmanonly
+
 
 \par \--confidence
 Print the confidence value of each "Theirs" checksum in a column on the right
@@ -138,7 +193,7 @@ hand side of the respective "Theirs" column. This switch will be ignored if
 \snippet{doc} include/option_nolengths.dox         OPT_NOLENGTHS
 \snippet{doc} include/option_nooffsets.dox         OPT_NOOFFSETS
 
-\par -n,\--no-output
+\par -n, \--no-output
 Do not print any result. Implies \b --boolean, therefore the return value will
 be informative.
 
@@ -154,7 +209,7 @@ Print the AccurateRip id of the reference data, if available. This switch will
 be ignored if \b --refvalues is used.
 
 \par \--print-url
-Print the AccurateRip URL of the reference data, if available. This switch will
+Print the AccurateRip url of the reference data, if available. This switch will
 be ignored if \b --refvalues is used.
 
 \snippet{doc} include/option_metafile.dox  OPT_METAFILE
@@ -172,10 +227,10 @@ be ignored if \b --refvalues is used.
 
 \section verify_exmp EXAMPLES
 
-\subsection verify_ALBUMTOCM 1. Album + TOC, using the audio files specified in the TOC
+\subsection verify_ALBUMTOCM 1. Album + ToC, using the audio files specified in the ToC
 
 You have: An album ripped to a single audio file, say fLaC, or a set of files
-and the TOC (as Cuesheet). The Cuesheet specifies the actual audiofiles, may it
+and the ToC (as Cuesheet). The Cuesheet specifies the actual audiofiles, may it
 be a single file or one file per track. You saved the checksums from AccurateRip
 in a local dBAR file (see man 1 arcstk-parse).
 
@@ -183,12 +238,12 @@ in a local dBAR file (see man 1 arcstk-parse).
 
 
 
-\subsection verify_ALBUMTOCF 2. Album + TOC, overriding the files in the TOC, if any
+\subsection verify_ALBUMTOCF 2. Album + ToC, overriding the files in the ToC, if any
 
 
 \subsubsection verify_ALBUMTOCF_1 Single audio file
 
-You have: An album ripped to a single audio file, say fLaC, and the TOC as
+You have: An album ripped to a single audio file, say fLaC, and the ToC as
 Cuesheet. The Cuesheet specifies audio files, but you want to override them with
 \c myalbum/album_rip.flac instead. You saved the checksums from AccurateRip in a
 local dBAR file (see man 1 arcstk-parse).
@@ -198,7 +253,7 @@ local dBAR file (see man 1 arcstk-parse).
 
 \subsubsection verify_ALBUMTOCF_2 One audio file per track
 
-You have: An album ripped one-file-per-track to a set of fLaC files, and the TOC
+You have: An album ripped one-file-per-track to a set of fLaC files, and the ToC
 as a Cuesheet. The Cuesheet is stored elsewhere or references WAV files, so you
 want to override its file references. You saved the checksums from AccurateRip
 in a local dBAR file (see man 1 arcstk-parse).
@@ -207,17 +262,17 @@ in a local dBAR file (see man 1 arcstk-parse).
 
 
 
-\subsection verify_ALBUMFILES 3. Audiofiles forming an album, but no TOC
+\subsection verify_ALBUMFILES 3. Audiofiles forming an album, but no ToC
 
 You have: A set of audio files that you know to form an album, but there is no
-TOC information. The filenames are such that the first filename is also the
+ToC information. The filenames are such that the first filename is also the
 first track and the last filename is the last track of the album. You saved the
 checksums from AccurateRip in a local dBAR file (see man 1 arcstk-parse).
 
 \code{.sh}$ arcstk-verify -r dBAR-some_id.bin --album myalbum/f1.flac myalbum/f2.flac ...\endcode
 
 
-\subsection verify_FILES 4. Some audiofiles but no TOC
+\subsection verify_FILES 4. Some audiofiles but no ToC
 
 You have: A set of audiofiles that do not form an album in the passed order,
 e.g. the mapping from files to tracks is not known. You saved the checksums of

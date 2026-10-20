@@ -15,12 +15,18 @@ arcstk-id [OPTIONS] TOCFILE [AUDIOFILE1 AUDIOFILE2 ...]
 
 \section id_desc DESCRIPTION
 
-Compute the AccurateRip id of a CD by its metadata or by the audio data. The
-leadout frame offset is necessary to calculate the AccurateRip Id. Some
-metadata formats like Cuesheet do not allow to the leadout. If this is the case,
-the actual audio data must be inspected to get this information. If the metadata
-file contains the name of the audio file, this audio file name is used.
-Otherwise, option \b -a allows to specify the audio file explicitly.
+Calculate the AccurateRip id of an album by its metadata or by audio data.
+
+The track offsets and the leadout offset are required to calculate the
+AccurateRip id. Some metadata formats like Cuesheet do not include the leadout
+offset. In this case, the actual audio data must be inspected to acquire this
+information.
+
+If the metadata file contains the name of an audio file, this audio file is
+used. Option \b -a allows to specify the audio file explicitly in case the file
+name is not present in the metadata or intended to be overridden.
+
+This calculation may fail for discs with data tracks or pregap tracks.
 
 
 \section id_opts OPTIONS
@@ -28,8 +34,9 @@ Otherwise, option \b -a allows to specify the audio file explicitly.
 
 \subsection id_opts_in  Options for Input
 
-\par -a,\--audiofile=FILEPATH
-Specify the audiofile to use explicitly.
+\par -a, \--audiofile=FILEPATH
+Specify a single audio file to read the leadout offset. This overrides any audio
+filename that may be present in the metadata.
 
 \snippet{doc} include/option_listaudioformats.dox  OPT_LISTAUDIOFORMATS
 
@@ -39,20 +46,21 @@ Specify the audiofile to use explicitly.
 \subsection id_opts_out Options for Output
 
 \par \--cddb-id
-Print the cddb id.
+Print the CDDB id of the album.
 
-\par \--db-id,\--filename
-Print the database id. This id is identical to the filename of the
-AccurateRip response  file  and  has   the   canonical   form   of   38
-characters   as follows: dBAR-<track_count:3>-<id1:8>-<id2:8>-<cddb_id:8>.bin
+\par \--db-id, \--filename
+Print the AccurateRip database id. This id is identical to the canonical
+filename of the AccurateRip response file and has the following format of 38
+characters length:
+<tt>dBAR-<track_count:3>-<id1:8>-<id2:8>-<cddb_id:8>.bin</tt>.
 
 \snippet{doc} include/option_help.dox      OPT_HELP
 
 \snippet{doc} include/option_logfile.dox   OPT_LOGFILE
 
 \par \--no-labels
-Print no labels when using \b --profile or combining some of \b --cddb-id,
-\b --db-id and \b --url.
+Suppress output of labels when using \b --profile or any combination of
+\b --cddb-id, \b --db-id, and \b --url.
 
 \snippet{doc} include/option_outfile.dox   OPT_OUTFILE
 
@@ -66,12 +74,12 @@ Print all information as a table.
 \snippet{doc} include/option_reader.dox    OPT_READER
 
 \par \--url
-Print the AccurateRip request URL.
+Print the AccurateRip request url.
 
 \par \--url-prefix=STRING
-Use a custom URL prefix for URL output. The default prefix is
-'http://accuraterip.com/accuraterip/'. The custom prefix should end with a slash
-'/'.
+Use a custom url prefix for url output. The default prefix is
+<tt>http://accuraterip.com/accuraterip/</tt>. If the custom prefix does not end
+with a slash, a trailing slash '/' is appended automatically.
 
 \snippet{doc} include/option_verbosity.dox OPT_VERBOSITY
 

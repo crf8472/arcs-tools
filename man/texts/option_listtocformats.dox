@@ -1,6 +1,6 @@
 [OPT_LISTTOCFORMATS]
 \par \--list-toc-formats
-Print a list of supported TOC file formats. Files specified by the \b -m
+Print a list of supported ToC file formats. Files specified by the \b -m
 option may have any of those formats. This switch is ignored if input files are
 specified.
 [OPT_LISTTOCFORMATS]
