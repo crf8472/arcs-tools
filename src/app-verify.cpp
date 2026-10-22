@@ -843,6 +843,7 @@ DecorationType get_decorationtype(const std::string& name)
 {
 	using map_type = std::unordered_map<std::string, DecorationType>;
 
+	// TODO const
 	static map_type types = [](){
 		map_type t;
 		t["MATCH"]    = DecorationType::MATCH;
@@ -1108,9 +1109,10 @@ void ColorizingVerifyTableCreator::register_decorators(TableComposer& c)
 		if (ATTR::CHECKSUM_ARCS2 == field
 				|| ATTR::CHECKSUM_ARCS1 == field)
 		{
+			// Comment in to have default highlighting for MINE
 			//c.register_to_field(i,
 			//	std::make_unique<MineDecorator>(r_size,
-			//		Highlight::NORMAL, colors_.get(DecorationType::MIINE) ));
+			//		Highlight::NORMAL, colors_.get(DecorationType::MINE) ));
 		}
 
 		++i;
@@ -1691,17 +1693,14 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	{
 		ARCS_LOG_INFO << "Best match was block "
 			<< best_block::index(best_b)
-			//<< std::get<0>(best_b)
 			<< " in response, having difference "
 			<< best_block::difference(best_b);
-			//<< std::get<2>(best_b);
 	}
 
 	if (config.is_set(VERIFY::NOOUTPUT)) // implies BOOLEAN
 	{
 		// 0 on accurate match, else > 0
 		return { best_block::difference(best_b), nullptr };
-		//return { std::get<2>(best_b), nullptr };
 	}
 
 	// Create result object
@@ -1710,7 +1709,6 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 		config.is_set(VERIFY::RESPONSEFILE) // FIXME blocks only with RFILE??
 							? -1 // Won't be used
 							: best_block::index(best_b);
-							//: std::get<0>(best_b);
 
 	const auto matching_checksum_type = best_block::checksumtype(best_b);
 
@@ -1763,7 +1761,6 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 
 	auto exit_code = config.is_set(VERIFY::BOOLEAN)
 		? best_block::difference(best_b) // best difference
-		//? std::get<2>(best_b) // best difference
 		: EXIT_SUCCESS;
 
 	return { exit_code, std::move(result) };
