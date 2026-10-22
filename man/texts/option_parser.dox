@@ -1,11 +1,14 @@
 [OPT_PARSER]
 \par \--parser=STRING
-Force to process the metadata file (if any) by the parser with the specified id.
-The following parsers are available with libarcsdec if compiled.
+Force parsing of the metadata file (if any) by the parser with the specified id.
+Specifying an unavailable parser or a parser unable to read the input file will
+result in an error.
+\n\n
+The following parsers are available if compiled into libarcsdec:
 \htmlonly
 <table class="m-table">
 	<tr> <th>ID</th>                   <th>Description</th> </tr>
-	<tr> <td><tt>cdrtoc</tt></td>      <td>Internal cdrdao/ToC parser, experimental</td> </tr>
+	<tr> <td><tt>cdrtoc</tt></td>      <td>Internal cdrdao/toc parser, experimental</td> </tr>
 	<tr> <td><tt>cuesheet</tt></td>    <td>Internal CueSheet parser, experimental</td>   </tr>
 	<tr> <td><tt>libcue</tt></td>      <td>Cuesheet parser based on libcue</td>          </tr>
 </table>
@@ -17,13 +20,11 @@ tab(|);
 ll.
 ID       | Description
 -------- | --------
+cdrtoc   | Internal cdrdao/toc parser, experimental
 cuesheet | Internal Cuesheet parser, experimental
 libcue   | Cuesheet parser based on libcue
 .TE
 .sp
 \endmanonly
-Any parser will only be available if compiled in. Specifying a parser that is
-not available results in an error. Specifying a parser that is not capable of
-reading the input file will result in an error.
 [OPT_PARSER]
 

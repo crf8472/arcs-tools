@@ -1,10 +1,7 @@
 [OPT_LISTAUDIOFORMATS]
 \par \--list-audio-formats
-Print a list of supported audio readers. Each reader will specify the list of
-any supported audio codecs and any supported container file formats. Each
-reader supports any combination of a supported audio codec and a supported
-container file format. Note that arcs-tools only supports lossless audio
-codecs or the lossless settings of codecs that optionally support lossless
-encoding. This switch is ignored if input files are specified.
+List supported audio readers with their compatible codecs and container formats.
+Only lossless codecs or lossless codec modes are supported. Audio input files
+may be in any of these formats. Ignored if input files are specified.
 [OPT_LISTAUDIOFORMATS]
 

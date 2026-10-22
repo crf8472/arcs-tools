@@ -1,5 +1,5 @@
 [OPT_NOOFFSETS]
 \par \--no-offsets
-Do not print track offsets. Effects only album input.
+Omit track offsets from the output. Only applies to non-album input.
 [OPT_NOOFFSETS]
 

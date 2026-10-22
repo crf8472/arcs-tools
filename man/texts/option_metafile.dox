@@ -1,11 +1,9 @@
 [OPT_METAFILE]
-\par -m,\--metafile=TOCFILE
-Specify the file with the ToC data of the original medium. Accepted input
-formats are the ones listed by \b --list-toc-formats. The specified file is
-expected to provide the track offsets. It may as well optionally provide the
-total number of samples and the name(s) of the audio file(s). If names of \b
-AUDIOFILE(s) are passed, they will override any names of audio files potentially
-occurring in \b TOCFILE. If TOCFILE is not readable, run stops with an error
-code.
+\par -m, \--metafile=TOCFILE
+Specify a ToC file for the original medium. Accepted formats are listed by
+\b --list-toc-formats. The file must provide track offsets and may optionally
+provide sample count and audio file names. Audio filename provided as separate
+arguments override names from TOCFILE. Unreadable files cause the program to
+exit with an error.
 [OPT_METAFILE]
 

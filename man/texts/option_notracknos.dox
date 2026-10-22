@@ -1,5 +1,5 @@
 [OPT_NOTRACKNOS]
 \par \--no-track-nos
-Do not print track numbers. Effects only album input.
+Omit track numbers from the output. Only applies to non-album input.
 [OPT_NOTRACKNOS]
 

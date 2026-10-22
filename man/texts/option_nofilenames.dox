@@ -1,5 +1,5 @@
 [OPT_NOFILENAMES]
 \par \--no-filenames
-Do not print filenames in the output. Effects only non-album input.
+Omit filenames from the output. Only applies to non-album input.
 [OPT_NOFILENAMES]
 

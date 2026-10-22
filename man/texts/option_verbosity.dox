@@ -1,8 +1,12 @@
 [OPT_VERBOSITY]
-\par -v,\--verbosity=[0-8]
-Activate loglevel. Legal values are between 0 and 8. Default loglevel
-(without any \b -v option) is \b 2 which prints warnings and errors. The
-following loglevels are available:
+\par -v, \--verbosity=[0-8]
+Set the log level. Legal values are 0–8; the default is 2 (warnings and errors).
+For any value > 8, log level 8 is used. It is not guaranteed that every level
+adds new log output for every tool. Log messages are printed to stderr by
+default; alternatively, specify a log file with option \b --logfile. The option
+is ignored if \b --quiet is present.
+\n\n
+The following log levels are available:
 \htmlonly
 <table class="m-table">
 	<tr> <th>Loglevel</th> <th>Description</th>            </tr>
@@ -13,7 +17,7 @@ following loglevels are available:
 	<tr> <td>4</td>        <td>Debug</td>                  </tr>
 	<tr> <td>5</td>        <td>More debug</td>             </tr>
 	<tr> <td>6</td>        <td>Even more debug</td>        </tr>
-	<tr> <td>7</td>        <td>Too much debug</td>         </tr>
+	<tr> <td>7</td>        <td>Excessive debug</td>        </tr>
 	<tr> <td>8</td>        <td>Trace</td>                  </tr>
 </table>
 \endhtmlonly
@@ -31,13 +35,10 @@ Loglevel | Description
    4     | Debug
    5     | More debug
    6     | Even more debug
-   7     | Too much debug
+   7     | Excessive debug
    8     | Trace
 .TE
 .sp
 \endmanonly
-For any \b n > 8, loglevel 8 will be set. Log messages will be printed to stdlog
-by default. Alternatively, a logfile can be specified by option \b --l. If \b -q
-is present, any other loglevel options will be ignored.
 [OPT_VERBOSITY]
 

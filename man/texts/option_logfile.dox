@@ -1,7 +1,6 @@
 [OPT_LOGFILE]
-\par -l,\--logfile=LOGFILE
-Log messages will go to this file instead of stdlog. Errors will be logged but
-will additionally printed on stderr. If LOGFILE exists, it will be overwritten
-without warning. If no logfile is specified, all log messages will go to stderr.
+\par -l, \--logfile=LOGFILE
+Write log messages to LOGFILE instead of stderr. Existing files are overwritten
+without warning. Errors are additionally printed to stderr.
 [OPT_LOGFILE]
 

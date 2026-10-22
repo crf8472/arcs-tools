@@ -1,7 +1,10 @@
 [OPT_READER]
 \par \--reader=STRING
-Force to process the audio file (if any) by the reader with the specified id.
-The following readers are available with the current version of libarcsdec.
+Force reading of the audio file (if any) by the reader with the specified id.
+Specifying an unavailable reader or a reader unable to read the input file will
+result in an error.
+\n\n
+The following readers are available with the current version of libarcsdec:
 \htmlonly
 <table class="m-table">
 	<tr> <th>ID</th>                  <th>Description</th> </tr>
@@ -27,8 +30,5 @@ libsndfile | Reader for WAV,FLAC and AIFF based on libsndfile.
 .TE
 .sp
 \endmanonly
-Any reader will only be available if compiled in. Specifying a reader that is
-not available results in an error. Specifying a reader that is not capable of
-reading the input file will result in an error.
 [OPT_READER]
 

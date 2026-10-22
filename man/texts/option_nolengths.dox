@@ -1,5 +1,5 @@
 [OPT_NOLENGTHS]
 \par \--no-lengths
-Do not print track lengths.
+Omit track lengths from the output.
 [OPT_NOLENGTHS]
 

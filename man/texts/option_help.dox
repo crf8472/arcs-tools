@@ -1,6 +1,6 @@
 [OPT_HELP]
 \par \--help
-Print usage info and exit. If \b --help is passed, neither of the
-other command line options will be evaluated, including \b --version.
+Print usage information and exit. Suppresses all other options, including
+\b --version.
 [OPT_HELP]
 

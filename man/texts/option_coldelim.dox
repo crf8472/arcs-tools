@@ -1,6 +1,6 @@
 [OPT_COLDELIM]
 \par \--col-delim=STRING
-Set the column delimiter. The default is blank. By setting semicolon ';' as
-column delimiter, CSV output can be achieved.
+Set the column delimiter. The default is a single blank space. Setting
+semicolon ';' produces CSV output.
 [OPT_COLDELIM]
 

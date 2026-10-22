@@ -1,7 +1,6 @@
 [OPT_QUIET]
 \par -q,\--quiet
-Suppress any informational message on stdout, just print the result. A failure
-during program run may result in no information. Takes precedence over any
-potentially present \b -v. Takes any effect off of \b -l.
+Suppress informational messages on stdout; output only results. Failures may
+produce no output. Overrides \b -v. Logfiles specified by \b -l remain empty.
 [OPT_QUIET]
 
