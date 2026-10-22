@@ -68,14 +68,13 @@ is OFF. See also \b --no-first and \b --no-album.
 
 \snippet{doc} include/option_reader.dox    OPT_READER
 
-\par \--refvalues=0x111,0x222,0x333,...
+\par \--refvalues=0x12345678,0x12ABCDEF,0x3333BCBC,...
 Comma-separated list of hexadecimal values (with or without leading '0x' prefix)
 to use as reference values for verification. If \b --refvalues is specified,
-option \b --metafile is ignored and therefore ToC information and AccurateRip
-url and id are not available. Consequently, options \b --print-id and
-\b --print-url are without effect if \b --refvalues is specified.
-If neither \b --response nor \b --refvalues is specified, the binary content as
-provided by AccurateRip is expected on stdin.
+no reference AccurateRip id or url and no confidence is available. Consequently,
+options \b --print-id, \b --print-url, and \b --confidence are without effect if
+\b --refvalues is specified. If neither \b --response nor \b --refvalues is
+specified, the binary content as provided by AccurateRip is expected on stdin.
 
 \par -r, \--response=RESPONSEFILE
 Specify the binary file with the AccurateRip response. Parsed text files will
