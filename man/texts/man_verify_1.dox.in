@@ -95,22 +95,23 @@ could be matched for either ARCSv2 or ARCSv1.
 
 \par \--colors, \--colors=[default|TYPE:COLOR+COLOR,TYPE:COLOR+COLOR,...]
 Use colored output for match results when printing to the command line.
-Note that output to files will contain ANSI escape sequences.
-A semicolon-separated list of pairs of a TYPE and a color specification
-separated by a colon ':' is accepted as an optional parameter.
+Note that output to files will contain ANSI escape sequences. The word 'default'
+or a semicolon-separated list of pairs of a colorable entity (TYPE) and a color
+specification (COLOR) separated by a colon ':' is accepted as an optional
+parameter. TYPE and COLOR values are case-insensitive.
 \n\n
-TYPE and COLOR values are case-insensitive. If a custom color list is provided,
-any TYPE not explicitly assigned a color is rendered as FG_DEFAULT+BG_DEFAULT
-regardless whether it has a different default color.
+If a custom color list is provided, any TYPE not explicitly assigned a color is
+rendered as FG_DEFAULT+BG_DEFAULT regardless whether it has a different default
+color.
 \n\n
 To use custom colors provide a comma-separated list of \b TYPE:COLOR pairs. Each
-pair maps a checksum display type to one or two colors.
+pair maps a colorable entity type to one or two colors.
 \htmlonly
 <table class="m-table">
-	<tr> <th>TYPE</th>     <th>Definition</th>                            </tr>
-	<tr> <td>MATCH</td>    <td>"Theirs" checksum matches "Mine"</td>      </tr>
-	<tr> <td>MISMATCH</td> <td>"Theirs" checksum differs from "Mine"</td> </tr>
-	<tr> <td>MINE</td>     <td>Locally computed checksums</td>            </tr>
+	<tr> <th><tt>TYPE</tt></th>     <th>Definition</th>                               </tr>
+	<tr> <td><tt>MATCH</tt></td>    <td>"Theirs" checksums matching "Mine"</td>       </tr>
+	<tr> <td><tt>MISMATCH</tt></td> <td>"Theirs" checksums differing from "Mine"</td> </tr>
+	<tr> <td><tt>MINE</tt></td>     <td>Locally computed checksums</td>               </tr>
 </table>
 \endhtmlonly
 \manonly
@@ -120,24 +121,25 @@ tab(|);
 cl.
 TYPE      | Definition
 --------- | -----------
- MATCH    | "Theirs" checksum matches "Mine"
- MISMATCH | "Theirs" checksum differs from "Mine"
+ MATCH    | "Theirs" checksums matching "Mine"
+ MISMATCH | "Theirs" checksums differing from "Mine"
  MINE     | Locally computed checksums
 .TE
 .sp
 \endmanonly
 A color specification is either a single color name (foreground) or two names
-separated by \b + (foreground + background) in any order.
-Example: \b FG_GREEN+BG_DEFAULT
+separated by \b + (foreground + background).
+Example: \c FG_GREEN+BG_DEFAULT
 \htmlonly
 <table class="m-table">
 	<tr> <th>Attribute</th> <th>Possible Values</th> </tr>
-	<tr> <td>TYPE</td>  <td>MATCH, MISMATCH, MINE</td> </tr>
-	<tr> <td>COLOR</td>
-		<td>FG_BLACK, FG_RED, FG_GREEN, FG_YELLOW, FG_BLUE,
-			FG_MAGENTA, FG_CYAN, FG_WHITE, FG_DEFAULT,
-			BG_BLACK, BG_RED, BG_GREEN, BG_YELLOW, BG_BLUE,
-			BG_MAGENTA, BG_CYAN, BG_WHITE, BG_DEFAULT </td> </tr>
+	<tr> <td><tt>TYPE</tt></td>
+		<td><tt>MATCH</tt>, <tt>MISMATCH</tt>, <tt>MINE</tt></td> </tr>
+	<tr> <td><tt>COLOR</tt></td>
+		<td><tt>FG_BLACK</tt>,   <tt>FG_RED</tt>,  <tt>FG_GREEN</tt>, <tt>FG_YELLOW</tt>, <tt>FG_BLUE</tt>,
+			<tt>FG_MAGENTA</tt>, <tt>FG_CYAN</tt>, <tt>FG_WHITE</tt>, <tt>FG_DEFAULT</tt>,
+			<tt>BG_BLACK</tt>,   <tt>BG_RED</tt>,  <tt>BG_GREEN</tt>, <tt>BG_YELLOW</tt>, <tt>BG_BLUE</tt>,
+			<tt>BG_MAGENTA</tt>, <tt>BG_CYAN</tt>, <tt>BG_WHITE</tt>, <tt>BG_DEFAULT</tt> </td> </tr>
 </table>
 \endhtmlonly
 \manonly
@@ -157,9 +159,9 @@ predefined colors.
 \htmlonly
 <table class="m-table">
 	<tr> <th>TYPE</th>     <th>Default color specification</th> </tr>
-	<tr> <td>MATCH</td>    <td>FG_GREEN+BG_DEFAULT</td>   </tr>
-	<tr> <td>MISMATCH</td> <td>FG_RED+BG_DEFAULT</td>     </tr>
-	<tr> <td>MINE</td>     <td>FG_DEFAULT+BG_DEFAULT</td> </tr>
+	<tr> <td><tt>MATCH</tt></td>    <td><tt>FG_GREEN+BG_DEFAULT</tt></td>   </tr>
+	<tr> <td><tt>MISMATCH</tt></td> <td><tt>FG_RED+BG_DEFAULT</tt></td>     </tr>
+	<tr> <td><tt>MINE</tt></td>     <td><tt>FG_DEFAULT+BG_DEFAULT</tt></td> </tr>
 </table>
 \endhtmlonly
 \manonly
@@ -176,11 +178,10 @@ TYPE      | Default color specification
 .sp
 \endmanonly
 
-
 \par \--confidence
-Print the confidence value of each "Theirs" checksum in a column on the right
-hand side of the respective "Theirs" column. This switch will be ignored if
-\b --refvalues is used.
+Print the confidence value for each "Theirs" checksum in a column immediately to
+the right of its corresponding "Theirs" column. Ignored if \b --refvalues is
+specified.
 
 \snippet{doc} include/option_help.dox              OPT_HELP
 
@@ -194,23 +195,23 @@ hand side of the respective "Theirs" column. This switch will be ignored if
 \snippet{doc} include/option_nooffsets.dox         OPT_NOOFFSETS
 
 \par -n, \--no-output
-Do not print any result. Implies \b --boolean, therefore the return value will
-be informative.
+Suppress all output. Implies \b --boolean; return value behaves according to
+the \b --boolean option.
 
 \snippet{doc} include/option_notracknos.dox        OPT_NOTRACKNOS
 
 \par \--print-all-matches
-Print each match result for each reference block. If combined with
-\b --refvalues, the effect is just to activate the output of the match result
-for ARCSv1 as well as ARCSv2.
+Print the match result for each checksum type of each reference block. When
+combined with \b --refvalues, always output match results for both ARCSv1 and
+ARCSv2.
 
 \par \--print-id
-Print the AccurateRip id of the reference data, if available. This switch will
-be ignored if \b --refvalues is used.
+Print the AccurateRip id of the reference data, if available. This switch is
+ignored if \b --refvalues is specified.
 
 \par \--print-url
-Print the AccurateRip url of the reference data, if available. This switch will
-be ignored if \b --refvalues is used.
+Print the AccurateRip url of the reference data, if available. This switch is
+ignored if \b --refvalues is specified.
 
 \snippet{doc} include/option_metafile.dox  OPT_METAFILE
 

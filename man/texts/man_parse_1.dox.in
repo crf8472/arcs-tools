@@ -15,9 +15,8 @@ arcstk-parse [OPTIONS] FILENAME
 
 \section parse_desc DESCRIPTION
 
-Parse responses from the AccurateRip database and output checksums, confidence
-values and the checksums for frame 450 for each profile contained in the
-response.
+Parse AccurateRip database responses; print output checksums, confidence values,
+and the frame 450 checksums for each block in the response.
 
 
 \section parse_opts OPTIONS
@@ -25,9 +24,9 @@ response.
 \subsection parse_opts_out Options for output
 
 \par \--format=FORMAT
-Specify output format where FORMAT is one of { json, text, text_decorated, raw,
-yaml } from which text_decorated is the default. If omitted or specified without
-a value, the default value is applied.
+Specify the output format. FORMAT must be one of: \b json, \b text,
+\b text_decorated, \b raw, \b yaml. The default is \b text_decorated. If omitted
+or specified without a value, the default is applied.
 
 \snippet{doc} include/option_help.dox      OPT_HELP
 
