@@ -19,7 +19,7 @@ The following parsers are available if compiled into libarcsdec:
 tab(|);
 ll.
 ID       | Description
--------- | --------
+-------- | -----------
 cdrtoc   | Internal cdrdao/toc parser, experimental
 cuesheet | Internal Cuesheet parser, experimental
 libcue   | Cuesheet parser based on libcue
