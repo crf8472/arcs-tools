@@ -143,21 +143,9 @@ std::unique_ptr<FileReaderSelection> IdSelection::operator()(
 // ChecksumCalculator
 
 
-ChecksumCalculator::ChecksumCalculator()
-	: ChecksumCalculator(
-			{ arcstk::checksum::type::ARCS1, arcstk::checksum::type::ARCS2 })
+ChecksumCalculator::ChecksumCalculator(const ChecksumtypeSet& types)
 {
-	// empty
-};
-
-
-ChecksumCalculator::ChecksumCalculator(
-		ChecksumtypeSet types)
-	: types_           { std::move(types) }
-	, audio_selection_ { nullptr }
-	, toc_selection_   { nullptr }
-{
-	// empty
+	arcs_calculator_.set_types(types);
 }
 
 
@@ -167,7 +155,7 @@ ChecksumCalculator::~ChecksumCalculator() noexcept
 
 std::pair<Checksums, ToC> ChecksumCalculator::calculate(
 			const std::vector<std::string>& audiofilenames,
-			const std::string& metafilename) const
+			const std::string& metafilename)
 {
 	ARCS_LOG_DEBUG << "Calculate result from metafilename"
 			" and one or more audiofiles";
@@ -205,13 +193,11 @@ std::pair<Checksums, ToC> ChecksumCalculator::calculate(
 
 	// Run
 
-	auto calculator { setup_arcs_calculator() };
-
 	// case: single-file album w ToC
 	if (1 == filecount)
 	{
 		const auto [ checksums, toc2 ] =
-			calculator.calculate(audiofilenames.front(), toc);
+			calculator()->calculate(audiofilenames.front(), toc);
 
 		return { checksums, toc2 };
 	}
@@ -219,9 +205,10 @@ std::pair<Checksums, ToC> ChecksumCalculator::calculate(
 	// case: multi-file album w ToC (== "EAC-styled layout")
 	if (toc.total_tracks() == filecount)
 	{
-		const auto chksums { calculator.calculate(audiofilenames, true, true) };
+		const auto checksums {
+			calculator()->calculate(audiofilenames, true, true) };
 
-		return { chksums, toc };
+		return { checksums, toc };
 	}
 
 	return { Checksums{ 0 }, ToC{} }; // TODO should throw instead
@@ -230,26 +217,30 @@ std::pair<Checksums, ToC> ChecksumCalculator::calculate(
 
 Checksums ChecksumCalculator::calculate(
 		const std::vector<std::string>& audiofilenames,
-		const bool first_is_first_track, const bool last_is_last_track) const
+		const bool first_is_first_track, const bool last_is_last_track)
 {
-	auto calculator { setup_arcs_calculator() };
-
-	const auto checksums { calculator.calculate(audiofilenames,
+	const auto checksums { calculator()->calculate(audiofilenames,
 			first_is_first_track, last_is_last_track) };
 
 	return checksums;
 }
 
 
-void ChecksumCalculator::set_types(const ChecksumtypeSet& types)
+ChecksumtypeSet ChecksumCalculator::types() const
 {
-	types_ = types;
+	return arcs_calculator_.types();
 }
 
 
-ChecksumtypeSet ChecksumCalculator::types() const
+void ChecksumCalculator::set_types(const ChecksumtypeSet& types)
 {
-	return types_;
+	arcs_calculator_.set_types(types);
+}
+
+
+const FileReaderSelection* ChecksumCalculator::toc_selection() const
+{
+	return toc_selection_;
 }
 
 
@@ -259,26 +250,20 @@ void ChecksumCalculator::set_toc_selection(FileReaderSelection* selection)
 }
 
 
-FileReaderSelection* ChecksumCalculator::toc_selection() const
+const FileReaderSelection* ChecksumCalculator::audio_selection() const
 {
-	return toc_selection_;
+	return arcs_calculator_.selection();
 }
 
 
 void ChecksumCalculator::set_audio_selection(FileReaderSelection* selection)
 {
-	audio_selection_ = selection;
-}
-
-
-FileReaderSelection* ChecksumCalculator::audio_selection() const
-{
-	return audio_selection_;
+	arcs_calculator_.set_selection(selection);
 }
 
 
 std::pair<Checksums, ToC> ChecksumCalculator::calculate(const ToC& toc,
-		const std::string& filepath) const
+		const std::string& filepath)
 {
 	ARCS_LOG_DEBUG << "Calculate result from ToC"
 			" and searchpath for audiofiles";
@@ -297,15 +282,14 @@ std::pair<Checksums, ToC> ChecksumCalculator::calculate(const ToC& toc,
 
 	// Calculate ARCSs
 
-	auto calculator { setup_arcs_calculator() };
-
 	if (is_single_file)
 	{
 		const auto audiofile =
 			ToCFiles::expand_path(filepath, audiofiles.front());
 
 		// case: single-file album w ToC
-		const auto [ checksums, toc2 ] = calculator.calculate(audiofile, toc);
+		const auto [ checksums, toc2 ] =
+			calculator()->calculate(audiofile, toc);
 
 		return { checksums, toc2 };
 	} else
@@ -316,29 +300,17 @@ std::pair<Checksums, ToC> ChecksumCalculator::calculate(const ToC& toc,
 		}
 
 		// case: multi-file album w toc (== "EAC-styled layout")
-		const auto checksums { calculator.calculate(audiofiles, true, true) };
+		const auto checksums {
+			calculator()->calculate(audiofiles, true, true) };
 
 		return { checksums, toc/* FIXME this toc is useless */ };
 	}
 }
 
 
-ARCSCalculator ChecksumCalculator::setup_arcs_calculator() const
-{
-	auto calculator { ARCSCalculator { types() } };
-
-	if (audio_selection())
-	{
-		calculator.set_selection(audio_selection());
-	}
-
-	return calculator;
-}
-
-
 ToCParser ChecksumCalculator::setup_parser() const
 {
-	auto parser { ToCParser{} };
+	auto parser { ToCParser {} };
 
 	if (toc_selection())
 	{
@@ -346,6 +318,12 @@ ToCParser ChecksumCalculator::setup_parser() const
 	}
 
 	return parser;
+}
+
+
+ARCSCalculator* ChecksumCalculator::calculator()
+{
+	return std::addressof(arcs_calculator_);
 }
 
 

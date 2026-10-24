@@ -10,7 +10,6 @@
 #include <string>        // for string
 #include <tuple>         // for tuple
 #include <utility>       // for pair
-#include <unordered_set> // for unordered_set
 #include <vector>        // for vector
 
 #ifndef LIBARCSTK_ALGORITHM_HPP_
@@ -23,6 +22,9 @@
 #include <arcstk/metadata.hpp>         // for ToC
 #endif
 
+#ifndef LIBARCSDEC_CALCULATORS_HPP_
+#include <arcsdec/calculators.hpp>     // for ARCSCalculator
+#endif
 #ifndef LIBARCSDEC_SELECTION_HPP_
 #include <arcsdec/selection.hpp>       // FileReaderSelection
 #endif
@@ -163,14 +165,14 @@ public:
 	 *
 	 * Uses ARCS2 as the default type to request.
 	 */
-	ChecksumCalculator();
+	ChecksumCalculator() = default;
 
 	/**
 	 * \brief Default Constructor
 	 *
 	 * \param[in] types The checksum types to calculate
 	 */
-	explicit ChecksumCalculator(ChecksumtypeSet types);
+	explicit ChecksumCalculator(const ChecksumtypeSet& types);
 
 	/**
 	 * \brief Virtual default destructor.
@@ -193,7 +195,7 @@ public:
 	 */
 	std::pair<Checksums, ToC> calculate(
 			const std::vector<std::string>& audiofilenames,
-			const std::string& metafilename) const;
+			const std::string& metafilename);
 
 	/**
 	 * \brief Calculate ARCSs for the given audio files.
@@ -213,8 +215,7 @@ public:
 	 * \return The AccurateRip checksums of these tracks
 	 */
 	Checksums calculate(const std::vector<std::string>& audiofilenames,
-			const bool first_is_first_track, const bool last_is_last_track)
-			const;
+			const bool first_is_first_track, const bool last_is_last_track);
 
 	/**
 	 * \brief Set the checksum type to be calculated.
@@ -235,7 +236,7 @@ public:
 	 *
 	 * \return The selection used by this instance
 	 */
-	FileReaderSelection* audio_selection() const;
+	const FileReaderSelection* audio_selection() const;
 
 	/**
 	 * \brief Set the FileReaderSelection for this instance.
@@ -249,7 +250,7 @@ public:
 	 *
 	 * \return The selection used by this instance
 	 */
-	FileReaderSelection* toc_selection() const;
+	const FileReaderSelection* toc_selection() const;
 
 	/**
 	 * \brief Set the FileReaderSelection for this instance.
@@ -271,36 +272,43 @@ private:
 	 * \return Checksums and ToC for the input
 	 */
 	std::pair<Checksums, ToC> calculate(const ToC& toc,
-			const std::string& searchpath) const;
-
-	/**
-	 * \brief Setup internal ARCSCalculator instance.
-	 *
-	 * \return ARCSCalculator to perform the calculations
-	 */
-	ARCSCalculator setup_arcs_calculator() const;
+			const std::string& searchpath);
 
 	/**
 	 * \brief Setup internal ToCParser instance.
 	 *
-	 * \return ToCParser to perform the metadata parsing
+	 * \return ToCParser instance
 	 */
 	ToCParser setup_parser() const;
 
 	/**
-	 * \brief Checksum type to request
+	 * \brief Setup internal ARCSCalculator instance.
+	 *
+	 * \param[in] calculator The instance to setup
 	 */
-	ChecksumtypeSet types_;
+	void setup_arcs_calculator(ARCSCalculator& calculator) const;
+
+	/**
+	 * \brief Access internal ARCSCalculator instance.
+	 *
+	 * \return Internal ARCSCalculator instance
+	 */
+	ARCSCalculator* calculator();
+
+	/**
+	 * \brief Internal calculator instance.
+	 */
+	ARCSCalculator arcs_calculator_ { /* default */ };
 
 	/**
 	 * \brief Internal Audio reader selection.
 	 */
-	FileReaderSelection* audio_selection_;
+	//FileReaderSelection* audio_selection_ {/* nullptr */};
 
 	/**
 	 * \brief Internal ToC parser selection.
 	 */
-	FileReaderSelection* toc_selection_;
+	FileReaderSelection* toc_selection_   {/* nullptr */};
 };
 
 #pragma GCC diagnostic pop
