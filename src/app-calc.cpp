@@ -80,6 +80,7 @@ const auto calc = RegisterApplicationType<ARCalcApplication>("calc");
 // libarcstk
 using arcstk::ARId;
 using arcstk::Checksums;
+using arcstk::ChecksumtypeSet;
 using arcstk::ToC;
 
 // arcsapp
@@ -581,7 +582,7 @@ std::pair<Checksums, ToC> ARCalcApplication::calculate(
 	// type-to-calculate ARCS2 hence represents both the type-requested ARCS1
 	// as well as the type-requested ARCS2).
 
-	auto types_to_calculate { calc::ChecksumTypeset{} };
+	auto types_to_calculate { ChecksumtypeSet{} };
 	for (auto& t : types_requested)
 	{
 		types_to_calculate.insert(t);

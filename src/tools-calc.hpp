@@ -13,6 +13,9 @@
 #include <unordered_set> // for unordered_set
 #include <vector>        // for vector
 
+#ifndef LIBARCSTK_ALGORITHM_HPP_
+#include <arcstk/algorithm.hpp>        // for ChecksumtypeSet
+#endif
 #ifndef LIBARCSTK_CALCULATE_HPP_
 #include <arcstk/calculate.hpp>        // for Checksums, checksum::type
 #endif
@@ -60,13 +63,11 @@ namespace calc
 
 using arcstk::ToC;
 using arcstk::Checksums;
+using arcstk::ChecksumtypeSet;
 
 using arcsdec::calc::ARCSCalculator;
 using arcsdec::calc::ToCParser;
 using arcsdec::select::FileReaderSelection;
-
-// FIXME This has to be made available from arcsdec/calculators.hpp
-using ChecksumTypeset = std::unordered_set<arcstk::checksum::type>;
 
 
 /**
@@ -169,7 +170,7 @@ public:
 	 *
 	 * \param[in] types The checksum types to calculate
 	 */
-	explicit ChecksumCalculator(ChecksumTypeset types);
+	explicit ChecksumCalculator(ChecksumtypeSet types);
 
 	/**
 	 * \brief Virtual default destructor.
@@ -220,14 +221,14 @@ public:
 	 *
 	 * \param[in] type Checksum type to be calculated
 	 */
-	void set_types(const ChecksumTypeset& type);
+	void set_types(const ChecksumtypeSet& type);
 
 	/**
 	 * \brief The checksum type to be calculated.
 	 *
 	 * \return Checksum type to be calculated by this instance
 	 */
-	ChecksumTypeset types() const;
+	ChecksumtypeSet types() const;
 
 	/**
 	 * \brief Get the FileReaderSelection used by this instance.
@@ -289,7 +290,7 @@ private:
 	/**
 	 * \brief Checksum type to request
 	 */
-	ChecksumTypeset types_;
+	ChecksumtypeSet types_;
 
 	/**
 	 * \brief Internal Audio reader selection.

@@ -152,7 +152,7 @@ ChecksumCalculator::ChecksumCalculator()
 
 
 ChecksumCalculator::ChecksumCalculator(
-		ChecksumTypeset types)
+		ChecksumtypeSet types)
 	: types_           { std::move(types) }
 	, audio_selection_ { nullptr }
 	, toc_selection_   { nullptr }
@@ -241,13 +241,13 @@ Checksums ChecksumCalculator::calculate(
 }
 
 
-void ChecksumCalculator::set_types(const ChecksumTypeset& types)
+void ChecksumCalculator::set_types(const ChecksumtypeSet& types)
 {
 	types_ = types;
 }
 
 
-ChecksumTypeset ChecksumCalculator::types() const
+ChecksumtypeSet ChecksumCalculator::types() const
 {
 	return types_;
 }
