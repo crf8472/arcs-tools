@@ -1054,7 +1054,7 @@ std::unique_ptr<PrintableTable> TableCreator::format_table(
 
 	AddRecords(composer.get())(field_creators);
 
-	// TODO This is ridiculous
+	// TODO Copying and then moving is quite ridiculous
 	auto layout { std::make_unique<StringTableLayout>(copy_table_layout()) };
 	composer->set_layout(std::move(layout));
 
