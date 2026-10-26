@@ -97,8 +97,7 @@ std::ostream& operator << (std::ostream& o, const RichARId& a)
 
 
 ARIdLayout::ARIdLayout()
-	: PropertyStore { Flags::ALL_TRUE }
-	, field_labels_ { true }
+	: ARIdLayout { Flags::ALL_TRUE, true }
 {
 	// empty
 }
@@ -107,7 +106,7 @@ ARIdLayout::ARIdLayout()
 ARIdLayout::ARIdLayout(const bool labels, const bool id, const bool url,
 		const bool filename, const bool track_count, const bool disc_id_1,
 		const bool disc_id_2, const bool cddb_id)
-	: PropertyStore {
+	: ARIdLayout {
 			Flags::ALL_FALSE
 			| details::flag_operand(ARID_FLAG::ID,       id)
 			| details::flag_operand(ARID_FLAG::URL,      url)
@@ -116,8 +115,24 @@ ARIdLayout::ARIdLayout(const bool labels, const bool id, const bool url,
 			| details::flag_operand(ARID_FLAG::ID1,      disc_id_1)
 			| details::flag_operand(ARID_FLAG::ID2,      disc_id_2)
 			| details::flag_operand(ARID_FLAG::CDDBID,   cddb_id)
-		}
-	, field_labels_ { labels }
+		, labels }
+{
+	// empty
+}
+
+
+ARIdLayout::ARIdLayout(const flags_t flags, const bool field_labels)
+	: PropertyStore { flags }
+	, LabelStore<ARID_FLAG> { { /* define default labels */
+		{ ARID_FLAG::ID,       "ID"       },
+		{ ARID_FLAG::URL,      "URL"      },
+		{ ARID_FLAG::FILENAME, "Filename" },
+		{ ARID_FLAG::TRACKS,   "Tracks"   },
+		{ ARID_FLAG::ID1,      "ID1"      },
+		{ ARID_FLAG::ID2,      "ID2"      },
+		{ ARID_FLAG::CDDBID,   "CDDB ID"  }
+	  } }
+	, field_labels_ { field_labels }
 {
 	// empty
 }
@@ -134,42 +149,10 @@ void ARIdLayout::set_fieldlabels(const bool labels)
 	field_labels_ = labels;
 }
 
-/*
-auto ARIdLayout::label(const ARID_FLAG flag) const -> std::string
-{
-	// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-	return labels_[array_idx(flag)];
-}
-
-
-void ARIdLayout::set_label(const ARID_FLAG flag, const std::string& label)
-{
-	// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-	labels_[array_idx(flag)] = label;
-}
-*/
 
 std::unique_ptr<ARIdLayout> ARIdLayout::clone() const
 {
 	return do_clone();
-}
-
-
-auto ARIdLayout::show_flags() const -> decltype( show_flags_ )
-{
-	return show_flags_;
-}
-
-
-auto ARIdLayout::labels() const -> decltype( labels_ )
-{
-	return labels_;
-}
-
-
-auto ARIdLayout::array_idx(const ARID_FLAG flag) const -> unsigned
-{
-	return static_cast<unsigned>(details::to_underlying(flag));
 }
 
 
@@ -190,76 +173,59 @@ std::string ARIdLayout::hex_id(const uint32_t id) const
 std::string ARIdTableLayout::do_format(InputTuple t) const
 {
 	using service::safe_cast;
+	using std::to_string;
 
 	if (no_properties())
 	{
 		// no properties set means nothing to print
-		return std::string{};
+		return std::string {}; // FIXME do not create a new string
 	}
 
 	const auto arid       = std::get<0>(t);
 	const auto alt_prefix = std::get<1>(t);
 
+	const auto label_width = fieldlabels() ? 6 : 0; // TODO configurable width
+	const auto label_delim = std::string { ": " };
+
 	auto stream = std::ostringstream {};
-	auto value  = std::string {};
 
-	// TODO Use optimal_label_width?
-	//auto label_width = fieldlabels() ? optimal_width(labels()) : 0;
-	auto label_width = fieldlabels() ? 8 : 0;
-
-	for (const auto& sflag : show_flags())
-	{
-		if (not has_property(sflag)) { continue; }
-
-		if (!stream.str().empty()) { stream << '\n'; }
-
-		if (fieldlabels())
+	static const auto format_flag = [&](const ARID_FLAG flag,
+			const std::string& value, const bool print_label)
 		{
-			stream << std::setw(label_width) << std::left << label(sflag)
-				<< " "; // always one whitespace between label and value
-		}
-
-		switch (sflag)
-		{
-			case ARID_FLAG::ID:
-				using std::to_string;
-				value = to_string(arid);
-				break;
-			case ARID_FLAG::URL:
-				value = arid.url();
-				if (not alt_prefix.empty())
+			if (has_property(flag))
+			{
+				if (print_label)
 				{
-					value.replace(0, arid.prefix().length(), alt_prefix);
-					// FIXME If alt_prefix does not end with '/' ?
-					// FIXME If alt_prefix has a different length ?
-					// FIXME Do not do this when printing, do it in the app
+					stream << std::setw(label_width) << std::left << label(flag)
+						<< label_delim;
 				}
-				break;
-			case ARID_FLAG::FILENAME:
-				value = arid.filename();
-				break;
-			case ARID_FLAG::TRACKS:
-				value = std::to_string(arid.total_tracks());
-				break;
-			case ARID_FLAG::ID1:
-				value = hex_id(arid.disc_id_1());
-				break;
-			case ARID_FLAG::ID2:
-				value = hex_id(arid.disc_id_2());
-				break;
-			case ARID_FLAG::CDDBID:
-				value = hex_id(arid.cddb_id());
-				break;
-			default:
-				break;
-		}
 
-		stream << std::setw(safe_cast<int>(value.length())) << value;
-	}
+				stream << std::setw(safe_cast<int>(value.length())) << value
+					<< '\n';
+			}
+		};
 
-	if (true) { stream << '\n'; } // TODO Make configurable
+	const auto w_flag = bool { fieldlabels() };
+
+	format_flag(ARID_FLAG::ID,       to_string(arid),                w_flag);
+	format_flag(ARID_FLAG::URL,      arid.url(),                     w_flag);
+	format_flag(ARID_FLAG::FILENAME, arid.filename(),                w_flag);
+	format_flag(ARID_FLAG::TRACKS,   to_string(arid.total_tracks()), w_flag);
+	format_flag(ARID_FLAG::ID1,      hex_id(arid.disc_id_1()),       w_flag);
+	format_flag(ARID_FLAG::ID2,      hex_id(arid.disc_id_2()),       w_flag);
+	format_flag(ARID_FLAG::CDDBID,   hex_id(arid.cddb_id()),         w_flag);
 
 	return stream.str();
+
+	// Commented out, code is obsolete, kept because the Fixmes are relevant
+	// value = arid.url();
+	// if (not alt_prefix.empty())
+	// {
+	// 	value.replace(0, arid.prefix().length(), alt_prefix);
+	// 	// FIXME If alt_prefix does not end with '/' ?
+	// 	// FIXME If alt_prefix has a different length ?
+	// 	// FIXME Do not do this when printing, do it in the app
+	// }
 }
 
 

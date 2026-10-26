@@ -90,6 +90,14 @@ public:
 			const bool disc_id_2, const bool cddb_id);
 
 	/**
+	 * \brief Constructor setting all flags.
+	 *
+	 * \param[in] flags Set of flags and corresponding labels
+	 * \param[in] field_labels TRUE activates field labels
+	 */
+	ARIdLayout(const flags_t flags, const bool field_labels);
+
+	/**
 	 * \brief Virtual default destructor
 	 */
 	~ARIdLayout() noexcept override = default;
@@ -119,38 +127,6 @@ public:
 private:
 
 	/**
-	 * \brief Iterable aggregate of the defined flags.
-	 *
-	 * Order matches definition order in ARID_FLAG.
-	 */
-	constexpr static std::array<ARID_FLAG, 7> show_flags_
-	{
-		ARID_FLAG::ID,
-		ARID_FLAG::URL,
-		ARID_FLAG::FILENAME,
-		ARID_FLAG::TRACKS,
-		ARID_FLAG::ID1,
-		ARID_FLAG::ID2,
-		ARID_FLAG::CDDBID
-	};
-
-	/**
-	 * \brief Row label for the defined flags.
-	 *
-	 * Order matches definition order in ARID_FLAG.
-	 */
-	std::array<std::string, 7> labels_ // TODO LabelStore
-	{
-		"ID",
-		"URL",
-		"Filename",
-		"Tracks",
-		"ID1",
-		"ID2",
-		"CDDB ID"
-	};
-
-	/**
 	 * \brief Field labels.
 	 */
 	bool field_labels_;
@@ -173,29 +149,6 @@ protected:
 	 * \return Hexadecimal ARId-conforming representation of a 32bit unsigned.
 	 */
 	std::string hex_id(const uint32_t id) const;
-
-	/**
-	 * \brief Getter for the show flags.
-	 *
-	 * \return Show flags
-	 */
-	auto show_flags() const -> decltype( show_flags_ );
-
-	/**
-	 * \brief Getter for the flag labels.
-	 *
-	 * \return Flag labels
-	 */
-	auto labels() const -> decltype( labels_ );
-
-	/**
-	 * \brief Turn flag to an array index.
-	 *
-	 * \param[in] flag Flag to turn to an array index
-	 *
-	 * \return Array index this flag points to
-	 */
-	auto array_idx(const ARID_FLAG flag) const -> unsigned;
 };
 
 
