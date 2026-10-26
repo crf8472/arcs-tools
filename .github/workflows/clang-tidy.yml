@@ -1,4 +1,4 @@
-name: Clang-Tidy Analysis
+name: Clang-Tidy
 
 on:
   push:
