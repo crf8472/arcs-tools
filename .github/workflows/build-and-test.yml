@@ -59,6 +59,7 @@ jobs:
           sudo apt-get install -y cmake ninja-build
           sudo apt-get install -y libfl-dev
           sudo apt-get install -y 'libflac++*'   libflac++-dev
+          sudo apt-get install -y libswresample-dev
           sudo apt-get install -y 'libavutil*'   libavutil-dev
           sudo apt-get install -y 'libavcodec*'  libavcodec-dev
           sudo apt-get install -y 'libavformat*' libavformat-dev
