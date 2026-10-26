@@ -59,9 +59,9 @@ jobs:
           sudo apt-get install -y cmake ninja-build
           sudo apt-get install -y libfl-dev
           sudo apt-get install -y 'libflac++*'   libflac++-dev
+          sudo apt-get install -y 'libavutil*'   libavutil-dev
           sudo apt-get install -y 'libavcodec*'  libavcodec-dev
           sudo apt-get install -y 'libavformat*' libavformat-dev
-          sudo apt-get install -y 'libavutil*'   libavutil-dev
           sudo apt-get install -y libwavpack1    libwavpack-dev
           sudo apt-get install -y libsndfile1    libsndfile1-dev
           sudo apt-get install -y libcue2        libcue-dev
