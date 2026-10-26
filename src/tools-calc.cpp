@@ -288,10 +288,10 @@ std::pair<Checksums, ToC> ChecksumCalculator::calculate(const ToC& toc,
 			ToCFiles::expand_path(filepath, audiofiles.front());
 
 		// case: single-file album w ToC
-		const auto [ checksums, toc2 ] =
+		const auto [ checksums, updated_toc ] =
 			calculator()->calculate(audiofile, toc);
 
-		return { checksums, toc2 };
+		return { checksums, updated_toc };
 	} else
 	{
 		for (auto& audiofile : audiofiles)

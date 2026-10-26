@@ -298,17 +298,12 @@ private:
 	/**
 	 * \brief Internal calculator instance.
 	 */
-	ARCSCalculator arcs_calculator_ { /* default */ };
-
-	/**
-	 * \brief Internal Audio reader selection.
-	 */
-	//FileReaderSelection* audio_selection_ {/* nullptr */};
+	ARCSCalculator arcs_calculator_     { /* default */ };
 
 	/**
 	 * \brief Internal ToC parser selection.
 	 */
-	FileReaderSelection* toc_selection_   {/* nullptr */};
+	FileReaderSelection* toc_selection_ {/* nullptr */};
 };
 
 #pragma GCC diagnostic pop
