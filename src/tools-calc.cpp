@@ -327,6 +327,30 @@ ARCSCalculator* ChecksumCalculator::calculator()
 }
 
 
+// perform_calculation
+
+
+std::pair<Checksums, ToC> perform_calculation(
+	const std::vector<std::string>& audiofilenames,
+	const std::string& metafilename,
+	const bool first_file_is_first_track,
+	const bool last_file_is_last_track,
+	ChecksumCalculator& calculator)
+{
+	if (metafilename.empty())
+	{
+        //Tracks/Album w/o ToC
+		const auto checksums = calculator.calculate(audiofilenames,
+				first_file_is_first_track, last_file_is_last_track);
+
+		return { checksums, ToC{} };
+	}
+
+	//Album: w ToC
+	return calculator.calculate(audiofilenames, metafilename);
+}
+
+
 // HexLayout
 
 

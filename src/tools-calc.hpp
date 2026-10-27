@@ -312,6 +312,25 @@ private:
 
 
 /**
+ * \brief Implementat a checksum calculation with or without ToC.
+ *
+ * \param[in] audiofilenames            Filenames of the audio files
+ * \param[in] metafilename              Filename of the ToC file
+ * \param[in] first_file_is_first_track Flag to indicate album first track
+ * \param[in] last_file_is_last_track   Flag to indicate album last track
+ * \param[in] calculator                Calculator to perform calculation
+ *
+ * \return Calculation result
+ */
+std::pair<Checksums, ToC> perform_calculation(
+	const std::vector<std::string>& audiofilenames,
+	const std::string& metafilename,
+	const bool first_file_is_first_track,
+	const bool last_file_is_last_track,
+	ChecksumCalculator& calculator);
+
+
+/**
  * \brief Interface for formatting Checksums.
  */
 using ChecksumLayout = Layout<std::string, arcstk::Checksum, int>;
