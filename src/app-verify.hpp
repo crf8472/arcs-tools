@@ -779,10 +779,10 @@ class ARVerifyApplication final : public ARCalcApplicationBase
 	// ARCalcApplicationBase
 
 	std::pair<int, std::unique_ptr<Result>> do_run_calculation(
-			const Configuration& config) const final;
-
-	std::vector<arcstk::checksum::type> do_requested_types(
 		const Configuration& config) const final;
+
+	arcstk::ChecksumtypeSet do_requested_types(const Configuration& config)
+		const final;
 
 	// Application
 

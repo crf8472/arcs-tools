@@ -1500,7 +1500,7 @@ std::unique_ptr<ChecksumSource> ARVerifyApplication::get_reference_source(
 
 std::string ARVerifyApplication::do_name() const
 {
-	return "verify";
+	return "verify"; // TODO Return constref instead of creating a string
 }
 
 
@@ -1767,10 +1767,12 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 }
 
 
-std::vector<arcstk::checksum::type> ARVerifyApplication::do_requested_types(
+arcstk::ChecksumtypeSet ARVerifyApplication::do_requested_types(
 		const Configuration& /*config*/) const
 {
-	return { arcstk::checksum::type::ARCS1, arcstk::checksum::type::ARCS2 };
+	using arcstk::checksum::type;
+
+	return { type::ARCS1, type::ARCS2 };
 }
 
 } // namespace v_1_0_0

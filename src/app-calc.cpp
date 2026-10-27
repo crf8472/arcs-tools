@@ -87,6 +87,7 @@ using arcstk::ToC;
 using arid::ARIdLayout;
 using arid::ARIdTableLayout;
 using arid::RichARId;
+using calc::ChecksumCalculator;
 using calc::HexLayout;
 using table::ATTR;
 using table::AddField;
@@ -518,7 +519,7 @@ bool ARCalcApplicationBase::calculation_requested(const Configuration& config)
 }
 
 
-std::vector<arcstk::checksum::type> ARCalcApplicationBase::requested_types(
+arcstk::ChecksumtypeSet ARCalcApplicationBase::requested_types(
 			const Configuration& config) const
 {
 	return do_requested_types(config);
@@ -573,24 +574,18 @@ std::pair<Checksums, ToC> ARCalcApplication::calculate(
 	const std::string& metafilename,
 	const bool first_file_is_first_track,
 	const bool last_file_is_last_track,
-	const std::vector<arcstk::checksum::type>& types_requested,
+	const arcstk::ChecksumtypeSet& types_requested,
 	FileReaderSelection* audio_selection,
 	FileReaderSelection* toc_selection)
 {
-	// The types to calculate are allowed to differ from the explicitly
-	// requested types (since e.g. ARCS1 is a byproduct of ARCS2 and the
-	// type-to-calculate ARCS2 hence represents both the type-requested ARCS1
-	// as well as the type-requested ARCS2).
+	// Create calculator
 
-	auto types_to_calculate { ChecksumtypeSet{} };
-	for (auto& t : types_requested)
-	{
-		types_to_calculate.insert(t);
-	}
+	ChecksumCalculator c { types_requested };
 
-	calc::ChecksumCalculator c { types_to_calculate };
 	if (toc_selection)   { c.set_toc_selection  (toc_selection);   }
 	if (audio_selection) { c.set_audio_selection(audio_selection); }
+
+	// Do calculation
 
 	if (metafilename.empty())
 	{
@@ -807,21 +802,29 @@ auto ARCalcApplication::do_run_calculation(const Configuration& config) const
 }
 
 
-std::vector<arcstk::checksum::type> ARCalcApplication::do_requested_types(
+arcstk::ChecksumtypeSet ARCalcApplication::do_requested_types(
 		const Configuration& config) const
 {
-	// Select the checksum::type(s) to print
+	// The types to calculate are allowed to differ from the explicitly
+	// requested types (since e.g. ARCS1 is a byproduct of ARCS2 and the
+	// type-to-calculate ARCS2 hence represents both the type-requested ARCS1
+	// as well as the type-requested ARCS2).
 
-	std::vector<arcstk::checksum::type> types = {};
+	using arcstk::checksum::type;
+
+	ChecksumtypeSet types = {};
 
 	if (!config.is_set(CALC::NOV1))
 	{
-		types.push_back(arcstk::checksum::type::ARCS1);
+		types.insert(type::ARCS1);
 	}
+
 	if (!config.is_set(CALC::NOV2))
 	{
-		types.push_back(arcstk::checksum::type::ARCS2);
+		types.insert(type::ARCS2);
 	}
+
+	// TODO Make F450 requestable
 
 	return types;
 }
@@ -829,7 +832,7 @@ std::vector<arcstk::checksum::type> ARCalcApplication::do_requested_types(
 
 std::string ARCalcApplication::do_name() const
 {
-	return "calc";
+	return "calc"; // TODO Return constref instead of creating a string
 }
 
 

@@ -241,7 +241,7 @@ class ARCalcApplicationBase : public Application
 {
 	virtual bool do_calculation_requested(const Configuration& config) const;
 
-	virtual std::vector<arcstk::checksum::type> do_requested_types(
+	virtual arcstk::ChecksumtypeSet do_requested_types(
 			const Configuration& options) const
 	= 0;
 
@@ -274,8 +274,7 @@ protected:
 	 *
 	 * \return Checksum types to calculate.
 	 */
-	std::vector<arcstk::checksum::type> requested_types(
-			const Configuration& options) const;
+	arcstk::ChecksumtypeSet requested_types(const Configuration& options) const;
 
 	/**
 	 * \brief Run the actual calculation.
@@ -332,7 +331,7 @@ public:
 		const std::string& metafilename,
 		const bool first_file_is_first_track,
 		const bool last_file_is_last_track,
-		const std::vector<arcstk::checksum::type>& types,
+		const arcstk::ChecksumtypeSet& types,
 		FileReaderSelection* audio_selection,
 		FileReaderSelection* toc_selection);
 
@@ -354,7 +353,7 @@ private:
 	std::pair<int, std::unique_ptr<Result>> do_run_calculation(
 			const Configuration& config) const final;
 
-	std::vector<arcstk::checksum::type> do_requested_types(
+	arcstk::ChecksumtypeSet do_requested_types(
 			const Configuration& config) const final;
 
 	// Application

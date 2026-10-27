@@ -85,10 +85,10 @@ class ARIdApplication final : public ARCalcApplicationBase
 	bool do_calculation_requested(const Configuration& config) const final;
 
 	std::pair<int, std::unique_ptr<Result>> do_run_calculation(
-			const Configuration& config) const final;
+		const Configuration& config) const final;
 
-	std::vector<arcstk::checksum::type> do_requested_types(
-			const Configuration& config) const final;
+	arcstk::ChecksumtypeSet do_requested_types(const Configuration& config)
+		const final;
 
 	// Application
 
