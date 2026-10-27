@@ -157,6 +157,11 @@ std::pair<Checksums, ToC> ChecksumCalculator::calculate(
 			const std::vector<std::string>& audiofilenames,
 			const std::string& metafilename)
 {
+	if (audiofilenames.empty())
+	{
+		return calculate(metafilename);
+	}
+
 	ARCS_LOG_DEBUG << "Calculate result from metafilename"
 			" and one or more audiofiles";
 
@@ -166,13 +171,6 @@ std::pair<Checksums, ToC> ChecksumCalculator::calculate(
 	}
 
 	const auto toc { setup_parser().parse(metafilename) };
-
-	if (audiofilenames.empty())
-	{
-		// No audio files passed? => Use from ToC
-
-		return calculate(toc, file::path(metafilename));
-	}
 
 	// Validate track number
 
@@ -262,6 +260,22 @@ void ChecksumCalculator::set_audio_selection(FileReaderSelection* selection)
 }
 
 
+std::pair<Checksums, ToC> ChecksumCalculator::calculate(
+			const std::string& metafilename)
+{
+	ARCS_LOG_DEBUG << "Calculate result from metafilename";
+
+	if (metafilename.empty())
+	{
+		throw std::invalid_argument("No ToC file specified.");
+	}
+
+	const auto toc { setup_parser().parse(metafilename) };
+
+	return calculate(toc, file::path(metafilename));
+}
+
+
 std::pair<Checksums, ToC> ChecksumCalculator::calculate(const ToC& toc,
 		const std::string& filepath)
 {
@@ -303,7 +317,7 @@ std::pair<Checksums, ToC> ChecksumCalculator::calculate(const ToC& toc,
 		const auto checksums {
 			calculator()->calculate(audiofiles, true, true) };
 
-		return { checksums, toc/* FIXME this toc is useless */ };
+		return { checksums, toc/* ToC is unmodified and in fact useless*/ };
 	}
 }
 

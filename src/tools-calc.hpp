@@ -74,6 +74,8 @@ using arcsdec::select::FileReaderSelection;
 
 /**
  * \brief Analyze ToC for filenames and adjust file paths.
+ *
+ * \todo This will be moved to libarcsdec
  */
 struct ToCFiles final
 {
@@ -156,7 +158,10 @@ struct IdSelection final
 /**
  * \brief Calculator for ARCS checksums.
  *
- * Extends ARCSCalculator to handle input multiple audio files.
+ * Extends ARCSCalculator to parse metadata file, handle multiple audio files
+ * and manage rip offsets.
+ *
+ * \todo This will be moved to libarcsdec
  */
 class ChecksumCalculator final
 {
@@ -183,7 +188,7 @@ public:
 
 	/**
 	 * \brief Calculate ARCS values of the CD image represented by the specified
-	 * audio files.
+	 * audio files and metadata.
 	 *
 	 * If the metadata file contains any names of audiofiles, they are ignored
 	 * in favor of \p audiofilenames. If the list of audiofiles is empty, the
@@ -200,21 +205,22 @@ public:
 			const std::string& metafilename);
 
 	/**
-	 * \brief Calculate ARCSs for the given audio files.
+	 * \brief Calculate ARCS values of the CD image represented by the specified
+	 * audio files.
 	 *
 	 * It can be specified that the sequence of audiofiles forms an album by
 	 * passing <tt>true</tt> for both boolean parameters.
 	 *
 	 * The ARCSs in the result will have the same order as the input files,
-	 * so for any index i: 0 <= i < audiofilenames.size(), result[i] will be the
-	 * result for audiofilenames[i]. The result will have the same size as
-	 * audiofilenames.
+	 * so for any index <tt>i: 0 <= i < audiofilenames.size()</tt>, result[i]
+	 * will be the result for audiofilenames[i]. The result will have the same
+	 * size as audiofilenames.
 	 *
 	 * \param[in] audiofilenames       Names of the audiofiles
 	 * \param[in] first_is_first_track Declare first file as first track
 	 * \param[in] last_is_last_track   Declare last file as last track
 	 *
-	 * \return The AccurateRip checksums of these tracks
+	 * \return Checksums of the image represented by the input files
 	 */
 	Checksums calculate(const std::vector<std::string>& audiofilenames,
 			const bool first_is_first_track, const bool last_is_last_track);
@@ -262,6 +268,20 @@ public:
 	void set_toc_selection(FileReaderSelection* selection);
 
 private:
+
+	/**
+	 * \brief Calculate ARCS values of the CD image represented by the specified
+	 * metadata.
+	 *
+	 * The path of the metafilename will be searched for audiofile names
+	 * specified within the metafilename. If the metafile does not contain any
+	 * audiofile references, an exception will be thrown.
+	 *
+	 * \param[in] metafilename   Name of the metadata file
+	 *
+	 * \return Checksums and ToC of the image represented by the input files
+	 */
+	std::pair<Checksums, ToC> calculate(const std::string& metafilename);
 
 	/**
 	 * \brief Calculate ARCS values for album with audiofilenames from metafile.
