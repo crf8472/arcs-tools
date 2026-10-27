@@ -87,7 +87,7 @@ std::unique_ptr<Options> ARParseConfigurator::do_configure_options(
 
 std::string ARParseApplication::do_name() const
 {
-	return "parse";
+	return "parse"; // TODO Return constref instead of creating a string
 }
 
 
