@@ -578,26 +578,15 @@ std::pair<Checksums, ToC> ARCalcApplication::calculate(
 	FileReaderSelection* audio_selection,
 	FileReaderSelection* toc_selection)
 {
-	// Create calculator
-
 	ChecksumCalculator c { types_requested };
 
-	if (toc_selection)   { c.set_toc_selection  (toc_selection);   }
 	if (audio_selection) { c.set_audio_selection(audio_selection); }
+	if (toc_selection)   { c.set_toc_selection  (toc_selection);   }
 
-	// Do calculation
-
-	if (metafilename.empty())
-	{
-        //Tracks/Album w/o ToC
-		const auto checksums = c.calculate(audiofilenames,
-				first_file_is_first_track, last_file_is_last_track);
-
-		return { checksums, ToC{} };
-	}
-
-	//Album: w ToC
-	return c.calculate(audiofilenames, metafilename);
+	return perform_calculation(audiofilenames, metafilename,
+			first_file_is_first_track,
+			last_file_is_last_track,
+			c);
 }
 
 

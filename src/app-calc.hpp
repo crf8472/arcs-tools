@@ -316,13 +316,13 @@ public:
 	/**
 	 * \brief Do calculation based on the options passed.
 	 *
-	 * \param[in] metafilename    Filename of the ToC file
-	 * \param[in] audiofilenames  Filenames of the audio files
-	 * \param[in] first_file_is_first_track   Flag to indicate album first track
-	 * \param[in] last_file_is_last_track     Flag to indicate album last track
-	 * \param[in] types           The checksum types requested
-	 * \param[in] audio_selection The selection for audio readers
-	 * \param[in] toc_selection   The selection for ToC parsers
+	 * \param[in] audiofilenames            Filenames of the audio files
+	 * \param[in] metafilename              Filename of the ToC file
+	 * \param[in] first_file_is_first_track Flag to indicate album first track
+	 * \param[in] last_file_is_last_track   Flag to indicate album last track
+	 * \param[in] types                     Checksum types requested
+	 * \param[in] audio_selection           Selection for audio readers
+	 * \param[in] toc_selection             Selection for ToC parsers
 	 *
 	 * \return Calculation result
 	 */
