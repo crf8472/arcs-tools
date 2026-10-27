@@ -62,7 +62,7 @@
 #include "tools-arid.hpp"           // for ARIdLayout
 #endif
 #ifndef ARCSTOOLS_TOOLS_CALC_HPP_
-#include "tools-calc.hpp"           // for audiofile_layout
+#include "tools-calc.hpp"           // for audiofile_layout, ChecksumCalculator
 #endif
 #ifndef ARCSTOOLS_TOOLS_DBAR_HPP_
 #include "tools-dbar.hpp"           // for ContentHandler
@@ -109,6 +109,7 @@ using arid::ARID_FLAG;
 using arid::ARIdLayout;
 using arid::ARIdTableLayout;
 using arid::RichARId;
+using calc::ChecksumCalculator;
 using calc::HexLayout;
 using input::DBARParser;
 using input::ChecksumValuesParser;
@@ -1566,27 +1567,35 @@ auto ARVerifyApplication::do_run_calculation(const Configuration& config) const
 	ARCS_LOG_DEBUG << "Reference checksum source contains "
 		<< ref_source->size() << "blocks of checksums";
 
+
+	const auto types_requested = this->requested_types(config);
+
 	// Configure selections (e.g. --reader and --parser)
+	//
+	// If no selections are assigned or selections are nullptr,
+	// the libarcsdec default selections will be used.
 
-	auto audio_selection = create_selection(CALC::READERID, config);
-	auto toc_selection   = create_selection(CALC::PARSERID, config);
-
-	// If no selections are assigned, the libarcsdec default selections
-	// will be used.
-
-	const auto requested_types = this->requested_types(config);
+	const auto audio_selection = create_selection(CALC::READERID, config);
+	const auto toc_selection   = create_selection(CALC::PARSERID, config);
 
 	// Calculate the actual ARCSs from input files
+	// This is intentionally equivalent to ARCalcApplication::calculate(),
+	// but for offsets we have to access the calculator thereafter.
 
-	auto [ checksums, toc ] = ARCalcApplication::calculate(
+	ChecksumCalculator c { types_requested };
+
+	if (audio_selection) { c.set_audio_selection(audio_selection.get()); }
+	if (toc_selection)   { c.set_toc_selection  (toc_selection.get());   }
+
+	auto [ checksums, toc ] = calc::perform_calculation(
 			*config.arguments(),
 			config.value(VERIFY::METAFILE),
 			!config.is_set(VERIFY::NOFIRST),
 			!config.is_set(VERIFY::NOLAST),
-			requested_types,
-			audio_selection.get(),
-			toc_selection.get()
+			c
 	);
+
+	// TODO c has all data for offset detection from here on
 
 	if (checksums.size() == 0)
 	{
