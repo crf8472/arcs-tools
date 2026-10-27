@@ -154,7 +154,9 @@ struct IdSelection final
 #pragma GCC diagnostic ignored "-Weffc++"
 
 /**
- * \brief Wrapper for ARCSCalculator to handle input with multiple audio files.
+ * \brief Calculator for ARCS checksums.
+ *
+ * Extends ARCSCalculator to handle input multiple audio files.
  */
 class ChecksumCalculator final
 {
@@ -264,7 +266,7 @@ private:
 	/**
 	 * \brief Calculate ARCS values for album with audiofilenames from metafile.
 	 *
-	 * If metafile does not specify any audiofilenames, result will be empty.
+	 * If toc does not specify any audiofilenames, result will be empty.
 	 *
 	 * \param[in] toc          Album ToC
 	 * \param[in] searchpath   Searchpath for audiofiles
@@ -340,9 +342,9 @@ public:
 
 private:
 
-	std::string do_format(InputTuple t) const override;
+	std::string do_format(InputTuple t) const final;
 
-	void do_assertions(InputTuple) const override
+	void do_assertions(InputTuple) const final
 	{
 		// empty
 	}
