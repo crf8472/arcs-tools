@@ -597,7 +597,7 @@ private:
  *
  * \return FlagStore flags which are TRUE excatly for the existing KEYs
  */
-template<typename S>
+template <typename S>
 flags_t existing_flags(const S& labels)
 {
 	using std::cbegin;
